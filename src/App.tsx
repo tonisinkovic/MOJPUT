@@ -12,6 +12,8 @@ import VideoPage from "./pages/VideoPage";
 import Forum from "./pages/Forum";
 import Kalendar from "./pages/Kalendar";
 import Roditelji from "./pages/Roditelji";
+import Kontakt from "./pages/Kontakt";
+import UvjetiKoristenja from "./pages/UvjetiKoristenja";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -32,6 +34,8 @@ const App = () => (
           <Route path="/forum" element={<Forum />} />
           <Route path="/kalendar" element={<Kalendar />} />
           <Route path="/roditelji" element={<Roditelji />} />
+          <Route path="/kontakt" element={<Kontakt />} />
+          <Route path="/uvjeti" element={<UvjetiKoristenja />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
