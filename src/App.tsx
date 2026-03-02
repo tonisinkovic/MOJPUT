@@ -14,6 +14,7 @@ import Kalendar from "./pages/Kalendar";
 import Roditelji from "./pages/Roditelji";
 import Kontakt from "./pages/Kontakt";
 import UvjetiKoristenja from "./pages/UvjetiKoristenja";
+import Chatbot from "./pages/Chatbot";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -36,6 +37,7 @@ const App = () => (
           <Route path="/roditelji" element={<Roditelji />} />
           <Route path="/kontakt" element={<Kontakt />} />
           <Route path="/uvjeti" element={<UvjetiKoristenja />} />
+          <Route path="/chatbot" element={<Chatbot />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

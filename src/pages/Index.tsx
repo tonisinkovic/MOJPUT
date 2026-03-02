@@ -69,6 +69,12 @@ const features = [
     description: "Resursi i alati za roditelje koji podržavaju dijete u odabiru.",
     path: "/roditelji",
   },
+  {
+    icon: <Bot className="w-6 h-6 text-primary-foreground" />,
+    title: "AI ChatBot",
+    description: "Razgovaraj s umjetnom inteligencijom o odabiru fakulteta i karijere.",
+    path: "/chatbot",
+  },
 ];
 
 const stats = [
