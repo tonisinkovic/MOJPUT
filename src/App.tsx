@@ -16,6 +16,7 @@ import Kontakt from "./pages/Kontakt";
 import UvjetiKoristenja from "./pages/UvjetiKoristenja";
 import Chatbot from "./pages/Chatbot";
 import NotFound from "./pages/NotFound";
+import Registracija from "./pages/Registracija";
 
 const queryClient = new QueryClient();
 
@@ -38,6 +39,7 @@ const App = () => (
           <Route path="/kontakt" element={<Kontakt />} />
           <Route path="/uvjeti" element={<UvjetiKoristenja />} />
           <Route path="/chatbot" element={<Chatbot />} />
+          <Route path="/registracija" element={<Registracija />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
