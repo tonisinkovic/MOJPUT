@@ -1,8 +1,8 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
 
 @layer base {
   :root {
@@ -136,5 +136,17 @@
     background: hsl(var(--background) / 0.8);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
+  }
+
+  .bg-grid-pattern {
+    background-image: radial-gradient(circle at 1px 1px, hsl(var(--border)) 1px, transparent 0);
+    background-size: 32px 32px;
+    background-position: 0 0;
+  }
+
+  .bg-mesh-gradient {
+    background: radial-gradient(at 40% 20%, hsl(174 62% 42% / 0.08) 0px, transparent 50%),
+      radial-gradient(at 80% 0%, hsl(220 60% 55% / 0.06) 0px, transparent 50%),
+      radial-gradient(at 0% 50%, hsl(14 90% 62% / 0.04) 0px, transparent 50%);
   }
 }

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import Layout from "@/components/Layout";
 import { Mail, Lock, LogIn } from "lucide-react";
-import { authLogin, authLogout, authMe, authVerifyEmail, type AuthUser } from "@/lib/auth";
+import { authLogin, authLogout, authMe, authResendVerification, authVerifyEmail, type AuthUser } from "@/lib/auth";
 
 const Prijava = () => {
   const [loginData, setLoginData] = useState({
@@ -12,10 +12,16 @@ const Prijava = () => {
   const [loggedUser, setLoggedUser] = useState<AuthUser | null>(null);
   const [loading, setLoading] = useState(true);
   const [info, setInfo] = useState("");
+  const [needsVerification, setNeedsVerification] = useState(false);
+  const [resendLoading, setResendLoading] = useState(false);
 
   useEffect(() => {
     let alive = true;
-    const params = new URLSearchParams(window.location.search);
+    // HashRouter: URL je .../#/prijava?verify=TOKEN – parametri su u hash dijelu
+    const hash = window.location.hash || "";
+    const hashQueryStart = hash.indexOf("?");
+    const queryString = hashQueryStart >= 0 ? hash.substring(hashQueryStart + 1) : "";
+    const params = new URLSearchParams(queryString || window.location.search);
     const verify = params.get("verify");
     if (verify) {
       setInfo("Potvrđujem email...");
@@ -29,7 +35,8 @@ const Prijava = () => {
           }
           params.delete("verify");
           const next = params.toString();
-          window.history.replaceState({}, "", `${window.location.pathname}${next ? `?${next}` : ""}`);
+          const newHash = `/prijava${next ? `?${next}` : ""}`;
+          window.history.replaceState({}, "", `${window.location.pathname}${window.location.search}#${newHash}`);
         })
         .catch(() => {
           if (!alive) return;
@@ -62,6 +69,7 @@ const Prijava = () => {
     e.preventDefault();
     setLoginError("");
     setInfo("");
+    setNeedsVerification(false);
 
     if (!loginData.email || !loginData.password) {
       setLoginError("Molimo ispuni sva polja.");
@@ -74,10 +82,30 @@ const Prijava = () => {
     });
     if (!res.success) {
       setLoginError(res.message);
+      if ((res as any).code === "EMAIL_NOT_VERIFIED" || /potvrdi email/i.test(res.message)) {
+        setNeedsVerification(true);
+      }
       return;
     }
     setLoggedUser((res as any).user ?? (res as any).data?.user ?? null);
     setLoginData({ email: "", password: "" });
+  };
+
+  const handleResend = async () => {
+    const email = loginData.email.trim();
+    if (!email) {
+      setLoginError("Unesi email da mogu poslati potvrdu.");
+      return;
+    }
+    setResendLoading(true);
+    setLoginError("");
+    const res = await authResendVerification(email);
+    setResendLoading(false);
+    if (!res.success) {
+      setLoginError(res.message);
+      return;
+    }
+    setInfo("Ako email postoji i nije potvrđen, poslan je novi link za potvrdu.");
   };
 
   const handleLogout = async () => {
@@ -157,6 +185,17 @@ const Prijava = () => {
                 <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700 font-medium">
                   {loginError}
                 </div>
+              )}
+
+              {needsVerification && (
+                <button
+                  type="button"
+                  onClick={handleResend}
+                  disabled={resendLoading}
+                  className="w-full py-2.5 border border-slate-300 rounded-lg hover:bg-slate-50 transition text-sm font-semibold text-slate-900"
+                >
+                  {resendLoading ? "Šaljem potvrdu..." : "Pošalji ponovno potvrdu na email"}
+                </button>
               )}
 
               <button

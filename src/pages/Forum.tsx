@@ -1,20 +1,19 @@
 import Layout from "@/components/Layout";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   ArrowLeft,
-  Heart,
   LogOut,
-  Mail,
+  LogIn,
   MessageCircle,
   Plus,
   Search,
   Send,
-  Lock,
-  User,
+  ThumbsUp,
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { apiGet, apiPost } from "@/lib/api";
-import { authLogin, authLogout, authMe, authRegister, type AuthUser } from "@/lib/auth";
+import { Link } from "react-router-dom";
+import { authLogout, authMe, type AuthUser } from "@/lib/auth";
 
 type ForumMessage = {
   id: number;
@@ -22,7 +21,8 @@ type ForumMessage = {
   username: string;
   text: string;
   timestamp: Date;
-  likes: number;
+  likeCount: number;
+  userLiked: boolean;
 };
 
 type ForumConversation = {
@@ -32,22 +32,13 @@ type ForumConversation = {
   creator: string;
   creatorId: number;
   createdAt: Date;
-  participants: number[];
+  messageCount: number;
   messages: ForumMessage[];
 };
 
 const Forum = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [currentUser, setCurrentUser] = useState<AuthUser | null>(null);
-  const [authMode, setAuthMode] = useState<"login" | "register">("login");
-  const [showPassword, setShowPassword] = useState(false);
-  const [authError, setAuthError] = useState("");
-  const [authForm, setAuthForm] = useState({
-    username: "",
-    email: "",
-    password: "",
-    confirmPassword: "",
-  });
 
   const [conversations, setConversations] = useState<ForumConversation[]>([]);
   const [loadingConversations, setLoadingConversations] = useState(true);
@@ -59,6 +50,7 @@ const Forum = () => {
   const [newConvTitle, setNewConvTitle] = useState("");
   const [newConvDescription, setNewConvDescription] = useState("");
   const [messageInput, setMessageInput] = useState("");
+  const [sendingMessage, setSendingMessage] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
@@ -66,7 +58,7 @@ const Forum = () => {
     authMe().then((res) => {
       if (!alive) return;
       if (res.success) {
-        const user = (res as any).user ?? (res as any).data?.user ?? null;
+        const user = (res as { user?: AuthUser }).user ?? (res as { data?: { user?: AuthUser } }).data?.user ?? null;
         if (user) {
           setCurrentUser(user);
           setIsAuthenticated(true);
@@ -80,19 +72,25 @@ const Forum = () => {
 
   const loadConversations = async () => {
     setLoadingConversations(true);
-    const res = await apiGet<{ data: any[] }>("/api/forum/conversations");
+    const res = await apiGet<{ data: unknown }>("/api/forum/conversations");
     if (res.success) {
-      const rows = (res as any).data ?? (res as any).data?.data ?? (res as any).data;
-      const list = (rows?.data ?? rows ?? []) as any[];
+      const rows = ((res as { data?: unknown }).data ?? []) as Array<{
+        id: number;
+        title: string;
+        description: string;
+        creator_username: string;
+        created_at: string;
+        message_count: number;
+      }>;
       setConversations(
-        list.map((c) => ({
+        rows.map((c) => ({
           id: c.id,
           title: c.title,
           description: c.description || "",
           creator: c.creator_username || "",
           creatorId: -1,
           createdAt: new Date(c.created_at),
-          participants: [],
+          messageCount: typeof c.message_count === "number" ? c.message_count : 0,
           messages: [],
         })),
       );
@@ -102,40 +100,37 @@ const Forum = () => {
 
   const loadMessages = async (conversationId: number) => {
     setLoadingMessages(true);
-    const res = await apiGet<{ data: any[] }>(`/api/forum/conversations/${conversationId}/messages`);
+    const res = await apiGet<{ data: unknown }>(`/api/forum/conversations/${conversationId}/messages`);
     if (res.success) {
-      const rows = (res as any).data ?? (res as any).data?.data ?? (res as any).data;
-      const list = (rows?.data ?? rows ?? []) as any[];
+      const rows = ((res as { data?: unknown }).data ?? []) as Array<{
+        id: number;
+        user_id: number;
+        username: string;
+        text: string;
+        created_at: string;
+        like_count: number;
+        user_liked: boolean;
+      }>;
+      const messages: ForumMessage[] = rows.map((m) => ({
+        id: m.id,
+        userId: m.user_id,
+        username: m.username,
+        text: m.text,
+        timestamp: new Date(m.created_at),
+        likeCount: m.like_count ?? 0,
+        userLiked: m.user_liked ?? false,
+      }));
+
       setConversations((prev) =>
         prev.map((c) =>
           c.id === conversationId
-            ? {
-                ...c,
-                messages: list.map((m) => ({
-                  id: m.id,
-                  userId: m.user_id,
-                  username: m.username,
-                  text: m.text,
-                  timestamp: new Date(m.created_at),
-                  likes: 0,
-                })),
-              }
+            ? { ...c, messages, messageCount: messages.length }
             : c,
         ),
       );
       setSelectedConversation((prev) => {
         if (!prev || prev.id !== conversationId) return prev;
-        return {
-          ...prev,
-          messages: list.map((m) => ({
-            id: m.id,
-            userId: m.user_id,
-            username: m.username,
-            text: m.text,
-            timestamp: new Date(m.created_at),
-            likes: 0,
-          })),
-        };
+        return { ...prev, messages, messageCount: messages.length };
       });
     }
     setLoadingMessages(false);
@@ -143,7 +138,6 @@ const Forum = () => {
 
   useEffect(() => {
     loadConversations();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -151,43 +145,6 @@ const Forum = () => {
       messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
     }
   }, [selectedConversation?.messages]);
-
-  const handleAuthSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setAuthError("");
-
-    if (authMode === "login") {
-      // Login is by email + password (real auth)
-      const res = await authLogin({ email: authForm.username.trim(), password: authForm.password });
-      if (!res.success) {
-        setAuthError(res.message);
-        return;
-      }
-      const user = (res as any).user ?? (res as any).data?.user ?? null;
-      setCurrentUser(user);
-      setIsAuthenticated(true);
-      setAuthForm({ username: "", email: "", password: "", confirmPassword: "" });
-    } else {
-      if (authForm.password !== authForm.confirmPassword) {
-        setAuthError("Lozinke se ne poklapaju!");
-        return;
-      }
-      const res = await authRegister({
-        username: authForm.username.trim(),
-        email: authForm.email.trim(),
-        password: authForm.password,
-      });
-      if (!res.success) {
-        setAuthError(res.message);
-        return;
-      }
-      // After registration we REQUIRE email verification. Do not log in automatically.
-      setCurrentUser(null);
-      setIsAuthenticated(false);
-      setAuthError("Registracija uspješna. Provjeri email i potvrdi račun pa se zatim prijavi.");
-      setAuthForm({ username: "", email: "", password: "", confirmPassword: "" });
-    }
-  };
 
   const handleLogout = async () => {
     await authLogout();
@@ -199,30 +156,26 @@ const Forum = () => {
   const handleCreateConversation = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!currentUser) return;
+    if (!newConvTitle.trim()) return;
 
-    if (!newConvTitle.trim()) {
-      alert("Unesi naziv razgovora!");
-      return;
-    }
-
-    const res = await apiPost<any>("/api/forum/conversations", {
-      title: newConvTitle.trim(),
-      description: newConvDescription.trim(),
-    });
+    const res = await apiPost<{ data?: { id: number; title: string; description: string; created_at: string; creator_username: string; message_count: number } }>(
+      "/api/forum/conversations",
+      { title: newConvTitle.trim(), description: newConvDescription.trim() },
+    );
     if (!res.success) {
-      alert(res.message);
+      alert((res as { message?: string }).message);
       return;
     }
-    const c = (res as any).data ?? (res as any).data?.data ?? (res as any).data;
-    const convRow = c?.data ?? c;
+    const c = (res as { data?: { id: number; title: string; description: string; created_at: string; creator_username: string; message_count: number } }).data;
+    if (!c) return;
     const newConversation: ForumConversation = {
-      id: convRow.id,
-      title: convRow.title,
-      description: convRow.description || "",
-      creator: convRow.creator_username || currentUser.username,
+      id: c.id,
+      title: c.title,
+      description: c.description || "",
+      creator: c.creator_username || currentUser.username,
       creatorId: currentUser.id,
-      createdAt: new Date(convRow.created_at),
-      participants: [],
+      createdAt: new Date(c.created_at),
+      messageCount: c.message_count ?? 0,
       messages: [],
     };
 
@@ -235,56 +188,63 @@ const Forum = () => {
 
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!currentUser || !selectedConversation) return;
-    if (!messageInput.trim()) return;
+    if (!currentUser || !selectedConversation || !messageInput.trim()) return;
 
-    const res = await apiPost<any>(`/api/forum/conversations/${selectedConversation.id}/messages`, {
-      text: messageInput.trim(),
-    });
+    setSendingMessage(true);
+    const res = await apiPost<{ data?: { id: number; user_id: number; username: string; text: string; created_at: string; like_count: number; user_liked: boolean } }>(
+      `/api/forum/conversations/${selectedConversation.id}/messages`,
+      { text: messageInput.trim() },
+    );
+    setSendingMessage(false);
     if (!res.success) {
-      alert(res.message);
+      alert((res as { message?: string }).message);
       return;
     }
-    const payload = (res as any).data ?? (res as any).data?.data ?? (res as any).data;
-    const msgRow = payload?.data ?? payload;
+    const payload = (res as { data?: { id: number; user_id: number; username: string; text: string; created_at: string; like_count: number; user_liked: boolean } }).data;
+    if (!payload) return;
     const newMessage: ForumMessage = {
-      id: msgRow.id,
-      userId: msgRow.user_id,
-      username: msgRow.username,
-      text: msgRow.text,
-      timestamp: new Date(msgRow.created_at),
-      likes: 0,
+      id: payload.id,
+      userId: payload.user_id,
+      username: payload.username,
+      text: payload.text,
+      timestamp: new Date(payload.created_at),
+      likeCount: payload.like_count ?? 0,
+      userLiked: payload.user_liked ?? false,
     };
 
     setConversations((prev) =>
       prev.map((conv) =>
         conv.id === selectedConversation.id
-          ? { ...conv, messages: [...conv.messages, newMessage] }
+          ? { ...conv, messages: [...conv.messages, newMessage], messageCount: conv.messageCount + 1 }
           : conv,
       ),
     );
     setSelectedConversation((prev) =>
-      prev ? { ...prev, messages: [...prev.messages, newMessage] } : prev,
+      prev ? { ...prev, messages: [...prev.messages, newMessage], messageCount: prev.messageCount + 1 } : prev,
     );
     setMessageInput("");
   };
 
-  const handleLikeMessage = (messageId: number) => {
-    if (!selectedConversation) return;
+  const handleLikeMessage = async (messageId: number) => {
+    if (!isAuthenticated || !currentUser || !selectedConversation) return;
 
-    const updatedConversations = conversations.map((conv) => {
-      if (conv.id === selectedConversation.id) {
-        const updatedMessages = conv.messages.map((msg) =>
-          msg.id === messageId ? { ...msg, likes: msg.likes + 1 } : msg,
-        );
-        const updatedConv: ForumConversation = { ...conv, messages: updatedMessages };
-        setSelectedConversation(updatedConv);
-        return updatedConv;
-      }
-      return conv;
-    });
+    const res = await apiPost<{ liked?: boolean; like_count?: number }>(`/api/forum/messages/${messageId}/like`, {});
+    if (!res.success) return;
 
-    setConversations(updatedConversations);
+    const { liked = false, like_count = 0 } = res as { liked?: boolean; like_count?: number };
+    const updateMsg = (m: ForumMessage) =>
+      m.id === messageId ? { ...m, likeCount: like_count, userLiked: liked } : m;
+
+    setConversations((prev) =>
+      prev.map((conv) =>
+        conv.id === selectedConversation.id
+          ? { ...conv, messages: conv.messages.map(updateMsg) }
+          : conv,
+      ),
+    );
+    setSelectedConversation((prev) =>
+      prev ? { ...prev, messages: prev.messages.map(updateMsg) } : prev,
+    );
   };
 
   const filteredConversations = conversations.filter(
@@ -295,295 +255,233 @@ const Forum = () => {
 
   return (
     <Layout>
-      <section className="container py-12 max-w-5xl">
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="mb-8">
-          <h1 className="text-3xl md:text-4xl font-bold mb-3">
-            <span className="text-gradient">Forum</span> za učenike
+      <section className="container py-8 md:py-12 max-w-6xl mx-auto px-4">
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3 }}
+          className="mb-6"
+        >
+          <h1 className="text-2xl md:text-3xl font-bold text-slate-900 dark:text-slate-50 tracking-tight">
+            Forum za učenike
           </h1>
-          <p className="text-muted-foreground text-lg">
+          <p className="text-slate-600 dark:text-slate-400 text-sm md:text-base mt-1">
             Razmijeni iskustva i postavi pitanja o maturi, fakultetima i studentskom životu.
           </p>
         </motion.div>
 
-        {/* Ako korisnik nije prijavljen – prikaz forme za prijavu/registraciju u sklopu stranice */}
-        {!isAuthenticated ? (
-          <div className="grid md:grid-cols-[minmax(0,1.1fr),minmax(0,1fr)] gap-8">
-            <div className="rounded-2xl border bg-card p-6 shadow-card">
-              <h2 className="text-xl font-semibold mb-1">Prijavi se</h2>
-              <p className="text-sm text-muted-foreground mb-4">
-                Prijavi se ili kreiraj račun kako bi sudjelovao u raspravama.
-              </p>
-
-              <div className="flex gap-2 mb-6">
-                <button
-                  onClick={() => {
-                    setAuthMode("login");
-                    setAuthForm({ username: "", email: "", password: "", confirmPassword: "" });
-                  }}
-                  className={`flex-1 py-2 rounded-lg text-sm font-semibold transition-all ${
-                    authMode === "login"
-                      ? "bg-primary text-primary-foreground"
-                      : "bg-muted text-muted-foreground hover:bg-muted/80"
-                  }`}
-                >
-                  Prijava
-                </button>
-                <button
-                  onClick={() => {
-                    setAuthMode("register");
-                    setAuthForm({ username: "", email: "", password: "", confirmPassword: "" });
-                  }}
-                  className={`flex-1 py-2 rounded-lg text-sm font-semibold transition-all ${
-                    authMode === "register"
-                      ? "bg-primary text-primary-foreground"
-                      : "bg-muted text-muted-foreground hover:bg-muted/80"
-                  }`}
-                >
-                  Registracija
-                </button>
-              </div>
-
-              <form onSubmit={handleAuthSubmit} className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-foreground mb-1">
-                    {authMode === "login" ? "Email" : "Korisničko ime"}
-                  </label>
-                  <div className="relative">
-                    <User className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
-                    <input
-                      type={authMode === "login" ? "email" : "text"}
-                      value={authForm.username}
-                      onChange={(e) => setAuthForm({ ...authForm, username: e.target.value })}
-                      placeholder={authMode === "login" ? "Unesi email" : "Unesi korisničko ime"}
-                      className="w-full pl-9 pr-3 py-2 rounded-md border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/60"
-                    />
-                  </div>
-                </div>
-
-                {authMode === "register" && (
-                  <div>
-                    <label className="block text-sm font-medium text-foreground mb-1">Email</label>
-                    <div className="relative">
-                      <Mail className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
-                      <input
-                        type="email"
-                        value={authForm.email}
-                        onChange={(e) => setAuthForm({ ...authForm, email: e.target.value })}
-                        placeholder="Unesi email"
-                        className="w-full pl-9 pr-3 py-2 rounded-md border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/60"
-                      />
-                    </div>
-                  </div>
-                )}
-
-                <div>
-                  <label className="block text-sm font-medium text-foreground mb-1">Lozinka</label>
-                  <div className="relative">
-                    <Lock className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
-                    <input
-                      type={showPassword ? "text" : "password"}
-                      value={authForm.password}
-                      onChange={(e) => setAuthForm({ ...authForm, password: e.target.value })}
-                      placeholder="Unesi lozinku"
-                      className="w-full pl-9 pr-9 py-2 rounded-md border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/60"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowPassword((v) => !v)}
-                      className="absolute right-3 top-2.5 text-muted-foreground hover:text-foreground"
-                    >
-                      {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                    </button>
-                  </div>
-                </div>
-
-                {authMode === "register" && (
-                  <div>
-                    <label className="block text-sm font-medium text-foreground mb-1">Potvrdi lozinku</label>
-                    <div className="relative">
-                      <Lock className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
-                      <input
-                        type={showPassword ? "text" : "password"}
-                        value={authForm.confirmPassword}
-                        onChange={(e) => setAuthForm({ ...authForm, confirmPassword: e.target.value })}
-                        placeholder="Ponovno unesi lozinku"
-                        className="w-full pl-9 pr-3 py-2 rounded-md border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/60"
-                      />
-                    </div>
-                  </div>
-                )}
-
-                {authError && (
-                  <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700 font-medium">
-                    {authError}
-                  </div>
-                )}
-
-                <button
-                  type="submit"
-                  className="w-full mt-2 py-2.5 rounded-lg bg-gradient-to-r from-blue-600 to-purple-600 text-white text-sm font-semibold shadow-sm hover:from-blue-700 hover:to-purple-700 transition-all"
-                >
-                  {authMode === "login" ? "Prijavi se" : "Registriraj se"}
-                </button>
-              </form>
-
-              <div className="pt-4 mt-4 border-t text-xs text-muted-foreground">
-                <p className="mb-1">
-                  Napomena: email nije “povezan s Gmailom” — samo se sprema u bazu kao identifikator.
+        {!isAuthenticated && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="mb-6 rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50/80 dark:bg-slate-900/50 p-4 md:p-5 shadow-sm"
+          >
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+              <div>
+                <p className="text-sm font-semibold text-slate-800 dark:text-slate-200">Samo pregled poruka</p>
+                <p className="text-xs text-slate-600 dark:text-slate-400 mt-0.5">
+                  Možeš čitati razgovore, ali za slanje poruka, lajkanje i kreiranje tema potrebna je prijava.
                 </p>
               </div>
+              <Link
+                to="/prijava"
+                className="inline-flex items-center justify-center gap-2 rounded-xl bg-teal-600 hover:bg-teal-700 text-white px-4 py-2.5 text-sm font-semibold transition-colors shadow-sm"
+              >
+                <LogIn className="h-4 w-4" />
+                Prijavi se
+              </Link>
             </div>
+          </motion.div>
+        )}
 
-            <div className="rounded-2xl border bg-card p-6 shadow-card">
-              <h2 className="text-sm font-semibold mb-2 flex items-center gap-2">
-                <MessageCircle className="h-4 w-4" /> Što možeš raditi na forumu?
-              </h2>
-              <ul className="text-sm text-muted-foreground space-y-1.5">
-                <li>• Postavljati pitanja o fakultetima i upisima</li>
-                <li>• Dijeliti iskustva s priprema za maturu</li>
-                <li>• Razgovarati o studentskom životu i smještaju</li>
-                <li>• Pomoći drugim učenicima svojim savjetima</li>
-              </ul>
-            </div>
-          </div>
-        ) : (
-          // Glavni forum za prijavljenog korisnika
-          <div className="rounded-2xl border bg-card shadow-card overflow-hidden">
-            <div className="flex flex-col md:flex-row h-[640px]">
-              {/* Sidebar s razgovorima */}
-              <div className="md:w-72 border-b md:border-b-0 md:border-r bg-muted/40 flex flex-col">
-                <div className="p-4 border-b flex items-center justify-between gap-3">
-                  {currentUser && (
-                    <div className="flex items-center gap-3">
-                      <div className="w-9 h-9 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-lg">
-                        {currentUser.avatar}
-                      </div>
-                      <div>
-                        <p className="text-sm font-semibold">{currentUser.username}</p>
-                        <p className="text-[11px] text-muted-foreground">Član foruma</p>
-                      </div>
-                    </div>
-                  )}
+        <motion.div
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3, delay: 0.05 }}
+          className="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 shadow-xl overflow-hidden"
+        >
+          <div className="flex flex-col md:flex-row h-[min(75vh,640px)] md:h-[580px]">
+            {/* Sidebar */}
+            <div className="md:w-80 border-b md:border-b-0 md:border-r border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-900/50 flex flex-col shrink-0">
+              <div className="p-4 border-b border-slate-200 dark:border-slate-700 flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-teal-500 to-cyan-600 flex items-center justify-center text-white font-semibold shadow-md">
+                  {(currentUser?.username?.[0] || "G").toUpperCase()}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-semibold text-slate-900 dark:text-slate-100 truncate">
+                    {currentUser?.username || "Gost"}
+                  </p>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">
+                    {isAuthenticated ? "Član foruma" : "Samo pregled"}
+                  </p>
+                </div>
+                {isAuthenticated ? (
                   <button
                     onClick={handleLogout}
-                    className="p-2 rounded-lg hover:bg-muted text-muted-foreground"
+                    className="p-2 rounded-xl hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-400 transition-colors"
                     title="Odjava"
                   >
                     <LogOut className="h-4 w-4" />
                   </button>
-                </div>
+                ) : (
+                  <Link
+                    to="/prijava"
+                    className="p-2 rounded-xl hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-400 transition-colors"
+                    title="Prijava"
+                  >
+                    <LogIn className="h-4 w-4" />
+                  </Link>
+                )}
+              </div>
 
-                <div className="p-3 border-b">
+              <div className="p-3 border-b border-slate-200 dark:border-slate-700">
+                {isAuthenticated ? (
                   <button
                     onClick={() => setShowNewConversationModal(true)}
-                    className="w-full inline-flex items-center justify-center gap-1.5 rounded-md bg-primary text-primary-foreground px-3 py-2 text-xs font-medium shadow hover:bg-primary/90"
+                    className="w-full inline-flex items-center justify-center gap-2 rounded-xl bg-teal-600 hover:bg-teal-700 text-white px-4 py-2.5 text-sm font-semibold shadow-md transition-all hover:shadow-lg active:scale-[0.98]"
                   >
-                    <Plus className="h-3.5 w-3.5" />
+                    <Plus className="h-4 w-4" />
                     Novi razgovor
                   </button>
-                </div>
+                ) : (
+                  <Link
+                    to="/prijava"
+                    className="w-full inline-flex items-center justify-center gap-2 rounded-xl border-2 border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 px-4 py-2.5 text-sm font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
+                  >
+                    <LogIn className="h-4 w-4" />
+                    Prijavi se za pisanje
+                  </Link>
+                )}
+              </div>
 
-                <div className="p-3 border-b">
-                  <div className="relative">
-                    <Search className="absolute left-3 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
-                    <input
-                      type="text"
-                      placeholder="Pretraži razgovore..."
-                      value={searchTerm}
-                      onChange={(e) => setSearchTerm(e.target.value)}
-                      className="w-full pl-9 pr-3 py-1.5 rounded-md border bg-background text-xs focus:outline-none focus:ring-1 focus:ring-primary/50"
-                    />
+              <div className="p-3 border-b border-slate-200 dark:border-slate-700">
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                  <input
+                    type="text"
+                    placeholder="Pretraži razgovore..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="w-full pl-9 pr-4 py-2 rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 text-sm text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500/50 focus:border-teal-500"
+                  />
+                </div>
+              </div>
+
+              <div className="flex-1 overflow-y-auto min-h-0">
+                {loadingConversations ? (
+                  <div className="p-8 text-center">
+                    <div className="inline-block w-6 h-6 border-2 border-teal-500 border-t-transparent rounded-full animate-spin" />
+                    <p className="text-xs text-slate-500 mt-3">Učitavam razgovore...</p>
                   </div>
-                </div>
-
-                <div className="flex-1 overflow-y-auto">
-                  {loadingConversations ? (
-                    <div className="p-6 text-center text-xs text-muted-foreground">
-                      Učitavam razgovore...
-                    </div>
-                  ) : filteredConversations.length === 0 ? (
-                    <div className="p-6 text-center text-xs text-muted-foreground">
-                      <MessageCircle className="mx-auto mb-2 h-8 w-8 opacity-30" />
-                      <p>Nema razgovora. Kreiraj prvi!</p>
-                    </div>
-                  ) : (
-                    filteredConversations.map((conv) => (
+                ) : filteredConversations.length === 0 ? (
+                  <div className="p-8 text-center">
+                    <MessageCircle className="mx-auto h-12 w-12 text-slate-300 dark:text-slate-600 mb-3" />
+                    <p className="text-sm text-slate-500 dark:text-slate-400">
+                      {isAuthenticated ? "Nema razgovora. Kreiraj prvi!" : "Trenutno nema razgovora."}
+                    </p>
+                  </div>
+                ) : (
+                  <div className="p-2">
+                    {filteredConversations.map((conv) => (
                       <button
                         key={conv.id}
                         onClick={async () => {
                           setSelectedConversation(conv);
                           if (conv.messages.length === 0) await loadMessages(conv.id);
                         }}
-                        className={`w-full text-left px-3 py-3 border-b text-xs transition-colors hover:bg-muted ${
-                          selectedConversation?.id === conv.id ? "bg-primary/5 border-l-2 border-l-primary" : ""
+                        className={`w-full text-left px-4 py-3 rounded-xl mb-1 transition-all duration-200 ${
+                          selectedConversation?.id === conv.id
+                            ? "bg-teal-500/15 dark:bg-teal-500/20 border-l-4 border-teal-500"
+                            : "hover:bg-slate-100 dark:hover:bg-slate-800/80"
                         }`}
                       >
-                        <p className="font-semibold truncate">{conv.title}</p>
-                        <p className="text-[11px] text-muted-foreground line-clamp-1">
+                        <p className="font-semibold text-slate-900 dark:text-slate-100 truncate text-sm">
+                          {conv.title}
+                        </p>
+                        <p className="text-xs text-slate-500 dark:text-slate-400 line-clamp-1 mt-0.5">
                           {conv.description || "Bez opisa"}
                         </p>
-                        <div className="flex items-center justify-between mt-1 text-[11px] text-muted-foreground">
-                          <span>{conv.messages.length} poruka</span>
-                          <span>{conv.participants.length} sudionika</span>
-                        </div>
-                      </button>
-                    ))
-                  )}
-                </div>
-              </div>
-
-              {/* Glavni panel razgovora */}
-              <div className="flex-1 flex flex-col">
-                {selectedConversation ? (
-                  <>
-                    <div className="p-4 border-b flex items-start justify-between gap-3 bg-muted/40">
-                      <div className="flex-1">
-                        <button
-                          onClick={() => setSelectedConversation(null)}
-                          className="inline-flex md:hidden items-center gap-1 text-xs text-muted-foreground mb-2"
-                        >
-                          <ArrowLeft className="h-3 w-3" />
-                          Natrag na listu
-                        </button>
-                        <h2 className="text-base md:text-lg font-semibold">
-                          {selectedConversation.title}
-                        </h2>
-                        <p className="text-xs text-muted-foreground mt-1">
-                          {selectedConversation.description || "Bez opisa"}
+                        <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-1.5">
+                          {conv.messageCount} poruka · {conv.creator || "Anonim"}
                         </p>
-                      </div>
-                      <div className="text-right text-[11px] text-muted-foreground">
-                        <p>{selectedConversation.participants.length} sudionika</p>
-                      </div>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Chat area */}
+            <div className="flex-1 flex flex-col min-w-0 bg-white dark:bg-slate-900">
+              <AnimatePresence mode="wait">
+                {selectedConversation ? (
+                  <motion.div
+                    key={selectedConversation.id}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    className="flex flex-col h-full"
+                  >
+                    <div className="p-4 border-b border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-900/50 shrink-0">
+                      <button
+                        onClick={() => setSelectedConversation(null)}
+                        className="inline-flex md:hidden items-center gap-1.5 text-sm text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 mb-2 transition-colors"
+                      >
+                        <ArrowLeft className="h-4 w-4" />
+                        Natrag
+                      </button>
+                      <h2 className="text-lg font-bold text-slate-900 dark:text-slate-100">
+                        {selectedConversation.title}
+                      </h2>
+                      <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                        {selectedConversation.description || "Bez opisa"}
+                      </p>
                     </div>
 
-                    <div className="flex-1 overflow-y-auto p-4 space-y-3">
+                    <div className="flex-1 overflow-y-auto p-4 space-y-4">
                       {loadingMessages ? (
-                        <div className="h-full flex items-center justify-center text-xs text-muted-foreground">
-                          Učitavam poruke...
+                        <div className="h-full flex items-center justify-center">
+                          <div className="text-center">
+                            <div className="inline-block w-8 h-8 border-2 border-teal-500 border-t-transparent rounded-full animate-spin mb-3" />
+                            <p className="text-sm text-slate-500">Učitavam poruke...</p>
+                          </div>
                         </div>
                       ) : selectedConversation.messages.length === 0 ? (
-                        <div className="h-full flex items-center justify-center text-xs text-muted-foreground">
+                        <div className="h-full flex items-center justify-center">
                           <div className="text-center max-w-xs">
-                            <MessageCircle className="mx-auto mb-2 h-10 w-10 opacity-20" />
-                            <p>Nema poruka. Budi prvi koji će započeti razgovor!</p>
+                            <MessageCircle className="mx-auto h-14 w-14 text-slate-300 dark:text-slate-600 mb-4" />
+                            <p className="text-sm text-slate-500 dark:text-slate-400">
+                              Nema poruka. Budi prvi koji će započeti razgovor!
+                            </p>
                           </div>
                         </div>
                       ) : (
                         selectedConversation.messages.map((msg) => (
-                          <div
+                          <motion.div
                             key={msg.id}
-                            className={`flex gap-3 ${
-                              msg.userId === currentUser?.id ? "flex-row-reverse" : ""
-                            }`}
+                            initial={{ opacity: 0, y: 8 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            className={`flex gap-3 ${msg.userId === currentUser?.id ? "flex-row-reverse" : ""}`}
                           >
-                            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-base flex-shrink-0 text-white">
+                            <div
+                              className={`w-9 h-9 rounded-full flex items-center justify-center text-white font-semibold shrink-0 ${
+                                msg.userId === currentUser?.id
+                                  ? "bg-gradient-to-br from-teal-500 to-cyan-600"
+                                  : "bg-gradient-to-br from-slate-400 to-slate-600"
+                              }`}
+                            >
                               {msg.username?.[0]?.toUpperCase() || "U"}
                             </div>
-                            <div className={`max-w-xs md:max-w-sm ${msg.userId === currentUser?.id ? "text-right" : ""}`}>
-                              <div className="flex items-center gap-2 mb-0.5 text-[11px] text-muted-foreground">
-                                <span className="font-medium text-foreground">{msg.username}</span>
-                                <span>
+                            <div
+                              className={`max-w-[85%] md:max-w-sm ${msg.userId === currentUser?.id ? "items-end" : "items-start"} flex flex-col`}
+                            >
+                              <div
+                                className={`flex items-center gap-2 mb-1 ${msg.userId === currentUser?.id ? "flex-row-reverse" : ""}`}
+                              >
+                                <span className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+                                  {msg.username}
+                                </span>
+                                <span className="text-[11px] text-slate-400 dark:text-slate-500">
                                   {msg.timestamp.toLocaleTimeString("hr-HR", {
                                     hour: "2-digit",
                                     minute: "2-digit",
@@ -591,118 +489,169 @@ const Forum = () => {
                                 </span>
                               </div>
                               <div
-                                className={`px-3 py-2 rounded-lg text-sm ${
+                                className={`px-4 py-2.5 rounded-2xl text-sm ${
                                   msg.userId === currentUser?.id
-                                    ? "bg-primary text-primary-foreground rounded-br-none"
-                                    : "bg-muted text-foreground rounded-bl-none"
+                                    ? "bg-teal-500 text-white rounded-br-md"
+                                    : "bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-slate-100 rounded-bl-md"
                                 }`}
                               >
-                                <p className="break-words">{msg.text}</p>
+                                <p className="break-words whitespace-pre-wrap">{msg.text}</p>
                               </div>
-                              <button
-                                onClick={() => handleLikeMessage(msg.id)}
-                                className={`mt-1 inline-flex items-center gap-1 text-[11px] text-muted-foreground hover:text-red-500 ${
-                                  msg.userId === currentUser?.id ? "flex-row-reverse" : ""
-                                }`}
-                              >
-                                <Heart
-                                  className="h-3.5 w-3.5"
-                                  fill={msg.likes > 0 ? "currentColor" : "none"}
-                                />
-                                {msg.likes > 0 && <span>{msg.likes}</span>}
-                              </button>
+                              {isAuthenticated && (
+                                <button
+                                  onClick={() => handleLikeMessage(msg.id)}
+                                  className={`mt-1.5 inline-flex items-center gap-1.5 text-xs transition-colors ${
+                                    msg.userLiked
+                                      ? "text-teal-600 dark:text-teal-400"
+                                      : "text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
+                                  } ${msg.userId === currentUser?.id ? "self-end" : ""}`}
+                                >
+                                  <ThumbsUp
+                                    className={`h-3.5 w-3.5 ${msg.userLiked ? "fill-current" : ""}`}
+                                  />
+                                  {msg.likeCount > 0 && <span>{msg.likeCount}</span>}
+                                </button>
+                              )}
                             </div>
-                          </div>
+                          </motion.div>
                         ))
                       )}
                       <div ref={messagesEndRef} />
                     </div>
 
-                    <form
-                      onSubmit={handleSendMessage}
-                      className="p-3 border-t bg-muted/40 flex items-center gap-2"
-                    >
-                      <input
-                        type="text"
-                        value={messageInput}
-                        onChange={(e) => setMessageInput(e.target.value)}
-                        placeholder="Upiši poruku..."
-                        className="flex-1 px-3 py-2 rounded-md border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
-                      />
-                      <button
-                        type="submit"
-                        disabled={!messageInput.trim()}
-                        className="inline-flex items-center justify-center gap-1 rounded-md bg-primary text-primary-foreground px-3 py-2 text-xs font-medium shadow disabled:opacity-50 disabled:cursor-not-allowed"
+                    {isAuthenticated ? (
+                      <form
+                        onSubmit={handleSendMessage}
+                        className="p-4 border-t border-slate-200 dark:border-slate-700 bg-slate-50/80 dark:bg-slate-900/80 shrink-0"
                       >
-                        <Send className="h-3.5 w-3.5" />
-                      </button>
-                    </form>
-                  </>
+                        <div className="flex items-center gap-3">
+                          <input
+                            type="text"
+                            value={messageInput}
+                            onChange={(e) => setMessageInput(e.target.value)}
+                            placeholder="Upiši poruku..."
+                            className="flex-1 px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500/50 focus:border-teal-500 text-sm"
+                          />
+                          <button
+                            type="submit"
+                            disabled={!messageInput.trim() || sendingMessage}
+                            className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-teal-600 hover:bg-teal-700 text-white shadow-md disabled:opacity-50 disabled:cursor-not-allowed transition-all hover:shadow-lg active:scale-95"
+                          >
+                            <Send className="h-5 w-5" />
+                          </button>
+                        </div>
+                      </form>
+                    ) : (
+                      <div className="p-4 border-t border-slate-200 dark:border-slate-700 bg-slate-50/80 dark:bg-slate-900/80 flex items-center justify-between gap-4">
+                        <p className="text-sm text-slate-600 dark:text-slate-400">
+                          Prijavi se za slanje poruka
+                        </p>
+                        <Link
+                          to="/prijava"
+                          className="shrink-0 inline-flex items-center gap-2 rounded-xl bg-teal-600 hover:bg-teal-700 text-white px-4 py-2.5 text-sm font-semibold transition-colors"
+                        >
+                          <LogIn className="h-4 w-4" />
+                          Prijavi se
+                        </Link>
+                      </div>
+                    )}
+                  </motion.div>
                 ) : (
-                  <div className="flex-1 hidden md:flex items-center justify-center text-center text-sm text-muted-foreground">
-                    <div>
-                      <MessageCircle className="mx-auto mb-3 h-10 w-10 opacity-30" />
-                      <p className="font-medium mb-1">Odaberi razgovor</p>
-                      <p>ili kreiraj novi kako bi započeo raspravu.</p>
+                  <motion.div
+                    key="empty"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    className="flex-1 hidden md:flex items-center justify-center"
+                  >
+                    <div className="text-center">
+                      <MessageCircle className="mx-auto h-16 w-16 text-slate-300 dark:text-slate-600 mb-4" />
+                      <p className="text-base font-medium text-slate-600 dark:text-slate-400">
+                        Odaberi razgovor
+                      </p>
+                      <p className="text-sm text-slate-500 dark:text-slate-500 mt-1">
+                        {isAuthenticated ? "ili kreiraj novi za početak." : "kako bi pročitao poruke."}
+                      </p>
                     </div>
-                  </div>
+                  </motion.div>
                 )}
-              </div>
+              </AnimatePresence>
             </div>
           </div>
-        )}
+        </motion.div>
 
         {/* Modal za novi razgovor */}
-        {showNewConversationModal && (
-          <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-            <div className="bg-card rounded-2xl shadow-2xl max-w-md w-full p-6 border">
-              <h3 className="text-lg font-semibold mb-1">Kreiraj novi razgovor</h3>
-              <p className="text-sm text-muted-foreground mb-4">
-                Postavi pitanje ili otvori temu o maturi, fakultetima ili studentskom životu.
-              </p>
-              <form onSubmit={handleCreateConversation} className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-foreground mb-1">Naziv</label>
-                  <input
-                    type="text"
-                    value={newConvTitle}
-                    onChange={(e) => setNewConvTitle(e.target.value)}
-                    placeholder="Koji fakultet za IT karijeru?"
-                    className="w-full px-3 py-2 rounded-md border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-foreground mb-1">Opis (opcionalno)</label>
-                  <textarea
-                    value={newConvDescription}
-                    onChange={(e) => setNewConvDescription(e.target.value)}
-                    placeholder="Ukratko opiši o čemu želiš razgovarati..."
-                    className="w-full px-3 py-2 rounded-md border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 resize-none h-24"
-                  />
-                </div>
-                <div className="flex gap-3 pt-2">
-                  <button
-                    type="submit"
-                    className="flex-1 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-semibold hover:bg-primary/90"
-                  >
-                    Kreiraj
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setShowNewConversationModal(false);
-                      setNewConvTitle("");
-                      setNewConvDescription("");
-                    }}
-                    className="flex-1 py-2 rounded-lg bg-muted text-sm font-semibold hover:bg-muted/80"
-                  >
-                    Odustani
-                  </button>
-                </div>
-              </form>
-            </div>
-          </div>
-        )}
+        <AnimatePresence>
+          {showNewConversationModal && isAuthenticated && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setShowNewConversationModal(false)}
+              className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50"
+            >
+              <motion.div
+                initial={{ scale: 0.95, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.95, opacity: 0 }}
+                onClick={(e) => e.stopPropagation()}
+                className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl max-w-md w-full p-6 border border-slate-200 dark:border-slate-700"
+              >
+                <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100 mb-1">
+                  Novi razgovor
+                </h3>
+                <p className="text-sm text-slate-500 dark:text-slate-400 mb-5">
+                  Postavi pitanje ili otvori temu o maturi, fakultetima ili studentskom životu.
+                </p>
+                <form onSubmit={handleCreateConversation} className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
+                      Naziv
+                    </label>
+                    <input
+                      type="text"
+                      value={newConvTitle}
+                      onChange={(e) => setNewConvTitle(e.target.value)}
+                      placeholder="npr. Koji fakultet za IT?"
+                      className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-teal-500/50"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
+                      Opis (opcionalno)
+                    </label>
+                    <textarea
+                      value={newConvDescription}
+                      onChange={(e) => setNewConvDescription(e.target.value)}
+                      placeholder="Ukratko opiši temu..."
+                      rows={3}
+                      className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-teal-500/50 resize-none"
+                    />
+                  </div>
+                  <div className="flex gap-3 pt-2">
+                    <button
+                      type="submit"
+                      className="flex-1 py-2.5 rounded-xl bg-teal-600 hover:bg-teal-700 text-white text-sm font-semibold transition-colors"
+                    >
+                      Kreiraj
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setShowNewConversationModal(false);
+                        setNewConvTitle("");
+                        setNewConvDescription("");
+                      }}
+                      className="flex-1 py-2.5 rounded-xl bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 text-slate-800 dark:text-slate-200 text-sm font-semibold transition-colors"
+                    >
+                      Odustani
+                    </button>
+                  </div>
+                </form>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </section>
     </Layout>
   );

@@ -1,0 +1,35 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Grad {
+  id        Int        @id @default(autoincrement())
+  naziv     String     @unique
+  fakulteti Fakultet[]
+}
+
+model Fakultet {
+  id           Int      @id @default(autoincrement())
+  naziv        String
+  grad         String
+  sveuciliste String?
+  web_stranica String?
+  opis        String?
+  gradId      Int?
+  gradRel     Grad?     @relation(fields: [gradId], references: [id])
+  studiji     Studij[]
+}
+
+model Studij {
+  id                Int      @id @default(autoincrement())
+  naziv_studija     String
+  razina            String   // preddiplomski / diplomski / stručni
+  fakultet_id       Int
+  bodovni_prag_2025 Float?   // bodovni prag za 2025.
+  fakultet          Fakultet @relation(fields: [fakultet_id], references: [id], onDelete: Cascade)
+}

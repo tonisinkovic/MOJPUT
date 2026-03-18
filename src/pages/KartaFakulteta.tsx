@@ -1,10 +1,10 @@
 import Layout from "@/components/Layout";
 import { motion } from "framer-motion";
-import { MapPin, Search, ExternalLink, X, University as UniversityIcon } from "lucide-react";
+import { MapPin, Search, X, ExternalLink, Filter, ChevronDown, ChevronUp } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { useMemo, useState } from "react";
-import { croatianUniversities } from "@/data/universities";
+import { facultyInstitutions, getCutoffForYear, getLatestCutoffYear, type FacultyProgram } from "@/data/faculties";
 import {
   Select,
   SelectContent,
@@ -14,45 +14,43 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Button } from "@/components/ui/button";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 type FacultyItem = {
+  id: string;
   name: string;
   city: string;
-  university: string;
-  type: string;
-  url: string;
-  levels?: string[];
+  institutionType: "Sveučilište" | "Veleučilište" | "Ostalo";
+  provider?: string;
+  programs: FacultyProgram[];
 };
 
-// Izravnaj sve programe i ukloni duplikate po (naziv + grad)
-const faculties: FacultyItem[] = (() => {
-  const flat = croatianUniversities.flatMap((u) =>
-    u.faculties.map((f) => ({
-      name: f.name,
-      city: u.city,
-      university: u.name,
-      type: u.type,
-      url: f.url,
-      levels: f.levels,
-    })),
-  );
-
-  const byKey = new Map<string, FacultyItem>();
-
-  for (const f of flat) {
-    const key = `${f.name}__${f.city}`;
-    if (!byKey.has(key)) {
-      byKey.set(key, f);
-    }
-  }
-
-  return Array.from(byKey.values());
-})();
+const faculties: FacultyItem[] = facultyInstitutions.map((x) => ({
+  id: x.id,
+  name: x.name,
+  city: x.city,
+  institutionType: x.institutionType,
+  provider: x.provider,
+  programs: x.programs,
+}));
 
 const KartaFakulteta = () => {
   const [search, setSearch] = useState("");
-  const [filterType, setFilterType] = useState<string | null>(null);
+  const [filterType, setFilterType] = useState<FacultyItem["institutionType"] | null>(null);
   const [filterCity, setFilterCity] = useState<string | null>(null);
+  const [selectedFacultyId, setSelectedFacultyId] = useState<string | null>(null);
   const [showFerModal, setShowFerModal] = useState(false);
   const [showEfzgModal, setShowEfzgModal] = useState(false);
   const [showFsbModal, setShowFsbModal] = useState(false);
@@ -61,277 +59,346 @@ const KartaFakulteta = () => {
   const [showPravoModal, setShowPravoModal] = useState(false);
 
   const types = useMemo(() => {
-    const order = [
-      "Javno sveučilište",
-      "Privatno sveučilište",
-      "Javno veleučilište",
-      "Privatno veleučilište",
-    ];
-    const set = new Set(faculties.map((f) => f.type));
+    const order: FacultyItem["institutionType"][] = ["Sveučilište", "Veleučilište", "Ostalo"];
+    const set = new Set(faculties.map((f) => f.institutionType));
     return order.filter((t) => set.has(t));
   }, []);
   const cities = useMemo(() => [...new Set(faculties.map((f) => f.city))].sort(), []);
 
-  const filtered = faculties.filter((f) => {
-    const matchSearch =
-      f.name.toLowerCase().includes(search.toLowerCase()) ||
-      f.city.toLowerCase().includes(search.toLowerCase());
-    const typeNormalized = (t: string) => t.trim().toLowerCase();
-    const matchType =
-      !filterType || typeNormalized(f.type) === typeNormalized(filterType);
-    const matchCity =
-      !filterCity ||
-      f.city.trim().toLowerCase() === filterCity.trim().toLowerCase();
-    return matchSearch && matchType && matchCity;
-  });
+  const filtered = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    return faculties.filter((f) => {
+      const matchSearch =
+        !q ||
+        f.name.toLowerCase().includes(q) ||
+        f.city.toLowerCase().includes(q) ||
+        f.programs.some((p) => p.name.toLowerCase().includes(q));
+      const matchType = !filterType || f.institutionType === filterType;
+      const matchCity = !filterCity || f.city.trim().toLowerCase() === filterCity.trim().toLowerCase();
+      return matchSearch && matchType && matchCity;
+    });
+  }, [filterCity, filterType, search]);
+
+  const selectedFaculty = useMemo(
+    () => (selectedFacultyId ? faculties.find((f) => f.id === selectedFacultyId) ?? null : null),
+    [selectedFacultyId],
+  );
+
+  const getTopPrograms = (programs: FacultyProgram[], max = 5) => {
+    const scored = programs
+      .map((p) => {
+        const latestYear = getLatestCutoffYear(p.cutoffByYear);
+        const cutoff = getCutoffForYear(p.cutoffByYear, latestYear);
+        return { p, latestYear, cutoff };
+      })
+      .sort((a, b) => {
+        const av = a.cutoff ?? -1;
+        const bv = b.cutoff ?? -1;
+        if (bv !== av) return bv - av;
+        return a.p.name.localeCompare(b.p.name, "hr");
+      });
+    return scored.slice(0, max);
+  };
+
+  const [filtersOpen, setFiltersOpen] = useState(true); // open by default; collapsible on mobile
 
   return (
     <Layout>
-      <section className="container py-12">
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="mb-10">
-          <h1 className="text-3xl md:text-4xl font-bold mb-3">
+      <section className="container py-8 md:py-12">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mb-8 md:mb-10"
+        >
+          <h1 className="text-3xl md:text-4xl font-bold mb-2 tracking-tight">
             <span className="text-gradient">Karta</span> fakulteta
           </h1>
-          <p className="text-muted-foreground text-lg">
+          <p className="text-muted-foreground text-base md:text-lg max-w-2xl">
             Istraži sve fakultete u Hrvatskoj i pronađi onaj pravi za tebe.
           </p>
         </motion.div>
 
-        {/* Google karta s markerima fakulteta */}
-        <motion.div
-          initial={{ opacity: 0, scale: 0.98 }}
-          animate={{ opacity: 1, scale: 1 }}
-          className="w-full rounded-2xl overflow-hidden border bg-muted mb-10"
-        >
-          <div className="h-64 md:h-80 w-full">
-            <iframe
-              title="Karta fakulteta – Google My Maps"
-              src="https://www.google.com/maps/d/embed?mid=1hfnNynhIABrOthygSpdz0RnzAtJdHAU"
-              className="h-full w-full border-0"
-              loading="lazy"
-              referrerPolicy="no-referrer-when-downgrade"
-              allowFullScreen
-            />
-          </div>
-          <p className="text-xs text-muted-foreground px-4 py-2 border-t border-border">
-            Na karti su prikazani markeri fakulteta. Koristi odabir grada i fakulteta ispod za pretragu liste.{" "}
-            <a
-              href="https://www.google.com/maps/d/viewer?mid=1hfnNynhIABrOthygSpdz0RnzAtJdHAU"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-primary hover:underline"
+        <div className="flex flex-col lg:flex-row gap-6 lg:gap-8">
+          {/* Left: Filter sidebar - sticky on desktop */}
+          <aside className="lg:w-72 shrink-0 lg:sticky lg:top-24 lg:self-start">
+            <Collapsible open={filtersOpen} onOpenChange={setFiltersOpen}>
+              <div className="rounded-2xl border-2 bg-card shadow-card overflow-hidden">
+                <CollapsibleTrigger asChild className="lg:hidden w-full">
+                  <button
+                    type="button"
+                    className="flex items-center justify-between w-full px-5 py-4 text-left font-semibold hover:bg-muted/50 transition-colors"
+                  >
+                    <span className="flex items-center gap-2">
+                      <Filter className="w-5 h-5 text-primary" />
+                      Filtriraj
+                    </span>
+                    {filtersOpen ? (
+                      <ChevronUp className="w-5 h-5 text-muted-foreground" />
+                    ) : (
+                      <ChevronDown className="w-5 h-5 text-muted-foreground" />
+                    )}
+                  </button>
+                </CollapsibleTrigger>
+                <CollapsibleContent>
+                  <div className="p-5 space-y-5 border-t border-border lg:border-t-0">
+                    <div className="hidden lg:block">
+                      <h2 className="flex items-center gap-2 font-semibold text-lg">
+                        <Filter className="w-5 h-5 text-primary" />
+                        Filtriraj
+                      </h2>
+                      <p className="text-sm text-muted-foreground mt-1">
+                        Suzi pretragu po gradu i vrsti
+                      </p>
+                    </div>
+
+                    <div className="relative">
+                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                      <Input
+                        placeholder="Pretraži fakultete..."
+                        value={search}
+                        onChange={(e) => setSearch(e.target.value)}
+                        className="pl-10 rounded-xl border-2 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                      />
+                    </div>
+
+                    <div className="space-y-4">
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium text-foreground block">
+                          Grad
+                        </label>
+                        <Select
+                          value={filterCity ?? "svi"}
+                          onValueChange={(v) => setFilterCity(v === "svi" ? null : v)}
+                        >
+                          <SelectTrigger className="w-full rounded-xl border-2 hover:border-primary/30 focus:ring-2 focus:ring-primary/20 transition-all">
+                            <SelectValue placeholder="Svi gradovi" />
+                          </SelectTrigger>
+                          <SelectContent className="max-h-[280px] rounded-xl">
+                            <SelectItem value="svi">Svi gradovi</SelectItem>
+                            {cities.map((c) => (
+                              <SelectItem key={c} value={c}>
+                                {c}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium text-foreground block">
+                          Vrsta institucije
+                        </label>
+                        <Select
+                          value={filterType ?? "svi"}
+                          onValueChange={(v) =>
+                            setFilterType(v === "svi" ? null : (v as FacultyItem["institutionType"]))
+                          }
+                        >
+                          <SelectTrigger className="w-full rounded-xl border-2 hover:border-primary/30 focus:ring-2 focus:ring-primary/20 transition-all">
+                            <SelectValue placeholder="Sve vrste" />
+                          </SelectTrigger>
+                          <SelectContent className="rounded-xl">
+                            <SelectItem value="svi">Sve vrste</SelectItem>
+                            {types.map((t) => (
+                              <SelectItem key={t} value={t}>
+                                {t}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium text-foreground block">
+                          Fakultet / ustanova
+                        </label>
+                        <Select
+                          value={
+                            search &&
+                            filterCity &&
+                            faculties.some((f) => f.name === search && f.city === filterCity)
+                              ? `${search}__${filterCity}`
+                              : "svi"
+                          }
+                          onValueChange={(v) => {
+                            if (v === "svi") {
+                              setSearch("");
+                              setFilterCity(null);
+                              return;
+                            }
+                            const [name, city] = v.split("__");
+                            if (name && city) {
+                              setSearch(name);
+                              setFilterCity(city);
+                            }
+                          }}
+                        >
+                          <SelectTrigger className="w-full rounded-xl border-2 hover:border-primary/30 focus:ring-2 focus:ring-primary/20 transition-all">
+                            <SelectValue placeholder="Svi fakulteti" />
+                          </SelectTrigger>
+                          <SelectContent className="max-h-[280px] rounded-xl">
+                            <SelectItem value="svi">Svi fakulteti</SelectItem>
+                            {cities.map((city) => {
+                              const inCity = faculties.filter((f) => f.city === city);
+                              if (inCity.length === 0) return null;
+                              return (
+                                <SelectGroup key={city}>
+                                  <SelectLabel>{city}</SelectLabel>
+                                  {inCity.map((f) => (
+                                    <SelectItem
+                                      key={`${f.name}__${f.city}`}
+                                      value={`${f.name}__${f.city}`}
+                                    >
+                                      {f.name}
+                                    </SelectItem>
+                                  ))}
+                                </SelectGroup>
+                              );
+                            })}
+                          </SelectContent>
+                        </Select>
+                        {(filterCity || search) && (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setSearch("");
+                              setFilterCity(null);
+                            }}
+                            className="text-xs text-primary hover:underline font-medium"
+                          >
+                            Poništi pretragu
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </CollapsibleContent>
+              </div>
+            </Collapsible>
+          </aside>
+
+          {/* Main: Map + List */}
+          <div className="flex-1 min-w-0 flex flex-col gap-6">
+            {/* Map card */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.98 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="rounded-2xl overflow-hidden border-2 bg-card shadow-card"
             >
-              Otvori punu kartu (Google My Maps)
-            </a>
-          </p>
-          {/* Pretraži s karte – odabir grada ili fakulteta filtrira listu ispod */}
-          <div className="p-4 bg-muted/60 border-t border-border">
-            <p className="text-sm font-medium text-foreground mb-3">Pretraži fakultete s karte</p>
-            <div className="flex flex-col sm:flex-row gap-3">
-              <div className="flex-1 min-w-0">
-                <label className="text-xs text-muted-foreground mb-1 block">Grad</label>
-                <Select
-                  value={filterCity ?? "svi"}
-                  onValueChange={(v) => setFilterCity(v === "svi" ? null : v)}
-                >
-                  <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Svi gradovi" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="svi">Svi gradovi</SelectItem>
-                    {cities.map((c) => (
-                      <SelectItem key={c} value={c}>
-                        {c}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+              <div className="relative">
+                <div className="absolute inset-0 z-10 flex items-end pointer-events-none">
+                  <div className="w-full bg-gradient-to-t from-black/70 via-black/20 to-transparent px-5 py-6">
+                    <h2 className="text-xl md:text-2xl font-bold text-white drop-shadow-lg">
+                      Istraži fakultete na karti
+                    </h2>
+                    <p className="text-sm text-white/90 mt-0.5">
+                      Markerima su označeni svi fakulteti u Hrvatskoj
+                    </p>
+                  </div>
+                </div>
+                <div className="h-64 md:h-80 w-full">
+                  <iframe
+                    title="Karta fakulteta – Google My Maps"
+                    src="https://www.google.com/maps/d/embed?mid=1hfnNynhIABrOthygSpdz0RnzAtJdHAU"
+                    className="h-full w-full border-0"
+                    loading="lazy"
+                    referrerPolicy="no-referrer-when-downgrade"
+                    allowFullScreen
+                  />
+                </div>
               </div>
-              <div className="flex-1 min-w-0">
-                <label className="text-xs text-muted-foreground mb-1 block">Fakultet / ustanova</label>
-                <Select
-                  value={
-                    search && filterCity && faculties.some((f) => f.name === search && f.city === filterCity)
-                      ? `${search}__${filterCity}`
-                      : "svi"
-                  }
-                  onValueChange={(v) => {
-                    if (v === "svi") {
-                      setSearch("");
-                      setFilterCity(null);
-                      return;
-                    }
-                    const [name, city] = v.split("__");
-                    if (name && city) {
-                      setSearch(name);
-                      setFilterCity(city);
-                    }
-                  }}
-                >
-                  <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Svi fakulteti" />
-                  </SelectTrigger>
-                  <SelectContent className="max-h-[280px]">
-                    <SelectItem value="svi">Svi fakulteti</SelectItem>
-                    {cities.map((city) => {
-                      const inCity = faculties.filter((f) => f.city === city);
-                      if (inCity.length === 0) return null;
-                      return (
-                        <SelectGroup key={city}>
-                          <SelectLabel>{city}</SelectLabel>
-                          {inCity.map((f) => (
-                            <SelectItem key={`${f.name}__${f.city}`} value={`${f.name}__${f.city}`}>
-                              {f.name}
-                            </SelectItem>
-                          ))}
-                        </SelectGroup>
-                      );
-                    })}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-            {(filterCity || search) && (
-              <button
-                type="button"
-                onClick={() => {
-                  setSearch("");
-                  setFilterCity(null);
-                }}
-                className="mt-2 text-xs text-primary hover:underline"
-              >
-                Poništi pretragu s karte
-              </button>
-            )}
-          </div>
-        </motion.div>
-
-        {/* Search & filters */}
-        <div className="flex flex-col gap-6 mb-8">
-          <div className="relative w-full max-w-md">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-            <Input
-              placeholder="Pretraži fakultete..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="pl-10"
-            />
-          </div>
-
-          <div className="flex flex-col sm:flex-row gap-6 sm:gap-8">
-            {/* Tip sveučilišta */}
-            <div className="flex flex-col gap-2 min-w-0">
-              <span className="text-sm font-semibold text-foreground">Tip sveučilišta</span>
-              <div className="flex flex-wrap gap-2">
-                <Badge
-                  variant={!filterType ? "default" : "outline"}
-                  className={`cursor-pointer ${!filterType ? "gradient-hero text-primary-foreground border-0" : ""}`}
-                  onClick={() => setFilterType(null)}
-                >
-                  Svi tipovi
-                </Badge>
-                {types.map((t) => (
-                  <Badge
-                    key={t}
-                    variant={filterType === t ? "default" : "outline"}
-                    className={`cursor-pointer ${filterType === t ? "gradient-hero text-primary-foreground border-0" : ""}`}
-                    onClick={() => setFilterType(t)}
+              <div className="px-4 py-3 border-t border-border bg-muted/30">
+                <p className="text-xs text-muted-foreground">
+                  Koristi odabir grada i fakulteta u filterima za pretragu liste.{" "}
+                  <a
+                    href="https://www.google.com/maps/d/viewer?mid=1hfnNynhIABrOthygSpdz0RnzAtJdHAU"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-primary hover:underline inline-flex items-center gap-1 font-medium"
                   >
-                    {t}
-                  </Badge>
-                ))}
+                    Otvori punu kartu (Google My Maps)
+                    <ExternalLink className="h-3 w-3" />
+                  </a>
+                </p>
               </div>
-            </div>
+            </motion.div>
 
-            {/* Grad */}
-            <div className="flex flex-col gap-2 min-w-0 sm:border-l sm:border-border sm:pl-8">
-              <span className="text-sm font-semibold text-foreground">Grad</span>
-              <div className="flex flex-wrap gap-2">
-                <Badge
-                  variant={!filterCity ? "default" : "outline"}
-                  className={`cursor-pointer ${!filterCity ? "gradient-hero text-primary-foreground border-0" : ""}`}
-                  onClick={() => setFilterCity(null)}
-                >
-                  Svi gradovi
-                </Badge>
-                {cities.map((c) => (
-                  <Badge
-                    key={c}
-                    variant={filterCity === c ? "default" : "outline"}
-                    className={`cursor-pointer ${filterCity === c ? "gradient-hero text-primary-foreground border-0" : ""}`}
-                    onClick={() => setFilterCity(c)}
-                  >
-                    {c}
-                  </Badge>
-                ))}
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Faculty list */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {/* Faculty list */}
+            <div className="flex-1 min-h-0">
+              <h3 className="text-lg font-semibold mb-4">
+                Fakulteti
+                <span className="text-muted-foreground font-normal ml-2">
+                  ({filtered.length} rezultata)
+                </span>
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 md:gap-5">
           {filtered.map((faculty, i) => (
             <motion.div
-              key={faculty.name + faculty.city}
+              key={faculty.id}
               initial={{ opacity: 0, y: 16 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              transition={{ delay: i * 0.05 }}
-              className="p-5 rounded-xl bg-card shadow-card border hover:shadow-card-hover hover:-translate-y-0.5 transition-all cursor-pointer group"
-              onClick={() => {
-                if (faculty.name.includes("elektrotehnike i računarstva")) {
-                  setShowFerModal(true);
-                }
-                if (faculty.name === "Ekonomski fakultet" && faculty.city === "Zagreb") {
-                  setShowEfzgModal(true);
-                }
-                if (faculty.name === "Fakultet strojarstva i brodogradnje") {
-                  setShowFsbModal(true);
-                }
-                if (faculty.name === "Građevinski fakultet") {
-                  setShowGradModal(true);
-                }
-                if (faculty.name === "Medicinski fakultet") {
-                  setShowMefModal(true);
-                }
-                if (faculty.name === "Pravni fakultet") {
-                  setShowPravoModal(true);
-                }
-              }}
+              transition={{ delay: Math.min(i * 0.03, 0.3) }}
+              className="group p-5 rounded-2xl bg-card border-2 shadow-card hover:shadow-card-hover hover:border-primary/20 transition-all duration-300 flex flex-col cursor-pointer hover:-translate-y-0.5"
+              onClick={() => setSelectedFacultyId(faculty.id)}
             >
-              <div className="flex items-start justify-between mb-3">
-                <div className="pr-2">
-                  <h3 className="font-semibold text-sm leading-tight">{faculty.name}</h3>
-                  <p className="mt-1 text-[11px] text-muted-foreground flex items-center gap-1">
-                    <UniversityIcon className="w-3 h-3" />
-                    <span>{faculty.university}</span>
-                  </p>
-                </div>
-                <ExternalLink className="w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors shrink-0 mt-0.5" />
-              </div>
-              <div className="flex items-center gap-3">
-                <span className="flex items-center gap-1 text-xs text-muted-foreground">
-                  <MapPin className="w-3 h-3" /> {faculty.city}
-                </span>
-                <Badge variant="secondary" className="text-xs">
-                  {faculty.type}
-                  {faculty.levels && faculty.levels.length > 0 && (
-                    <span className="ml-1 text-[10px] opacity-80">
-                      ({faculty.levels.join(", ")})
-                    </span>
+              <div className="flex items-start justify-between gap-3 mb-3">
+                <div className="min-w-0 flex-1">
+                  <h3 className="font-semibold text-base leading-snug group-hover:text-primary transition-colors">
+                    {faculty.name}
+                  </h3>
+                  {faculty.provider && faculty.provider !== faculty.name && (
+                    <p className="mt-0.5 text-xs text-muted-foreground truncate">{faculty.provider}</p>
                   )}
-                </Badge>
-                <a
-                  href={faculty.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="ml-auto text-xs text-primary hover:underline flex items-center gap-1"
-                  onClick={(e) => e.stopPropagation()}
+                </div>
+                <Badge
+                  variant="secondary"
+                  className="shrink-0 rounded-lg px-2.5 py-0.5 text-xs font-medium"
                 >
-                  Posjeti stranicu
-                  <ExternalLink className="w-3 h-3" />
-                </a>
+                  {faculty.institutionType}
+                </Badge>
+              </div>
+
+              <div className="flex items-center gap-2 text-sm text-muted-foreground mb-4">
+                <MapPin className="w-4 h-4 shrink-0 text-primary/70" />
+                <span>{faculty.city}</span>
+              </div>
+
+              <div className="flex-1 min-h-0">
+                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2">
+                  Studiji (top 5)
+                </p>
+                <ul className="space-y-2 text-sm">
+                  {getTopPrograms(faculty.programs, 5).slice(0, 5).map(({ p, latestYear, cutoff }) => (
+                    <li key={p.name} className="flex items-start justify-between gap-3">
+                      <span className="line-clamp-2 text-foreground/90">{p.name}</span>
+                      {cutoff !== null && latestYear ? (
+                        <Badge variant="outline" className="shrink-0 text-xs tabular-nums rounded-md">
+                          {cutoff.toFixed(1)}
+                        </Badge>
+                      ) : (
+                        <span className="shrink-0 text-xs text-muted-foreground">—</span>
+                      )}
+                    </li>
+                  ))}
+                  {faculty.programs.length === 0 && (
+                    <li className="text-xs text-muted-foreground">Nema podataka o programima.</li>
+                  )}
+                </ul>
+              </div>
+
+              <div className="pt-4 mt-auto">
+                <Button
+                  type="button"
+                  variant="secondary"
+                  className="w-full rounded-xl font-medium hover:bg-primary hover:text-primary-foreground transition-colors"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setSelectedFacultyId(faculty.id);
+                  }}
+                >
+                  Pogledaj studije
+                </Button>
               </div>
             </motion.div>
           ))}
@@ -342,6 +409,72 @@ const KartaFakulteta = () => {
             <p className="text-lg">Nema rezultata za zadanu pretragu.</p>
           </div>
         )}
+        </div>
+        </div>
+        </div>
+
+        <Dialog
+          open={!!selectedFaculty}
+          onOpenChange={(open) => {
+            if (!open) setSelectedFacultyId(null);
+          }}
+        >
+          <DialogContent className="max-w-3xl max-h-[85vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle className="leading-snug">{selectedFaculty?.name ?? "Studiji"}</DialogTitle>
+              <DialogDescription>
+                <span className="inline-flex flex-wrap gap-2 items-center">
+                  {selectedFaculty?.city ? (
+                    <span className="inline-flex items-center gap-1">
+                      <MapPin className="w-4 h-4" />
+                      {selectedFaculty.city}
+                    </span>
+                  ) : null}
+                  {selectedFaculty?.institutionType ? (
+                    <Badge variant="secondary">{selectedFaculty.institutionType}</Badge>
+                  ) : null}
+                </span>
+              </DialogDescription>
+            </DialogHeader>
+
+            {selectedFaculty?.provider && selectedFaculty.provider !== selectedFaculty.name && (
+              <div className="text-sm text-muted-foreground">
+                <span className="font-medium text-foreground">Institucija:</span> {selectedFaculty.provider}
+              </div>
+            )}
+
+            <div className="mt-2 space-y-3">
+              <h3 className="text-sm font-semibold">Studijski programi i bodovni pragovi</h3>
+              <div className="rounded-xl border overflow-hidden">
+                <div className="grid grid-cols-12 bg-muted/60 px-4 py-2 text-xs text-muted-foreground">
+                  <div className="col-span-8 sm:col-span-9">Program</div>
+                  <div className="col-span-4 sm:col-span-3 text-right">Prag (zadnja godina)</div>
+                </div>
+                <div className="divide-y">
+                  {(selectedFaculty?.programs ?? []).length === 0 ? (
+                    <div className="px-4 py-4 text-sm text-muted-foreground">Nema dostupnih podataka o programima.</div>
+                  ) : (
+                    (selectedFaculty?.programs ?? [])
+                      .slice()
+                      .sort((a, b) => a.name.localeCompare(b.name, "hr"))
+                      .map((p) => {
+                        const latestYear = getLatestCutoffYear(p.cutoffByYear);
+                        const cutoff = getCutoffForYear(p.cutoffByYear, latestYear);
+                        return (
+                          <div key={p.name} className="grid grid-cols-12 px-4 py-3 text-sm">
+                            <div className="col-span-8 sm:col-span-9 pr-3">{p.name}</div>
+                            <div className="col-span-4 sm:col-span-3 text-right tabular-nums">
+                              {cutoff !== null && latestYear ? `${cutoff.toFixed(1)} (${latestYear})` : "—"}
+                            </div>
+                          </div>
+                        );
+                      })
+                  )}
+                </div>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
 
         {showFerModal && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4">

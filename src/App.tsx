@@ -12,6 +12,7 @@ import VideoPage from "./pages/VideoPage";
 import Forum from "./pages/Forum";
 import Kalendar from "./pages/Kalendar";
 import Roditelji from "./pages/Roditelji";
+import RoditeljiPlaceholder from "./pages/RoditeljiPlaceholder";
 import Kontakt from "./pages/Kontakt";
 import UvjetiKoristenja from "./pages/UvjetiKoristenja";
 import Chatbot from "./pages/Chatbot";
@@ -37,6 +38,9 @@ const App = () => (
           <Route path="/forum" element={<Forum />} />
           <Route path="/kalendar" element={<Kalendar />} />
           <Route path="/roditelji" element={<Roditelji />} />
+          <Route path="/roditelji/vodic" element={<RoditeljiPlaceholder title="Vodič za roditelje" />} />
+          <Route path="/roditelji/mentalno-zdravlje" element={<RoditeljiPlaceholder title="Mentalno zdravlje" />} />
+          <Route path="/roditelji/zajednicka-procjena" element={<RoditeljiPlaceholder title="Zajednička procjena" />} />
           <Route path="/kontakt" element={<Kontakt />} />
           <Route path="/uvjeti" element={<UvjetiKoristenja />} />
           <Route path="/chatbot" element={<Chatbot />} />

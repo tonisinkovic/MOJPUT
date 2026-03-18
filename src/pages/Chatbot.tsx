@@ -1,16 +1,18 @@
 import { useState, useRef, useEffect } from "react";
 import Layout from "@/components/Layout";
 import { motion } from "framer-motion";
-import { Bot, Send, Sparkles } from "lucide-react";
+import { Bot, Send, Sparkles, GraduationCap, MapPin, BookOpen, ChevronRight, RotateCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { apiGet } from "@/lib/api";
 
-const SYSTEM_PROMPT = `Ti si MojPut AI asistent koji pomaže maturantima u odabiru fakulteta i karijere. Odgovaraj uvijek na hrvatskom jeziku.
-Budi koristan, prijateljski i pružaj jasne informacije o fakultetima, studijskim programima, prijemnim ispitima i karijernim mogućnostima u Hrvatskoj.`;
+const API_BASE = import.meta.env.VITE_API_URL || (import.meta.env.DEV ? "http://localhost:3000" : "");
 
 const SUGGESTIONS = [
-  "Koji su najbolji fakulteti za informatiku u Hrvatskoj?",
-  "Kako se pripremiti za maturu iz matematike?",
-  "Koje su karijerne mogućnosti nakon studija ekonomije?",
+  "Koje fakultete mogu upisati u Zagrebu?",
+  "Koji fakulteti imaju studij računarstva?",
+  "Koji su uvjeti za upis na medicinski fakultet?",
+  "Koji studiji postoje na Ekonomskom fakultetu?",
 ];
 
 interface Message {
@@ -18,15 +20,51 @@ interface Message {
   content: string;
 }
 
+interface Fakultet {
+  id: number;
+  naziv: string;
+  grad: string;
+  sveuciliste?: string;
+  web_stranica?: string;
+  opis?: string;
+  studiji?: { naziv_studija: string; razina: string }[];
+}
+
+interface Grad {
+  id: number;
+  naziv: string;
+}
+
 const Chatbot = () => {
   const [messages, setMessages] = useState<Message[]>([]);
+  useEffect(() => {
+    setMessages([]);
+  }, []);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [fakulteti, setFakulteti] = useState<Fakultet[]>([]);
+  const [gradovi, setGradovi] = useState<Grad[]>([]);
+  const [sidebarError, setSidebarError] = useState<string | null>(null);
+  const [sidebarLoaded, setSidebarLoaded] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const scrollToBottom = () => messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   useEffect(() => scrollToBottom(), [messages, isLoading]);
+
+  useEffect(() => {
+    setSidebarError(null);
+    setSidebarLoaded(false);
+    Promise.all([
+      apiGet<Fakultet[]>(`${API_BASE}/api/fakulteti`),
+      apiGet<Grad[]>(`${API_BASE}/api/gradovi`),
+    ]).then(([fRes, gRes]) => {
+      setSidebarLoaded(true);
+      if (fRes.success && fRes.data) setFakulteti(Array.isArray(fRes.data) ? fRes.data : []);
+      else if (!fRes.success) setSidebarError("Backend nije dostupan. Pokreni npm run start.");
+      if (gRes.success && gRes.data) setGradovi(Array.isArray(gRes.data) ? gRes.data : []);
+    });
+  }, []);
 
   const autoResize = (el: HTMLTextAreaElement) => {
     el.style.height = "24px";
@@ -53,52 +91,77 @@ const Chatbot = () => {
     setIsLoading(true);
 
     const conversationHistory = [...messages, userMsg].map((m) => ({
-      role: m.role === "user" ? "user" as const : "assistant" as const,
+      role: m.role,
       content: m.content,
     }));
 
-    try {
-      const apiKey = import.meta.env.VITE_ANTHROPIC_API_KEY;
-      if (!apiKey) {
-        throw new Error("API ključ nije konfiguriran. Dodajte VITE_ANTHROPIC_API_KEY u .env.");
-      }
+    setMessages((m) => [...m, { role: "assistant", content: "" }]);
+    const assistantIdx = conversationHistory.length;
 
-      const response = await fetch("https://api.anthropic.com/v1/messages", {
+    try {
+      const res = await fetch(`${API_BASE}/api/chat`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "x-api-key": apiKey,
-          "anthropic-version": "2023-06-01",
-        },
-        body: JSON.stringify({
-          model: "claude-sonnet-4-20250514",
-          max_tokens: 1000,
-          system: SYSTEM_PROMPT,
-          tools: [{ type: "web_search_20250305", name: "web_search" }],
-          messages: conversationHistory,
-        }),
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ messages: conversationHistory }),
       });
 
-      const data = await response.json();
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err?.message || `Greška (${res.status})`);
+      }
+
+      const reader = res.body?.getReader();
+      const decoder = new TextDecoder();
       let fullText = "";
 
-      if (data.content) {
-        fullText = data.content
-          .filter((b: { type: string }) => b.type === "text")
-          .map((b: { text: string }) => b.text)
-          .join("\n");
+      if (reader) {
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          const chunk = decoder.decode(value, { stream: true });
+          const lines = chunk.split("\n");
+          for (const line of lines) {
+            if (line.startsWith("data: ")) {
+              const data = line.slice(6);
+              if (data === "[DONE]") continue;
+              try {
+                const parsed = JSON.parse(data);
+                if (parsed?.content) {
+                  fullText += parsed.content;
+                  setMessages((m) => {
+                    const next = [...m];
+                    if (next[assistantIdx]) next[assistantIdx] = { ...next[assistantIdx], content: fullText };
+                    return next;
+                  });
+                }
+              } catch {
+                /* ignore */
+              }
+            }
+          }
+        }
       }
 
-      if (!fullText && data.error) {
-        fullText = `Greška: ${data.error.message}`;
-      }
-
-      if (fullText) {
-        setMessages((m) => [...m, { role: "assistant", content: fullText }]);
+      if (!fullText) {
+        setMessages((m) => {
+          const next = [...m];
+          next[assistantIdx] = { role: "assistant", content: "Nisam mogao generirati odgovor. Pokušaj ponovo." };
+          return next;
+        });
       }
     } catch (err) {
-      const msg = err instanceof Error ? err.message : "Došlo je do greške. Pokušajte ponovo.";
-      setMessages((m) => [...m, { role: "assistant", content: msg }]);
+      let msg = err instanceof Error ? err.message : "Došlo je do greške. Pokušajte ponovo.";
+      if (msg.includes("404") || msg.includes("502") || msg.includes("Failed to fetch")) {
+        msg = "Backend nije dostupan. Pokreni u zasebnom terminalu: npm run start";
+      } else if (msg.includes("429") || msg.includes("quota") || msg.includes("OpenAI")) {
+        msg = "Chatbot koristi samo bazu podataka. Osvježi stranicu (F5) i pokušaj ponovo.";
+      }
+      setMessages((m) => {
+        const next = [...m];
+        next[assistantIdx] = { role: "assistant", content: msg };
+        return next;
+      });
     } finally {
       setIsLoading(false);
     }
@@ -113,136 +176,189 @@ const Chatbot = () => {
 
   return (
     <Layout>
-      <section className="container py-12">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="mb-8 text-center max-w-2xl mx-auto"
-        >
-          <div className="w-16 h-16 rounded-2xl gradient-hero flex items-center justify-center mx-auto mb-6">
-            <Bot className="w-8 h-8 text-primary-foreground" />
-          </div>
-          <h1 className="text-3xl md:text-4xl font-bold mb-3">AI ChatBot</h1>
-          <p className="text-muted-foreground text-lg">
-            Razgovaraj s umjetnom inteligencijom o odabiru fakulteta, karijere i
-            svemu što te zanima u vezi mature i studija.
-          </p>
-        </motion.div>
-
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-          className="chat-container max-w-3xl mx-auto"
-        >
-          {/* Header */}
-          <div className="chat-header">
-            <div className="chat-avatar">
-              <Bot className="w-5 h-5 text-primary-foreground" />
-            </div>
-            <div>
-              <h2 className="font-semibold">MojPut AI Asistent</h2>
-              <p className="chat-status">
-                <span className="chat-status-dot" />
-                Online · pretraživanje weba
+      <section className="container py-6">
+        <div className="flex flex-col lg:flex-row gap-6 max-w-6xl mx-auto">
+          {/* Sidebar - informacije o fakultetima */}
+          <motion.aside
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            className="w-full lg:w-72 shrink-0"
+          >
+            <div className="rounded-2xl border border-border bg-card shadow-card p-4 h-fit lg:sticky lg:top-24">
+              <h3 className="font-semibold flex items-center gap-2 mb-3">
+                <GraduationCap className="w-4 h-4 text-primary" />
+                Fakulteti u bazi
+              </h3>
+              <p className="text-xs text-muted-foreground mb-3">
+                Chatbot koristi ove podatke za odgovore. Pitanja o gradovima, studijima i uvjetima upisa.
               </p>
-            </div>
-            <div className="chat-badge">🌐 WEB SEARCH</div>
-          </div>
-
-          {/* Messages */}
-          <div className="chat-messages">
-            {messages.length === 0 && (
-              <div className="chat-welcome">
-                <Sparkles className="w-10 h-10 text-primary opacity-70 mb-2" />
-                <h3 className="font-semibold text-foreground">Što te zanima?</h3>
-                <p className="text-sm text-muted-foreground max-w-[300px]">
-                  Postavljam pitanja na internetu u stvarnom vremenu i donosim ti
-                  najsvježije informacije o fakultetima i studijima.
-                </p>
-                <div className="chat-suggestions">
-                  {SUGGESTIONS.map((s) => (
-                    <button
-                      key={s}
-                      type="button"
-                      className="chat-sug-btn"
-                      onClick={() => sendMessage(s)}
+              <ScrollArea className="h-[280px] pr-2">
+                <div className="space-y-2">
+                  {gradovi.length > 0 && (
+                    <div className="flex items-center gap-2 text-xs text-muted-foreground mb-2">
+                      <MapPin className="w-3 h-3" />
+                      {gradovi.map((g) => g.naziv).join(", ")}
+                    </div>
+                  )}
+                  {fakulteti.slice(0, 12).map((f) => (
+                    <div
+                      key={f.id}
+                      className="p-2 rounded-lg bg-muted/50 border border-border/50 hover:border-primary/20 transition-colors"
                     >
-                      {s}
-                    </button>
+                      <p className="font-medium text-sm">{f.naziv}</p>
+                      <p className="text-xs text-muted-foreground">{f.grad}</p>
+                      {f.studiji && f.studiji.length > 0 && (
+                        <p className="text-xs mt-1 flex items-center gap-1">
+                          <BookOpen className="w-3 h-3" />
+                          {f.studiji.map((s) => s.naziv_studija).slice(0, 3).join(", ")}
+                          {f.studiji.length > 3 && "…"}
+                        </p>
+                      )}
+                    </div>
                   ))}
-                </div>
-              </div>
-            )}
-
-            {messages.map((msg, i) => (
-              <div
-                key={i}
-                className={`chat-message ${msg.role}`}
-                style={{ animation: "chatFadeUp 0.3s ease" }}
-              >
-                <div className="chat-msg-avatar">
-                  {msg.role === "assistant" ? (
-                    <Bot className="w-4 h-4 text-primary-foreground" />
-                  ) : (
-                    <span className="text-sm">👤</span>
+                  {!sidebarLoaded && !sidebarError && (
+                    <p className="text-sm text-muted-foreground">Učitavanje…</p>
+                  )}
+                  {sidebarLoaded && fakulteti.length === 0 && !sidebarError && (
+                    <p className="text-sm text-muted-foreground">
+                      Baza je prazna. Pokreni <code className="text-xs">npm run db:seed</code>.
+                    </p>
+                  )}
+                  {sidebarError && (
+                    <p className="text-sm text-amber-600 dark:text-amber-500">
+                      {sidebarError}
+                    </p>
                   )}
                 </div>
-                <div className={`chat-bubble ${msg.role}`}>
-                  {msg.role === "assistant" ? (
-                    <>
-                      <span dangerouslySetInnerHTML={{ __html: formatMessage(msg.content) }} />
-                      <div className="chat-source-tag">🌐 Temelji se na podacima s weba</div>
-                    </>
-                  ) : (
-                    msg.content
-                  )}
-                </div>
-              </div>
-            ))}
-
-            {isLoading && (
-              <div className="chat-message assistant chat-typing" style={{ animation: "chatFadeUp 0.3s ease" }}>
-                <div className="chat-msg-avatar">
-                  <Bot className="w-4 h-4 text-primary-foreground" />
-                </div>
-                <div className="chat-typing-dots">
-                  <span /><span /><span />
-                </div>
-              </div>
-            )}
-            <div ref={messagesEndRef} />
-          </div>
-
-          {/* Input */}
-          <div className="chat-input-area">
-            <div className="chat-input-row">
-              <textarea
-                ref={textareaRef}
-                value={input}
-                onChange={(e) => {
-                  setInput(e.target.value);
-                  autoResize(e.target);
-                }}
-                onKeyDown={handleKeyDown}
-                placeholder="Postavi pitanje…"
-                rows={1}
-                className="chat-textarea"
-                disabled={isLoading}
-              />
-              <Button
-                size="icon"
-                className="chat-send-btn shrink-0"
-                onClick={() => sendMessage()}
-                disabled={isLoading}
-                title="Pošalji"
-              >
-                <Send className="w-4 h-4" />
-              </Button>
+              </ScrollArea>
             </div>
-            <p className="chat-footer-hint">Enter za slanje · Shift+Enter novi red</p>
-          </div>
-        </motion.div>
+          </motion.aside>
+
+          {/* Chat */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+            className="flex-1 min-w-0"
+          >
+            <div className="chat-container">
+              <div className="chat-header">
+                <div className="chat-avatar">
+                  <Bot className="w-5 h-5 text-primary-foreground" />
+                </div>
+                <div>
+                  <h2 className="font-semibold">MojPut AI Asistent</h2>
+                  <p className="chat-status">
+                    <span className="chat-status-dot" />
+                    Online · bez AI (baza podataka)
+                  </p>
+                </div>
+                <div className="flex items-center gap-2 ml-auto">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="text-xs"
+                    onClick={() => setMessages([])}
+                    title="Novi razgovor"
+                  >
+                    <RotateCcw className="w-3.5 h-3.5 mr-1" />
+                    Novi razgovor
+                  </Button>
+                  <div className="chat-badge">📚 Baza</div>
+                </div>
+              </div>
+
+              <div className="chat-messages">
+                {messages.length === 0 && (
+                  <div className="chat-welcome">
+                    <Sparkles className="w-10 h-10 text-primary opacity-70 mb-2" />
+                    <h3 className="font-semibold text-foreground">Što te zanima?</h3>
+                    <p className="text-sm text-muted-foreground max-w-[320px]">
+                      Postavljaj pitanja o fakultetima, studijima i uvjetima upisa. Odgovori temelje se na podacima iz naše baze.
+                    </p>
+                    <div className="chat-suggestions">
+                      {SUGGESTIONS.map((s) => (
+                        <button
+                          key={s}
+                          type="button"
+                          className="chat-sug-btn"
+                          onClick={() => sendMessage(s)}
+                        >
+                          <ChevronRight className="w-3 h-3 shrink-0" />
+                          {s}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {messages.map((msg, i) => (
+                  <div key={i} className={`chat-message ${msg.role}`}>
+                    <div className="chat-msg-avatar">
+                      {msg.role === "assistant" ? (
+                        <Bot className="w-4 h-4 text-primary-foreground" />
+                      ) : (
+                        <span className="text-sm">👤</span>
+                      )}
+                    </div>
+                    <div className={`chat-bubble ${msg.role}`}>
+                      {msg.role === "assistant" ? (
+                        <>
+                          <span dangerouslySetInnerHTML={{ __html: formatMessage(msg.content) }} />
+                          {msg.content && !msg.content.includes("Backend nije") && !msg.content.includes("Greška pri") && (
+                            <div className="chat-source-tag">📚 Temelji se na podacima iz baze</div>
+                          )}
+                        </>
+                      ) : (
+                        msg.content
+                      )}
+                    </div>
+                  </div>
+                ))}
+
+                {isLoading && (
+                  <div className="chat-message assistant chat-typing">
+                    <div className="chat-msg-avatar">
+                      <Bot className="w-4 h-4 text-primary-foreground" />
+                    </div>
+                    <div className="chat-typing-dots">
+                      <span /><span /><span />
+                    </div>
+                  </div>
+                )}
+                <div ref={messagesEndRef} />
+              </div>
+
+              <div className="chat-input-area">
+                <div className="chat-input-row">
+                  <textarea
+                    ref={textareaRef}
+                    value={input}
+                    onChange={(e) => {
+                      setInput(e.target.value);
+                      autoResize(e.target);
+                    }}
+                    onKeyDown={handleKeyDown}
+                    placeholder="Postavi pitanje o fakultetima…"
+                    rows={1}
+                    className="chat-textarea"
+                    disabled={isLoading}
+                  />
+                  <Button
+                    size="icon"
+                    className="chat-send-btn shrink-0"
+                    onClick={() => sendMessage()}
+                    disabled={isLoading}
+                    title="Pošalji"
+                  >
+                    <Send className="w-4 h-4" />
+                  </Button>
+                </div>
+                <p className="chat-footer-hint">Enter za slanje · Shift+Enter novi red</p>
+              </div>
+            </div>
+          </motion.div>
+        </div>
       </section>
 
       <style>{`
@@ -250,17 +366,14 @@ const Chatbot = () => {
           from { opacity: 0; transform: translateY(10px); }
           to { opacity: 1; transform: translateY(0); }
         }
-
         @keyframes chatPulse {
           0%, 100% { opacity: 1; transform: scale(1); }
           50% { opacity: 0.5; transform: scale(0.8); }
         }
-
         @keyframes chatBounce {
           0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
           30% { transform: translateY(-6px); opacity: 1; }
         }
-
         .chat-container {
           display: flex;
           flex-direction: column;
@@ -271,7 +384,6 @@ const Chatbot = () => {
           overflow: hidden;
           box-shadow: var(--card-shadow);
         }
-
         .chat-header {
           display: flex;
           align-items: center;
@@ -281,7 +393,6 @@ const Chatbot = () => {
           background: hsl(var(--muted) / 0.5);
           backdrop-filter: blur(10px);
         }
-
         .chat-avatar {
           width: 40px; height: 40px;
           border-radius: 0.75rem;
@@ -289,21 +400,18 @@ const Chatbot = () => {
           display: flex; align-items: center; justify-content: center;
           flex-shrink: 0;
         }
-
         .chat-status {
           font-size: 0.6875rem;
           color: hsl(var(--primary));
           display: flex; align-items: center; gap: 0.375rem;
           margin-top: 2px;
         }
-
         .chat-status-dot {
           width: 6px; height: 6px;
           border-radius: 50%;
           background: hsl(var(--primary));
           animation: chatPulse 2s ease-in-out infinite;
         }
-
         .chat-badge {
           margin-left: auto;
           font-size: 0.625rem;
@@ -315,7 +423,6 @@ const Chatbot = () => {
           letter-spacing: 0.05em;
           font-weight: 500;
         }
-
         .chat-messages {
           flex: 1;
           overflow-y: auto;
@@ -325,37 +432,30 @@ const Chatbot = () => {
           gap: 1.25rem;
           scroll-behavior: smooth;
         }
-
         .chat-messages::-webkit-scrollbar { width: 4px; }
         .chat-messages::-webkit-scrollbar-track { background: transparent; }
         .chat-messages::-webkit-scrollbar-thumb {
           background: hsl(var(--border));
           border-radius: 10px;
         }
-
         .chat-message {
           display: flex;
           gap: 0.75rem;
         }
-
         .chat-message.user { flex-direction: row-reverse; }
-
         .chat-msg-avatar {
           width: 34px; height: 34px;
           border-radius: 0.625rem;
           display: flex; align-items: center; justify-content: center;
           flex-shrink: 0;
         }
-
         .chat-message.assistant .chat-msg-avatar {
           background: hsl(var(--primary) / 0.15);
           border: 1px solid hsl(var(--border));
         }
-
         .chat-message.user .chat-msg-avatar {
           background: var(--hero-gradient);
         }
-
         .chat-bubble {
           max-width: 75%;
           padding: 0.875rem 1.125rem;
@@ -363,28 +463,24 @@ const Chatbot = () => {
           font-size: 0.875rem;
           line-height: 1.65;
         }
-
         .chat-message.assistant .chat-bubble {
           background: hsl(var(--muted) / 0.6);
           border: 1px solid hsl(var(--border));
           border-radius: 4px 1rem 1rem 1rem;
           color: hsl(var(--foreground));
         }
-
         .chat-message.user .chat-bubble {
           background: linear-gradient(135deg, hsl(var(--primary) / 0.15), hsl(var(--primary) / 0.08));
           border: 1px solid hsl(var(--primary) / 0.3);
           border-radius: 1rem 4px 1rem 1rem;
           color: hsl(var(--foreground));
         }
-
         .chat-code {
           background: hsl(var(--primary) / 0.15);
           padding: 2px 6px;
           border-radius: 4px;
           font-size: 0.75rem;
         }
-
         .chat-source-tag {
           display: inline-flex;
           align-items: center;
@@ -397,7 +493,6 @@ const Chatbot = () => {
           border-radius: 0.375rem;
           margin-top: 0.5rem;
         }
-
         .chat-welcome {
           flex: 1;
           display: flex;
@@ -408,16 +503,14 @@ const Chatbot = () => {
           text-align: center;
           padding: 2rem;
         }
-
         .chat-suggestions {
           display: flex;
           flex-direction: column;
           gap: 0.5rem;
           margin-top: 1rem;
           width: 100%;
-          max-width: 340px;
+          max-width: 380px;
         }
-
         .chat-sug-btn {
           background: hsl(var(--muted));
           border: 1px solid hsl(var(--border));
@@ -430,13 +523,14 @@ const Chatbot = () => {
           transition: all 0.2s;
           line-height: 1.4;
           font-family: inherit;
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
         }
-
         .chat-sug-btn:hover {
           border-color: hsl(var(--primary) / 0.5);
           background: hsl(var(--primary) / 0.08);
         }
-
         .chat-typing-dots {
           background: hsl(var(--muted) / 0.6);
           border: 1px solid hsl(var(--border));
@@ -446,24 +540,20 @@ const Chatbot = () => {
           align-items: center;
           gap: 5px;
         }
-
         .chat-typing-dots span {
           width: 6px; height: 6px;
           border-radius: 50%;
           background: hsl(var(--primary));
           animation: chatBounce 1.2s ease-in-out infinite;
         }
-
         .chat-typing-dots span:nth-child(2) { animation-delay: 0.2s; }
         .chat-typing-dots span:nth-child(3) { animation-delay: 0.4s; }
-
         .chat-input-area {
           padding: 1rem 1.25rem;
           border-top: 1px solid hsl(var(--border));
           background: hsl(var(--muted) / 0.4);
           backdrop-filter: blur(10px);
         }
-
         .chat-input-row {
           display: flex;
           gap: 0.625rem;
@@ -474,12 +564,10 @@ const Chatbot = () => {
           padding: 0.625rem 0.875rem;
           transition: border-color 0.2s;
         }
-
         .chat-input-row:focus-within {
           border-color: hsl(var(--primary) / 0.5);
           outline: none;
         }
-
         .chat-textarea {
           flex: 1;
           background: none;
@@ -493,11 +581,9 @@ const Chatbot = () => {
           min-height: 24px;
           font-family: inherit;
         }
-
         .chat-textarea::placeholder {
           color: hsl(var(--muted-foreground));
         }
-
         .chat-send-btn {
           width: 36px; height: 36px;
           border-radius: 0.625rem;
@@ -505,12 +591,10 @@ const Chatbot = () => {
           border: none !important;
           color: white !important;
         }
-
         .chat-send-btn:hover:not(:disabled) {
           transform: scale(1.05);
           filter: brightness(1.05);
         }
-
         .chat-footer-hint {
           font-size: 0.625rem;
           color: hsl(var(--muted-foreground));

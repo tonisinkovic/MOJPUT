@@ -50,6 +50,77 @@ npm run dev
 - Click on "New codespace" to launch a new Codespace environment.
 - Edit files directly within the Codespace and commit and push your changes once you're done.
 
+## AI Chatbot (fakulteti i studiji)
+
+Chatbot odgovara na pitanja o fakultetima i studijima u Hrvatskoj koristeći RAG (Retrieval Augmented Generation) — pretražuje bazu podataka i šalje relevantne podatke AI modelu.
+
+### Zahtjevi
+
+- **PostgreSQL** — baza za fakultete, studije i gradove
+- **OpenAI API ključ** — za generiranje odgovora
+
+### Pokretanje
+
+1. **Postavi `.env`** (kopiraj iz `.env.example`):
+   ```
+   DATABASE_URL="postgresql://korisnik:lozinka@localhost:5432/mojput?schema=public"
+   OPENAI_API_KEY=sk-...
+   ```
+
+### Registracija i potvrda emaila
+
+Za registraciju korisnika potreban je SMTP za slanje emaila s linkom za potvrdu:
+
+- `APP_ORIGIN` — URL aplikacije (npr. `https://tonisinkovic.github.io/MOJPUT` u produkciji)
+- `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS` — SMTP postavke
+- `MAIL_FROM` — adresa pošiljatelja (opcionalno)
+
+Korisnik prima email s linkom `APP_ORIGIN/#/prijava?verify=TOKEN`. Klik na link potvrđuje račun i omogućuje prijavu.
+
+2. **Kreiraj bazu i tablice**:
+   ```sh
+   npm run db:push
+   ```
+
+3. **Ubaci primjer podataka**:
+   ```sh
+   npm run db:seed
+   ```
+
+4. **Pokreni backend i frontend**:
+   ```sh
+   npm run dev:full
+   ```
+
+### API rute
+
+| Ruta | Opis |
+|------|------|
+| `GET /api/gradovi` | Lista gradova |
+| `GET /api/fakulteti?grad=Zagreb` | Lista fakulteta (opcionalno filtrirano po gradu) |
+| `GET /api/studiji?fakultet_id=1` | Lista studija (opcionalno filtrirano po fakultetu) |
+| `POST /api/chat` | Chat s AI (body: `{ messages: [{ role, content }] }`) |
+
+### Kako chatbot koristi bazu
+
+1. Korisnik postavi pitanje (npr. "Koji fakulteti imaju računarstvo?")
+2. Backend izvlači ključne riječi i pretražuje tablice `Fakultet`, `Studij`, `Grad`
+3. Relevantni podaci šalju se OpenAI modelu kao kontekst
+4. AI generira odgovor temeljen isključivo na tim podacima
+5. Ako podatak nije u bazi, AI to jasno navede
+
+### Dodavanje novih fakulteta
+
+1. Otvori `prisma/seed.cjs` i dodaj u `fakultetiData` ili `studijiData`
+2. Pokreni `npm run db:seed` (prazni i ponovno puni tablice)
+
+Ili koristi Prisma Studio za ručno uređivanje:
+```sh
+npm run db:studio
+```
+
+---
+
 ## What technologies are used for this project?
 
 This project is built with:
@@ -59,6 +130,8 @@ This project is built with:
 - React
 - shadcn-ui
 - Tailwind CSS
+- Prisma (PostgreSQL) — za AI chatbot
+- OpenAI API — za RAG chatbot
 
 ## How can I deploy this project?
 

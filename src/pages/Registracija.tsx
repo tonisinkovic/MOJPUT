@@ -1,9 +1,14 @@
 import React, { useState } from "react";
+import { Link } from "react-router-dom";
 import Layout from "@/components/Layout";
 import { Mail, Lock, User } from "lucide-react";
 import { authRegister } from "@/lib/auth";
 
 const Registracija = () => {
+  const [verifyInfo, setVerifyInfo] = useState<{
+    emailPreviewUrl?: string;
+    directVerifyUrl?: string;
+  } | null>(null);
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
@@ -43,6 +48,11 @@ const Registracija = () => {
       return;
     }
 
+    const data = res as { dev_verification_url?: string; email_preview_url?: string };
+    setVerifyInfo({
+      emailPreviewUrl: data.email_preview_url || undefined,
+      directVerifyUrl: data.dev_verification_url || undefined,
+    });
     setSubmitted(true);
     setFormData({
       firstName: "",
@@ -213,12 +223,9 @@ const Registracija = () => {
 
                 <p className="text-center text-xs text-slate-600">
                   Već imaš račun?{" "}
-                  <button
-                    type="button"
-                    className="text-slate-900 font-semibold hover:underline"
-                  >
+                  <Link to="/prijava" className="text-slate-900 font-semibold hover:underline">
                     Prijavi se
-                  </button>
+                  </Link>
                 </p>
               </form>
             ) : (
@@ -242,7 +249,35 @@ const Registracija = () => {
                   Uspješna registracija!
                 </h3>
                 <p className="text-slate-600 text-sm">
-                  Provjerite e-mail i kliknite na link za potvrdu računa, pa se zatim prijavite.
+                  {verifyInfo?.emailPreviewUrl
+                    ? "Email je poslan. Pregledaj ga u testnom inboxu i klikni na link za potvrdu, ili koristi direktan link ispod:"
+                    : "Provjerite e-mail i kliknite na link za potvrdu računa, pa se zatim prijavite."}
+                </p>
+                {verifyInfo?.emailPreviewUrl && (
+                  <a
+                    href={verifyInfo.emailPreviewUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-block px-4 py-2 bg-slate-700 text-white text-sm font-semibold rounded-lg hover:bg-slate-800 transition"
+                  >
+                    Pregledaj poslani email
+                  </a>
+                )}
+                {verifyInfo?.directVerifyUrl && (
+                  <a
+                    href={verifyInfo.directVerifyUrl}
+                    className="inline-block px-4 py-2 bg-blue-600 text-white text-sm font-semibold rounded-lg hover:bg-blue-700 transition"
+                  >
+                    Potvrdi račun i prijavi se
+                  </a>
+                )}
+                <p className="pt-2">
+                  <Link
+                    to="/prijava"
+                    className="text-slate-900 font-semibold hover:underline"
+                  >
+                    Idi na prijavu →
+                  </Link>
                 </p>
               </div>
             )}

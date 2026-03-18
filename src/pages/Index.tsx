@@ -88,19 +88,20 @@ const Index = () => {
   return (
     <Layout>
       {/* Hero */}
-      <section className="relative overflow-hidden">
-        <div className="absolute inset-0 gradient-hero opacity-[0.03]" />
-        <div className="absolute top-20 right-10 w-72 h-72 bg-primary/5 rounded-full blur-3xl" />
-        <div className="absolute bottom-10 left-10 w-96 h-96 bg-accent/5 rounded-full blur-3xl" />
+      <section className="relative overflow-hidden bg-mesh-gradient">
+        <div className="absolute inset-0 bg-grid-pattern opacity-50" />
+        <div className="absolute top-20 right-10 w-72 h-72 bg-primary/10 rounded-full blur-3xl animate-pulse" />
+        <div className="absolute bottom-10 left-10 w-96 h-96 bg-accent/8 rounded-full blur-3xl" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-primary/5 rounded-full blur-3xl" />
 
-        <div className="container relative py-20 md:py-32">
+        <div className="container relative py-24 md:py-36">
           <div className="max-w-3xl mx-auto text-center">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6 }}
             >
-              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary text-sm font-medium mb-6">
+              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary text-sm font-medium mb-6 border border-primary/20 shadow-sm">
                 <Sparkles className="w-4 h-4" />
                 Tvoj vodič za budućnost
               </div>
@@ -113,7 +114,7 @@ const Index = () => {
               className="text-4xl md:text-6xl lg:text-7xl font-extrabold tracking-tight leading-tight mb-6"
             >
               Pronađi svoj{" "}
-              <span className="text-gradient">put</span>{" "}
+              <span className="text-gradient drop-shadow-sm">put</span>{" "}
               do savršenog fakulteta
             </motion.h1>
 
@@ -133,13 +134,13 @@ const Index = () => {
               transition={{ duration: 0.6, delay: 0.3 }}
               className="flex flex-col sm:flex-row items-center justify-center gap-4"
             >
-              <Button size="lg" className="gradient-hero border-0 text-primary-foreground px-8 h-12 text-base" asChild>
+              <Button size="lg" className="gradient-hero border-0 text-primary-foreground px-8 h-12 text-base shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/30 hover:scale-[1.02] transition-all" asChild>
                 <Link to="/kviz">
                   Započni kviz
                   <ArrowRight className="w-4 h-4 ml-2" />
                 </Link>
               </Button>
-              <Button size="lg" variant="outline" className="px-8 h-12 text-base" asChild>
+              <Button size="lg" variant="outline" className="px-8 h-12 text-base hover:bg-primary/5 hover:border-primary/30 transition-colors" asChild>
                 <Link to="/karta">Istraži fakultete</Link>
               </Button>
             </motion.div>
@@ -149,7 +150,7 @@ const Index = () => {
 
       {/* Stats */}
       <section className="border-y bg-muted/30">
-        <div className="container py-10">
+        <div className="container py-12">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
             {stats.map((stat, i) => (
               <motion.div
@@ -158,13 +159,13 @@ const Index = () => {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.4, delay: i * 0.1 }}
-                className="text-center"
+                className="text-center p-4 rounded-2xl bg-card/60 border border-border/50 hover:bg-card hover:border-primary/20 hover:shadow-card transition-all duration-300"
               >
                 <div className="flex items-center justify-center gap-2 mb-1">
                   <span className="text-primary">{stat.icon}</span>
                   <span className="text-2xl md:text-3xl font-extrabold">{stat.value}</span>
                 </div>
-                <p className="text-sm text-muted-foreground">{stat.label}</p>
+                <p className="text-sm text-muted-foreground font-medium">{stat.label}</p>
               </motion.div>
             ))}
           </div>
@@ -172,8 +173,8 @@ const Index = () => {
       </section>
 
       {/* Features */}
-      <section className="container py-20">
-        <div className="text-center mb-14">
+      <section className="container py-24 bg-muted/20">
+        <div className="text-center mb-16">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -204,26 +205,27 @@ const Index = () => {
       </section>
 
       {/* CTA */}
-      <section className="container pb-20">
+      <section className="container pb-24 pt-4">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          className="relative overflow-hidden rounded-3xl gradient-hero p-10 md:p-16 text-center"
+          className="relative overflow-hidden rounded-3xl gradient-hero p-10 md:p-16 text-center shadow-xl shadow-primary/20"
         >
           <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2" />
           <div className="absolute bottom-0 left-0 w-48 h-48 bg-white/10 rounded-full translate-y-1/2 -translate-x-1/2" />
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-32 h-32 bg-white/5 rounded-full" />
 
           <div className="relative">
-            <h2 className="text-3xl md:text-4xl font-bold text-primary-foreground mb-4">
+            <h2 className="text-3xl md:text-4xl font-bold text-primary-foreground mb-4 drop-shadow-sm">
               Spreman za prvi korak?
             </h2>
-            <p className="text-primary-foreground/80 text-lg max-w-lg mx-auto mb-8">
+            <p className="text-primary-foreground/90 text-lg max-w-lg mx-auto mb-8">
               Pridruži se tisućama maturanata koji su pronašli svoj put uz MojPut platformu.
             </p>
             <Button
               size="lg"
-              className="bg-card text-foreground hover:bg-card/90 border-0 px-8 h-12 text-base font-semibold"
+              className="bg-card text-foreground hover:bg-card/95 border-0 px-8 h-12 text-base font-semibold shadow-lg hover:scale-[1.02] transition-all"
               asChild
             >
               <Link to="/registracija">
