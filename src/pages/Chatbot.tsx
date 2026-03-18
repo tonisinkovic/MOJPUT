@@ -35,10 +35,86 @@ interface Grad {
   naziv: string;
 }
 
+const AI_NAME = "Marko";
+const AI_WELCOME = `Pozdrav ja se zovem ${AI_NAME} kako ti mogu pomoći:`;
+
+const RobotAIWindow = () => {
+  // Mali robot s hrvatskim bojama (plavo-crveno-bijelo + šahovnica) koji drži "AI prozor".
+  return (
+    <svg viewBox="0 0 120 120" width="64" height="64" aria-hidden="true">
+      <defs>
+        <linearGradient id="aiWindow" x1="38" y1="56" x2="86" y2="88" gradientUnits="userSpaceOnUse">
+          <stop offset="0%" stopColor="#93c5fd" stopOpacity="0.95" />
+          <stop offset="100%" stopColor="#dbeafe" stopOpacity="0.95" />
+        </linearGradient>
+      </defs>
+
+      {/* Robot arms */}
+      <path
+        d="M36 66 C30 74, 30 85, 39 90 C47 94, 52 90, 54 84"
+        fill="none"
+        stroke="#1d4ed8"
+        strokeWidth="6"
+        strokeLinecap="round"
+      />
+      <path
+        d="M84 66 C90 74, 90 85, 81 90 C73 94, 68 90, 66 84"
+        fill="none"
+        stroke="#1d4ed8"
+        strokeWidth="6"
+        strokeLinecap="round"
+      />
+
+      {/* Head */}
+      <circle cx="60" cy="38" r="18" fill="#ffffff" stroke="#1d4ed8" strokeWidth="4" />
+      {/* Antenna */}
+      <path d="M60 20 C58 15, 56 13, 53 11" fill="none" stroke="#1d4ed8" strokeWidth="3" strokeLinecap="round" />
+      <circle cx="52" cy="10.5" r="4" fill="#dc2626" stroke="#1d4ed8" strokeWidth="2" />
+
+      {/* Eyes */}
+      <circle cx="53" cy="38" r="3.2" fill="#0f172a" />
+      <circle cx="67" cy="38" r="3.2" fill="#0f172a" />
+      <path d="M54 47 C58 51, 62 51, 66 47" fill="none" stroke="#dc2626" strokeWidth="3" strokeLinecap="round" />
+
+      {/* Body */}
+      <rect x="38" y="54" width="44" height="50" rx="14" fill="#ffffff" stroke="#1d4ed8" strokeWidth="4" />
+
+      {/* Chessboard (4x4) */}
+      {Array.from({ length: 4 }).map((_, row) =>
+        Array.from({ length: 4 }).map((__, col) => {
+          const isRed = (row + col) % 2 === 0;
+          const x = 46 + col * 7;
+          const y = 66 + row * 6;
+          return (
+            <rect
+              key={`${row}-${col}`}
+              x={x}
+              y={y}
+              width="7"
+              height="6"
+              fill={isRed ? "#dc2626" : "#ffffff"}
+              stroke={isRed ? "#dc2626" : "#1d4ed8"}
+              strokeWidth="0.5"
+            />
+          );
+        })
+      )}
+
+      {/* AI window (the "held window") */}
+      <rect x="42" y="62" width="36" height="24" rx="6" fill="url(#aiWindow)" stroke="#1d4ed8" strokeWidth="3" />
+      <path d="M49 68 H71" stroke="#1d4ed8" strokeWidth="2" strokeLinecap="round" opacity="0.5" />
+      <path d="M49 74 H67" stroke="#1d4ed8" strokeWidth="2" strokeLinecap="round" opacity="0.35" />
+      <text x="60" y="79" textAnchor="middle" fontSize="10" fontWeight="700" fill="#1d4ed8">
+        AI
+      </text>
+    </svg>
+  );
+};
+
 const Chatbot = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   useEffect(() => {
-    setMessages([]);
+    setMessages([{ role: "assistant", content: AI_WELCOME }]);
   }, []);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -185,13 +261,19 @@ const Chatbot = () => {
             className="w-full lg:w-72 shrink-0"
           >
             <div className="rounded-2xl border border-border bg-card shadow-card p-4 h-fit lg:sticky lg:top-24">
-              <h3 className="font-semibold flex items-center gap-2 mb-3">
-                <GraduationCap className="w-4 h-4 text-primary" />
-                Fakulteti u bazi
-              </h3>
-              <p className="text-xs text-muted-foreground mb-3">
-                Chatbot koristi ove podatke za odgovore. Pitanja o gradovima, studijima i uvjetima upisa.
-              </p>
+              <div className="mb-3">
+                <div className="flex items-center gap-3">
+                  <div className="shrink-0">
+                    <RobotAIWindow />
+                  </div>
+                  <div className="min-w-0">
+                    <h3 className="font-semibold text-sm leading-tight">AI prozor na Markovom robotu</h3>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Podaci iz baze pomažu da odgovori budu točni i korisni.
+                    </p>
+                  </div>
+                </div>
+              </div>
               <ScrollArea className="h-[280px] pr-2">
                 <div className="space-y-2">
                   {gradovi.length > 0 && (
@@ -247,10 +329,10 @@ const Chatbot = () => {
                   <Bot className="w-5 h-5 text-primary-foreground" />
                 </div>
                 <div>
-                  <h2 className="font-semibold">MojPut AI Asistent</h2>
+                  <h2 className="font-semibold">{AI_NAME}</h2>
                   <p className="chat-status">
                     <span className="chat-status-dot" />
-                    Online · bez AI (baza podataka)
+                    Online · AI asistent
                   </p>
                 </div>
                 <div className="flex items-center gap-2 ml-auto">
@@ -258,7 +340,7 @@ const Chatbot = () => {
                     variant="ghost"
                     size="sm"
                     className="text-xs"
-                    onClick={() => setMessages([])}
+                    onClick={() => setMessages([{ role: "assistant", content: AI_WELCOME }])}
                     title="Novi razgovor"
                   >
                     <RotateCcw className="w-3.5 h-3.5 mr-1" />

@@ -237,15 +237,6 @@ const Index = () => {
         </motion.div>
       </section>
 
-      {/* AI Chatbot Trigger */}
-      <div className="fixed bottom-6 right-6 z-50">
-        <Button
-          size="lg"
-          className="gradient-hero border-0 text-primary-foreground rounded-full w-14 h-14 p-0 shadow-lg glow-primary hover:scale-110 transition-transform"
-        >
-          <Bot className="w-6 h-6" />
-        </Button>
-      </div>
     </Layout>
   );
 };

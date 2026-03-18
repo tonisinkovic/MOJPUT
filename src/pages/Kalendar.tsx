@@ -64,9 +64,37 @@ const typeDots: Record<string, string> = {
 };
 
 const Kalendar = () => {
-  const [year, setYear] = useState(2026);
-  const [month, setMonth] = useState(0);
   const [reminders, setReminders] = useState<Set<string>>(new Set());
+
+  // Ograničenje navigacije: ne prije siječnja 2026, niti poslije zadnjeg eventa.
+  const minYear = 2026;
+  const minMonth = 0; // siječanj
+  const lastEvent = events.reduce<{ year: number; month: number } | null>((acc, e) => {
+    if (!acc) return { year: e.year, month: e.month };
+    if (e.year > acc.year) return { year: e.year, month: e.month };
+    if (e.year === acc.year && e.month > acc.month) return { year: e.year, month: e.month };
+    return acc;
+  }, null);
+
+  const maxYear = lastEvent?.year ?? 2026;
+  const maxMonth = lastEvent?.month ?? 0;
+
+  // Prilikom otvaranja stranice prikazuj trenutni mjesec (ali klampaj unutar dozvoljenog raspona).
+  const now = new Date();
+  let initialYear = now.getFullYear();
+  let initialMonth = now.getMonth();
+
+  if (initialYear < minYear || (initialYear === minYear && initialMonth < minMonth)) {
+    initialYear = minYear;
+    initialMonth = minMonth;
+  }
+  if (initialYear > maxYear || (initialYear === maxYear && initialMonth > maxMonth)) {
+    initialYear = maxYear;
+    initialMonth = maxMonth;
+  }
+
+  const [year, setYear] = useState(initialYear);
+  const [month, setMonth] = useState(initialMonth);
 
   const toggleReminder = async (e: typeof events[0]) => {
     const key = `${e.year}-${e.month}-${e.day}-${e.title}`;
@@ -109,12 +137,24 @@ const Kalendar = () => {
   };
 
   const prev = () => {
-    if (month === 0) { setMonth(11); setYear(y => y - 1); }
-    else setMonth(m => m - 1);
+    // Ne dozvoli prije siječnja 2026.
+    if (year === minYear && month === minMonth) return;
+    if (month === 0) {
+      setMonth(11);
+      setYear(y => y - 1);
+    } else {
+      setMonth(m => m - 1);
+    }
   };
   const next = () => {
-    if (month === 11) { setMonth(0); setYear(y => y + 1); }
-    else setMonth(m => m + 1);
+    // Ne dozvoli poslije mjeseca koji sadrži zadnji event.
+    if (year === maxYear && month === maxMonth) return;
+    if (month === 11) {
+      setMonth(0);
+      setYear(y => y + 1);
+    } else {
+      setMonth(m => m + 1);
+    }
   };
 
   const monthEvents = events.filter(e => e.year === year && e.month === month);
@@ -129,7 +169,7 @@ const Kalendar = () => {
 
   return (
     <Layout>
-      <section className="container py-12 max-w-2xl">
+      <section className="container py-12 max-w-6xl">
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="mb-8">
           <h1 className="text-3xl md:text-4xl font-bold mb-3">
             <span className="text-gradient">Kalendar</span> važnih datuma
@@ -146,90 +186,122 @@ const Kalendar = () => {
           </div>
         </motion.div>
 
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="bg-card rounded-2xl border shadow-card p-7">
-          {/* Header with navigation */}
-          <div className="flex items-center justify-between mb-6">
-            <button onClick={prev} className="p-2 rounded-xl hover:bg-muted transition-colors">
-              <ChevronLeft className="w-6 h-6" />
-            </button>
-            <h3 className="text-xl font-bold">
-              <span className="text-gradient">{croatianMonths[month]}</span> {year}
-            </h3>
-            <button onClick={next} className="p-2 rounded-xl hover:bg-muted transition-colors">
-              <ChevronRight className="w-6 h-6" />
-            </button>
-          </div>
+        <div className="grid lg:grid-cols-[minmax(0,560px)_minmax(0,1fr)] gap-8 items-stretch lg:h-[70vh]">
+          {/* Left: calendar */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="bg-card rounded-2xl border shadow-card p-7 h-full flex flex-col overflow-hidden"
+          >
+            {/* Header with navigation */}
+            <div className="flex items-center justify-between mb-6">
+              <button
+                onClick={prev}
+                disabled={year === minYear && month === minMonth}
+                className="p-2 rounded-xl hover:bg-muted transition-colors disabled:opacity-40 disabled:hover:bg-transparent"
+              >
+                <ChevronLeft className="w-6 h-6" />
+              </button>
+              <h3 className="text-xl font-bold">
+                <span className="text-gradient">{croatianMonths[month]}</span> {year}
+              </h3>
+              <button
+                onClick={next}
+                disabled={year === maxYear && month === maxMonth}
+                className="p-2 rounded-xl hover:bg-muted transition-colors disabled:opacity-40 disabled:hover:bg-transparent"
+              >
+                <ChevronRight className="w-6 h-6" />
+              </button>
+            </div>
 
-          {/* Day headers */}
-          <div className="grid grid-cols-7 mb-2">
-            {dayNames.map(d => (
-              <div key={d} className="text-center text-sm font-semibold text-muted-foreground py-2">
-                {d}
-              </div>
-            ))}
-          </div>
-
-          {/* Day cells */}
-          <div className="grid grid-cols-7 gap-1.5">
-            {cells.map((day, idx) => {
-              const dayEvents = day ? monthEvents.filter(e => e.day === day) : [];
-              const hasEvent = dayEvents.length > 0;
-              return (
-                <div
-                  key={idx}
-                  className={`aspect-square flex flex-col items-center justify-start pt-2 rounded-xl
-                    ${hasEvent ? "bg-primary/10 ring-1 ring-primary/30" : ""}
-                  `}
-                >
-                  {day && (
-                    <>
-                      <span className={`text-sm leading-none ${hasEvent ? "font-bold text-primary" : "text-foreground"}`}>
-                        {day}
-                      </span>
-                      {hasEvent && (
-                        <div className="flex gap-0.5 mt-1.5 flex-wrap justify-center">
-                          {dayEvents.map((e, i) => (
-                            <span key={i} className={`w-2 h-2 rounded-full ${typeDots[e.type] ?? "bg-primary"}`} />
-                          ))}
-                        </div>
-                      )}
-                    </>
-                  )}
+            {/* Day headers */}
+            <div className="grid grid-cols-7 mb-2">
+              {dayNames.map(d => (
+                <div key={d} className="text-center text-sm font-semibold text-muted-foreground py-2">
+                  {d}
                 </div>
-              );
-            })}
-          </div>
+              ))}
+            </div>
 
-          {/* Events for this month */}
-          {monthEvents.length > 0 && (
-            <div className="mt-6 space-y-2.5">
-              {monthEvents.map((e, i) => {
-                const key = `${e.year}-${e.month}-${e.day}-${e.title}`;
-                const isReminded = reminders.has(key);
+            {/* Day cells */}
+            <div className="grid grid-cols-7 gap-1.5">
+              {cells.map((day, idx) => {
+                const dayEvents = day ? monthEvents.filter(e => e.day === day) : [];
+                const hasEvent = dayEvents.length > 0;
                 return (
                   <div
-                    key={i}
-                    className={`flex items-center gap-3 px-4 py-3 rounded-xl border text-sm font-medium ${typeColors[e.type] ?? ""}`}
+                    key={idx}
+                    className={`aspect-square flex flex-col items-center justify-start pt-3 rounded-xl
+                      ${hasEvent ? "bg-primary/10 ring-1 ring-primary/30" : ""}
+                    `}
                   >
-                    <span className="font-bold shrink-0 w-6">{e.day}.</span>
-                    <span className="flex-1 leading-tight">{e.title}</span>
-                    <button
-                      onClick={() => toggleReminder(e)}
-                      title={isReminded ? "Ukloni podsjetnik" : "Postavi podsjetnik"}
-                      className={`shrink-0 p-1 rounded-lg transition-colors hover:opacity-80 ${isReminded ? "text-primary" : "text-muted-foreground"}`}
-                    >
-                      <Bell className={`w-4 h-4 ${isReminded ? "fill-primary" : ""}`} />
-                    </button>
+                    {day && (
+                      <>
+                        <span className={`text-base leading-none ${hasEvent ? "font-bold text-primary" : "text-foreground"}`}>
+                          {day}
+                        </span>
+                        {hasEvent && (
+                          <div className="flex gap-0.5 mt-2 flex-wrap justify-center">
+                            {dayEvents.map((e, i) => (
+                              <span key={i} className={`w-2.5 h-2.5 rounded-full ${typeDots[e.type] ?? "bg-primary"}`} />
+                            ))}
+                          </div>
+                        )}
+                      </>
+                    )}
                   </div>
                 );
               })}
             </div>
-          )}
+          </motion.div>
 
-          {monthEvents.length === 0 && (
-            <p className="text-center text-sm text-muted-foreground mt-6">Nema važnih datuma ovaj mjesec.</p>
-          )}
-        </motion.div>
+          {/* Right: events for the month */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="bg-card rounded-2xl border shadow-card p-7 h-full flex flex-col overflow-hidden"
+          >
+            <div className="mb-4 flex items-baseline justify-between gap-4">
+              <div>
+                <h3 className="text-xl font-bold">
+                  <span className="text-gradient">Matura</span>, upisi & rokovi
+                </h3>
+                <p className="text-muted-foreground text-sm">Za {croatianMonths[month]} {year}</p>
+              </div>
+            </div>
+
+            {monthEvents.length > 0 && (
+              <div className="flex-1 overflow-y-auto pr-2 space-y-2.5">
+                {monthEvents.map((e, i) => {
+                  const key = `${e.year}-${e.month}-${e.day}-${e.title}`;
+                  const isReminded = reminders.has(key);
+                  return (
+                    <div
+                      key={i}
+                      className={`flex items-center gap-3 px-4 py-3.5 rounded-xl border text-base font-medium ${typeColors[e.type] ?? ""}`}
+                    >
+                      <span className="font-bold shrink-0 w-7">{e.day}.</span>
+                      <span className="flex-1 leading-tight">{e.title}</span>
+                      <button
+                        onClick={() => toggleReminder(e)}
+                        title={isReminded ? "Ukloni podsjetnik" : "Postavi podsjetnik"}
+                        className={`shrink-0 p-1 rounded-lg transition-colors hover:opacity-80 ${isReminded ? "text-primary" : "text-muted-foreground"}`}
+                      >
+                        <Bell className={`w-4 h-4 ${isReminded ? "fill-primary" : ""}`} />
+                      </button>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+
+            {monthEvents.length === 0 && (
+              <div className="flex-1 flex items-center justify-center px-2">
+                <p className="text-center text-sm text-muted-foreground">Nema važnih datuma ovaj mjesec.</p>
+              </div>
+            )}
+          </motion.div>
+        </div>
       </section>
     </Layout>
   );
