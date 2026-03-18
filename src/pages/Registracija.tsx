@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import Layout from "@/components/Layout";
 import { Mail, Lock, User } from "lucide-react";
+import { authRegister } from "@/lib/auth";
 
 const Registracija = () => {
   const [formData, setFormData] = useState({
@@ -12,6 +13,7 @@ const Registracija = () => {
     status: "",
   });
   const [submitted, setSubmitted] = useState(false);
+  const [error, setError] = useState("");
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -21,21 +23,35 @@ const Registracija = () => {
     }));
   };
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    console.log("Podaci za registraciju:", formData);
+    setError("");
+    if (formData.password !== formData.confirmPassword) {
+      setError("Lozinke se ne poklapaju.");
+      return;
+    }
+
+    const username = `${formData.firstName} ${formData.lastName}`.trim();
+    const res = await authRegister({
+      username: username || formData.email.split("@")[0],
+      email: formData.email,
+      password: formData.password,
+    });
+
+    if (!res.success) {
+      setError(res.message);
+      return;
+    }
+
     setSubmitted(true);
-    setTimeout(() => {
-      setSubmitted(false);
-      setFormData({
-        firstName: "",
-        lastName: "",
-        email: "",
-        password: "",
-        confirmPassword: "",
-        status: "",
-      });
-    }, 2000);
+    setFormData({
+      firstName: "",
+      lastName: "",
+      email: "",
+      password: "",
+      confirmPassword: "",
+      status: "",
+    });
   };
 
   return (
@@ -182,6 +198,12 @@ const Registracija = () => {
                   </div>
                 </div>
 
+                {error && (
+                  <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700 font-medium">
+                    {error}
+                  </div>
+                )}
+
                 <button
                   type="submit"
                   className="w-full py-3 bg-slate-900 text-white font-semibold rounded-lg hover:bg-slate-800 transition-all duration-300 transform hover:scale-[1.01] focus:outline-none focus:ring-2 focus:ring-slate-600 focus:ring-offset-2 mt-2 text-sm"
@@ -220,8 +242,7 @@ const Registracija = () => {
                   Uspješna registracija!
                 </h3>
                 <p className="text-slate-600 text-sm">
-                  Dobrodošli, {formData.firstName}! Provjerite svoju e-mail adresu za
-                  potvrdu računa.
+                  Provjerite e-mail i kliknite na link za potvrdu računa, pa se zatim prijavite.
                 </p>
               </div>
             )}

@@ -1,0 +1,7300 @@
+[
+  {
+    "name": "Veleučilište s pravom javnosti BALTAZAR ZAPREŠIĆ",
+    "city": "Biograd na Moru",
+    "provider": "Veleučilište s pravom javnosti BALTAZAR ZAPREŠIĆ",
+    "institutionType": "Veleučilište",
+    "programs": [
+      {
+        "name": "Menadžment u turizmu i ugostiteljstvu (stručni)",
+        "cutoffByYear": {
+          "2025": 399
+        }
+      },
+      {
+        "name": "Poslovanje i upravljanje (izvanredni, stručni)",
+        "cutoffByYear": {
+          "2025": 234.3999939
+        }
+      },
+      {
+        "name": "Poslovanje i upravljanje (stručni)",
+        "cutoffByYear": {
+          "2025": 518.7000122
+        }
+      }
+    ]
+  },
+  {
+    "name": "Veleučilište u Bjelovaru",
+    "city": "Bjelovar",
+    "provider": "Veleučilište u Bjelovaru",
+    "institutionType": "Veleučilište",
+    "programs": [
+      {
+        "name": "Mehatronika (stručni)",
+        "cutoffByYear": {
+          "2025": 431.1000061
+        }
+      },
+      {
+        "name": "Računarstvo (izvanredni, stručni)",
+        "cutoffByYear": {
+          "2025": 411.6000061
+        }
+      },
+      {
+        "name": "Računarstvo (stručni)",
+        "cutoffByYear": {
+          "2025": 478.6000061
+        }
+      },
+      {
+        "name": "Sestrinstvo (izvanredni, stručni)",
+        "cutoffByYear": {
+          "2025": 222.3999939
+        }
+      },
+      {
+        "name": "Sestrinstvo (stručni)",
+        "cutoffByYear": {
+          "2025": 367.5
+        }
+      },
+      {
+        "name": "Sestrinstvo (završili prije 2010.) (izvanredni, stručni)",
+        "cutoffByYear": {
+          "2025": 518.7999878
+        }
+      }
+    ]
+  },
+  {
+    "name": "Međimursko veleučilište u Čakovcu",
+    "city": "Čakovec",
+    "provider": "Međimursko veleučilište u Čakovcu",
+    "institutionType": "Veleučilište",
+    "programs": [
+      {
+        "name": "Menadžment turizma i sporta (izvanredni, stručni)",
+        "cutoffByYear": {
+          "2025": 431
+        }
+      },
+      {
+        "name": "Menadžment turizma i sporta (stručni)",
+        "cutoffByYear": {
+          "2025": 435.2000122
+        }
+      },
+      {
+        "name": "Održivi razvoj (izvanredni, stručni)",
+        "cutoffByYear": {
+          "2025": 460.7999878
+        }
+      },
+      {
+        "name": "Održivi razvoj (stručni)",
+        "cutoffByYear": {
+          "2025": 461.7000122
+        }
+      }
+    ]
+  },
+  {
+    "name": "Učiteljski fakultet Sveučilišta u Zagrebu",
+    "city": "Čakovec",
+    "provider": "Sveučilište u Zagrebu",
+    "institutionType": "Sveučilište",
+    "programs": [
+      {
+        "name": "Rani i predškolski odgoj i obrazovanje",
+        "cutoffByYear": {
+          "2025": 501.6000061
+        }
+      },
+      {
+        "name": "Rani i predškolski odgoj i obrazovanje (izvanredni) (izvanredni)",
+        "cutoffByYear": {
+          "2025": 487.1000061
+        }
+      },
+      {
+        "name": "Rani i predškolski odgoj i obrazovanje (završili prije 2010.) (izvanredni)",
+        "cutoffByYear": {
+          "2025": 456.1000061
+        }
+      },
+      {
+        "name": "Učiteljski studij",
+        "cutoffByYear": {
+          "2025": 466.7999878
+        }
+      },
+      {
+        "name": "Učiteljski studij; smjer: Cjeloživotno obrazovanje i obrazovanje odraslih",
+        "cutoffByYear": {
+          "2025": 471.7999878
+        }
+      }
+    ]
+  },
+  {
+    "name": "Ekonomski fakultet Sveučilišta u Dubrovniku",
+    "city": "Dubrovnik",
+    "provider": "Sveučilište u Dubrovniku",
+    "institutionType": "Sveučilište",
+    "programs": [
+      {
+        "name": "Financijski menadžment (izvanredni, stručni)",
+        "cutoffByYear": {
+          "2025": 528.2999878
+        }
+      },
+      {
+        "name": "Hotelijerstvo, restoraterstvo i gastronomija (izvanredni, stručni)",
+        "cutoffByYear": {
+          "2025": 388.1000061
+        }
+      },
+      {
+        "name": "Hotelijerstvo, restoraterstvo i gastronomija (stručni)",
+        "cutoffByYear": {
+          "2025": 241.8000031
+        }
+      },
+      {
+        "name": "Poslovna ekonomija; smjer: IT Menadžment",
+        "cutoffByYear": {
+          "2025": 318.2000122
+        }
+      },
+      {
+        "name": "Poslovna ekonomija; smjer: IT Menadžment (na engleskom jeziku)",
+        "cutoffByYear": {
+          "2025": 490.2000122
+        }
+      },
+      {
+        "name": "Poslovna ekonomija; smjer: IT Menadžment (na engleskom jeziku) (izvanredni)",
+        "cutoffByYear": {
+          "2025": 473.7000122
+        }
+      },
+      {
+        "name": "Poslovna ekonomija; smjer: IT Menadžment (završili prije 2010.) (izvanredni)",
+        "cutoffByYear": {
+          "2025": 668.7999878
+        }
+      },
+      {
+        "name": "Poslovna ekonomija; smjer: Marketing",
+        "cutoffByYear": {
+          "2025": 373
+        }
+      },
+      {
+        "name": "Poslovna ekonomija; smjer: Marketing (izvanredni)",
+        "cutoffByYear": {
+          "2025": 472.2999878
+        }
+      },
+      {
+        "name": "Poslovna ekonomija; smjer: Turizam",
+        "cutoffByYear": {
+          "2025": 399.5
+        }
+      },
+      {
+        "name": "Poslovna ekonomija; smjer: Turizam (izvanredni)",
+        "cutoffByYear": {
+          "2025": 322.1000061
+        }
+      }
+    ]
+  },
+  {
+    "name": "Fakultet elektrotehnike i primijenjenog računarstva Sveučilišta u Dubrovniku",
+    "city": "Dubrovnik",
+    "provider": "Sveučilište u Dubrovniku",
+    "institutionType": "Sveučilište",
+    "programs": [
+      {
+        "name": "Elektrotehničke i komunikacijske tehnologije u pomorstvu",
+        "cutoffByYear": {
+          "2025": 332.2000122
+        }
+      },
+      {
+        "name": "Primijenjeno / poslovno računarstvo",
+        "cutoffByYear": {
+          "2025": 361.5
+        }
+      }
+    ]
+  },
+  {
+    "name": "Fakultet za medije i odnose s javnošću Sveučilišta u Dubrovniku",
+    "city": "Dubrovnik",
+    "provider": "Sveučilište u Dubrovniku",
+    "institutionType": "Sveučilište",
+    "programs": [
+      {
+        "name": "Mediji i kultura društva",
+        "cutoffByYear": {
+          "2025": 425.2000122
+        }
+      },
+      {
+        "name": "Mediji i kultura društva (Hrvati izvan RH)",
+        "cutoffByYear": {
+          "2025": 751.2000122
+        }
+      },
+      {
+        "name": "Mediji i kultura društva (izvanredni)",
+        "cutoffByYear": {
+          "2025": 471.7000122
+        }
+      }
+    ]
+  },
+  {
+    "name": "Odjel za humanističke znanosti Sveučilišta u Dubrovniku i Filozofski fakultet Sveučilišta u Zagrebu",
+    "city": "Dubrovnik",
+    "provider": "Sveučilište u Dubrovniku",
+    "institutionType": "Sveučilište",
+    "programs": [
+      {
+        "name": "Povijest Jadrana i Mediterana",
+        "cutoffByYear": {
+          "2025": 615.4000244
+        }
+      }
+    ]
+  },
+  {
+    "name": "Odjel za stručne studije Sveučilišta u Dubrovniku",
+    "city": "Dubrovnik",
+    "provider": "Sveučilište u Dubrovniku",
+    "institutionType": "Sveučilište",
+    "programs": [
+      {
+        "name": "Sestrinstvo (izvanredni, stručni)",
+        "cutoffByYear": {
+          "2025": 517
+        }
+      }
+    ]
+  },
+  {
+    "name": "Odjel za umjetnost i restauraciju Sveučilišta u Dubrovniku",
+    "city": "Dubrovnik",
+    "provider": "Sveučilište u Dubrovniku",
+    "institutionType": "Sveučilište",
+    "programs": [
+      {
+        "name": "Konzervacija - restauracija; smjerovi: Drvo, Papir, Tekstil, Metal, Kamen",
+        "cutoffByYear": {
+          "2025": 644.5
+        }
+      }
+    ]
+  },
+  {
+    "name": "Pomorski fakultet Sveučilišta u Dubrovniku",
+    "city": "Dubrovnik",
+    "provider": "Sveučilište u Dubrovniku",
+    "institutionType": "Sveučilište",
+    "programs": [
+      {
+        "name": "Brodostrojarstvo",
+        "cutoffByYear": {
+          "2025": 324
+        }
+      },
+      {
+        "name": "Brodostrojarstvo (izvanredni)",
+        "cutoffByYear": {
+          "2025": 255.8999939
+        }
+      },
+      {
+        "name": "Nautika",
+        "cutoffByYear": {
+          "2025": 295.6000061
+        }
+      },
+      {
+        "name": "Nautika (izvanredni)",
+        "cutoffByYear": {
+          "2025": 392.1000061
+        }
+      },
+      {
+        "name": "Pomorske tehnologije jahta i marina (izvanredni)",
+        "cutoffByYear": {
+          "2025": 436.7000122
+        }
+      }
+    ]
+  },
+  {
+    "name": "RIT Croatia",
+    "city": "Dubrovnik",
+    "provider": "RIT Croatia",
+    "institutionType": "Ostalo",
+    "programs": [
+      {
+        "name": "Informacijske tehnologije (stručni)",
+        "cutoffByYear": {
+          "2025": 350
+        }
+      },
+      {
+        "name": "Service Management (stručni)",
+        "cutoffByYear": {
+          "2025": 370
+        }
+      }
+    ]
+  },
+  {
+    "name": "Katolički bogoslovni fakultet u Đakovu Sveučilišta u Osijeku",
+    "city": "Đakovo",
+    "provider": "Sveučilište Josipa Jurja Strossmayera u Osijeku",
+    "institutionType": "Sveučilište",
+    "programs": [
+      {
+        "name": "Filozofsko-teološki studij",
+        "cutoffByYear": {
+          "2025": 541
+        }
+      }
+    ]
+  },
+  {
+    "name": "Sveučilište Sjever",
+    "city": "Đurđevac",
+    "provider": "Sveučilište Sjever",
+    "institutionType": "Sveučilište",
+    "programs": [
+      {
+        "name": "Računarstvo i informatika (izvanredni, stručni)",
+        "cutoffByYear": {
+          "2025": 389.2999878
+        }
+      },
+      {
+        "name": "Računarstvo i informatika (stručni)",
+        "cutoffByYear": {
+          "2025": 374.7999878
+        }
+      }
+    ]
+  },
+  {
+    "name": "Odjel za nastavničke studije u Gospiću",
+    "city": "Gospić",
+    "provider": "Sveučilište u Zadru",
+    "institutionType": "Sveučilište",
+    "programs": [
+      {
+        "name": "Rani i predškolski odgoj i obrazovanje",
+        "cutoffByYear": {
+          "2025": 391.7999878
+        }
+      },
+      {
+        "name": "Rani i predškolski odgoj i obrazovanje (izvanredni)",
+        "cutoffByYear": {
+          "2025": 490.6000061
+        }
+      },
+      {
+        "name": "Rani i predškolski odgoj i obrazovanje (završili prije 2010.) (izvanredni)",
+        "cutoffByYear": {
+          "2025": 645.9000244
+        }
+      },
+      {
+        "name": "Učiteljski studij",
+        "cutoffByYear": {
+          "2025": 490.2000122
+        }
+      }
+    ]
+  },
+  {
+    "name": "Veleučilište \"Nikola Tesla\" u Gospiću",
+    "city": "Gospić",
+    "provider": "Veleučilište \"Nikola Tesla\" u Gospiću",
+    "institutionType": "Veleučilište",
+    "programs": [
+      {
+        "name": "Ekonomika poduzetništva (izvanredni, stručni)",
+        "cutoffByYear": {
+          "2025": 228
+        }
+      },
+      {
+        "name": "Ekonomika poduzetništva (stručni)",
+        "cutoffByYear": {
+          "2025": 394.1000061
+        }
+      },
+      {
+        "name": "Upravni studij (izvanredni, stručni)",
+        "cutoffByYear": {
+          "2025": 466.8999939
+        }
+      },
+      {
+        "name": "Upravni studij (stručni)",
+        "cutoffByYear": {
+          "2025": 598.0999756
+        }
+      }
+    ]
+  },
+  {
+    "name": "Kineziološki fakultet Sveučilišta u Zagrebu",
+    "city": "Hokej na tr",
+    "provider": "Sveučilište u Zagrebu",
+    "institutionType": "Sveučilište",
+    "programs": [
+      {
+        "name": "Izobrazba trenera; smjerovi: Akrobatski Rock and Roll, Atletika, Badminton, Bejzbol, Biciklizam, Biljar, Boks, Dizanje utega",
+        "cutoffByYear": {
+          "2025": 539.5999756
+        }
+      }
+    ]
+  },
+  {
+    "name": "Fakultet organizacije i informatike u Varaždinu Sveučilišta u Zagrebu",
+    "city": "Informatička podrška poslovanju (završili prije 2010.) (iz",
+    "provider": "Sveučilište u Zagrebu",
+    "institutionType": "Sveučilište",
+    "programs": [
+      {
+        "name": "Informacijske tehnologije i digitalizacija poslovanja; smjerovi: Razvoj aplikacija",
+        "cutoffByYear": {
+          "2025": 251.1999969
+        }
+      }
+    ]
+  },
+  {
+    "name": "Veleučilište Ivanić-Grad",
+    "city": "Ivanić Grad",
+    "provider": "Veleučilište Ivanić-Grad",
+    "institutionType": "Veleučilište",
+    "programs": [
+      {
+        "name": "Fizioterapija (stručni)",
+        "cutoffByYear": {
+          "2025": 499.5
+        }
+      }
+    ]
+  },
+  {
+    "name": "Veleučilište Ivanić-Grad",
+    "city": "Ivanić-Grad",
+    "provider": "Veleučilište Ivanić-Grad",
+    "institutionType": "Veleučilište",
+    "programs": [
+      {
+        "name": "Fizioterapija (izvanredni, stručni)",
+        "cutoffByYear": {
+          "2025": 430.5
+        }
+      },
+      {
+        "name": "Sestrinstvo (izvanredni, stručni)",
+        "cutoffByYear": {
+          "2025": 403.2000122
+        }
+      },
+      {
+        "name": "Sestrinstvo (stručni)",
+        "cutoffByYear": {
+          "2025": 464.1000061
+        }
+      },
+      {
+        "name": "Sestrinstvo (završili prije 2010.) (izvanredni, stručni)",
+        "cutoffByYear": {
+          "2025": 502.6000061
+        }
+      }
+    ]
+  },
+  {
+    "name": "Fakultet zdravstvenih studija Sveučilišta u Rijeci",
+    "city": "Karlovac",
+    "provider": "Sveučilište u Rijeci",
+    "institutionType": "Sveučilište",
+    "programs": [
+      {
+        "name": "Sestrinstvo (izvanredni)",
+        "cutoffByYear": {
+          "2025": 578.4000244
+        }
+      }
+    ]
+  },
+  {
+    "name": "Veleučilište u Karlovcu",
+    "city": "Karlovac",
+    "provider": "Veleučilište u Karlovcu",
+    "institutionType": "Veleučilište",
+    "programs": [
+      {
+        "name": "Lovstvo i zaštita prirode (izvanredni, stručni)",
+        "cutoffByYear": {
+          "2025": 225.6000061
+        }
+      },
+      {
+        "name": "Lovstvo i zaštita prirode (stručni)",
+        "cutoffByYear": {
+          "2025": 698.2000122
+        }
+      },
+      {
+        "name": "Mehatronika (stručni)",
+        "cutoffByYear": {
+          "2025": 438.2000122
+        }
+      },
+      {
+        "name": "Poduzetništvo u turizmu i ugostiteljstvu (izvanredni, stručni)",
+        "cutoffByYear": {
+          "2025": 302.3999939
+        }
+      },
+      {
+        "name": "Poduzetništvo u turizmu i ugostiteljstvu (stručni)",
+        "cutoffByYear": {
+          "2025": 434.2999878
+        }
+      },
+      {
+        "name": "Prehrambena tehnologija; smjerovi: Prerada mlijeka, Pivarstvo (stručni)",
+        "cutoffByYear": {
+          "2025": 428.7999878
+        }
+      },
+      {
+        "name": "Sigurnost i zaštita; smjerovi: Zaštita na radu, Zaštita od požara (izvanredni, stručni)",
+        "cutoffByYear": {
+          "2025": 411.6000061
+        }
+      },
+      {
+        "name": "Sigurnost i zaštita; smjerovi: Zaštita na radu, Zaštita od požara (stručni)",
+        "cutoffByYear": {
+          "2025": 501.6000061
+        }
+      },
+      {
+        "name": "Strojarstvo (stručni)",
+        "cutoffByYear": {
+          "2025": 262.3999939
+        }
+      }
+    ]
+  },
+  {
+    "name": "Veleučilište \"Marko Marulić\" u Kninu",
+    "city": "Knin",
+    "provider": "Veleučilište \"Marko Marulić\" u Kninu",
+    "institutionType": "Veleučilište",
+    "programs": [
+      {
+        "name": "Poljoprivreda krša - Biljna proizvodnja (stručni)",
+        "cutoffByYear": {
+          "2025": 473.2000122
+        }
+      },
+      {
+        "name": "Poljoprivreda krša - Stočarstvo krša (stručni)",
+        "cutoffByYear": {
+          "2025": 549.0999756
+        }
+      },
+      {
+        "name": "Trgovinsko poslovanje s poduzetništvom (stručni)",
+        "cutoffByYear": {
+          "2025": 452.3999939
+        }
+      }
+    ]
+  },
+  {
+    "name": "Tehničko veleučilište u Zagrebu",
+    "city": "Komunikacijska i računalna tehnika (izvan",
+    "provider": "Tehničko veleučilište u Zagrebu",
+    "institutionType": "Veleučilište",
+    "programs": [
+      {
+        "name": "Elektrotehnika; smjerovi: Energetska elektrotehnika, Automatizacija i procesno računarstvo",
+        "cutoffByYear": {
+          "2025": 238.3999939
+        }
+      }
+    ]
+  },
+  {
+    "name": "Tehničko veleučilište u Zagrebu",
+    "city": "Komunikacijska i računalna tehnika (stručn",
+    "provider": "Tehničko veleučilište u Zagrebu",
+    "institutionType": "Veleučilište",
+    "programs": [
+      {
+        "name": "Elektrotehnika; smjerovi: Energetska elektrotehnika, Automatizacija i procesno računarstvo",
+        "cutoffByYear": {
+          "2025": 522.7999878
+        }
+      }
+    ]
+  },
+  {
+    "name": "Sveučilište Sjever",
+    "city": "Koprivnica",
+    "provider": "Sveučilište Sjever",
+    "institutionType": "Sveučilište",
+    "programs": [
+      {
+        "name": "Komunikologija, mediji i novinarstvo",
+        "cutoffByYear": {
+          "2025": 407.7999878
+        }
+      },
+      {
+        "name": "Logistika i mobilnost (stručni)",
+        "cutoffByYear": {
+          "2025": 440.6000061
+        }
+      },
+      {
+        "name": "Medijski dizajn",
+        "cutoffByYear": {
+          "2025": 256.7999878
+        }
+      },
+      {
+        "name": "Poslovanje i menadžment (izvanredni, stručni)",
+        "cutoffByYear": {
+          "2025": 327.2000122
+        }
+      },
+      {
+        "name": "Poslovanje i menadžment (stručni)",
+        "cutoffByYear": {
+          "2025": 440.6000061
+        }
+      },
+      {
+        "name": "Prehrambena tehnologija (stručni)",
+        "cutoffByYear": {
+          "2025": 325.5
+        }
+      },
+      {
+        "name": "Zaštita okoliša, recikliranje i ambalaža",
+        "cutoffByYear": {
+          "2025": 662.0999756
+        }
+      }
+    ]
+  },
+  {
+    "name": "Veleučilište Hrvatsko zagorje Krapina",
+    "city": "Krapina",
+    "provider": "Veleučilište Hrvatsko zagorje Krapina",
+    "institutionType": "Veleučilište",
+    "programs": [
+      {
+        "name": "Informatika (izvanredni, stručni)",
+        "cutoffByYear": {
+          "2025": 628.9000244
+        }
+      },
+      {
+        "name": "Informatika (stručni)",
+        "cutoffByYear": {
+          "2025": 438.1000061
+        }
+      },
+      {
+        "name": "Operativni menadžment (izvanredni, stručni)",
+        "cutoffByYear": {
+          "2025": 351.6000061
+        }
+      },
+      {
+        "name": "Operativni menadžment (stručni)",
+        "cutoffByYear": {
+          "2025": 416
+        }
+      },
+      {
+        "name": "Prometna logistika (izvanredni, stručni)",
+        "cutoffByYear": {
+          "2025": 381.8999939
+        }
+      },
+      {
+        "name": "Prometna logistika (stručni)",
+        "cutoffByYear": {
+          "2025": 463.7000122
+        }
+      }
+    ]
+  },
+  {
+    "name": "Veleučilište u Križevcima",
+    "city": "Križevci",
+    "provider": "Veleučilište u Križevcima",
+    "institutionType": "Veleučilište",
+    "programs": [
+      {
+        "name": "Poljoprivreda (izvanredni, stručni)",
+        "cutoffByYear": {
+          "2025": 473.7999878
+        }
+      },
+      {
+        "name": "Poljoprivreda (stručni)",
+        "cutoffByYear": {
+          "2025": 308
+        }
+      }
+    ]
+  },
+  {
+    "name": "Libertas Međunarodno sveučilište",
+    "city": "Kutina",
+    "provider": "Libertas Međunarodno sveučilište",
+    "institutionType": "Sveučilište",
+    "programs": [
+      {
+        "name": "Poslovna ekonomija (izvanredni, stručni)",
+        "cutoffByYear": {
+          "2025": 380.2000122
+        }
+      },
+      {
+        "name": "Poslovna ekonomija (stručni)",
+        "cutoffByYear": {
+          "2025": 583.2999878
+        }
+      }
+    ]
+  },
+  {
+    "name": "Sveučilište u Splitu",
+    "city": "Makarska",
+    "provider": "Sveučilište u Splitu",
+    "institutionType": "Sveučilište",
+    "programs": [
+      {
+        "name": "Hotelijerstvo i gastronomija",
+        "cutoffByYear": {
+          "2025": 505.2999878
+        }
+      }
+    ]
+  },
+  {
+    "name": "Tekstilno-tehnološki fakultet Sveučilišta u Zagrebu",
+    "city": "materijali i ek",
+    "provider": "Sveučilište u Zagrebu",
+    "institutionType": "Sveučilište",
+    "programs": [
+      {
+        "name": "Tekstilna tehnologija i inženjerstvo, smjerovi: Odjevno inženjerstvo, Projektiranje i menadžment tekstila, Tekstilna kemija",
+        "cutoffByYear": {
+          "2025": 386.2999878
+        }
+      }
+    ]
+  },
+  {
+    "name": "Fakultet za dentalnu medicinu i zdravstvo Osijek",
+    "city": "Nova Gradiška",
+    "provider": "Sveučilište Josipa Jurja Strossmayera u Osijeku",
+    "institutionType": "Sveučilište",
+    "programs": [
+      {
+        "name": "Sestrinstvo (izvanredni)",
+        "cutoffByYear": {
+          "2025": 556.7999878
+        }
+      }
+    ]
+  },
+  {
+    "name": "Tekstilno-tehnološki fakultet Sveučilišta u Zagrebu",
+    "city": "Odjevna tehno",
+    "provider": "Sveučilište u Zagrebu",
+    "institutionType": "Sveučilište",
+    "programs": [
+      {
+        "name": "Tekstilna, odjevna i obućarska tehnologija; smjerovi: Tekstilna tehnologija - mehanička, Tekstilna tehnologija - kemijska",
+        "cutoffByYear": {
+          "2025": 506.1000061
+        }
+      }
+    ]
+  },
+  {
+    "name": "Fakultet za menadžment u turizmu i ugostiteljstvu Sveučilišta u Rijeci",
+    "city": "Opatija",
+    "provider": "Sveučilište u Rijeci",
+    "institutionType": "Sveučilište",
+    "programs": [
+      {
+        "name": "Menadžment održivog razvoja",
+        "cutoffByYear": {
+          "2025": 527.4000244
+        }
+      },
+      {
+        "name": "Menadžment održivog razvoja (izvanredni)",
+        "cutoffByYear": {
+          "2025": 427.8999939
+        }
+      },
+      {
+        "name": "Poslovna ekonomija u turizmu i ugostiteljstvu",
+        "cutoffByYear": {
+          "2025": 469
+        }
+      },
+      {
+        "name": "Poslovna ekonomija u turizmu i ugostiteljstvu (izvanredni)",
+        "cutoffByYear": {
+          "2025": 252
+        }
+      },
+      {
+        "name": "Poslovna ekonomija u turizmu i ugostiteljstvu, smjer Menadžment u hotelijerstvu na engleskom jeziku",
+        "cutoffByYear": {
+          "2025": 332.7999878
+        }
+      }
+    ]
+  },
+  {
+    "name": "Fakultet za dentalnu medicinu i zdravstvo Osijek",
+    "city": "Orahovica",
+    "provider": "Sveučilište Josipa Jurja Strossmayera u Osijeku",
+    "institutionType": "Sveučilište",
+    "programs": [
+      {
+        "name": "Fizioterapija",
+        "cutoffByYear": {
+          "2025": 417
+        }
+      },
+      {
+        "name": "Fizioterapija (izvanredni)",
+        "cutoffByYear": {
+          "2025": 412.3999939
+        }
+      }
+    ]
+  },
+  {
+    "name": "Akademija za umjetnost i kulturu u Osijeku",
+    "city": "Osijek",
+    "provider": "Sveučilište Josipa Jurja Strossmayera u Osijeku",
+    "institutionType": "Sveučilište",
+    "programs": [
+      {
+        "name": "Dizajn za kazalište, film i televiziju",
+        "cutoffByYear": {
+          "2025": 619.2999878
+        }
+      },
+      {
+        "name": "Glazbena pedagogija",
+        "cutoffByYear": {
+          "2025": 594.9000244
+        }
+      },
+      {
+        "name": "Glazbena umjetnost i kultura",
+        "cutoffByYear": {
+          "2025": 616.5999756
+        }
+      },
+      {
+        "name": "Gluma i lutkarstvo",
+        "cutoffByYear": {
+          "2025": 725.2000122
+        }
+      },
+      {
+        "name": "Instrumentalni studiji; smjer: Gitara",
+        "cutoffByYear": {
+          "2025": 797.5
+        }
+      },
+      {
+        "name": "Instrumentalni studiji; smjer: Klavir",
+        "cutoffByYear": {
+          "2025": 697.4000244
+        }
+      },
+      {
+        "name": "Instrumentalni studiji; smjer: Tambure",
+        "cutoffByYear": {
+          "2025": 792.2999878
+        }
+      },
+      {
+        "name": "Instrumentalni studiji; smjer: Tambure (izvanredni)",
+        "cutoffByYear": {
+          "2025": 608.9000244
+        }
+      },
+      {
+        "name": "Kultura, mediji i menadžment",
+        "cutoffByYear": {
+          "2025": 607.7999878
+        }
+      },
+      {
+        "name": "Kultura, mediji i menadžment (izvanredni)",
+        "cutoffByYear": {
+          "2025": 479.5
+        }
+      },
+      {
+        "name": "Likovna kultura",
+        "cutoffByYear": {
+          "2025": 510.7999878
+        }
+      },
+      {
+        "name": "Likovna kultura (završili prije 2010.)",
+        "cutoffByYear": {
+          "2025": 680.4000244
+        }
+      },
+      {
+        "name": "Pjevanje",
+        "cutoffByYear": {
+          "2025": 855.9000244
+        }
+      },
+      {
+        "name": "Pjevanje (izvanredni)",
+        "cutoffByYear": {
+          "2025": 726.5
+        }
+      }
+    ]
+  },
+  {
+    "name": "Ekonomski fakultet Sveučilišta u Osijeku",
+    "city": "Osijek",
+    "provider": "Sveučilište Josipa Jurja Strossmayera u Osijeku",
+    "institutionType": "Sveučilište",
+    "programs": [
+      {
+        "name": "Ekonomija i poslovna ekonomija",
+        "cutoffByYear": {
+          "2025": 386.1000061
+        }
+      },
+      {
+        "name": "Ekonomija i poslovna ekonomija (izvanredni)",
+        "cutoffByYear": {
+          "2025": 359.8999939
+        }
+      }
+    ]
+  },
+  {
+    "name": "Fakultet agrobiotehničkih znanosti Osijek",
+    "city": "Osijek",
+    "provider": "Sveučilište Josipa Jurja Strossmayera u Osijeku",
+    "institutionType": "Sveučilište",
+    "programs": [
+      {
+        "name": "Poljoprivreda; smjer: Agroekonomika",
+        "cutoffByYear": {
+          "2025": 412
+        }
+      },
+      {
+        "name": "Poljoprivreda; smjer: Agroekonomika (izvanredni)",
+        "cutoffByYear": {
+          "2025": 336.1000061
+        }
+      },
+      {
+        "name": "Poljoprivreda; smjer: Bilinogojstvo",
+        "cutoffByYear": {
+          "2025": 464.6000061
+        }
+      },
+      {
+        "name": "Poljoprivreda; smjer: Bilinogojstvo (izvanredni)",
+        "cutoffByYear": {
+          "2025": 161
+        }
+      },
+      {
+        "name": "Poljoprivreda; smjer: Bilinogojstvo (završili prije 2010.) (izvanredni)",
+        "cutoffByYear": {
+          "2025": 850.2000122
+        }
+      },
+      {
+        "name": "Poljoprivreda; smjer: Hortikultura",
+        "cutoffByYear": {
+          "2025": 515.5
+        }
+      },
+      {
+        "name": "Poljoprivreda; smjer: Hortikultura (izvanredni)",
+        "cutoffByYear": {
+          "2025": 570.2999878
+        }
+      },
+      {
+        "name": "Poljoprivreda; smjer: Mehanizacija",
+        "cutoffByYear": {
+          "2025": 363.7000122
+        }
+      },
+      {
+        "name": "Poljoprivreda; smjer: Mehanizacija (izvanredni)",
+        "cutoffByYear": {
+          "2025": 262.2000122
+        }
+      },
+      {
+        "name": "Poljoprivreda; smjer: Zootehnika",
+        "cutoffByYear": {
+          "2025": 503.2999878
+        }
+      },
+      {
+        "name": "Poljoprivreda; smjer: Zootehnika (izvanredni)",
+        "cutoffByYear": {
+          "2025": 322.3999939
+        }
+      }
+    ]
+  },
+  {
+    "name": "Fakultet elektrotehnike, računarstva i informacijskih tehnologija Osijek",
+    "city": "Osijek",
+    "provider": "Sveučilište Josipa Jurja Strossmayera u Osijeku",
+    "institutionType": "Sveučilište",
+    "programs": [
+      {
+        "name": "Elektrotehnika i informacijska tehnologija; smjer: Elektrotehnika",
+        "cutoffByYear": {
+          "2025": 444.2000122
+        }
+      },
+      {
+        "name": "Elektrotehnika i informacijska tehnologija; smjer: Informacijske i komunikacijske tehnologije",
+        "cutoffByYear": {
+          "2025": 389.3999939
+        }
+      },
+      {
+        "name": "Elektrotehnika; smjer: Automatika (stručni)",
+        "cutoffByYear": {
+          "2025": 401
+        }
+      },
+      {
+        "name": "Elektrotehnika; smjer: Elektroenergetika (stručni)",
+        "cutoffByYear": {
+          "2025": 424.1000061
+        }
+      },
+      {
+        "name": "Računarstvo",
+        "cutoffByYear": {
+          "2025": 373.8999939
+        }
+      },
+      {
+        "name": "Računarstvo (Hrvati izvan RH)",
+        "cutoffByYear": {
+          "2025": 827.9000244
+        }
+      },
+      {
+        "name": "Računarstvo (stručni)",
+        "cutoffByYear": {
+          "2025": 302.2000122
+        }
+      }
+    ]
+  },
+  {
+    "name": "Fakultet primijenjene matematike i informatike",
+    "city": "Osijek",
+    "provider": "Sveučilište Josipa Jurja Strossmayera u Osijeku",
+    "institutionType": "Sveučilište",
+    "programs": [
+      {
+        "name": "Matematika",
+        "cutoffByYear": {
+          "2025": 200
+        }
+      },
+      {
+        "name": "Matematika i računarstvo",
+        "cutoffByYear": {
+          "2025": 339.1000061
+        }
+      }
+    ]
+  },
+  {
+    "name": "Fakultet za dentalnu medicinu i zdravstvo Osijek",
+    "city": "Osijek",
+    "provider": "Sveučilište Josipa Jurja Strossmayera u Osijeku",
+    "institutionType": "Sveučilište",
+    "programs": [
+      {
+        "name": "Dentalna medicina (izvanredni)",
+        "cutoffByYear": {
+          "2025": 211.8000031
+        }
+      },
+      {
+        "name": "Sestrinstvo",
+        "cutoffByYear": {
+          "2025": 698.9000244
+        }
+      }
+    ]
+  },
+  {
+    "name": "Fakultet za odgojne i obrazovne znanosti Sveučilišta u Osijeku",
+    "city": "Osijek",
+    "provider": "Sveučilište Josipa Jurja Strossmayera u Osijeku",
+    "institutionType": "Sveučilište",
+    "programs": [
+      {
+        "name": "Edukacijska rehabilitacija",
+        "cutoffByYear": {
+          "2025": 654.9000244
+        }
+      },
+      {
+        "name": "Edukacijska rehabilitacija (izvanredni)",
+        "cutoffByYear": {
+          "2025": 242.8999939
+        }
+      },
+      {
+        "name": "Edukacijska rehabilitacija (završili prije 2010.) (izvanredni)",
+        "cutoffByYear": {
+          "2025": 539.9000244
+        }
+      },
+      {
+        "name": "Logopedija",
+        "cutoffByYear": {
+          "2025": 668.2999878
+        }
+      },
+      {
+        "name": "Logopedija (Hrvati izvan RH)",
+        "cutoffByYear": {
+          "2025": 820
+        }
+      },
+      {
+        "name": "Logopedija (završili prije 2010.)",
+        "cutoffByYear": {
+          "2025": 733.9000244
+        }
+      },
+      {
+        "name": "Rani i predškolski odgoj i obrazovanje",
+        "cutoffByYear": {
+          "2025": 626.4000244
+        }
+      },
+      {
+        "name": "Rani i predškolski odgoj i obrazovanje (Hrvati izvan RH)",
+        "cutoffByYear": {
+          "2025": 841.0999756
+        }
+      },
+      {
+        "name": "Rani i predškolski odgoj i obrazovanje (izvanredni)",
+        "cutoffByYear": {
+          "2025": 539.5999756
+        }
+      },
+      {
+        "name": "Rani i predškolski odgoj i obrazovanje (završili prije 2010.) (izvanredni)",
+        "cutoffByYear": {
+          "2025": 571
+        }
+      },
+      {
+        "name": "Učiteljski studij",
+        "cutoffByYear": {
+          "2025": 546.5999756
+        }
+      }
+    ]
+  },
+  {
+    "name": "Filozofski fakultet Sveučilišta u Osijeku",
+    "city": "Osijek",
+    "provider": "Sveučilište Josipa Jurja Strossmayera u Osijeku",
+    "institutionType": "Sveučilište",
+    "programs": [
+      {
+        "name": "Engleski jezik i književnost (dvopredmetni)",
+        "cutoffByYear": {
+          "2025": 553.7000122
+        }
+      },
+      {
+        "name": "Engleski jezik i književnost (dvopredmetni) (Hrvati izvan RH)",
+        "cutoffByYear": {
+          "2025": 459.2000122
+        }
+      },
+      {
+        "name": "Filozofija (dvopredmetni)",
+        "cutoffByYear": {
+          "2025": 173.3999939
+        }
+      },
+      {
+        "name": "Hrvatski jezik i književnost (dvopredmetni)",
+        "cutoffByYear": {
+          "2025": 511.1000061
+        }
+      },
+      {
+        "name": "Hrvatski jezik i književnost (jednopredmetni)",
+        "cutoffByYear": {
+          "2025": 484.2999878
+        }
+      },
+      {
+        "name": "Informatologija (dvopredmetni)",
+        "cutoffByYear": {
+          "2025": 446.2000122
+        }
+      },
+      {
+        "name": "Informatologija (jednopredmetni)",
+        "cutoffByYear": {
+          "2025": 427.7000122
+        }
+      },
+      {
+        "name": "Mađarski jezik i književnosti (dvopredmetni)",
+        "cutoffByYear": {
+          "2025": 513.9000244
+        }
+      },
+      {
+        "name": "Njemački jezik i književnost (dvopredmetni)",
+        "cutoffByYear": {
+          "2025": 585
+        }
+      },
+      {
+        "name": "Njemački jezik i književnost (dvopredmetni) (Hrvati izvan RH)",
+        "cutoffByYear": {
+          "2025": 506.7000122
+        }
+      },
+      {
+        "name": "Njemački jezik i književnost (jednopredmetni)",
+        "cutoffByYear": {
+          "2025": 643.2999878
+        }
+      },
+      {
+        "name": "Pedagogija (dvopredmetni)",
+        "cutoffByYear": {
+          "2025": 312.8999939
+        }
+      },
+      {
+        "name": "Pedagogija (dvopredmetni) (Hrvati izvan RH)",
+        "cutoffByYear": {
+          "2025": 582.5999756
+        }
+      },
+      {
+        "name": "Povijest (dvopredmetni)",
+        "cutoffByYear": {
+          "2025": 173.3999939
+        }
+      },
+      {
+        "name": "Povijest umjetnosti (dvopredmetni)",
+        "cutoffByYear": {
+          "2025": 580.5
+        }
+      },
+      {
+        "name": "Psihologija (jednopredmetni)",
+        "cutoffByYear": {
+          "2025": 717.5999756
+        }
+      },
+      {
+        "name": "Psihologija (jednopredmetni) (Hrvati izvan RH)",
+        "cutoffByYear": {
+          "2025": 918.2000122
+        }
+      },
+      {
+        "name": "Sociologija (dvopredmetni)",
+        "cutoffByYear": {
+          "2025": 534.0999756
+        }
+      }
+    ]
+  },
+  {
+    "name": "Građevinski i arhitektonski fakultet Sveučilišta u Osijeku",
+    "city": "Osijek",
+    "provider": "Sveučilište Josipa Jurja Strossmayera u Osijeku",
+    "institutionType": "Sveučilište",
+    "programs": [
+      {
+        "name": "Arhitektura i urbanizam",
+        "cutoffByYear": {
+          "2025": 585.5999756
+        }
+      },
+      {
+        "name": "Građevinarstvo",
+        "cutoffByYear": {
+          "2025": 448
+        }
+      },
+      {
+        "name": "Građevinarstvo; smjer: opći (stručni)",
+        "cutoffByYear": {
+          "2025": 455.2999878
+        }
+      }
+    ]
+  },
+  {
+    "name": "Kineziološki fakultet Sveučilišta u Osijeku",
+    "city": "Osijek",
+    "provider": "Sveučilište Josipa Jurja Strossmayera u Osijeku",
+    "institutionType": "Sveučilište",
+    "programs": [
+      {
+        "name": "Kineziologija",
+        "cutoffByYear": {
+          "2025": 577.0999756
+        }
+      },
+      {
+        "name": "Kineziologija (Hrvati izvan RH)",
+        "cutoffByYear": {
+          "2025": 635
+        }
+      },
+      {
+        "name": "Kineziologija (izvanredni)",
+        "cutoffByYear": {
+          "2025": 511.6000061
+        }
+      }
+    ]
+  },
+  {
+    "name": "Medicinski fakultet Osijek i Prehrambeno-tehnološki fakultet Sveučilišta u Osijeku",
+    "city": "Osijek",
+    "provider": "Sveučilište Josipa Jurja Strossmayera u Osijeku",
+    "institutionType": "Sveučilište",
+    "programs": [
+      {
+        "name": "Farmacija",
+        "cutoffByYear": {
+          "2025": 666.4000244
+        }
+      }
+    ]
+  },
+  {
+    "name": "Medicinski fakultet Sveučilišta u Osijeku",
+    "city": "Osijek",
+    "provider": "Sveučilište Josipa Jurja Strossmayera u Osijeku",
+    "institutionType": "Sveučilište",
+    "programs": [
+      {
+        "name": "Medicina",
+        "cutoffByYear": {
+          "2025": 680.2000122
+        }
+      },
+      {
+        "name": "Medicinsko laboratorijska dijagnostika",
+        "cutoffByYear": {
+          "2025": 689
+        }
+      }
+    ]
+  },
+  {
+    "name": "Odjel za biologiju Sveučilišta u Osijeku",
+    "city": "Osijek",
+    "provider": "Sveučilište Josipa Jurja Strossmayera u Osijeku",
+    "institutionType": "Sveučilište",
+    "programs": [
+      {
+        "name": "Biologija",
+        "cutoffByYear": {
+          "2025": 472.3999939
+        }
+      }
+    ]
+  },
+  {
+    "name": "Odjel za fiziku Sveučilišta u Osijeku",
+    "city": "Osijek",
+    "provider": "Sveučilište Josipa Jurja Strossmayera u Osijeku",
+    "institutionType": "Sveučilište",
+    "programs": [
+      {
+        "name": "Fizika",
+        "cutoffByYear": {
+          "2025": 334.1000061
+        }
+      }
+    ]
+  },
+  {
+    "name": "Odjel za kemiju Sveučilišta u Osijeku",
+    "city": "Osijek",
+    "provider": "Sveučilište Josipa Jurja Strossmayera u Osijeku",
+    "institutionType": "Sveučilište",
+    "programs": [
+      {
+        "name": "Kemija",
+        "cutoffByYear": {
+          "2025": 435.8999939
+        }
+      }
+    ]
+  },
+  {
+    "name": "Pravni fakultet Sveučilišta u Osijeku",
+    "city": "Osijek",
+    "provider": "Sveučilište Josipa Jurja Strossmayera u Osijeku",
+    "institutionType": "Sveučilište",
+    "programs": [
+      {
+        "name": "Pravo",
+        "cutoffByYear": {
+          "2025": 422.6000061
+        }
+      },
+      {
+        "name": "Pravo (Hrvati izvan RH)",
+        "cutoffByYear": {
+          "2025": 975.9000244
+        }
+      },
+      {
+        "name": "Pravo (izvanredni)",
+        "cutoffByYear": {
+          "2025": 580.0999756
+        }
+      },
+      {
+        "name": "Pravo (završili prije 2010.) (izvanredni)",
+        "cutoffByYear": {
+          "2025": 933.9000244
+        }
+      },
+      {
+        "name": "Socijalni rad",
+        "cutoffByYear": {
+          "2025": 625.7999878
+        }
+      },
+      {
+        "name": "Upravni studij (izvanredni, stručni)",
+        "cutoffByYear": {
+          "2025": 406.7999878
+        }
+      },
+      {
+        "name": "Upravni studij (stručni)",
+        "cutoffByYear": {
+          "2025": 466.2000122
+        }
+      }
+    ]
+  },
+  {
+    "name": "Prehrambeno tehnološki fakultet Sveučilišta u Osijeku",
+    "city": "Osijek",
+    "provider": "Sveučilište Josipa Jurja Strossmayera u Osijeku",
+    "institutionType": "Sveučilište",
+    "programs": [
+      {
+        "name": "Prehrambena tehnologija",
+        "cutoffByYear": {
+          "2025": 349.7999878
+        }
+      },
+      {
+        "name": "Prehrambena tehnologija (izvanredni)",
+        "cutoffByYear": {
+          "2025": 181.8999939
+        }
+      }
+    ]
+  },
+  {
+    "name": "Veleučilište u Rijeci",
+    "city": "Pazin",
+    "provider": "Veleučilište u Rijeci",
+    "institutionType": "Veleučilište",
+    "programs": [
+      {
+        "name": "Poduzetništvo (stručni)",
+        "cutoffByYear": {
+          "2025": 531.2999878
+        }
+      }
+    ]
+  },
+  {
+    "name": "Učiteljski fakultet Sveučilišta u Zagrebu",
+    "city": "Petrinja",
+    "provider": "Sveučilište u Zagrebu",
+    "institutionType": "Sveučilište",
+    "programs": [
+      {
+        "name": "Rani i predškolski odgoj i obrazovanje",
+        "cutoffByYear": {
+          "2025": 468.8999939
+        }
+      },
+      {
+        "name": "Rani i predškolski odgoj i obrazovanje (izvanredni) (izvanredni)",
+        "cutoffByYear": {
+          "2025": 492.7999878
+        }
+      },
+      {
+        "name": "Rani i predškolski odgoj i obrazovanje (završili prije 2010.) (izvanredni)",
+        "cutoffByYear": {
+          "2025": 547.2000122
+        }
+      },
+      {
+        "name": "Učiteljski studij",
+        "cutoffByYear": {
+          "2025": 447.5
+        }
+      }
+    ]
+  },
+  {
+    "name": "Veleučilište u Rijeci",
+    "city": "Poreč",
+    "provider": "Veleučilište u Rijeci",
+    "institutionType": "Veleučilište",
+    "programs": [
+      {
+        "name": "Mediteranska poljoprivreda; smjerovi: Opća mediteranska poljoprivreda, Pčelarstvo (stručni)",
+        "cutoffByYear": {
+          "2025": 601.7000122
+        }
+      },
+      {
+        "name": "Mediteranska poljoprivreda;smjerovi; Opća mediteranska poljoprivreda, Pčelarstvo (izvanredni, stručni)",
+        "cutoffByYear": {
+          "2025": 465.3999939
+        }
+      },
+      {
+        "name": "Vinarstvo (stručni)",
+        "cutoffByYear": {
+          "2025": 517.5999756
+        }
+      }
+    ]
+  },
+  {
+    "name": "Fakultet turizma i ruralnog razvoja u Požegi Sveučilišta u Osijeku",
+    "city": "Požega",
+    "provider": "Sveučilište Josipa Jurja Strossmayera u Osijeku",
+    "institutionType": "Sveučilište",
+    "programs": [
+      {
+        "name": "Elektroničko poslovanje i programsko inženjerstvo (stručni)",
+        "cutoffByYear": {
+          "2025": 512
+        }
+      },
+      {
+        "name": "Enogastronomija (stručni)",
+        "cutoffByYear": {
+          "2025": 569
+        }
+      },
+      {
+        "name": "Računovodstvo (izvanredni, stručni)",
+        "cutoffByYear": {
+          "2025": 289.6000061
+        }
+      },
+      {
+        "name": "Računovodstvo (stručni)",
+        "cutoffByYear": {
+          "2025": 492.7000122
+        }
+      },
+      {
+        "name": "Turizam",
+        "cutoffByYear": {
+          "2025": 484.2000122
+        }
+      },
+      {
+        "name": "Turizam (izvanredni)",
+        "cutoffByYear": {
+          "2025": 226.3999939
+        }
+      }
+    ]
+  },
+  {
+    "name": "Fakultet za odgojne i obrazovne znanosti Sveučilišta u Osijeku",
+    "city": "Požega",
+    "provider": "Sveučilište Josipa Jurja Strossmayera u Osijeku",
+    "institutionType": "Sveučilište",
+    "programs": [
+      {
+        "name": "Rani i predškolski odgoj i obrazovanje (izvanredni)",
+        "cutoffByYear": {
+          "2025": 479.7000122
+        }
+      },
+      {
+        "name": "Rani i predškolski odgoj i obrazovanje (završili prije 2010.) (izvanredni)",
+        "cutoffByYear": {
+          "2025": 468.2999878
+        }
+      }
+    ]
+  },
+  {
+    "name": "Fakultet za dentalnu medicinu i zdravstvo Osijek",
+    "city": "Pregrada",
+    "provider": "Sveučilište Josipa Jurja Strossmayera u Osijeku",
+    "institutionType": "Sveučilište",
+    "programs": [
+      {
+        "name": "Sestrinstvo (izvanredni)",
+        "cutoffByYear": {
+          "2025": 301.2000122
+        }
+      }
+    ]
+  },
+  {
+    "name": "Fakultet ekonomije i turizma Dr. Mijo Mirković u Puli",
+    "city": "Pula",
+    "provider": "Sveučilište Jurja Dobrile u Puli",
+    "institutionType": "Sveučilište",
+    "programs": [
+      {
+        "name": "Kultura i turizam",
+        "cutoffByYear": {
+          "2025": 400.7999878
+        }
+      },
+      {
+        "name": "Kultura i turizam (izvanredni)",
+        "cutoffByYear": {
+          "2025": 342.5
+        }
+      },
+      {
+        "name": "Poslovna ekonomija; moduli: Financije i računovodstvo; Marketing; Management i poduzetništvo; Turizam; Digitalna ekonomija",
+        "cutoffByYear": {
+          "2025": 378.2999878
+        }
+      },
+      {
+        "name": "Primijenjena ekonomija",
+        "cutoffByYear": {
+          "2025": 369.3999939
+        }
+      },
+      {
+        "name": "Primijenjena ekonomija (online studij) (izvanredni)",
+        "cutoffByYear": {
+          "2025": 150
+        }
+      }
+    ]
+  },
+  {
+    "name": "Fakultet informatike u Puli",
+    "city": "Pula",
+    "provider": "Sveučilište Jurja Dobrile u Puli",
+    "institutionType": "Sveučilište",
+    "programs": [
+      {
+        "name": "Informatika",
+        "cutoffByYear": {
+          "2025": 377.7999878
+        }
+      },
+      {
+        "name": "Informatika (online studij) (izvanredni)",
+        "cutoffByYear": {
+          "2025": 166.1999969
+        }
+      }
+    ]
+  },
+  {
+    "name": "Fakultet prirodnih znanosti u Puli",
+    "city": "Pula",
+    "provider": "Sveučilište Jurja Dobrile u Puli",
+    "institutionType": "Sveučilište",
+    "programs": [
+      {
+        "name": "Znanost o moru",
+        "cutoffByYear": {
+          "2025": 269.1000061
+        }
+      }
+    ]
+  },
+  {
+    "name": "Fakultet za odgojne i obrazovne znanosti u Puli",
+    "city": "Pula",
+    "provider": "Sveučilište Jurja Dobrile u Puli",
+    "institutionType": "Sveučilište",
+    "programs": [
+      {
+        "name": "Rani i predškolski odgoj i obrazovanje",
+        "cutoffByYear": {
+          "2025": 157.8000031
+        }
+      },
+      {
+        "name": "Rani i predškolski odgoj i obrazovanje (izvanredni)",
+        "cutoffByYear": {
+          "2025": 181.1999969
+        }
+      },
+      {
+        "name": "Rani i predškolski odgoj i obrazovanje (na talijanskom jeziku)",
+        "cutoffByYear": {
+          "2025": 442.6000061
+        }
+      },
+      {
+        "name": "Učiteljski studij (na hrvatskom jeziku)",
+        "cutoffByYear": {
+          "2025": 438.2999878
+        }
+      }
+    ]
+  },
+  {
+    "name": "Filozofski fakultet u Puli",
+    "city": "Pula",
+    "provider": "Sveučilište Jurja Dobrile u Puli",
+    "institutionType": "Sveučilište",
+    "programs": [
+      {
+        "name": "Arheologija (dvopredmetni)",
+        "cutoffByYear": {
+          "2025": 247.8000031
+        }
+      },
+      {
+        "name": "Engleski jezik i književnost (dvopredmetni)",
+        "cutoffByYear": {
+          "2025": 370.7000122
+        }
+      },
+      {
+        "name": "Hrvatski jezik i književnost (dvopredmetni)",
+        "cutoffByYear": {
+          "2025": 596.2999878
+        }
+      },
+      {
+        "name": "Japanski jezik i kultura (dvopredmetni)",
+        "cutoffByYear": {
+          "2025": 406.1000061
+        }
+      },
+      {
+        "name": "Japanski jezik i kultura (jednopredmetni)",
+        "cutoffByYear": {
+          "2025": 441.1000061
+        }
+      },
+      {
+        "name": "Jezična i interkulturalna medijacija",
+        "cutoffByYear": {
+          "2025": 674.5
+        }
+      },
+      {
+        "name": "Kultura i turizam i Talijanski jezik i kultura (dvopredmetni)",
+        "cutoffByYear": {
+          "2025": 464.2999878
+        }
+      },
+      {
+        "name": "Povijest (dvopredmetni)",
+        "cutoffByYear": {
+          "2025": 323.8999939
+        }
+      },
+      {
+        "name": "Povijest (jednopredmetni)",
+        "cutoffByYear": {
+          "2025": 407.2000122
+        }
+      },
+      {
+        "name": "Talijanski jezik i književnost (dvopredmetni)",
+        "cutoffByYear": {
+          "2025": 496
+        }
+      },
+      {
+        "name": "Talijanski jezik i književnost (jednopredmetni)",
+        "cutoffByYear": {
+          "2025": 492.8999939
+        }
+      }
+    ]
+  },
+  {
+    "name": "Istarsko veleučilište",
+    "city": "Pula",
+    "provider": "Istarsko veleučilište",
+    "institutionType": "Veleučilište",
+    "programs": [
+      {
+        "name": "Mehatronika (izvanredni, stručni)",
+        "cutoffByYear": {
+          "2025": 451.2999878
+        }
+      },
+      {
+        "name": "Mehatronika (stručni)",
+        "cutoffByYear": {
+          "2025": 503.3999939
+        }
+      }
+    ]
+  },
+  {
+    "name": "Medicinski fakultet u Puli",
+    "city": "Pula",
+    "provider": "Sveučilište Jurja Dobrile u Puli",
+    "institutionType": "Sveučilište",
+    "programs": [
+      {
+        "name": "Sestrinstvo (izvanredni, stručni)",
+        "cutoffByYear": {
+          "2025": 200
+        }
+      },
+      {
+        "name": "Sestrinstvo (stručni)",
+        "cutoffByYear": {
+          "2025": 374.2999878
+        }
+      }
+    ]
+  },
+  {
+    "name": "Muzička akademija u Puli",
+    "city": "Pula",
+    "provider": "Sveučilište Jurja Dobrile u Puli",
+    "institutionType": "Sveučilište",
+    "programs": [
+      {
+        "name": "Glazbena pedagogija",
+        "cutoffByYear": {
+          "2025": 738.2000122
+        }
+      },
+      {
+        "name": "Klasična harmonika",
+        "cutoffByYear": {
+          "2025": 541.0999756
+        }
+      },
+      {
+        "name": "Klavir",
+        "cutoffByYear": {
+          "2025": 857.5
+        }
+      },
+      {
+        "name": "Solo pjevanje",
+        "cutoffByYear": {
+          "2025": 605.7000122
+        }
+      }
+    ]
+  },
+  {
+    "name": "Sveučilište Jurja Dobrile u Puli",
+    "city": "Pula",
+    "provider": "Sveučilište Jurja Dobrile u Puli",
+    "institutionType": "Sveučilište",
+    "programs": [
+      {
+        "name": "Dizajn i audiovizualne komunikacije",
+        "cutoffByYear": {
+          "2025": 544.2000122
+        }
+      }
+    ]
+  },
+  {
+    "name": "Tehnički fakultet u Puli",
+    "city": "Pula",
+    "provider": "Sveučilište Jurja Dobrile u Puli",
+    "institutionType": "Sveučilište",
+    "programs": [
+      {
+        "name": "Proizvodno strojarstvo (izvanredni, stručni)",
+        "cutoffByYear": {
+          "2025": 451
+        }
+      },
+      {
+        "name": "Proizvodno strojarstvo (stručni)",
+        "cutoffByYear": {
+          "2025": 437.2000122
+        }
+      },
+      {
+        "name": "Računarstvo",
+        "cutoffByYear": {
+          "2025": 476.7000122
+        }
+      },
+      {
+        "name": "Računarstvo (izvanredni)",
+        "cutoffByYear": {
+          "2025": 403.5
+        }
+      }
+    ]
+  },
+  {
+    "name": "Akademija primijenjenih umjetnosti",
+    "city": "Rijeka",
+    "provider": "Sveučilište u Rijeci",
+    "institutionType": "Sveučilište",
+    "programs": [
+      {
+        "name": "Gluma i mediji",
+        "cutoffByYear": {
+          "2025": 631.7000122
+        }
+      },
+      {
+        "name": "Grafički dizajn i vizualne komunikacije",
+        "cutoffByYear": {
+          "2025": 658
+        }
+      },
+      {
+        "name": "Likovna pedagogija",
+        "cutoffByYear": {
+          "2025": 847.0999756
+        }
+      },
+      {
+        "name": "Primijenjena umjetnost",
+        "cutoffByYear": {
+          "2025": 563.5999756
+        }
+      }
+    ]
+  },
+  {
+    "name": "Ekonomski fakultet Sveučilišta u Rijeci",
+    "city": "Rijeka",
+    "provider": "Sveučilište u Rijeci",
+    "institutionType": "Sveučilište",
+    "programs": [
+      {
+        "name": "Ekonomija",
+        "cutoffByYear": {
+          "2025": 488.7999878
+        }
+      },
+      {
+        "name": "Poslovna ekonomija; modul: Međunarodno poslovanje (na engleskome jeziku)",
+        "cutoffByYear": {
+          "2025": 554
+        }
+      },
+      {
+        "name": "Poslovna ekonomija; modul: Poduzetništvo (izvanredni)",
+        "cutoffByYear": {
+          "2025": 230.3999939
+        }
+      },
+      {
+        "name": "Poslovna ekonomija; moduli: Financije, Poduzetništvo, Menadžment (on-line) (izvanredni)",
+        "cutoffByYear": {
+          "2025": 252
+        }
+      },
+      {
+        "name": "Poslovna ekonomija; moduli: Financije, Poduzetništvo, Menadžment, Marketing, Međunarodno poslovanje",
+        "cutoffByYear": {
+          "2025": 184.8000031
+        }
+      }
+    ]
+  },
+  {
+    "name": "Fakultet biotehnologije i razvoja lijekova Sveučilišta u Rijeci",
+    "city": "Rijeka",
+    "provider": "Sveučilište u Rijeci",
+    "institutionType": "Sveučilište",
+    "programs": [
+      {
+        "name": "Biotehnologija i istraživanje lijekova",
+        "cutoffByYear": {
+          "2025": 564.7999878
+        }
+      }
+    ]
+  },
+  {
+    "name": "Fakultet dentalne medicine Sveučilišta u Rijeci",
+    "city": "Rijeka",
+    "provider": "Sveučilište u Rijeci",
+    "institutionType": "Sveučilište",
+    "programs": [
+      {
+        "name": "Dental Medicine",
+        "cutoffByYear": {
+          "2025": 549.2000122
+        }
+      },
+      {
+        "name": "Dentalna medicina",
+        "cutoffByYear": {
+          "2025": 651.5
+        }
+      },
+      {
+        "name": "Dentalna tehnika (izvanredni, stručni)",
+        "cutoffByYear": {
+          "2025": 319.5
+        }
+      }
+    ]
+  },
+  {
+    "name": "Fakultet informatike i digitalnih tehnologija Sveučilišta u Rijeci",
+    "city": "Rijeka",
+    "provider": "Sveučilište u Rijeci",
+    "institutionType": "Sveučilište",
+    "programs": [
+      {
+        "name": "Informatika",
+        "cutoffByYear": {
+          "2025": 219
+        }
+      },
+      {
+        "name": "Informatika (izvanredni)",
+        "cutoffByYear": {
+          "2025": 395.2999878
+        }
+      }
+    ]
+  },
+  {
+    "name": "Fakultet za fiziku Sveučilišta u Rijeci",
+    "city": "Rijeka",
+    "provider": "Sveučilište u Rijeci",
+    "institutionType": "Sveučilište",
+    "programs": [
+      {
+        "name": "Fizika",
+        "cutoffByYear": {
+          "2025": 587.7000122
+        }
+      }
+    ]
+  },
+  {
+    "name": "Fakultet za matematiku Sveučilišta u Rijeci",
+    "city": "Rijeka",
+    "provider": "Sveučilište u Rijeci",
+    "institutionType": "Sveučilište",
+    "programs": [
+      {
+        "name": "Matematika",
+        "cutoffByYear": {
+          "2025": 543.2999878
+        }
+      },
+      {
+        "name": "Matematika (izvanredni)",
+        "cutoffByYear": {
+          "2025": 545.4000244
+        }
+      }
+    ]
+  },
+  {
+    "name": "Fakultet zdravstvenih studija Sveučilišta u Rijeci",
+    "city": "Rijeka",
+    "provider": "Sveučilište u Rijeci",
+    "institutionType": "Sveučilište",
+    "programs": [
+      {
+        "name": "Fizioterapija (stručni)",
+        "cutoffByYear": {
+          "2025": 525.2999878
+        }
+      },
+      {
+        "name": "Primaljstvo",
+        "cutoffByYear": {
+          "2025": 543.2999878
+        }
+      },
+      {
+        "name": "Primaljstvo (izvanredni)",
+        "cutoffByYear": {
+          "2025": 518.5999756
+        }
+      },
+      {
+        "name": "Radiološka tehnologija (stručni)",
+        "cutoffByYear": {
+          "2025": 572.2000122
+        }
+      },
+      {
+        "name": "Sestrinstvo",
+        "cutoffByYear": {
+          "2025": 513.7000122
+        }
+      },
+      {
+        "name": "Sestrinstvo (izvanredni)",
+        "cutoffByYear": {
+          "2025": 458
+        }
+      }
+    ]
+  },
+  {
+    "name": "Filozofski fakultet Sveučilišta u Rijeci",
+    "city": "Rijeka",
+    "provider": "Sveučilište u Rijeci",
+    "institutionType": "Sveučilište",
+    "programs": [
+      {
+        "name": "Engleski jezik i književnost (dvopredmetni)",
+        "cutoffByYear": {
+          "2025": 684.2000122
+        }
+      },
+      {
+        "name": "Filozofija (dvopredmetni)",
+        "cutoffByYear": {
+          "2025": 379.2000122
+        }
+      },
+      {
+        "name": "Filozofija (dvopredmetni) (izvanredni)",
+        "cutoffByYear": {
+          "2025": 541
+        }
+      },
+      {
+        "name": "Hrvatski jezik i književnost (dvopredmetni)",
+        "cutoffByYear": {
+          "2025": 498.7999878
+        }
+      },
+      {
+        "name": "Hrvatski jezik i književnost (jednopredmetni)",
+        "cutoffByYear": {
+          "2025": 487.5
+        }
+      },
+      {
+        "name": "Kulturologija",
+        "cutoffByYear": {
+          "2025": 374.3999939
+        }
+      },
+      {
+        "name": "Njemački jezik i književnost (dvopredmetni)",
+        "cutoffByYear": {
+          "2025": 658.2999878
+        }
+      },
+      {
+        "name": "Pedagogija (dvopredmetni)",
+        "cutoffByYear": {
+          "2025": 680.5
+        }
+      },
+      {
+        "name": "Pedagogija (jednopredmetni)",
+        "cutoffByYear": {
+          "2025": 699.2000122
+        }
+      },
+      {
+        "name": "Povijest (dvopredmetni)",
+        "cutoffByYear": {
+          "2025": 457.3999939
+        }
+      },
+      {
+        "name": "Povijest (dvopredmetni) (izvanredni)",
+        "cutoffByYear": {
+          "2025": 456.6000061
+        }
+      },
+      {
+        "name": "Povijest umjetnosti (dvopredmetni)",
+        "cutoffByYear": {
+          "2025": 379.2000122
+        }
+      },
+      {
+        "name": "Povijest umjetnosti (dvopredmetni) (izvanredni)",
+        "cutoffByYear": {
+          "2025": 405.2999878
+        }
+      },
+      {
+        "name": "Psihologija",
+        "cutoffByYear": {
+          "2025": 744.5
+        }
+      },
+      {
+        "name": "Talijanski jezik i književnost (dvopredmetni)",
+        "cutoffByYear": {
+          "2025": 597.2999878
+        }
+      },
+      {
+        "name": "Talijanski jezik i književnost (dvopredmetni) (izvanredni)",
+        "cutoffByYear": {
+          "2025": 709.7999878
+        }
+      }
+    ]
+  },
+  {
+    "name": "Građevinski fakultet Sveučilišta u Rijeci",
+    "city": "Rijeka",
+    "provider": "Sveučilište u Rijeci",
+    "institutionType": "Sveučilište",
+    "programs": [
+      {
+        "name": "Građevinarstvo",
+        "cutoffByYear": {
+          "2025": 493.2000122
+        }
+      },
+      {
+        "name": "Građevinarstvo (izvanredni, stručni)",
+        "cutoffByYear": {
+          "2025": 439.7000122
+        }
+      },
+      {
+        "name": "Građevinarstvo (stručni)",
+        "cutoffByYear": {
+          "2025": 461.3999939
+        }
+      },
+      {
+        "name": "Građevinarstvo (završili prije 2010.) (izvanredni, stručni)",
+        "cutoffByYear": {
+          "2025": 784
+        }
+      }
+    ]
+  },
+  {
+    "name": "Medicinski fakultet i Fakultet biotehnologije i razvoja lijekova Sveučilišta u Rijeci",
+    "city": "Rijeka",
+    "provider": "Sveučilište u Rijeci",
+    "institutionType": "Sveučilište",
+    "programs": [
+      {
+        "name": "Farmacija",
+        "cutoffByYear": {
+          "2025": 618.0999756
+        }
+      }
+    ]
+  },
+  {
+    "name": "Medicinski fakultet Sveučilišta u Rijeci",
+    "city": "Rijeka",
+    "provider": "Sveučilište u Rijeci",
+    "institutionType": "Sveučilište",
+    "programs": [
+      {
+        "name": "Medicina",
+        "cutoffByYear": {
+          "2025": 621.9000244
+        }
+      },
+      {
+        "name": "Medicine",
+        "cutoffByYear": {
+          "2025": 181
+        }
+      },
+      {
+        "name": "Medicinsko laboratorijska dijagnostika",
+        "cutoffByYear": {
+          "2025": 673.4000244
+        }
+      },
+      {
+        "name": "Sanitarno inženjerstvo",
+        "cutoffByYear": {
+          "2025": 414.5
+        }
+      }
+    ]
+  },
+  {
+    "name": "Pomorski fakultet Sveučilišta u Rijeci",
+    "city": "Rijeka",
+    "provider": "Sveučilište u Rijeci",
+    "institutionType": "Sveučilište",
+    "programs": [
+      {
+        "name": "Brodostrojarstvo",
+        "cutoffByYear": {
+          "2025": 439.3999939
+        }
+      },
+      {
+        "name": "Brodostrojarstvo (izvanredni)",
+        "cutoffByYear": {
+          "2025": 698.9000244
+        }
+      },
+      {
+        "name": "Elektroničke i informatičke tehnologije u pomorstvu",
+        "cutoffByYear": {
+          "2025": 459.6000061
+        }
+      },
+      {
+        "name": "Elektroničke i informatičke tehnologije u pomorstvu (izvanredni)",
+        "cutoffByYear": {
+          "2025": 452
+        }
+      },
+      {
+        "name": "Logistika i menadžment u pomorstvu i prometu",
+        "cutoffByYear": {
+          "2025": 492.3999939
+        }
+      },
+      {
+        "name": "Logistika i menadžment u pomorstvu i prometu (izvanredni)",
+        "cutoffByYear": {
+          "2025": 455.5
+        }
+      },
+      {
+        "name": "Nautika i tehnologija pomorskog prometa",
+        "cutoffByYear": {
+          "2025": 458.2999878
+        }
+      },
+      {
+        "name": "Nautika i tehnologija pomorskog prometa (izvanredni)",
+        "cutoffByYear": {
+          "2025": 434.1000061
+        }
+      },
+      {
+        "name": "Promet i mobilnost",
+        "cutoffByYear": {
+          "2025": 466.6000061
+        }
+      },
+      {
+        "name": "Promet i mobilnost (izvanredni)",
+        "cutoffByYear": {
+          "2025": 487.7999878
+        }
+      }
+    ]
+  },
+  {
+    "name": "Pravni fakultet Sveučilišta u Rijeci",
+    "city": "Rijeka",
+    "provider": "Sveučilište u Rijeci",
+    "institutionType": "Sveučilište",
+    "programs": [
+      {
+        "name": "Pravo",
+        "cutoffByYear": {
+          "2025": 395
+        }
+      },
+      {
+        "name": "Pravo (izvanredni)",
+        "cutoffByYear": {
+          "2025": 369.3999939
+        }
+      },
+      {
+        "name": "Upravni studij (izvanredni, stručni)",
+        "cutoffByYear": {
+          "2025": 172.1999969
+        }
+      },
+      {
+        "name": "Upravni studij (stručni)",
+        "cutoffByYear": {
+          "2025": 237.6000061
+        }
+      }
+    ]
+  },
+  {
+    "name": "Sveučilište u Rijeci",
+    "city": "Rijeka",
+    "provider": "Sveučilište u Rijeci",
+    "institutionType": "Sveučilište",
+    "programs": [
+      {
+        "name": "Logopedija",
+        "cutoffByYear": {
+          "2025": 821.5
+        }
+      }
+    ]
+  },
+  {
+    "name": "Sveučilište u Rijeci; Sveučilište u Maastrichtu, Nizozemska; Sveučilište „Carlos III”, Madrid, Kraljevina Španjolska; Sveučilište Istočne Finske, Republika Finska; Sveučilište na Cipru, Republika Cipar; Sveučilište u Antwerpenu, Kraljevina Belgija; Sveučilište u",
+    "city": "Rijeka",
+    "provider": "Sveučilište u Rijeci",
+    "institutionType": "Sveučilište",
+    "programs": [
+      {
+        "name": "Urban Sustainability Studies (združeni studij na engleskom jeziku)",
+        "cutoffByYear": {
+          "2025": 100
+        }
+      }
+    ]
+  },
+  {
+    "name": "Tehnički fakultet Sveučilišta u Rijeci",
+    "city": "Rijeka",
+    "provider": "Sveučilište u Rijeci",
+    "institutionType": "Sveučilište",
+    "programs": [
+      {
+        "name": "Brodogradnja",
+        "cutoffByYear": {
+          "2025": 381.7999878
+        }
+      },
+      {
+        "name": "Brodogradnja (izvanredni)",
+        "cutoffByYear": {
+          "2025": 450
+        }
+      },
+      {
+        "name": "Elektrotehnika",
+        "cutoffByYear": {
+          "2025": 358.2999878
+        }
+      },
+      {
+        "name": "Elektrotehnika (izvanredni)",
+        "cutoffByYear": {
+          "2025": 380.5
+        }
+      },
+      {
+        "name": "Mehatronika i robotika",
+        "cutoffByYear": {
+          "2025": 366.2000122
+        }
+      },
+      {
+        "name": "Računarstvo",
+        "cutoffByYear": {
+          "2025": 430.1000061
+        }
+      },
+      {
+        "name": "Računarstvo (izvanredni)",
+        "cutoffByYear": {
+          "2025": 719.2999878
+        }
+      },
+      {
+        "name": "Strojarstvo",
+        "cutoffByYear": {
+          "2025": 337.6000061
+        }
+      },
+      {
+        "name": "Strojarstvo (Hrvati izvan RH)",
+        "cutoffByYear": {
+          "2025": 300
+        }
+      },
+      {
+        "name": "Strojarstvo (izvanredni, stručni)",
+        "cutoffByYear": {
+          "2025": 458.8999939
+        }
+      },
+      {
+        "name": "Strojarstvo (stručni)",
+        "cutoffByYear": {
+          "2025": 339.2999878
+        }
+      }
+    ]
+  },
+  {
+    "name": "Učiteljski fakultet Sveučilišta u Rijeci",
+    "city": "Rijeka",
+    "provider": "Sveučilište u Rijeci",
+    "institutionType": "Sveučilište",
+    "programs": [
+      {
+        "name": "Rani i predškolski odgoj i obrazovanje",
+        "cutoffByYear": {
+          "2025": 448.2000122
+        }
+      },
+      {
+        "name": "Rani i predškolski odgoj i obrazovanje (izvanredni)",
+        "cutoffByYear": {
+          "2025": 462.2999878
+        }
+      },
+      {
+        "name": "Rani i predškolski odgoj i obrazovanje (završili prije 2010.) (izvanredni)",
+        "cutoffByYear": {
+          "2025": 309.2000122
+        }
+      },
+      {
+        "name": "Učiteljski studij",
+        "cutoffByYear": {
+          "2025": 497.6000061
+        }
+      }
+    ]
+  },
+  {
+    "name": "Veleučilište PAR",
+    "city": "Rijeka",
+    "provider": "Veleučilište PAR",
+    "institutionType": "Veleučilište",
+    "programs": [
+      {
+        "name": "Poslovno upravljanje (izvanredni, stručni)",
+        "cutoffByYear": {
+          "2025": 493.6000061
+        }
+      },
+      {
+        "name": "Poslovno upravljanje (stručni)",
+        "cutoffByYear": {
+          "2025": 531.7999878
+        }
+      },
+      {
+        "name": "Upravljanje u gastronomiji i restoraterstvu (stručni)",
+        "cutoffByYear": {
+          "2025": 531.2999878
+        }
+      }
+    ]
+  },
+  {
+    "name": "Veleučilište u Rijeci",
+    "city": "Rijeka",
+    "provider": "Veleučilište u Rijeci",
+    "institutionType": "Veleučilište",
+    "programs": [
+      {
+        "name": "Cestovni promet (izvanredni, stručni)",
+        "cutoffByYear": {
+          "2025": 472.7999878
+        }
+      },
+      {
+        "name": "Cestovni promet (stručni)",
+        "cutoffByYear": {
+          "2025": 269.6000061
+        }
+      },
+      {
+        "name": "Informatika (izvanredni, stručni)",
+        "cutoffByYear": {
+          "2025": 516.9000244
+        }
+      },
+      {
+        "name": "Informatika (stručni)",
+        "cutoffByYear": {
+          "2025": 438.2000122
+        }
+      },
+      {
+        "name": "Održivi agroturizam (izvanredni, stručni)",
+        "cutoffByYear": {
+          "2025": 241.6000061
+        }
+      },
+      {
+        "name": "Održivi agroturizam (stručni)",
+        "cutoffByYear": {
+          "2025": 585.7000122
+        }
+      },
+      {
+        "name": "Poduzetništvo; moduli: Digitalno poduzetništvo i Održivo poduzetništvo (stručni)",
+        "cutoffByYear": {
+          "2025": 442.5
+        }
+      },
+      {
+        "name": "Sigurnost na radu (izvanredni, stručni)",
+        "cutoffByYear": {
+          "2025": 412.8999939
+        }
+      },
+      {
+        "name": "Sigurnost na radu (stručni)",
+        "cutoffByYear": {
+          "2025": 401.6000061
+        }
+      },
+      {
+        "name": "Telematika (stručni)",
+        "cutoffByYear": {
+          "2025": 426.5
+        }
+      },
+      {
+        "name": "Željeznički promet (izvanredni, stručni)",
+        "cutoffByYear": {
+          "2025": 565.9000244
+        }
+      }
+    ]
+  },
+  {
+    "name": "Metalurški fakultet Sveučilišta u Zagrebu",
+    "city": "Sisak",
+    "provider": "Sveučilište u Zagrebu",
+    "institutionType": "Sveučilište",
+    "programs": [
+      {
+        "name": "Metalurgija; smjerovi: Metalurško inženjerstvo, Industrijska ekologija",
+        "cutoffByYear": {
+          "2025": 489.3999939
+        }
+      },
+      {
+        "name": "Sigurnost, zdravlje na radu i radni okoliš",
+        "cutoffByYear": {
+          "2025": 435.2000122
+        }
+      },
+      {
+        "name": "Sigurnost, zdravlje na radu i radni okoliš (izvanredni)",
+        "cutoffByYear": {
+          "2025": 476.6000061
+        }
+      }
+    ]
+  },
+  {
+    "name": "Fakultet za odgojne i obrazovne znanosti Sveučilišta u Osijeku",
+    "city": "Slatina",
+    "provider": "Sveučilište Josipa Jurja Strossmayera u Osijeku",
+    "institutionType": "Sveučilište",
+    "programs": [
+      {
+        "name": "Rani i predškolski odgoj i obrazovanje (izvanredni)",
+        "cutoffByYear": {
+          "2025": 531.2000122
+        }
+      },
+      {
+        "name": "Rani i predškolski odgoj i obrazovanje (završili prije 2010.) (izvanredni)",
+        "cutoffByYear": {
+          "2025": 549
+        }
+      }
+    ]
+  },
+  {
+    "name": "Biotehnički odjel Sveučilišta u Slavonskom Brodu",
+    "city": "Slavonski Brod",
+    "provider": "Sveučilište u Slavonskom Brodu",
+    "institutionType": "Sveučilište",
+    "programs": [
+      {
+        "name": "Ekoinženjerstvo i zaštita prirode",
+        "cutoffByYear": {
+          "2025": 399.2999878
+        }
+      }
+    ]
+  },
+  {
+    "name": "Odjel društveno-humanističkih znanosti Sveučilišta u Slavonskom Brodu",
+    "city": "Slavonski Brod",
+    "provider": "Sveučilište u Slavonskom Brodu",
+    "institutionType": "Sveučilište",
+    "programs": [
+      {
+        "name": "Ekonomija",
+        "cutoffByYear": {
+          "2025": 422.7999878
+        }
+      },
+      {
+        "name": "Ekonomija (izvanredni)",
+        "cutoffByYear": {
+          "2025": 217.6999969
+        }
+      },
+      {
+        "name": "Rani i predškolski odgoj i obrazovanje (izvanredni)",
+        "cutoffByYear": {
+          "2025": 223.1999969
+        }
+      },
+      {
+        "name": "Učiteljski studij",
+        "cutoffByYear": {
+          "2025": 296.1000061
+        }
+      }
+    ]
+  },
+  {
+    "name": "Strojarski fakultet Sveučilišta u Slavonskom Brodu",
+    "city": "Slavonski Brod",
+    "provider": "Sveučilište u Slavonskom Brodu",
+    "institutionType": "Sveučilište",
+    "programs": [
+      {
+        "name": "Strojarstvo",
+        "cutoffByYear": {
+          "2025": 327.2000122
+        }
+      },
+      {
+        "name": "Strojarstvo (izvanredni)",
+        "cutoffByYear": {
+          "2025": 415.6000061
+        }
+      }
+    ]
+  },
+  {
+    "name": "Tehnički odjel Sveučilišta u Slavonskom Brodu",
+    "city": "Slavonski Brod",
+    "provider": "Sveučilište u Slavonskom Brodu",
+    "institutionType": "Sveučilište",
+    "programs": [
+      {
+        "name": "Informatika i informacijske tehnologije (izvanredni, stručni)",
+        "cutoffByYear": {
+          "2025": 305.1000061
+        }
+      },
+      {
+        "name": "Proizvodno strojarstvo (izvanredni, stručni)",
+        "cutoffByYear": {
+          "2025": 232.8000031
+        }
+      },
+      {
+        "name": "Proizvodno strojarstvo (stručni)",
+        "cutoffByYear": {
+          "2025": 364.7999878
+        }
+      }
+    ]
+  },
+  {
+    "name": "Ekonomski fakultet Sveučilišta u Splitu",
+    "city": "Split",
+    "provider": "Sveučilište u Splitu",
+    "institutionType": "Sveučilište",
+    "programs": [
+      {
+        "name": "Ekonomija",
+        "cutoffByYear": {
+          "2025": 365
+        }
+      },
+      {
+        "name": "Ekonomija (izvanredni)",
+        "cutoffByYear": {
+          "2025": 570.7000122
+        }
+      },
+      {
+        "name": "Management malog poduzeća (izvanredni, stručni)",
+        "cutoffByYear": {
+          "2025": 505.8999939
+        }
+      },
+      {
+        "name": "Management malog poduzeća (stručni)",
+        "cutoffByYear": {
+          "2025": 366.2000122
+        }
+      },
+      {
+        "name": "Poslovna ekonomija",
+        "cutoffByYear": {
+          "2025": 377
+        }
+      },
+      {
+        "name": "Poslovna ekonomija (Hrvati izvan RH)",
+        "cutoffByYear": {
+          "2025": 769.9000244
+        }
+      },
+      {
+        "name": "Poslovna ekonomija (izvanredni)",
+        "cutoffByYear": {
+          "2025": 382.6000061
+        }
+      },
+      {
+        "name": "Turističko poslovanje (izvanredni, stručni)",
+        "cutoffByYear": {
+          "2025": 448.3999939
+        }
+      },
+      {
+        "name": "Turističko poslovanje (stručni)",
+        "cutoffByYear": {
+          "2025": 405.7999878
+        }
+      },
+      {
+        "name": "Turizam",
+        "cutoffByYear": {
+          "2025": 388.1000061
+        }
+      },
+      {
+        "name": "Turizam (izvanredni)",
+        "cutoffByYear": {
+          "2025": 376.6000061
+        }
+      }
+    ]
+  },
+  {
+    "name": "Fakultet elektrotehnike, strojarstva i brodogradnje Sveučilišta u Splitu",
+    "city": "Split",
+    "provider": "Sveučilište u Splitu",
+    "institutionType": "Sveučilište",
+    "programs": [
+      {
+        "name": "Brodogradnja",
+        "cutoffByYear": {
+          "2025": 289.8999939
+        }
+      },
+      {
+        "name": "Brodogradnja (stručni)",
+        "cutoffByYear": {
+          "2025": 319.5
+        }
+      },
+      {
+        "name": "Elektrotehnika (stručni)",
+        "cutoffByYear": {
+          "2025": 399.6000061
+        }
+      },
+      {
+        "name": "Elektrotehnika i informacijska tehnologija",
+        "cutoffByYear": {
+          "2025": 334.7999878
+        }
+      },
+      {
+        "name": "Industrijsko inženjerstvo",
+        "cutoffByYear": {
+          "2025": 440.6000061
+        }
+      },
+      {
+        "name": "Računarstvo",
+        "cutoffByYear": {
+          "2025": 367.6000061
+        }
+      },
+      {
+        "name": "Računarstvo (stručni)",
+        "cutoffByYear": {
+          "2025": 289.2000122
+        }
+      },
+      {
+        "name": "Strojarstvo",
+        "cutoffByYear": {
+          "2025": 376.3999939
+        }
+      },
+      {
+        "name": "Strojarstvo (stručni)",
+        "cutoffByYear": {
+          "2025": 301.2000122
+        }
+      }
+    ]
+  },
+  {
+    "name": "Fakultet građevinarstva, arhitekture i geodezije Sveučilišta u Splitu",
+    "city": "Split",
+    "provider": "Sveučilište u Splitu",
+    "institutionType": "Sveučilište",
+    "programs": [
+      {
+        "name": "Arhitektura i urbanizam",
+        "cutoffByYear": {
+          "2025": 507.7000122
+        }
+      },
+      {
+        "name": "Geodezija i geoinformatika",
+        "cutoffByYear": {
+          "2025": 518.5999756
+        }
+      },
+      {
+        "name": "Građevinarstvo",
+        "cutoffByYear": {
+          "2025": 568.0999756
+        }
+      },
+      {
+        "name": "Građevinarstvo (stručni)",
+        "cutoffByYear": {
+          "2025": 495
+        }
+      }
+    ]
+  },
+  {
+    "name": "Fakultet zdravstvenih znanosti Sveučilišta u Splitu",
+    "city": "Split",
+    "provider": "Sveučilište u Splitu",
+    "institutionType": "Sveučilište",
+    "programs": [
+      {
+        "name": "Fizioterapija",
+        "cutoffByYear": {
+          "2025": 596.0999756
+        }
+      },
+      {
+        "name": "Fizioterapija (izvanredni)",
+        "cutoffByYear": {
+          "2025": 544.7999878
+        }
+      },
+      {
+        "name": "Medicinsko laboratorijska dijagnostika",
+        "cutoffByYear": {
+          "2025": 566.7000122
+        }
+      },
+      {
+        "name": "Medicinsko laboratorijska dijagnostika (izvanredni)",
+        "cutoffByYear": {
+          "2025": 535.5
+        }
+      },
+      {
+        "name": "Primaljstvo",
+        "cutoffByYear": {
+          "2025": 430
+        }
+      },
+      {
+        "name": "Primaljstvo (izvanredni)",
+        "cutoffByYear": {
+          "2025": 358.1000061
+        }
+      },
+      {
+        "name": "Primaljstvo (završili prije 2010.)",
+        "cutoffByYear": {
+          "2025": 823.7000122
+        }
+      },
+      {
+        "name": "Primaljstvo (završili prije 2010.) (izvanredni)",
+        "cutoffByYear": {
+          "2025": 811.2999878
+        }
+      },
+      {
+        "name": "Radiološka tehnologija",
+        "cutoffByYear": {
+          "2025": 588
+        }
+      },
+      {
+        "name": "Radiološka tehnologija (izvanredni)",
+        "cutoffByYear": {
+          "2025": 564.2000122
+        }
+      },
+      {
+        "name": "Sestrinstvo",
+        "cutoffByYear": {
+          "2025": 400
+        }
+      },
+      {
+        "name": "Sestrinstvo (izvanredni)",
+        "cutoffByYear": {
+          "2025": 164.5
+        }
+      }
+    ]
+  },
+  {
+    "name": "Filozofski fakultet u Splitu",
+    "city": "Split",
+    "provider": "Sveučilište u Splitu",
+    "institutionType": "Sveučilište",
+    "programs": [
+      {
+        "name": "Engleski jezik i književnost (dvopredmetni)",
+        "cutoffByYear": {
+          "2025": 724.2999878
+        }
+      },
+      {
+        "name": "Engleski jezik i književnost (dvopredmetni) (Hrvati izvan RH)",
+        "cutoffByYear": {
+          "2025": 635.9000244
+        }
+      },
+      {
+        "name": "Filozofija (dvopredmetni)",
+        "cutoffByYear": {
+          "2025": 433.8999939
+        }
+      },
+      {
+        "name": "Hrvatski jezik i književnost (dvopredmetni)",
+        "cutoffByYear": {
+          "2025": 570
+        }
+      },
+      {
+        "name": "Njemački jezik i književnost (dvopredmetni)",
+        "cutoffByYear": {
+          "2025": 473.1000061
+        }
+      },
+      {
+        "name": "Njemački jezik i književnost (dvopredmetni) (Hrvati izvan RH)",
+        "cutoffByYear": {
+          "2025": 607.9000244
+        }
+      },
+      {
+        "name": "Pedagogija (dvopredmetni)",
+        "cutoffByYear": {
+          "2025": 677.9000244
+        }
+      },
+      {
+        "name": "Povijest (dvopredmetni)",
+        "cutoffByYear": {
+          "2025": 405.7999878
+        }
+      },
+      {
+        "name": "Povijest (dvopredmetni) (Hrvati izvan RH)",
+        "cutoffByYear": {
+          "2025": 607.9000244
+        }
+      },
+      {
+        "name": "Povijest umjetnosti (dvopredmetni)",
+        "cutoffByYear": {
+          "2025": 399.8999939
+        }
+      },
+      {
+        "name": "Psychology",
+        "cutoffByYear": {
+          "2025": 725.2000122
+        }
+      },
+      {
+        "name": "Rani i predškolski odgoj i obrazovanje",
+        "cutoffByYear": {
+          "2025": 605.2999878
+        }
+      },
+      {
+        "name": "Sociologija",
+        "cutoffByYear": {
+          "2025": 428.5
+        }
+      },
+      {
+        "name": "Talijanski jezik i književnost (dvopredmetni)",
+        "cutoffByYear": {
+          "2025": 447.5
+        }
+      },
+      {
+        "name": "Učiteljski studij",
+        "cutoffByYear": {
+          "2025": 402.7000122
+        }
+      }
+    ]
+  },
+  {
+    "name": "Katolički bogoslovni fakultet Sveučilišta u Splitu",
+    "city": "Split",
+    "provider": "Sveučilište u Splitu",
+    "institutionType": "Sveučilište",
+    "programs": [
+      {
+        "name": "Filozofsko - teološki studij",
+        "cutoffByYear": {
+          "2025": 602.0999756
+        }
+      },
+      {
+        "name": "Teološko - katehetski studij",
+        "cutoffByYear": {
+          "2025": 554.2999878
+        }
+      }
+    ]
+  },
+  {
+    "name": "Kemijsko-tehnološki fakultet Sveučilišta u Splitu",
+    "city": "Split",
+    "provider": "Sveučilište u Splitu",
+    "institutionType": "Sveučilište",
+    "programs": [
+      {
+        "name": "Kemija",
+        "cutoffByYear": {
+          "2025": 341.7000122
+        }
+      },
+      {
+        "name": "Kemijska tehnologija; smjer: Kemijsko inženjerstvo",
+        "cutoffByYear": {
+          "2025": 421.1000061
+        }
+      },
+      {
+        "name": "Kemijska tehnologija; smjer: Zaštita okoliša",
+        "cutoffByYear": {
+          "2025": 367.7000122
+        }
+      },
+      {
+        "name": "Prehrambena tehnologija",
+        "cutoffByYear": {
+          "2025": 318.3999939
+        }
+      }
+    ]
+  },
+  {
+    "name": "Kineziološki fakultet Sveučilišta u Splitu",
+    "city": "Split",
+    "provider": "Sveučilište u Splitu",
+    "institutionType": "Sveučilište",
+    "programs": [
+      {
+        "name": "Kineziologija",
+        "cutoffByYear": {
+          "2025": 387.1000061
+        }
+      },
+      {
+        "name": "Kineziologija; smjer: Kineziterapija (izvanredni, stručni)",
+        "cutoffByYear": {
+          "2025": 323.7000122
+        }
+      },
+      {
+        "name": "Kineziologija; smjer: Kondicijska priprema sportaša (izvanredni, stručni)",
+        "cutoffByYear": {
+          "2025": 338.5
+        }
+      },
+      {
+        "name": "Kineziologija; smjer: Rekreacija i fitnes (izvanredni, stručni)",
+        "cutoffByYear": {
+          "2025": 390.5
+        }
+      }
+    ]
+  },
+  {
+    "name": "Medicinski fakultet i Kemijsko-tehnološki fakultet Sveučilišta u Splitu",
+    "city": "Split",
+    "provider": "Sveučilište u Splitu",
+    "institutionType": "Sveučilište",
+    "programs": [
+      {
+        "name": "Farmacija",
+        "cutoffByYear": {
+          "2025": 660.7999878
+        }
+      }
+    ]
+  },
+  {
+    "name": "Medicinski fakultet Sveučilišta u Splitu",
+    "city": "Split",
+    "provider": "Sveučilište u Splitu",
+    "institutionType": "Sveučilište",
+    "programs": [
+      {
+        "name": "Dentalna medicina",
+        "cutoffByYear": {
+          "2025": 673.0999756
+        }
+      },
+      {
+        "name": "Medicina",
+        "cutoffByYear": {
+          "2025": 642.4000244
+        }
+      },
+      {
+        "name": "Medicine",
+        "cutoffByYear": {
+          "2025": 557.5999756
+        }
+      }
+    ]
+  },
+  {
+    "name": "Pomorski fakultet Sveučilišta u Splitu",
+    "city": "Split",
+    "provider": "Sveučilište u Splitu",
+    "institutionType": "Sveučilište",
+    "programs": [
+      {
+        "name": "Brodostrojarstvo",
+        "cutoffByYear": {
+          "2025": 360.7000122
+        }
+      },
+      {
+        "name": "Brodostrojarstvo (izvanredni)",
+        "cutoffByYear": {
+          "2025": 319.3999939
+        }
+      },
+      {
+        "name": "Pomorska nautika",
+        "cutoffByYear": {
+          "2025": 505.1000061
+        }
+      },
+      {
+        "name": "Pomorska nautika (izvanredni)",
+        "cutoffByYear": {
+          "2025": 165
+        }
+      },
+      {
+        "name": "Pomorske elektrotehničke i informatičke tehnologije",
+        "cutoffByYear": {
+          "2025": 385.2000122
+        }
+      },
+      {
+        "name": "Pomorske elektrotehničke i informatičke tehnologije (izvanredni)",
+        "cutoffByYear": {
+          "2025": 511.5
+        }
+      },
+      {
+        "name": "Pomorske tehnologije jahta i marina",
+        "cutoffByYear": {
+          "2025": 378.8999939
+        }
+      },
+      {
+        "name": "Pomorske tehnologije jahta i marina (izvanredni)",
+        "cutoffByYear": {
+          "2025": 596.5999756
+        }
+      },
+      {
+        "name": "Pomorski menadžment",
+        "cutoffByYear": {
+          "2025": 362
+        }
+      },
+      {
+        "name": "Pomorski menadžment (izvanredni)",
+        "cutoffByYear": {
+          "2025": 340.2999878
+        }
+      }
+    ]
+  },
+  {
+    "name": "Pravni fakultet Sveučilišta u Splitu",
+    "city": "Split",
+    "provider": "Sveučilište u Splitu",
+    "institutionType": "Sveučilište",
+    "programs": [
+      {
+        "name": "Pravo",
+        "cutoffByYear": {
+          "2025": 269.7999878
+        }
+      },
+      {
+        "name": "Pravo (izvanredni)",
+        "cutoffByYear": {
+          "2025": 540
+        }
+      },
+      {
+        "name": "Upravni studij (izvanredni, stručni)",
+        "cutoffByYear": {
+          "2025": 542
+        }
+      },
+      {
+        "name": "Upravni studij (stručni)",
+        "cutoffByYear": {
+          "2025": 403.5
+        }
+      }
+    ]
+  },
+  {
+    "name": "Prirodoslovno-matematički fakultet Sveučilišta u Splitu",
+    "city": "Split",
+    "provider": "Sveučilište u Splitu",
+    "institutionType": "Sveučilište",
+    "programs": [
+      {
+        "name": "Biologija",
+        "cutoffByYear": {
+          "2025": 569.4000244
+        }
+      },
+      {
+        "name": "Biologija i kemija",
+        "cutoffByYear": {
+          "2025": 488.8999939
+        }
+      },
+      {
+        "name": "Fizika",
+        "cutoffByYear": {
+          "2025": 524.9000244
+        }
+      },
+      {
+        "name": "Informatika",
+        "cutoffByYear": {
+          "2025": 451.8999939
+        }
+      },
+      {
+        "name": "Informatika i tehnika",
+        "cutoffByYear": {
+          "2025": 368.2999878
+        }
+      },
+      {
+        "name": "Matematika i fizika; smjer: inženjerski",
+        "cutoffByYear": {
+          "2025": 426.2000122
+        }
+      },
+      {
+        "name": "Matematika i fizika; smjer: nastavnički",
+        "cutoffByYear": {
+          "2025": 371.1000061
+        }
+      },
+      {
+        "name": "Matematika i informatika; smjer: nastavnički",
+        "cutoffByYear": {
+          "2025": 453.1000061
+        }
+      },
+      {
+        "name": "Matematika; smjer: matematički, računarski, primijenjena matematika",
+        "cutoffByYear": {
+          "2025": 556.4000244
+        }
+      }
+    ]
+  },
+  {
+    "name": "Sveučilišni odjel za forenzične znanosti Sveučilišta u Splitu",
+    "city": "Split",
+    "provider": "Sveučilište u Splitu",
+    "institutionType": "Sveučilište",
+    "programs": [
+      {
+        "name": "Forenzika",
+        "cutoffByYear": {
+          "2025": 545.5999756
+        }
+      },
+      {
+        "name": "Forenzika (završili prije 2010.)",
+        "cutoffByYear": {
+          "2025": 501.6000061
+        }
+      }
+    ]
+  },
+  {
+    "name": "Sveučilišni odjel za stručne studije",
+    "city": "Split",
+    "provider": "Sveučilište u Splitu",
+    "institutionType": "Sveučilište",
+    "programs": [
+      {
+        "name": "Elektroenergetika (izvanredni, stručni)",
+        "cutoffByYear": {
+          "2025": 260
+        }
+      },
+      {
+        "name": "Elektroenergetika (stručni)",
+        "cutoffByYear": {
+          "2025": 508.8999939
+        }
+      },
+      {
+        "name": "Elektronika (izvanredni, stručni)",
+        "cutoffByYear": {
+          "2025": 493
+        }
+      },
+      {
+        "name": "Elektronika (stručni)",
+        "cutoffByYear": {
+          "2025": 339.2000122
+        }
+      },
+      {
+        "name": "Konstrukcijsko strojarstvo (izvanredni, stručni)",
+        "cutoffByYear": {
+          "2025": 353.7000122
+        }
+      },
+      {
+        "name": "Konstrukcijsko strojarstvo (stručni)",
+        "cutoffByYear": {
+          "2025": 383.3999939
+        }
+      },
+      {
+        "name": "Menadžment trgovine i turizma (izvanredni, stručni)",
+        "cutoffByYear": {
+          "2025": 256
+        }
+      },
+      {
+        "name": "Menadžment trgovine i turizma (stručni)",
+        "cutoffByYear": {
+          "2025": 230.3999939
+        }
+      },
+      {
+        "name": "Računarstvo (izvanredni, stručni)",
+        "cutoffByYear": {
+          "2025": 254.5
+        }
+      },
+      {
+        "name": "Računarstvo (stručni)",
+        "cutoffByYear": {
+          "2025": 311.7999878
+        }
+      },
+      {
+        "name": "Računovodstvo i financije (izvanredni, stručni)",
+        "cutoffByYear": {
+          "2025": 219.1999969
+        }
+      },
+      {
+        "name": "Računovodstvo i financije (stručni)",
+        "cutoffByYear": {
+          "2025": 379.3999939
+        }
+      },
+      {
+        "name": "Računovodstvo i financije (završili prije 2010.) (stručni)",
+        "cutoffByYear": {
+          "2025": 300.7999878
+        }
+      }
+    ]
+  },
+  {
+    "name": "Sveučilišni odjel za studije mora Sveučilišta u Splitu",
+    "city": "Split",
+    "provider": "Sveučilište u Splitu",
+    "institutionType": "Sveučilište",
+    "programs": [
+      {
+        "name": "Biologija i tehnologija mora",
+        "cutoffByYear": {
+          "2025": 317.2999878
+        }
+      }
+    ]
+  },
+  {
+    "name": "Sveučilište obrane i sigurnosti \"Dr. Franjo Tuđman\"",
+    "city": "Split",
+    "provider": "Sveučilište obrane i sigurnosti \"Dr. Franjo Tuđman\"",
+    "institutionType": "Sveučilište",
+    "programs": [
+      {
+        "name": "Vojno pomorstvo MORH",
+        "cutoffByYear": {
+          "2025": 555.7999878
+        }
+      }
+    ]
+  },
+  {
+    "name": "Sveučilište u Splitu",
+    "city": "Split",
+    "provider": "Sveučilište u Splitu",
+    "institutionType": "Sveučilište",
+    "programs": [
+      {
+        "name": "Komunikacija i mediji",
+        "cutoffByYear": {
+          "2025": 689.2000122
+        }
+      },
+      {
+        "name": "Komunikacija i mediji (završili prije 2010.) (izvanredni)",
+        "cutoffByYear": {
+          "2025": 715.9000244
+        }
+      },
+      {
+        "name": "Mediteranska poljoprivreda",
+        "cutoffByYear": {
+          "2025": 448
+        }
+      }
+    ]
+  },
+  {
+    "name": "Umjetnička akademija Sveučilišta u Splitu",
+    "city": "Split",
+    "provider": "Sveučilište u Splitu",
+    "institutionType": "Sveučilište",
+    "programs": [
+      {
+        "name": "Dizajn vizualnih komunikacija",
+        "cutoffByYear": {
+          "2025": 522.5
+        }
+      },
+      {
+        "name": "Filmska i medijska umjetnost",
+        "cutoffByYear": {
+          "2025": 522.2000122
+        }
+      },
+      {
+        "name": "Gitara",
+        "cutoffByYear": {
+          "2025": 727.4000244
+        }
+      },
+      {
+        "name": "Glasovir",
+        "cutoffByYear": {
+          "2025": 736
+        }
+      },
+      {
+        "name": "Glazbena pedagogija",
+        "cutoffByYear": {
+          "2025": 657.5999756
+        }
+      },
+      {
+        "name": "Gluma",
+        "cutoffByYear": {
+          "2025": 707.9000244
+        }
+      },
+      {
+        "name": "Gudački instrumenti; smjer: Violončelo",
+        "cutoffByYear": {
+          "2025": 732.7999878
+        }
+      },
+      {
+        "name": "Kiparstvo",
+        "cutoffByYear": {
+          "2025": 723.5999756
+        }
+      },
+      {
+        "name": "Likovna kultura i likovna umjetnost",
+        "cutoffByYear": {
+          "2025": 768
+        }
+      },
+      {
+        "name": "Puhački instrumenti; smjer: Flauta",
+        "cutoffByYear": {
+          "2025": 763.2000122
+        }
+      },
+      {
+        "name": "Puhački instrumenti; smjer: Saksofon",
+        "cutoffByYear": {
+          "2025": 882.7999878
+        }
+      },
+      {
+        "name": "Slikarstvo",
+        "cutoffByYear": {
+          "2025": 532.0999756
+        }
+      },
+      {
+        "name": "Solo pjevanje",
+        "cutoffByYear": {
+          "2025": 746.7999878
+        }
+      }
+    ]
+  },
+  {
+    "name": "Umjetnička akademija Sveučilišta u Splitu i PMF Sveučilišta u Splitu",
+    "city": "Split",
+    "provider": "Sveučilište u Splitu",
+    "institutionType": "Sveučilište",
+    "programs": [
+      {
+        "name": "Konzervacija i restauracija",
+        "cutoffByYear": {
+          "2025": 665.5
+        }
+      }
+    ]
+  },
+  {
+    "name": "Veleučilište ARCA",
+    "city": "Split",
+    "provider": "Veleučilište ARCA",
+    "institutionType": "Veleučilište",
+    "programs": [
+      {
+        "name": "Inspekcijski i kadrovski menadžment u pomorstvu (izvanredni, stručni)",
+        "cutoffByYear": {
+          "2025": 555.2000122
+        }
+      },
+      {
+        "name": "Inspekcijski i kadrovski menadžment u pomorstvu (stručni)",
+        "cutoffByYear": {
+          "2025": 673.5
+        }
+      }
+    ]
+  },
+  {
+    "name": "Veleučilište Aspira",
+    "city": "Split",
+    "provider": "Veleučilište Aspira",
+    "institutionType": "Veleučilište",
+    "programs": [
+      {
+        "name": "Međunarodni menadžment u hotelijerstvu i turizmu (izvanredni, stručni)",
+        "cutoffByYear": {
+          "2025": 562.5999756
+        }
+      },
+      {
+        "name": "Međunarodni menadžment u hotelijerstvu i turizmu (stručni)",
+        "cutoffByYear": {
+          "2025": 675.4000244
+        }
+      },
+      {
+        "name": "Računarstvo (izvanredni, stručni)",
+        "cutoffByYear": {
+          "2025": 282.7999878
+        }
+      },
+      {
+        "name": "Sportski menadžment (izvanredni, stručni)",
+        "cutoffByYear": {
+          "2025": 320
+        }
+      },
+      {
+        "name": "Sportski menadžment (stručni)",
+        "cutoffByYear": {
+          "2025": 469.2000122
+        }
+      }
+    ]
+  },
+  {
+    "name": "Fakultet elektrotehnike i računarstva i Fakultet strojarstva i brodogradnje Sveučilišta u Zagrebu",
+    "city": "Šibenik",
+    "provider": "Sveučilište u Zagrebu",
+    "institutionType": "Sveučilište",
+    "programs": [
+      {
+        "name": "Energetska učinkovitost i obnovljivi izvori",
+        "cutoffByYear": {
+          "2025": 385.3999939
+        }
+      }
+    ]
+  },
+  {
+    "name": "Veleučilište u Šibeniku",
+    "city": "Šibenik",
+    "provider": "Veleučilište u Šibeniku",
+    "institutionType": "Veleučilište",
+    "programs": [
+      {
+        "name": "Promet; smjerovi: Cestovni promet, Poštanski promet (stručni)",
+        "cutoffByYear": {
+          "2025": 529.2999878
+        }
+      },
+      {
+        "name": "Promet;smjerovi: Cestovni promet, Poštanski promet (izvanredni, stručni)",
+        "cutoffByYear": {
+          "2025": 411.6000061
+        }
+      },
+      {
+        "name": "Računarstvo (izvanredni, stručni)",
+        "cutoffByYear": {
+          "2025": 491
+        }
+      },
+      {
+        "name": "Računarstvo (stručni)",
+        "cutoffByYear": {
+          "2025": 450.7999878
+        }
+      },
+      {
+        "name": "Sestrinstvo (izvanredni, stručni)",
+        "cutoffByYear": {
+          "2025": 539.2000122
+        }
+      },
+      {
+        "name": "Sestrinstvo (stručni)",
+        "cutoffByYear": {
+          "2025": 329.6000061
+        }
+      },
+      {
+        "name": "Turistički menadžment (izvanredni, stručni)",
+        "cutoffByYear": {
+          "2025": 565
+        }
+      },
+      {
+        "name": "Turistički menadžment (stručni)",
+        "cutoffByYear": {
+          "2025": 486.8999939
+        }
+      },
+      {
+        "name": "Upravni studij (izvanredni, stručni)",
+        "cutoffByYear": {
+          "2025": 497.7999878
+        }
+      },
+      {
+        "name": "Upravni studij (stručni)",
+        "cutoffByYear": {
+          "2025": 545.0999756
+        }
+      }
+    ]
+  },
+  {
+    "name": "Fakultet organizacije i informatike u Varaždinu Sveučilišta u Zagrebu",
+    "city": "V",
+    "provider": "Sveučilište u Zagrebu",
+    "institutionType": "Sveučilište",
+    "programs": [
+      {
+        "name": "Informacijske tehnologije i digitalizacija poslovanja; smjerovi: Razvoj aplikacija, Informatička podrška poslovanju (izvanredni, stručni)",
+        "cutoffByYear": {
+          "2025": 360.5
+        }
+      }
+    ]
+  },
+  {
+    "name": "Fakultet organizacije i informatike u Varaždinu Sveučilišta u Zagrebu",
+    "city": "Varaždin",
+    "provider": "Sveučilište u Zagrebu",
+    "institutionType": "Sveučilište",
+    "programs": [
+      {
+        "name": "Ekonomika poduzetništva",
+        "cutoffByYear": {
+          "2025": 317.7000122
+        }
+      },
+      {
+        "name": "Ekonomika poduzetništva (izvanredni)",
+        "cutoffByYear": {
+          "2025": 550.4000244
+        }
+      },
+      {
+        "name": "Informacijske tehnologije i digitalizacija poslovanja; smjerovi: Razvoj aplikacija, Informatička podrška poslovanju (stručni)",
+        "cutoffByYear": {
+          "2025": 477.5
+        }
+      },
+      {
+        "name": "Informacijski i poslovni sustavi",
+        "cutoffByYear": {
+          "2025": 298.2000122
+        }
+      },
+      {
+        "name": "Informacijski i poslovni sustavi (Hrvati izvan RH)",
+        "cutoffByYear": {
+          "2025": 717.0999756
+        }
+      },
+      {
+        "name": "Informacijski i poslovni sustavi (izvanredni)",
+        "cutoffByYear": {
+          "2025": 223.3000031
+        }
+      }
+    ]
+  },
+  {
+    "name": "Geotehnički fakultet Sveučilišta u Zagrebu",
+    "city": "Varaždin",
+    "provider": "Sveučilište u Zagrebu",
+    "institutionType": "Sveučilište",
+    "programs": [
+      {
+        "name": "Inženjerstvo okoliša",
+        "cutoffByYear": {
+          "2025": 400.1000061
+        }
+      },
+      {
+        "name": "Inženjerstvo okoliša (izvanredni)",
+        "cutoffByYear": {
+          "2025": 291
+        }
+      }
+    ]
+  },
+  {
+    "name": "Sveučilište Sjever",
+    "city": "Varaždin",
+    "provider": "Sveučilište Sjever",
+    "institutionType": "Sveučilište",
+    "programs": [
+      {
+        "name": "Elektrotehnika; smjer: Automatizacija (stručni)",
+        "cutoffByYear": {
+          "2025": 373.8999939
+        }
+      },
+      {
+        "name": "Fizioterapija (izvanredni, stručni)",
+        "cutoffByYear": {
+          "2025": 328.3999939
+        }
+      },
+      {
+        "name": "Fizioterapija (stručni)",
+        "cutoffByYear": {
+          "2025": 554.5
+        }
+      },
+      {
+        "name": "Geodezija i geomatika",
+        "cutoffByYear": {
+          "2025": 330.3999939
+        }
+      },
+      {
+        "name": "Glazba i mediji",
+        "cutoffByYear": {
+          "2025": 510.2999878
+        }
+      },
+      {
+        "name": "Graditeljstvo (stručni)",
+        "cutoffByYear": {
+          "2025": 413.1000061
+        }
+      },
+      {
+        "name": "Logistika i mobilnost (stručni)",
+        "cutoffByYear": {
+          "2025": 303.2000122
+        }
+      },
+      {
+        "name": "Mehatronika (stručni)",
+        "cutoffByYear": {
+          "2025": 402.5
+        }
+      },
+      {
+        "name": "Multimedija, oblikovanje i primjena (stručni)",
+        "cutoffByYear": {
+          "2025": 306.3999939
+        }
+      },
+      {
+        "name": "Proizvodno strojarstvo (stručni)",
+        "cutoffByYear": {
+          "2025": 356.7000122
+        }
+      },
+      {
+        "name": "Sestrinstvo (izvanredni, stručni)",
+        "cutoffByYear": {
+          "2025": 289.6000061
+        }
+      },
+      {
+        "name": "Sestrinstvo (stručni)",
+        "cutoffByYear": {
+          "2025": 425.8999939
+        }
+      }
+    ]
+  },
+  {
+    "name": "Veleučilište Velika Gorica",
+    "city": "Velika Gorica",
+    "provider": "Veleučilište Velika Gorica",
+    "institutionType": "Veleučilište",
+    "programs": [
+      {
+        "name": "Motorna vozila (izvanredni, stručni)",
+        "cutoffByYear": {
+          "2025": 436.5
+        }
+      },
+      {
+        "name": "Motorna vozila (stručni)",
+        "cutoffByYear": {
+          "2025": 508
+        }
+      },
+      {
+        "name": "Očna optika (izvanredni, stručni)",
+        "cutoffByYear": {
+          "2025": 335.2000122
+        }
+      },
+      {
+        "name": "Očna optika (stručni)",
+        "cutoffByYear": {
+          "2025": 459.7999878
+        }
+      },
+      {
+        "name": "Održavanje računalnih sustava (izvanredni, stručni)",
+        "cutoffByYear": {
+          "2025": 205.6000061
+        }
+      },
+      {
+        "name": "Održavanje računalnih sustava (stručni)",
+        "cutoffByYear": {
+          "2025": 170.3999939
+        }
+      },
+      {
+        "name": "Održavanje zrakoplova (izvanredni, stručni)",
+        "cutoffByYear": {
+          "2025": 446.7000122
+        }
+      },
+      {
+        "name": "Održavanje zrakoplova (stručni)",
+        "cutoffByYear": {
+          "2025": 238.3999939
+        }
+      },
+      {
+        "name": "Upravljanje u kriznim uvjetima (izvanredni, stručni)",
+        "cutoffByYear": {
+          "2025": 213.6000061
+        }
+      },
+      {
+        "name": "Upravljanje u kriznim uvjetima (stručni)",
+        "cutoffByYear": {
+          "2025": 413.5
+        }
+      }
+    ]
+  },
+  {
+    "name": "Fakultet šumarstva i drvne tehnologije",
+    "city": "Vinkovci",
+    "provider": "Sveučilište u Zagrebu",
+    "institutionType": "Sveučilište",
+    "programs": [
+      {
+        "name": "Drvna tehnologija (stručni)",
+        "cutoffByYear": {
+          "2025": 270
+        }
+      }
+    ]
+  },
+  {
+    "name": "Veleučilište u Virovitici",
+    "city": "Virovitica",
+    "provider": "Veleučilište u Virovitici",
+    "institutionType": "Veleučilište",
+    "programs": [
+      {
+        "name": "Elektrotehnika; smjer: Telekomunikacije i informatika (stručni)",
+        "cutoffByYear": {
+          "2025": 398.8999939
+        }
+      },
+      {
+        "name": "Menadžment; smjer: Informatički menadžment (izvanredni, stručni)",
+        "cutoffByYear": {
+          "2025": 258.6000061
+        }
+      },
+      {
+        "name": "Menadžment; smjer: Informatički menadžment (stručni)",
+        "cutoffByYear": {
+          "2025": 377.6000061
+        }
+      },
+      {
+        "name": "Menadžment; smjer: Menadžment ruralnog turizma (izvanredni, stručni)",
+        "cutoffByYear": {
+          "2025": 279
+        }
+      },
+      {
+        "name": "Menadžment; smjer: Menadžment ruralnog turizma (stručni)",
+        "cutoffByYear": {
+          "2025": 396.2000122
+        }
+      },
+      {
+        "name": "Poduzetništvo (izvanredni, stručni)",
+        "cutoffByYear": {
+          "2025": 203.3999939
+        }
+      },
+      {
+        "name": "Poduzetništvo (stručni)",
+        "cutoffByYear": {
+          "2025": 351.3999939
+        }
+      },
+      {
+        "name": "Računarstvo; smjer: Programsko inženjerstvo (stručni)",
+        "cutoffByYear": {
+          "2025": 454.2999878
+        }
+      }
+    ]
+  },
+  {
+    "name": "Veleučilište \"Lavoslav Ružička\" u Vukovaru",
+    "city": "Vukovar",
+    "provider": "Veleučilište \"Lavoslav Ružička\" u Vukovaru",
+    "institutionType": "Veleučilište",
+    "programs": [
+      {
+        "name": "Fizioterapija (izvanredni, stručni)",
+        "cutoffByYear": {
+          "2025": 395.2000122
+        }
+      },
+      {
+        "name": "Fizioterapija (stručni)",
+        "cutoffByYear": {
+          "2025": 501.5
+        }
+      },
+      {
+        "name": "Trgovina (izvanredni, stručni)",
+        "cutoffByYear": {
+          "2025": 256.7999878
+        }
+      },
+      {
+        "name": "Trgovina (stručni)",
+        "cutoffByYear": {
+          "2025": 448.5
+        }
+      },
+      {
+        "name": "Trgovina (završili prije 2010.) (izvanredni, stručni)",
+        "cutoffByYear": {
+          "2025": 717.9000244
+        }
+      },
+      {
+        "name": "Upravni studij (izvanredni, stručni)",
+        "cutoffByYear": {
+          "2025": 305.6000061
+        }
+      },
+      {
+        "name": "Upravni studij (stručni)",
+        "cutoffByYear": {
+          "2025": 451.2000122
+        }
+      },
+      {
+        "name": "Upravni studij (završili prije 2010.) (izvanredni, stručni)",
+        "cutoffByYear": {
+          "2025": 538
+        }
+      }
+    ]
+  },
+  {
+    "name": "Fakultet organizacije i informatike u Varaždinu Sveučilišta u Zagrebu",
+    "city": "Z",
+    "provider": "Sveučilište u Zagrebu",
+    "institutionType": "Sveučilište",
+    "programs": [
+      {
+        "name": "Informacijske tehnologije i digitalizacija poslovanja; smjerovi: Razvoj aplikacija, Informatička podrška poslovanju (izvanredni, stručni)",
+        "cutoffByYear": {
+          "2025": 240
+        }
+      }
+    ]
+  },
+  {
+    "name": "Fakultet za menadžment u turizmu i ugostiteljstvu Sveučilišta u Rijeci",
+    "city": "Zabok",
+    "provider": "Sveučilište u Rijeci",
+    "institutionType": "Sveučilište",
+    "programs": [
+      {
+        "name": "Poslovna ekonomija u turizmu i ugostiteljstvu (izvanredni)",
+        "cutoffByYear": {
+          "2025": 465.5
+        }
+      }
+    ]
+  },
+  {
+    "name": "Odjel za anglistiku Sveučilišta u Zadru",
+    "city": "Zadar",
+    "provider": "Sveučilište u Zadru",
+    "institutionType": "Sveučilište",
+    "programs": [
+      {
+        "name": "Anglistika (dvopredmetni)",
+        "cutoffByYear": {
+          "2025": 515.9000244
+        }
+      }
+    ]
+  },
+  {
+    "name": "Odjel za arheologiju Sveučilišta u Zadru",
+    "city": "Zadar",
+    "provider": "Sveučilište u Zadru",
+    "institutionType": "Sveučilište",
+    "programs": [
+      {
+        "name": "Arheologija (dvopredmetni)",
+        "cutoffByYear": {
+          "2025": 555.5
+        }
+      },
+      {
+        "name": "Arheologija (jednopredmetni)",
+        "cutoffByYear": {
+          "2025": 495.2999878
+        }
+      }
+    ]
+  },
+  {
+    "name": "Odjel za ekologiju, agronomiju i akvakulturu Sveučilišta u Zadru",
+    "city": "Zadar",
+    "provider": "Sveučilište u Zadru",
+    "institutionType": "Sveučilište",
+    "programs": [
+      {
+        "name": "Podvodne znanosti i tehnologije",
+        "cutoffByYear": {
+          "2025": 493
+        }
+      },
+      {
+        "name": "Podvodne znanosti i tehnologije (izvanredni)",
+        "cutoffByYear": {
+          "2025": 223.1999969
+        }
+      },
+      {
+        "name": "Primijenjena ekologija u poljoprivredi",
+        "cutoffByYear": {
+          "2025": 480.2000122
+        }
+      },
+      {
+        "name": "Primijenjena ekologija u poljoprivredi (izvanredni)",
+        "cutoffByYear": {
+          "2025": 614.0999756
+        }
+      }
+    ]
+  },
+  {
+    "name": "Odjel za ekonomiju Sveučilišta u Zadru",
+    "city": "Zadar",
+    "provider": "Sveučilište u Zadru",
+    "institutionType": "Sveučilište",
+    "programs": [
+      {
+        "name": "Menadžment",
+        "cutoffByYear": {
+          "2025": 556
+        }
+      },
+      {
+        "name": "Menadžment (izvanredni)",
+        "cutoffByYear": {
+          "2025": 351.2000122
+        }
+      },
+      {
+        "name": "Menadžment (završili prije 2010.) (izvanredni)",
+        "cutoffByYear": {
+          "2025": 989.9000244
+        }
+      }
+    ]
+  },
+  {
+    "name": "Odjel za etnologiju i antropologiju Sveučilišta u Zadru",
+    "city": "Zadar",
+    "provider": "Sveučilište u Zadru",
+    "institutionType": "Sveučilište",
+    "programs": [
+      {
+        "name": "Etnologija i antropologija (dvopredmetni)",
+        "cutoffByYear": {
+          "2025": 444.2000122
+        }
+      },
+      {
+        "name": "Etnologija i antropologija (dvopredmetni) (Hrvati izvan RH)",
+        "cutoffByYear": {
+          "2025": 576
+        }
+      }
+    ]
+  },
+  {
+    "name": "Odjel za filozofiju Sveučilišta u Zadru",
+    "city": "Zadar",
+    "provider": "Sveučilište u Zadru",
+    "institutionType": "Sveučilište",
+    "programs": [
+      {
+        "name": "Filozofija (dvopredmetni)",
+        "cutoffByYear": {
+          "2025": 496
+        }
+      },
+      {
+        "name": "Filozofija (dvopredmetni) (završili prije 2010.)",
+        "cutoffByYear": {
+          "2025": 759.9000244
+        }
+      }
+    ]
+  },
+  {
+    "name": "Odjel za francuske i frankofonske studije Sveučilišta u Zadru",
+    "city": "Zadar",
+    "provider": "Sveučilište u Zadru",
+    "institutionType": "Sveučilište",
+    "programs": [
+      {
+        "name": "Francuski jezik i književnost (dvopredmetni)",
+        "cutoffByYear": {
+          "2025": 547.2999878
+        }
+      }
+    ]
+  },
+  {
+    "name": "Odjel za geografiju Sveučilišta u Zadru",
+    "city": "Zadar",
+    "provider": "Sveučilište u Zadru",
+    "institutionType": "Sveučilište",
+    "programs": [
+      {
+        "name": "Geografija (dvopredmetni)",
+        "cutoffByYear": {
+          "2025": 506.2000122
+        }
+      },
+      {
+        "name": "Geografija (jednopredmetni); smjer: Primijenjena geografija",
+        "cutoffByYear": {
+          "2025": 319.1000061
+        }
+      }
+    ]
+  },
+  {
+    "name": "Odjel za germanistiku Sveučilišta u Zadru",
+    "city": "Zadar",
+    "provider": "Sveučilište u Zadru",
+    "institutionType": "Sveučilište",
+    "programs": [
+      {
+        "name": "Njemački jezik i književnost (dvopredmetni)",
+        "cutoffByYear": {
+          "2025": 515.2999878
+        }
+      }
+    ]
+  },
+  {
+    "name": "Odjel za hispanistiku i iberske studije Sveučilišta u Zadru",
+    "city": "Zadar",
+    "provider": "Sveučilište u Zadru",
+    "institutionType": "Sveučilište",
+    "programs": [
+      {
+        "name": "Španjolski jezik i književnost (dvopredmetni)",
+        "cutoffByYear": {
+          "2025": 534.4000244
+        }
+      }
+    ]
+  },
+  {
+    "name": "Odjel za informacijske znanosti i tehnologije Sveučilišta u Zadru",
+    "city": "Zadar",
+    "provider": "Sveučilište u Zadru",
+    "institutionType": "Sveučilište",
+    "programs": [
+      {
+        "name": "Informacijske znanosti",
+        "cutoffByYear": {
+          "2025": 364
+        }
+      }
+    ]
+  },
+  {
+    "name": "Odjel za izobrazbu učitelja i odgojitelja Sveučilišta u Zadru",
+    "city": "Zadar",
+    "provider": "Sveučilište u Zadru",
+    "institutionType": "Sveučilište",
+    "programs": [
+      {
+        "name": "Rani i predškolski odgoj i obrazovanje",
+        "cutoffByYear": {
+          "2025": 534.9000244
+        }
+      },
+      {
+        "name": "Rani i predškolski odgoj i obrazovanje (izvanredni)",
+        "cutoffByYear": {
+          "2025": 481.6000061
+        }
+      },
+      {
+        "name": "Rani i predškolski odgoj i obrazovanje (završili prije 2010.) (izvanredni)",
+        "cutoffByYear": {
+          "2025": 629.9000244
+        }
+      },
+      {
+        "name": "Učiteljski studij",
+        "cutoffByYear": {
+          "2025": 276.6000061
+        }
+      }
+    ]
+  },
+  {
+    "name": "Odjel za klasičnu filologiju Sveučilišta u Zadru",
+    "city": "Zadar",
+    "provider": "Sveučilište u Zadru",
+    "institutionType": "Sveučilište",
+    "programs": [
+      {
+        "name": "Grčki jezik i književnost (dvopredmetni)",
+        "cutoffByYear": {
+          "2025": 604.2999878
+        }
+      },
+      {
+        "name": "Latinski jezik i rimska književnost (dvopredmetni)",
+        "cutoffByYear": {
+          "2025": 627.5999756
+        }
+      }
+    ]
+  },
+  {
+    "name": "Odjel za kroatistiku Sveučilišta u Zadru",
+    "city": "Zadar",
+    "provider": "Sveučilište u Zadru",
+    "institutionType": "Sveučilište",
+    "programs": [
+      {
+        "name": "Hrvatski jezik i književnost (dvopredmetni)",
+        "cutoffByYear": {
+          "2025": 503.1000061
+        }
+      },
+      {
+        "name": "Hrvatski jezik i književnost (jednopredmetni)",
+        "cutoffByYear": {
+          "2025": 585.4000244
+        }
+      },
+      {
+        "name": "Hrvatski jezik i književnost (jednopredmetni) (završili prije 2010.)",
+        "cutoffByYear": {
+          "2025": 621.9000244
+        }
+      }
+    ]
+  },
+  {
+    "name": "Odjel za lingvistiku Sveučilišta u Zadru",
+    "city": "Zadar",
+    "provider": "Sveučilište u Zadru",
+    "institutionType": "Sveučilište",
+    "programs": [
+      {
+        "name": "Jezik i komunikacija u višejezičnom društvu (dvopredmetni)",
+        "cutoffByYear": {
+          "2025": 540.2999878
+        }
+      }
+    ]
+  },
+  {
+    "name": "Odjel za pedagogiju Sveučilišta u Zadru",
+    "city": "Zadar",
+    "provider": "Sveučilište u Zadru",
+    "institutionType": "Sveučilište",
+    "programs": [
+      {
+        "name": "Pedagogija (dvopredmetni)",
+        "cutoffByYear": {
+          "2025": 522.9000244
+        }
+      }
+    ]
+  },
+  {
+    "name": "Odjel za povijest Sveučilišta u Zadru",
+    "city": "Zadar",
+    "provider": "Sveučilište u Zadru",
+    "institutionType": "Sveučilište",
+    "programs": [
+      {
+        "name": "Povijest (dvopredmetni)",
+        "cutoffByYear": {
+          "2025": 550.5
+        }
+      },
+      {
+        "name": "Povijest (jednopredmetni)",
+        "cutoffByYear": {
+          "2025": 463.7999878
+        }
+      }
+    ]
+  },
+  {
+    "name": "Odjel za povijest umjetnosti Sveučilišta u Zadru",
+    "city": "Zadar",
+    "provider": "Sveučilište u Zadru",
+    "institutionType": "Sveučilište",
+    "programs": [
+      {
+        "name": "Povijest umjetnosti (dvopredmetni)",
+        "cutoffByYear": {
+          "2025": 602
+        }
+      },
+      {
+        "name": "Povijest umjetnosti (jednopredmetni)",
+        "cutoffByYear": {
+          "2025": 647.9000244
+        }
+      }
+    ]
+  },
+  {
+    "name": "Odjel za primijenjene komunikacijske znanosti Sveučilišta u Zadru",
+    "city": "Zadar",
+    "provider": "Sveučilište u Zadru",
+    "institutionType": "Sveučilište",
+    "programs": [
+      {
+        "name": "Kultura i turizam",
+        "cutoffByYear": {
+          "2025": 383.8999939
+        }
+      },
+      {
+        "name": "Kultura i turizam (izvanredni)",
+        "cutoffByYear": {
+          "2025": 400.2000122
+        }
+      }
+    ]
+  },
+  {
+    "name": "Odjel za psihologiju Sveučilišta u Zadru",
+    "city": "Zadar",
+    "provider": "Sveučilište u Zadru",
+    "institutionType": "Sveučilište",
+    "programs": [
+      {
+        "name": "Psihologija",
+        "cutoffByYear": {
+          "2025": 699.4000244
+        }
+      },
+      {
+        "name": "Psihologija (Hrvati izvan RH)",
+        "cutoffByYear": {
+          "2025": 247.8000031
+        }
+      },
+      {
+        "name": "Psihologija (završili prije 2010.)",
+        "cutoffByYear": {
+          "2025": 739.9000244
+        }
+      }
+    ]
+  },
+  {
+    "name": "Odjel za rusistiku Sveučilišta u Zadru",
+    "city": "Zadar",
+    "provider": "Sveučilište u Zadru",
+    "institutionType": "Sveučilište",
+    "programs": [
+      {
+        "name": "Ruski jezik i književnost (dvopredmetni)",
+        "cutoffByYear": {
+          "2025": 584.7999878
+        }
+      }
+    ]
+  },
+  {
+    "name": "Odjel za sociologiju Sveučilišta u Zadru",
+    "city": "Zadar",
+    "provider": "Sveučilište u Zadru",
+    "institutionType": "Sveučilište",
+    "programs": [
+      {
+        "name": "Sociologija (dvopredmetni)",
+        "cutoffByYear": {
+          "2025": 492.3999939
+        }
+      }
+    ]
+  },
+  {
+    "name": "Odjel za talijanistiku Sveučilišta u Zadru",
+    "city": "Zadar",
+    "provider": "Sveučilište u Zadru",
+    "institutionType": "Sveučilište",
+    "programs": [
+      {
+        "name": "Talijanski jezik i književnost (dvopredmetni)",
+        "cutoffByYear": {
+          "2025": 522.2000122
+        }
+      },
+      {
+        "name": "Talijanski jezik i književnost; smjer: prevoditeljski (dvopredmetni)",
+        "cutoffByYear": {
+          "2025": 779.2999878
+        }
+      }
+    ]
+  },
+  {
+    "name": "Odjel za zdravstvene studije Sveučilišta u Zadru",
+    "city": "Zadar",
+    "provider": "Sveučilište u Zadru",
+    "institutionType": "Sveučilište",
+    "programs": [
+      {
+        "name": "Sestrinstvo (jednopredmetni)",
+        "cutoffByYear": {
+          "2025": 444.6000061
+        }
+      },
+      {
+        "name": "Sestrinstvo (jednopredmetni) (Hrvati izvan RH)",
+        "cutoffByYear": {
+          "2025": 338
+        }
+      }
+    ]
+  },
+  {
+    "name": "Pomorski odjel Sveučilišta u Zadru",
+    "city": "Zadar",
+    "provider": "Sveučilište u Zadru",
+    "institutionType": "Sveučilište",
+    "programs": [
+      {
+        "name": "Brodostrojarstvo i tehnologija pomorskog prometa",
+        "cutoffByYear": {
+          "2025": 335.5
+        }
+      },
+      {
+        "name": "Brodostrojarstvo i tehnologija pomorskog prometa (izvanredni)",
+        "cutoffByYear": {
+          "2025": 457.2999878
+        }
+      },
+      {
+        "name": "Nautika i tehnologija pomorskog prometa",
+        "cutoffByYear": {
+          "2025": 485.7000122
+        }
+      },
+      {
+        "name": "Nautika i tehnologija pomorskog prometa (izvanredni)",
+        "cutoffByYear": {
+          "2025": 374.2000122
+        }
+      }
+    ]
+  },
+  {
+    "name": "Sveučilište u Zadru",
+    "city": "Zadar",
+    "provider": "Sveučilište u Zadru",
+    "institutionType": "Sveučilište",
+    "programs": [
+      {
+        "name": "Informacijske tehnologije (izvanredni, stručni)",
+        "cutoffByYear": {
+          "2025": 454.5
+        }
+      },
+      {
+        "name": "Informacijske tehnologije (stručni)",
+        "cutoffByYear": {
+          "2025": 351.1000061
+        }
+      },
+      {
+        "name": "Logopedija",
+        "cutoffByYear": {
+          "2025": 770.4000244
+        }
+      }
+    ]
+  },
+  {
+    "name": "Teološko-katehetski odjel Sveučilišta u Zadru",
+    "city": "Zadar",
+    "provider": "Sveučilište u Zadru",
+    "institutionType": "Sveučilište",
+    "programs": [
+      {
+        "name": "Teološko-katehetski studij (dvopredmetni)",
+        "cutoffByYear": {
+          "2025": 396.2999878
+        }
+      },
+      {
+        "name": "Teološko-katehetski studij (dvopredmetni) (završili prije 2010.)",
+        "cutoffByYear": {
+          "2025": 759.9000244
+        }
+      }
+    ]
+  },
+  {
+    "name": "Agronomski fakultet Sveučilišta u Zagrebu",
+    "city": "Zagreb",
+    "provider": "Sveučilište u Zagrebu",
+    "institutionType": "Sveučilište",
+    "programs": [
+      {
+        "name": "Agrarna ekonomika",
+        "cutoffByYear": {
+          "2025": 376.2000122
+        }
+      },
+      {
+        "name": "Agroekologija",
+        "cutoffByYear": {
+          "2025": 411.8999939
+        }
+      },
+      {
+        "name": "Animalne znanosti",
+        "cutoffByYear": {
+          "2025": 346.2999878
+        }
+      },
+      {
+        "name": "Biljne znanosti",
+        "cutoffByYear": {
+          "2025": 454.2999878
+        }
+      },
+      {
+        "name": "Ekološka poljoprivreda",
+        "cutoffByYear": {
+          "2025": 372.3999939
+        }
+      },
+      {
+        "name": "Fitomedicina",
+        "cutoffByYear": {
+          "2025": 324.7999878
+        }
+      },
+      {
+        "name": "Hortikultura",
+        "cutoffByYear": {
+          "2025": 366.8999939
+        }
+      },
+      {
+        "name": "Krajobrazna arhitektura",
+        "cutoffByYear": {
+          "2025": 755.7999878
+        }
+      },
+      {
+        "name": "Poljoprivredna tehnika",
+        "cutoffByYear": {
+          "2025": 377.1000061
+        }
+      }
+    ]
+  },
+  {
+    "name": "Akademija dramske umjetnosti Sveučilišta u Zagrebu",
+    "city": "Zagreb",
+    "provider": "Sveučilište u Zagrebu",
+    "institutionType": "Sveučilište",
+    "programs": [
+      {
+        "name": "Baletna pedagogija",
+        "cutoffByYear": {
+          "2025": 735.7999878
+        }
+      },
+      {
+        "name": "Dramaturgija",
+        "cutoffByYear": {
+          "2025": 716.9000244
+        }
+      },
+      {
+        "name": "Filmska i TV režija",
+        "cutoffByYear": {
+          "2025": 857.9000244
+        }
+      },
+      {
+        "name": "Gluma",
+        "cutoffByYear": {
+          "2025": 703.5999756
+        }
+      },
+      {
+        "name": "Kazališna režija i radiofonija",
+        "cutoffByYear": {
+          "2025": 533.2000122
+        }
+      },
+      {
+        "name": "Montaža",
+        "cutoffByYear": {
+          "2025": 646.2000122
+        }
+      },
+      {
+        "name": "Produkcija",
+        "cutoffByYear": {
+          "2025": 696
+        }
+      },
+      {
+        "name": "Snimanje",
+        "cutoffByYear": {
+          "2025": 612.7999878
+        }
+      },
+      {
+        "name": "Suvremeni ples; smjer: izvedbeni",
+        "cutoffByYear": {
+          "2025": 639.5
+        }
+      },
+      {
+        "name": "Suvremeni ples; smjer: nastavnički",
+        "cutoffByYear": {
+          "2025": 703.4000244
+        }
+      }
+    ]
+  },
+  {
+    "name": "Akademija likovnih umjetnosti Sveučilišta u Zagrebu",
+    "city": "Zagreb",
+    "provider": "Sveučilište u Zagrebu",
+    "institutionType": "Sveučilište",
+    "programs": [
+      {
+        "name": "Animirani film",
+        "cutoffByYear": {
+          "2025": 623.2999878
+        }
+      },
+      {
+        "name": "Grafika",
+        "cutoffByYear": {
+          "2025": 667.2000122
+        }
+      },
+      {
+        "name": "Kiparstvo",
+        "cutoffByYear": {
+          "2025": 640.5
+        }
+      },
+      {
+        "name": "Konzerviranje i restauriranje umjetnina; smjer: Kiparstvo",
+        "cutoffByYear": {
+          "2025": 749.2999878
+        }
+      },
+      {
+        "name": "Konzerviranje i restauriranje umjetnina; smjer: Slikarstvo",
+        "cutoffByYear": {
+          "2025": 725.9000244
+        }
+      },
+      {
+        "name": "Likovna kultura",
+        "cutoffByYear": {
+          "2025": 617.7999878
+        }
+      },
+      {
+        "name": "Novi mediji",
+        "cutoffByYear": {
+          "2025": 612.5999756
+        }
+      },
+      {
+        "name": "Slikarstvo",
+        "cutoffByYear": {
+          "2025": 607.5
+        }
+      }
+    ]
+  },
+  {
+    "name": "Arhitektonski fakultet Sveučilišta u Zagrebu",
+    "city": "Zagreb",
+    "provider": "Sveučilište u Zagrebu",
+    "institutionType": "Sveučilište",
+    "programs": [
+      {
+        "name": "Arhitektura i urbanizam",
+        "cutoffByYear": {
+          "2025": 642.7000122
+        }
+      },
+      {
+        "name": "Arhitektura i urbanizam (Hrvati izvan RH)",
+        "cutoffByYear": {
+          "2025": 514.7000122
+        }
+      },
+      {
+        "name": "Dizajn",
+        "cutoffByYear": {
+          "2025": 684.0999756
+        }
+      }
+    ]
+  },
+  {
+    "name": "Edukacijsko-rehabilitacijski fakultet Sveučilišta u Zagrebu",
+    "city": "Zagreb",
+    "provider": "Sveučilište u Zagrebu",
+    "institutionType": "Sveučilište",
+    "programs": [
+      {
+        "name": "Logopedija",
+        "cutoffByYear": {
+          "2025": 831.2999878
+        }
+      },
+      {
+        "name": "Rehabilitacija",
+        "cutoffByYear": {
+          "2025": 779
+        }
+      },
+      {
+        "name": "Socijalna pedagogija",
+        "cutoffByYear": {
+          "2025": 761.4000244
+        }
+      }
+    ]
+  },
+  {
+    "name": "EFFECTUS veleučilište",
+    "city": "Zagreb",
+    "provider": "EFFECTUS veleučilište",
+    "institutionType": "Veleučilište",
+    "programs": [
+      {
+        "name": "Financije i poslovno pravo (izvanredni, stručni)",
+        "cutoffByYear": {
+          "2025": 436.8999939
+        }
+      },
+      {
+        "name": "Financije i poslovno pravo (stručni)",
+        "cutoffByYear": {
+          "2025": 449.3999939
+        }
+      },
+      {
+        "name": "Poduzetništvo",
+        "cutoffByYear": {
+          "2025": 498.2000122
+        }
+      },
+      {
+        "name": "Poduzetništvo (izvanredni)",
+        "cutoffByYear": {
+          "2025": 505.3999939
+        }
+      }
+    ]
+  },
+  {
+    "name": "Ekonomski fakultet Sveučilišta u Zagrebu",
+    "city": "Zagreb",
+    "provider": "Sveučilište u Zagrebu",
+    "institutionType": "Sveučilište",
+    "programs": [
+      {
+        "name": "Bachelor Degree in Business",
+        "cutoffByYear": {
+          "2025": 360.7999878
+        }
+      },
+      {
+        "name": "Bachelor Degree in Business (izvanredni)",
+        "cutoffByYear": {
+          "2025": 379.7000122
+        }
+      },
+      {
+        "name": "Bachelor Degree in Economics",
+        "cutoffByYear": {
+          "2025": 528.5999756
+        }
+      },
+      {
+        "name": "Bachelor Degree in Economics (izvanredni)",
+        "cutoffByYear": {
+          "2025": 483.8999939
+        }
+      },
+      {
+        "name": "Ekonomija",
+        "cutoffByYear": {
+          "2025": 465.7000122
+        }
+      },
+      {
+        "name": "Ekonomija (Hrvati izvan RH)",
+        "cutoffByYear": {
+          "2025": 353.7000122
+        }
+      },
+      {
+        "name": "Ekonomija (izvanredni)",
+        "cutoffByYear": {
+          "2025": 324.7999878
+        }
+      },
+      {
+        "name": "Poslovna ekonomija",
+        "cutoffByYear": {
+          "2025": 485.7000122
+        }
+      },
+      {
+        "name": "Poslovna ekonomija (Hrvati izvan RH)",
+        "cutoffByYear": {
+          "2025": 253.8000031
+        }
+      },
+      {
+        "name": "Poslovna ekonomija (Hrvati izvan RH) (stručni)",
+        "cutoffByYear": {
+          "2025": 434.7000122
+        }
+      },
+      {
+        "name": "Poslovna ekonomija (izvanredni, stručni)",
+        "cutoffByYear": {
+          "2025": 220
+        }
+      },
+      {
+        "name": "Poslovna ekonomija (izvanredni)",
+        "cutoffByYear": {
+          "2025": 352.1000061
+        }
+      },
+      {
+        "name": "Poslovna ekonomija (stručni)",
+        "cutoffByYear": {
+          "2025": 506.6000061
+        }
+      }
+    ]
+  },
+  {
+    "name": "Fakultet elektrotehnike i računarstva Sveučilišta u Zagrebu",
+    "city": "Zagreb",
+    "provider": "Sveučilište u Zagrebu",
+    "institutionType": "Sveučilište",
+    "programs": [
+      {
+        "name": "Elektrotehnika i informacijska tehnologija (na engleskom jeziku)",
+        "cutoffByYear": {
+          "2025": 598.7000122
+        }
+      },
+      {
+        "name": "Elektrotehnika i informacijska tehnologija i Računarstvo",
+        "cutoffByYear": {
+          "2025": 739.2000122
+        }
+      },
+      {
+        "name": "Elektrotehnika i informacijska tehnologija i Računarstvo (Hrvati izvan RH)",
+        "cutoffByYear": {
+          "2025": 332.2999878
+        }
+      }
+    ]
+  },
+  {
+    "name": "Fakultet elektrotehnike i računarstva, Fakultet kemijskog inženjerstva i tehnologije, Fakultet organizacije i informatike, Fakultet političkih znanosti, Fakultet prometnih znanosti, Filozofski fakultet, Geodetski fakultet, Građevinski fakultet, Pravni fakultet, Rudars",
+    "city": "Zagreb",
+    "provider": "Sveučilište obrane i sigurnosti \"Dr. Franjo Tuđman\"",
+    "institutionType": "Sveučilište",
+    "programs": [
+      {
+        "name": "Vojno inženjerstvo",
+        "cutoffByYear": {
+          "2025": 549.0999756
+        }
+      }
+    ]
+  },
+  {
+    "name": "Fakultet elektrotehnike i računarstva, Fakultet organizacije i informatike, Fakultet političkih znanosti, Fakultet strojarstva i brodogradnje, Filozofski fakultet, Pravni fakultet Sveučilišta u Zagrebu",
+    "city": "Zagreb",
+    "provider": "Sveučilište obrane i sigurnosti \"Dr. Franjo Tuđman\"",
+    "institutionType": "Sveučilište",
+    "programs": [
+      {
+        "name": "Vojno vođenje i upravljanje",
+        "cutoffByYear": {
+          "2025": 461.8999939
+        }
+      }
+    ]
+  },
+  {
+    "name": "Fakultet filozofije i religijskih znanosti",
+    "city": "Zagreb",
+    "provider": "Sveučilište u Zagrebu",
+    "institutionType": "Sveučilište",
+    "programs": [
+      {
+        "name": "Filozofija (jednopredmetni)",
+        "cutoffByYear": {
+          "2025": 341.6000061
+        }
+      },
+      {
+        "name": "Filozofija (jednopredmetni) (izvanredni)",
+        "cutoffByYear": {
+          "2025": 498.2000122
+        }
+      },
+      {
+        "name": "Filozofija i religijske znanosti (izvanredni)",
+        "cutoffByYear": {
+          "2025": 394.5
+        }
+      }
+    ]
+  },
+  {
+    "name": "Fakultet hrvatskih studija Sveučilišta u Zagrebu",
+    "city": "Zagreb",
+    "provider": "Sveučilište u Zagrebu",
+    "institutionType": "Sveučilište",
+    "programs": [
+      {
+        "name": "Demografija i hrvatsko iseljeništvo (dvopredmetni)",
+        "cutoffByYear": {
+          "2025": 421.7999878
+        }
+      },
+      {
+        "name": "Filozofija i kultura (dvopredmetni)",
+        "cutoffByYear": {
+          "2025": 419.8999939
+        }
+      },
+      {
+        "name": "Komunikologija (dvopredmetni)",
+        "cutoffByYear": {
+          "2025": 710.2000122
+        }
+      },
+      {
+        "name": "Komunikologija (jednopredmetni)",
+        "cutoffByYear": {
+          "2025": 592.2999878
+        }
+      },
+      {
+        "name": "Kroatologija (dvopredmetni)",
+        "cutoffByYear": {
+          "2025": 388.7999878
+        }
+      },
+      {
+        "name": "Kroatologija (jednopredmetni)",
+        "cutoffByYear": {
+          "2025": 611.9000244
+        }
+      },
+      {
+        "name": "Latinski jezik (dvopredmetni)",
+        "cutoffByYear": {
+          "2025": 492.8999939
+        }
+      },
+      {
+        "name": "Povijest (dvopredmetni)",
+        "cutoffByYear": {
+          "2025": 432.2999878
+        }
+      },
+      {
+        "name": "Povijest (jednopredmetni)",
+        "cutoffByYear": {
+          "2025": 413.1000061
+        }
+      },
+      {
+        "name": "Psihologija (jednopredmetni)",
+        "cutoffByYear": {
+          "2025": 715.4000244
+        }
+      },
+      {
+        "name": "Psihologija (jednopredmetni) (Hrvati izvan RH)",
+        "cutoffByYear": {
+          "2025": 828
+        }
+      },
+      {
+        "name": "Sociologija (dvopredmetni)",
+        "cutoffByYear": {
+          "2025": 657.4000244
+        }
+      },
+      {
+        "name": "Sociologija (jednopredmetni)",
+        "cutoffByYear": {
+          "2025": 623.7999878
+        }
+      }
+    ]
+  },
+  {
+    "name": "Fakultet kemijskog inženjerstva i tehnologije Sveučilišta u Zagrebu",
+    "city": "Zagreb",
+    "provider": "Sveučilište u Zagrebu",
+    "institutionType": "Sveučilište",
+    "programs": [
+      {
+        "name": "Ekoinženjerstvo",
+        "cutoffByYear": {
+          "2025": 252
+        }
+      },
+      {
+        "name": "Kemija i inženjerstvo materijala",
+        "cutoffByYear": {
+          "2025": 327.7000122
+        }
+      },
+      {
+        "name": "Kemijsko inženjerstvo",
+        "cutoffByYear": {
+          "2025": 469.5
+        }
+      },
+      {
+        "name": "Primijenjena kemija",
+        "cutoffByYear": {
+          "2025": 302.2000122
+        }
+      }
+    ]
+  },
+  {
+    "name": "Fakultet političkih znanosti Sveučilišta u Zagrebu",
+    "city": "Zagreb",
+    "provider": "Sveučilište u Zagrebu",
+    "institutionType": "Sveučilište",
+    "programs": [
+      {
+        "name": "Novinarstvo",
+        "cutoffByYear": {
+          "2025": 623.2999878
+        }
+      },
+      {
+        "name": "Politologija",
+        "cutoffByYear": {
+          "2025": 615.9000244
+        }
+      }
+    ]
+  },
+  {
+    "name": "Fakultet prometnih znanosti Sveučilišta u Zagrebu",
+    "city": "Zagreb",
+    "provider": "Sveučilište u Zagrebu",
+    "institutionType": "Sveučilište",
+    "programs": [
+      {
+        "name": "Aeronautika; smjer: Pilot - usmjerenje civilni pilot",
+        "cutoffByYear": {
+          "2025": 515.5
+        }
+      },
+      {
+        "name": "Aeronautika; smjer: Pilot - usmjerenje vojni pilot",
+        "cutoffByYear": {
+          "2025": 545.0999756
+        }
+      },
+      {
+        "name": "Aeronautika; smjer: Upravljanje zračnim prometom - usmjerenje vojna kontrola zračnog prometa",
+        "cutoffByYear": {
+          "2025": 461
+        }
+      },
+      {
+        "name": "Aeronautika; smjer: Upravljanje zračnim prometom – usmjerenje kontrola zračnog prometa",
+        "cutoffByYear": {
+          "2025": 430.3999939
+        }
+      },
+      {
+        "name": "Logistika",
+        "cutoffByYear": {
+          "2025": 354.2000122
+        }
+      },
+      {
+        "name": "Logistika (izvanredni)",
+        "cutoffByYear": {
+          "2025": 316.5
+        }
+      },
+      {
+        "name": "Promet",
+        "cutoffByYear": {
+          "2025": 277.7000122
+        }
+      },
+      {
+        "name": "Promet (izvanredni)",
+        "cutoffByYear": {
+          "2025": 244.8000031
+        }
+      }
+    ]
+  },
+  {
+    "name": "Fakultet strojarstva i brodogradnje Sveučilišta u Zagrebu",
+    "city": "Zagreb",
+    "provider": "Sveučilište u Zagrebu",
+    "institutionType": "Sveučilište",
+    "programs": [
+      {
+        "name": "Brodogradnja",
+        "cutoffByYear": {
+          "2025": 423.2000122
+        }
+      },
+      {
+        "name": "Mehatronika i robotika",
+        "cutoffByYear": {
+          "2025": 686.0999756
+        }
+      },
+      {
+        "name": "Strojarstvo",
+        "cutoffByYear": {
+          "2025": 518.0999756
+        }
+      },
+      {
+        "name": "Zrakoplovno inženjerstvo i svemirska tehnika",
+        "cutoffByYear": {
+          "2025": 711.7999878
+        }
+      }
+    ]
+  },
+  {
+    "name": "Fakultet šumarstva i drvne tehnologije",
+    "city": "Zagreb",
+    "provider": "Sveučilište u Zagrebu",
+    "institutionType": "Sveučilište",
+    "programs": [
+      {
+        "name": "Drvna tehnologija",
+        "cutoffByYear": {
+          "2025": 477.2000122
+        }
+      },
+      {
+        "name": "Šumarstvo",
+        "cutoffByYear": {
+          "2025": 277.2000122
+        }
+      },
+      {
+        "name": "Urbano šumarstvo, zaštita prirode i okoliša",
+        "cutoffByYear": {
+          "2025": 432.5
+        }
+      }
+    ]
+  },
+  {
+    "name": "Farmaceutsko-biokemijski fakultet Sveučilišta u Zagrebu",
+    "city": "Zagreb",
+    "provider": "Sveučilište u Zagrebu",
+    "institutionType": "Sveučilište",
+    "programs": [
+      {
+        "name": "Farmacija",
+        "cutoffByYear": {
+          "2025": 673.7999878
+        }
+      },
+      {
+        "name": "Medicinska biokemija",
+        "cutoffByYear": {
+          "2025": 717
+        }
+      },
+      {
+        "name": "Pharmacy",
+        "cutoffByYear": {
+          "2025": 833.4000244
+        }
+      }
+    ]
+  },
+  {
+    "name": "Filozofski fakultet Sveučilišta u Zagrebu",
+    "city": "Zagreb",
+    "provider": "Sveučilište u Zagrebu",
+    "institutionType": "Sveučilište",
+    "programs": [
+      {
+        "name": "Anglistika (dvopredmetni)",
+        "cutoffByYear": {
+          "2025": 692.9000244
+        }
+      },
+      {
+        "name": "Antropologija (dvopredmetni)",
+        "cutoffByYear": {
+          "2025": 625.2000122
+        }
+      },
+      {
+        "name": "Arheologija (dvopredmetni)",
+        "cutoffByYear": {
+          "2025": 644.7000122
+        }
+      },
+      {
+        "name": "Arheologija (jednopredmetni)",
+        "cutoffByYear": {
+          "2025": 640.7000122
+        }
+      },
+      {
+        "name": "Češki jezik i književnost (dvopredmetni)",
+        "cutoffByYear": {
+          "2025": 271.2000122
+        }
+      },
+      {
+        "name": "Etnologija i kulturna antropologija (dvopredmetni)",
+        "cutoffByYear": {
+          "2025": 580.2999878
+        }
+      },
+      {
+        "name": "Filozofija (dvopredmetni)",
+        "cutoffByYear": {
+          "2025": 492.3999939
+        }
+      },
+      {
+        "name": "Filozofija (jednopredmetni)",
+        "cutoffByYear": {
+          "2025": 510.7999878
+        }
+      },
+      {
+        "name": "Fonetika (dvopredmetni)",
+        "cutoffByYear": {
+          "2025": 245.3999939
+        }
+      },
+      {
+        "name": "Francuski jezik i književnost (dvopredmetni)",
+        "cutoffByYear": {
+          "2025": 245.3999939
+        }
+      },
+      {
+        "name": "Germanistika (dvopredmetni)",
+        "cutoffByYear": {
+          "2025": 377.3999939
+        }
+      },
+      {
+        "name": "Germanistika (dvopredmetni) (Hrvati izvan RH)",
+        "cutoffByYear": {
+          "2025": 466.7000122
+        }
+      },
+      {
+        "name": "Indologija (dvopredmetni)",
+        "cutoffByYear": {
+          "2025": 776.0999756
+        }
+      },
+      {
+        "name": "Informacijske znanosti (dvopredmetni)",
+        "cutoffByYear": {
+          "2025": 676.4000244
+        }
+      },
+      {
+        "name": "Informacijske znanosti (jednopredmetni)",
+        "cutoffByYear": {
+          "2025": 601.5
+        }
+      },
+      {
+        "name": "Informacijske znanosti (jednopredmetni) (Hrvati izvan RH)",
+        "cutoffByYear": {
+          "2025": 183.6000061
+        }
+      },
+      {
+        "name": "Japanologija (dvopredmetni)",
+        "cutoffByYear": {
+          "2025": 655.5
+        }
+      },
+      {
+        "name": "Južnoslavenski studiji (dvopredmetni)",
+        "cutoffByYear": {
+          "2025": 593.7000122
+        }
+      },
+      {
+        "name": "Komparativna književnost (dvopredmetni)",
+        "cutoffByYear": {
+          "2025": 655.4000244
+        }
+      },
+      {
+        "name": "Komparativna književnost (jednopredmetni)",
+        "cutoffByYear": {
+          "2025": 644.9000244
+        }
+      },
+      {
+        "name": "Kroatistika (dvopredmetni)",
+        "cutoffByYear": {
+          "2025": 584.7000122
+        }
+      },
+      {
+        "name": "Kroatistika (dvopredmetni) (Hrvati izvan RH)",
+        "cutoffByYear": {
+          "2025": 242.3999939
+        }
+      },
+      {
+        "name": "Kroatistika (jednopredmetni)",
+        "cutoffByYear": {
+          "2025": 538.0999756
+        }
+      },
+      {
+        "name": "Latinski jezik i književnost (dvopredmetni)",
+        "cutoffByYear": {
+          "2025": 629.5
+        }
+      },
+      {
+        "name": "Lingvistika (dvopredmetni)",
+        "cutoffByYear": {
+          "2025": 271.2000122
+        }
+      },
+      {
+        "name": "Lingvistika (dvopredmetni) (Hrvati izvan RH)",
+        "cutoffByYear": {
+          "2025": 242.3999939
+        }
+      },
+      {
+        "name": "Nederlandistika (dvopredmetni)",
+        "cutoffByYear": {
+          "2025": 497.1000061
+        }
+      },
+      {
+        "name": "Pedagogija (dvopredmetni)",
+        "cutoffByYear": {
+          "2025": 706.7999878
+        }
+      },
+      {
+        "name": "Pedagogija (jednopredmetni)",
+        "cutoffByYear": {
+          "2025": 708.0999756
+        }
+      },
+      {
+        "name": "Poljski jezik i književnost (dvopredmetni)",
+        "cutoffByYear": {
+          "2025": 583.9000244
+        }
+      },
+      {
+        "name": "Portugalski jezik i književnost (dvopredmetni)",
+        "cutoffByYear": {
+          "2025": 377.3999939
+        }
+      },
+      {
+        "name": "Povijest (dvopredmetni)",
+        "cutoffByYear": {
+          "2025": 710.5
+        }
+      },
+      {
+        "name": "Povijest (jednopredmetni)",
+        "cutoffByYear": {
+          "2025": 555.9000244
+        }
+      },
+      {
+        "name": "Povijest i geografija; smjer: nastavnički",
+        "cutoffByYear": {
+          "2025": 511.7000122
+        }
+      },
+      {
+        "name": "Povijest umjetnosti (dvopredmetni)",
+        "cutoffByYear": {
+          "2025": 648.2999878
+        }
+      },
+      {
+        "name": "Psihologija (jednopredmetni)",
+        "cutoffByYear": {
+          "2025": 761.2000122
+        }
+      },
+      {
+        "name": "Psihologija (jednopredmetni) (Hrvati izvan RH)",
+        "cutoffByYear": {
+          "2025": 178.8000031
+        }
+      },
+      {
+        "name": "Ruski jezik i književnost (dvopredmetni)",
+        "cutoffByYear": {
+          "2025": 191.3999939
+        }
+      },
+      {
+        "name": "Sinologija (dvopredmetni)",
+        "cutoffByYear": {
+          "2025": 525.0999756
+        }
+      },
+      {
+        "name": "Slovački jezik i književnost (dvopredmetni)",
+        "cutoffByYear": {
+          "2025": 550.4000244
+        }
+      },
+      {
+        "name": "Sociologija (dvopredmetni)",
+        "cutoffByYear": {
+          "2025": 659.2999878
+        }
+      },
+      {
+        "name": "Sociologija (dvopredmetni) (Hrvati izvan RH)",
+        "cutoffByYear": {
+          "2025": 422.3999939
+        }
+      },
+      {
+        "name": "Sociologija (jednopredmetni)",
+        "cutoffByYear": {
+          "2025": 584.0999756
+        }
+      },
+      {
+        "name": "Španjolski jezik i književnost (dvopredmetni)",
+        "cutoffByYear": {
+          "2025": 667.5
+        }
+      },
+      {
+        "name": "Švedski jezik i kultura (dvopredmetni)",
+        "cutoffByYear": {
+          "2025": 191.3999939
+        }
+      },
+      {
+        "name": "Talijanistika (dvopredmetni)",
+        "cutoffByYear": {
+          "2025": 570.9000244
+        }
+      },
+      {
+        "name": "Turkologija (dvopredmetni)",
+        "cutoffByYear": {
+          "2025": 578.5999756
+        }
+      },
+      {
+        "name": "Ukrajinski jezik i književnost (dvopredmetni)",
+        "cutoffByYear": {
+          "2025": 570.9000244
+        }
+      }
+    ]
+  },
+  {
+    "name": "Geodetski fakultet Sveučilišta u Zagrebu",
+    "city": "Zagreb",
+    "provider": "Sveučilište u Zagrebu",
+    "institutionType": "Sveučilište",
+    "programs": [
+      {
+        "name": "Geodezija i geoinformatika",
+        "cutoffByYear": {
+          "2025": 540.0999756
+        }
+      }
+    ]
+  },
+  {
+    "name": "Građevinski fakultet Sveučilišta u Zagrebu",
+    "city": "Zagreb",
+    "provider": "Sveučilište u Zagrebu",
+    "institutionType": "Sveučilište",
+    "programs": [
+      {
+        "name": "Građevinarstvo",
+        "cutoffByYear": {
+          "2025": 619.4000244
+        }
+      }
+    ]
+  },
+  {
+    "name": "Grafički fakultet Sveučilišta u Zagrebu",
+    "city": "Zagreb",
+    "provider": "Sveučilište u Zagrebu",
+    "institutionType": "Sveučilište",
+    "programs": [
+      {
+        "name": "Grafička tehnologija; modul: Dizajn grafičkih proizvoda",
+        "cutoffByYear": {
+          "2025": 598.0999756
+        }
+      },
+      {
+        "name": "Grafička tehnologija; modul: Dizajn grafičkih proizvoda (Hrvati izvan RH)",
+        "cutoffByYear": {
+          "2025": 383.2000122
+        }
+      },
+      {
+        "name": "Grafička tehnologija; modul: Tehničko-tehnološki",
+        "cutoffByYear": {
+          "2025": 249.3999939
+        }
+      }
+    ]
+  },
+  {
+    "name": "Hrvatsko katoličko sveučilište u Zagrebu",
+    "city": "Zagreb",
+    "provider": "Hrvatsko katoličko sveučilište u Zagrebu",
+    "institutionType": "Sveučilište",
+    "programs": [
+      {
+        "name": "Komunikologija",
+        "cutoffByYear": {
+          "2025": 636.7000122
+        }
+      },
+      {
+        "name": "Komunikologija (Hrvati izvan RH)",
+        "cutoffByYear": {
+          "2025": 700
+        }
+      },
+      {
+        "name": "Medicina",
+        "cutoffByYear": {
+          "2025": 604.4000244
+        }
+      },
+      {
+        "name": "Medicina (Hrvati izvan RH)",
+        "cutoffByYear": {
+          "2025": 678.2000122
+        }
+      },
+      {
+        "name": "Povijest",
+        "cutoffByYear": {
+          "2025": 439.7000122
+        }
+      },
+      {
+        "name": "Povijest (dvopredmetni)",
+        "cutoffByYear": {
+          "2025": 484.7999878
+        }
+      },
+      {
+        "name": "Pravo",
+        "cutoffByYear": {
+          "2025": 595
+        }
+      },
+      {
+        "name": "Pravo (Hrvati izvan RH)",
+        "cutoffByYear": {
+          "2025": 374.3999939
+        }
+      },
+      {
+        "name": "Psihologija",
+        "cutoffByYear": {
+          "2025": 728.4000244
+        }
+      },
+      {
+        "name": "Psihologija (Hrvati izvan RH)",
+        "cutoffByYear": {
+          "2025": 769.4000244
+        }
+      },
+      {
+        "name": "Računarstvo za društvene primjene",
+        "cutoffByYear": {
+          "2025": 474.2000122
+        }
+      },
+      {
+        "name": "Sestrinstvo",
+        "cutoffByYear": {
+          "2025": 532.7999878
+        }
+      },
+      {
+        "name": "Sestrinstvo (izvanredni)",
+        "cutoffByYear": {
+          "2025": 427.2000122
+        }
+      },
+      {
+        "name": "Sestrinstvo (završili prije 2010.) (izvanredni)",
+        "cutoffByYear": {
+          "2025": 520.7999878
+        }
+      },
+      {
+        "name": "Sociologija",
+        "cutoffByYear": {
+          "2025": 354.7000122
+        }
+      },
+      {
+        "name": "Sociologija (dvopredmetni)",
+        "cutoffByYear": {
+          "2025": 480.3999939
+        }
+      }
+    ]
+  },
+  {
+    "name": "Katolički bogoslovni fakultet Sveučilišta u Zagrebu",
+    "city": "Zagreb",
+    "provider": "Sveučilište u Zagrebu",
+    "institutionType": "Sveučilište",
+    "programs": [
+      {
+        "name": "Crkvena glazba (Institut za crkvenu glazbu A. Vidaković)",
+        "cutoffByYear": {
+          "2025": 583.4000244
+        }
+      },
+      {
+        "name": "Filozofsko - teološki studij",
+        "cutoffByYear": {
+          "2025": 503
+        }
+      },
+      {
+        "name": "Teološko - religijske znanosti",
+        "cutoffByYear": {
+          "2025": 557
+        }
+      },
+      {
+        "name": "Teološko - religijske znanosti i Povijest (HKS)",
+        "cutoffByYear": {
+          "2025": 785.2000122
+        }
+      }
+    ]
+  },
+  {
+    "name": "Kineziološki fakultet Sveučilišta u Zagrebu",
+    "city": "Zagreb",
+    "provider": "Sveučilište u Zagrebu",
+    "institutionType": "Sveučilište",
+    "programs": [
+      {
+        "name": "Izobrazba trenera; smjer: Fitnes (izvanredni, stručni)",
+        "cutoffByYear": {
+          "2025": 482.1000061
+        }
+      },
+      {
+        "name": "Izobrazba trenera; smjer: Fitnes (stručni)",
+        "cutoffByYear": {
+          "2025": 582.7000122
+        }
+      },
+      {
+        "name": "Izobrazba trenera; smjer: Kondicijska priprema sportaša (izvanredni, stručni)",
+        "cutoffByYear": {
+          "2025": 543.7000122
+        }
+      },
+      {
+        "name": "Izobrazba trenera; smjer: Kondicijska priprema sportaša (stručni)",
+        "cutoffByYear": {
+          "2025": 612.2999878
+        }
+      },
+      {
+        "name": "Kineziologija",
+        "cutoffByYear": {
+          "2025": 468.2000122
+        }
+      },
+      {
+        "name": "Kineziologija (Hrvati izvan RH)",
+        "cutoffByYear": {
+          "2025": 409.3999939
+        }
+      }
+    ]
+  },
+  {
+    "name": "Libertas Međunarodno sveučilište",
+    "city": "Zagreb",
+    "provider": "Libertas Međunarodno sveučilište",
+    "institutionType": "Sveučilište",
+    "programs": [
+      {
+        "name": "Fizioterapija",
+        "cutoffByYear": {
+          "2025": 451.1000061
+        }
+      },
+      {
+        "name": "Fizioterapija (izvanredni)",
+        "cutoffByYear": {
+          "2025": 364.8999939
+        }
+      },
+      {
+        "name": "Međunarodni odnosi",
+        "cutoffByYear": {
+          "2025": 478.8999939
+        }
+      },
+      {
+        "name": "Međunarodni odnosi (izvanredni)",
+        "cutoffByYear": {
+          "2025": 465.8999939
+        }
+      },
+      {
+        "name": "Međunarodno poslovanje",
+        "cutoffByYear": {
+          "2025": 373.6000061
+        }
+      },
+      {
+        "name": "Međunarodno poslovanje (izvanredni)",
+        "cutoffByYear": {
+          "2025": 457.2000122
+        }
+      },
+      {
+        "name": "Menadžment poslovne sigurnosti (izvanredni, stručni)",
+        "cutoffByYear": {
+          "2025": 155
+        }
+      },
+      {
+        "name": "Menadžment poslovne sigurnosti (stručni)",
+        "cutoffByYear": {
+          "2025": 488.3999939
+        }
+      },
+      {
+        "name": "Menadžment športa i športskih djelatnosti (izvanredni, stručni)",
+        "cutoffByYear": {
+          "2025": 487.5
+        }
+      },
+      {
+        "name": "Menadžment športa i športskih djelatnosti (stručni)",
+        "cutoffByYear": {
+          "2025": 421
+        }
+      },
+      {
+        "name": "Poslovna ekonomija (izvanredni, stručni)",
+        "cutoffByYear": {
+          "2025": 183.5
+        }
+      },
+      {
+        "name": "Poslovna ekonomija (stručni)",
+        "cutoffByYear": {
+          "2025": 158
+        }
+      },
+      {
+        "name": "Turistički i hotelski menadžment (izvanredni, stručni)",
+        "cutoffByYear": {
+          "2025": 440.2999878
+        }
+      },
+      {
+        "name": "Turistički i hotelski menadžment (stručni)",
+        "cutoffByYear": {
+          "2025": 139
+        }
+      }
+    ]
+  },
+  {
+    "name": "Medicinski fakultet Sveučilišta u Zagrebu",
+    "city": "Zagreb",
+    "provider": "Sveučilište u Zagrebu",
+    "institutionType": "Sveučilište",
+    "programs": [
+      {
+        "name": "Medicina",
+        "cutoffByYear": {
+          "2025": 654.2999878
+        }
+      },
+      {
+        "name": "Medicina (na engleskom jeziku)",
+        "cutoffByYear": {
+          "2025": 508.2999878
+        }
+      }
+    ]
+  },
+  {
+    "name": "MUP, Policijska akademija \"Prvi hrvatski redarstvenik\", Veleučilište kriminalistike i javne sigurnosti",
+    "city": "Zagreb",
+    "provider": "MUP, Policijska akademija \"Prvi hrvatski redarstvenik\", Veleučilište kriminalistike i javne sigurnosti",
+    "institutionType": "Veleučilište",
+    "programs": [
+      {
+        "name": "Kriminalistika (građanstvo) (stručni)",
+        "cutoffByYear": {
+          "2025": 648.9000244
+        }
+      },
+      {
+        "name": "Kriminalistika (MUP završili poslije 2010.) (izvanredni, stručni)",
+        "cutoffByYear": {
+          "2025": 526.7000122
+        }
+      },
+      {
+        "name": "Kriminalistika (MUP završili poslije 2010.) (stručni)",
+        "cutoffByYear": {
+          "2025": 488.2999878
+        }
+      },
+      {
+        "name": "Kriminalistika (MUP završili prije 2010.) (izvanredni, stručni)",
+        "cutoffByYear": {
+          "2025": 656
+        }
+      },
+      {
+        "name": "Kriminalistika (MUP završili prije 2010.) (stručni)",
+        "cutoffByYear": {
+          "2025": 587
+        }
+      },
+      {
+        "name": "Kriminalistika (zaposlenici drugih tijela državne uprave završili poslije 2010.) (izvanredni, stručni)",
+        "cutoffByYear": {
+          "2025": 406.3999939
+        }
+      }
+    ]
+  },
+  {
+    "name": "Muzička akademija Sveučilišta u Zagrebu",
+    "city": "Zagreb",
+    "provider": "Sveučilište u Zagrebu",
+    "institutionType": "Sveučilište",
+    "programs": [
+      {
+        "name": "Dirigiranje; smjer: Dirigiranje, Zborsko dirigiranje",
+        "cutoffByYear": {
+          "2025": 880
+        }
+      },
+      {
+        "name": "Glazbena pedagogija",
+        "cutoffByYear": {
+          "2025": 718.0999756
+        }
+      },
+      {
+        "name": "Kompozicija; smjer: Kompozicija, Elektronička kompozicija, Primijenjena kompozicija",
+        "cutoffByYear": {
+          "2025": 691
+        }
+      },
+      {
+        "name": "Muzikologija - dvopredmetno",
+        "cutoffByYear": {
+          "2025": 704
+        }
+      },
+      {
+        "name": "Muzikologija; smjer: Muzikologija, Etnomuzikologija",
+        "cutoffByYear": {
+          "2025": 623.4000244
+        }
+      },
+      {
+        "name": "Pjevanje",
+        "cutoffByYear": {
+          "2025": 709.7999878
+        }
+      },
+      {
+        "name": "Studij za instrumentaliste; smjer: Flauta",
+        "cutoffByYear": {
+          "2025": 740.7999878
+        }
+      },
+      {
+        "name": "Studij za instrumentaliste; smjer: Gitara",
+        "cutoffByYear": {
+          "2025": 707.4000244
+        }
+      },
+      {
+        "name": "Studij za instrumentaliste; smjer: Klarinet",
+        "cutoffByYear": {
+          "2025": 921.5999756
+        }
+      },
+      {
+        "name": "Studij za instrumentaliste; smjer: Klavir",
+        "cutoffByYear": {
+          "2025": 730
+        }
+      },
+      {
+        "name": "Studij za instrumentaliste; smjer: Kontrabas",
+        "cutoffByYear": {
+          "2025": 776.4000244
+        }
+      },
+      {
+        "name": "Studij za instrumentaliste; smjer: Oboa",
+        "cutoffByYear": {
+          "2025": 889.5999756
+        }
+      },
+      {
+        "name": "Studij za instrumentaliste; smjer: Rog",
+        "cutoffByYear": {
+          "2025": 787
+        }
+      },
+      {
+        "name": "Studij za instrumentaliste; smjer: Saksofon",
+        "cutoffByYear": {
+          "2025": 759
+        }
+      },
+      {
+        "name": "Studij za instrumentaliste; smjer: Tambura",
+        "cutoffByYear": {
+          "2025": 845
+        }
+      },
+      {
+        "name": "Studij za instrumentaliste; smjer: Trombon",
+        "cutoffByYear": {
+          "2025": 735.5999756
+        }
+      },
+      {
+        "name": "Studij za instrumentaliste; smjer: Truba",
+        "cutoffByYear": {
+          "2025": 835
+        }
+      },
+      {
+        "name": "Studij za instrumentaliste; smjer: Tuba",
+        "cutoffByYear": {
+          "2025": 675.2000122
+        }
+      },
+      {
+        "name": "Studij za instrumentaliste; smjer: Udaraljke",
+        "cutoffByYear": {
+          "2025": 818.2000122
+        }
+      },
+      {
+        "name": "Studij za instrumentaliste; smjer: Viola",
+        "cutoffByYear": {
+          "2025": 856.2000122
+        }
+      },
+      {
+        "name": "Studij za instrumentaliste; smjer: Violina",
+        "cutoffByYear": {
+          "2025": 783
+        }
+      },
+      {
+        "name": "Studij za instrumentaliste; smjer: Violončelo",
+        "cutoffByYear": {
+          "2025": 778.4000244
+        }
+      },
+      {
+        "name": "Teorija glazbe",
+        "cutoffByYear": {
+          "2025": 707.7999878
+        }
+      }
+    ]
+  },
+  {
+    "name": "Poslovno veleučilište Zagreb",
+    "city": "Zagreb",
+    "provider": "Poslovno veleučilište Zagreb",
+    "institutionType": "Veleučilište",
+    "programs": [
+      {
+        "name": "Gospodarska logistika (izvanredni, stručni)",
+        "cutoffByYear": {
+          "2025": 575.7000122
+        }
+      },
+      {
+        "name": "Marketing i komunikacije (izvanredni, stručni)",
+        "cutoffByYear": {
+          "2025": 493.2999878
+        }
+      },
+      {
+        "name": "Marketing i komunikacije (stručni)",
+        "cutoffByYear": {
+          "2025": 476
+        }
+      },
+      {
+        "name": "Menadžment i produkcija u kulturi (izvanredni, stručni)",
+        "cutoffByYear": {
+          "2025": 513.2999878
+        }
+      },
+      {
+        "name": "Menadžment i produkcija u kulturi (stručni)",
+        "cutoffByYear": {
+          "2025": 475.6000061
+        }
+      }
+    ]
+  },
+  {
+    "name": "Pravni fakultet Sveučilišta u Zagrebu",
+    "city": "Zagreb",
+    "provider": "Sveučilište u Zagrebu",
+    "institutionType": "Sveučilište",
+    "programs": [
+      {
+        "name": "Javna uprava (izvanredni, stručni)",
+        "cutoffByYear": {
+          "2025": 433.7999878
+        }
+      },
+      {
+        "name": "Javna uprava (stručni)",
+        "cutoffByYear": {
+          "2025": 481.6000061
+        }
+      },
+      {
+        "name": "Porezni studij (izvanredni, stručni)",
+        "cutoffByYear": {
+          "2025": 293.3999939
+        }
+      },
+      {
+        "name": "Porezni studij (stručni)",
+        "cutoffByYear": {
+          "2025": 478.2000122
+        }
+      },
+      {
+        "name": "Pravo",
+        "cutoffByYear": {
+          "2025": 301.3999939
+        }
+      },
+      {
+        "name": "Pravo (izvanredni)",
+        "cutoffByYear": {
+          "2025": 171
+        }
+      },
+      {
+        "name": "Socijalni rad",
+        "cutoffByYear": {
+          "2025": 542.9000244
+        }
+      },
+      {
+        "name": "Socijalni rad (izvanredni)",
+        "cutoffByYear": {
+          "2025": 178.8000031
+        }
+      }
+    ]
+  },
+  {
+    "name": "Prehrambeno-biotehnološki fakultet Sveučilišta u Zagrebu",
+    "city": "Zagreb",
+    "provider": "Sveučilište u Zagrebu",
+    "institutionType": "Sveučilište",
+    "programs": [
+      {
+        "name": "Biotehnologija",
+        "cutoffByYear": {
+          "2025": 710.7000122
+        }
+      },
+      {
+        "name": "Nutricionizam",
+        "cutoffByYear": {
+          "2025": 656.7000122
+        }
+      },
+      {
+        "name": "Prehrambena tehnologija",
+        "cutoffByYear": {
+          "2025": 548.2999878
+        }
+      }
+    ]
+  },
+  {
+    "name": "Prirodoslovno-matematički fakultet Sveučilišta u Zagrebu",
+    "city": "Zagreb",
+    "provider": "Sveučilište u Zagrebu",
+    "institutionType": "Sveučilište",
+    "programs": [
+      {
+        "name": "Biologija",
+        "cutoffByYear": {
+          "2025": 644.5
+        }
+      },
+      {
+        "name": "Biologija i kemija; modul: nastavnički",
+        "cutoffByYear": {
+          "2025": 447.1000061
+        }
+      },
+      {
+        "name": "Fizika i informatika; modul: nastavnički",
+        "cutoffByYear": {
+          "2025": 623.2000122
+        }
+      },
+      {
+        "name": "Fizika; modul: istraživački",
+        "cutoffByYear": {
+          "2025": 519.5
+        }
+      },
+      {
+        "name": "Geofizika - klimatologija, meteorologija, oceanografija, seizmologija",
+        "cutoffByYear": {
+          "2025": 562.7000122
+        }
+      },
+      {
+        "name": "Geografija i povijest; modul: nastavnički",
+        "cutoffByYear": {
+          "2025": 582.0999756
+        }
+      },
+      {
+        "name": "Geografija; modul: istraživački",
+        "cutoffByYear": {
+          "2025": 457.7000122
+        }
+      },
+      {
+        "name": "Geologija",
+        "cutoffByYear": {
+          "2025": 401.8999939
+        }
+      },
+      {
+        "name": "Kemija",
+        "cutoffByYear": {
+          "2025": 366.3999939
+        }
+      },
+      {
+        "name": "Matematika",
+        "cutoffByYear": {
+          "2025": 549.5999756
+        }
+      },
+      {
+        "name": "Matematika i fizika; modul: nastavnički",
+        "cutoffByYear": {
+          "2025": 635.2000122
+        }
+      },
+      {
+        "name": "Matematika; modul: nastavnički",
+        "cutoffByYear": {
+          "2025": 614.5999756
+        }
+      },
+      {
+        "name": "Molekularna biologija",
+        "cutoffByYear": {
+          "2025": 739.0999756
+        }
+      },
+      {
+        "name": "Znanosti o okolišu",
+        "cutoffByYear": {
+          "2025": 447.7999878
+        }
+      }
+    ]
+  },
+  {
+    "name": "RIT Croatia",
+    "city": "Zagreb",
+    "provider": "RIT Croatia",
+    "institutionType": "Ostalo",
+    "programs": [
+      {
+        "name": "Dizajn novih medija (stručni)",
+        "cutoffByYear": {
+          "2025": 385
+        }
+      },
+      {
+        "name": "Informacijske tehnologije (stručni)",
+        "cutoffByYear": {
+          "2025": 370
+        }
+      },
+      {
+        "name": "Međunarodno poslovanje (stručni)",
+        "cutoffByYear": {
+          "2025": 280
+        }
+      }
+    ]
+  },
+  {
+    "name": "Rudarsko-geološko-naftni fakultet Sveučilišta u Zagrebu",
+    "city": "Zagreb",
+    "provider": "Sveučilište u Zagrebu",
+    "institutionType": "Sveučilište",
+    "programs": [
+      {
+        "name": "Naftno i geoenergetsko inženjerstvo",
+        "cutoffByYear": {
+          "2025": 327.2000122
+        }
+      },
+      {
+        "name": "Primijenjena geologija i geološko inženjerstvo",
+        "cutoffByYear": {
+          "2025": 332.1000061
+        }
+      },
+      {
+        "name": "Rudarstvo",
+        "cutoffByYear": {
+          "2025": 347.5
+        }
+      }
+    ]
+  },
+  {
+    "name": "Stomatološki fakultet Sveučilišta u Zagrebu",
+    "city": "Zagreb",
+    "provider": "Sveučilište u Zagrebu",
+    "institutionType": "Sveučilište",
+    "programs": [
+      {
+        "name": "Dental medicine",
+        "cutoffByYear": {
+          "2025": 415.5
+        }
+      },
+      {
+        "name": "Dentalna medicina",
+        "cutoffByYear": {
+          "2025": 714
+        }
+      }
+    ]
+  },
+  {
+    "name": "Sveučilišni centar za protestantsku teologiju Matija Vlačić Ilirik",
+    "city": "Zagreb",
+    "provider": "Sveučilište u Zagrebu",
+    "institutionType": "Sveučilište",
+    "programs": [
+      {
+        "name": "Protestantska teologija",
+        "cutoffByYear": {
+          "2025": 517.4000244
+        }
+      }
+    ]
+  },
+  {
+    "name": "Sveučilište Algebra Bernays",
+    "city": "Zagreb",
+    "provider": "Sveučilište Algebra Bernays",
+    "institutionType": "Sveučilište",
+    "programs": [
+      {
+        "name": "Digitalni marketing (na engleskom jeziku) (stručni)",
+        "cutoffByYear": {
+          "2025": 326.7999878
+        }
+      },
+      {
+        "name": "Digitalni marketing (online) (izvanredni, stručni)",
+        "cutoffByYear": {
+          "2025": 388
+        }
+      },
+      {
+        "name": "Digitalni marketing (stručni)",
+        "cutoffByYear": {
+          "2025": 371.2000122
+        }
+      },
+      {
+        "name": "Ekonomija digitalnog poslovanja",
+        "cutoffByYear": {
+          "2025": 408.7999878
+        }
+      },
+      {
+        "name": "Internetski marketing (online) (izvanredni)",
+        "cutoffByYear": {
+          "2025": 401.5
+        }
+      },
+      {
+        "name": "Kibernetička sigurnost (izvanredni, stručni)",
+        "cutoffByYear": {
+          "2025": 489.1000061
+        }
+      },
+      {
+        "name": "Kibernetička sigurnost (stručni)",
+        "cutoffByYear": {
+          "2025": 478.2999878
+        }
+      },
+      {
+        "name": "Multimedijska produkcija (stručni)",
+        "cutoffByYear": {
+          "2025": 480.2999878
+        }
+      },
+      {
+        "name": "Oblikovanje tržišnih komunikacija; smjerovi: Dizajn i 3D Dizajn (na engleskom jeziku) (stručni)",
+        "cutoffByYear": {
+          "2025": 733.9000244
+        }
+      },
+      {
+        "name": "Oblikovanje tržišnih komunikacija; smjerovi: Dizajn i 3D Dizajn (stručni)",
+        "cutoffByYear": {
+          "2025": 334
+        }
+      },
+      {
+        "name": "Podatkovna znanost i umjetna inteligencija",
+        "cutoffByYear": {
+          "2025": 415.2000122
+        }
+      },
+      {
+        "name": "Programsko inženjerstvo",
+        "cutoffByYear": {
+          "2025": 383.2000122
+        }
+      },
+      {
+        "name": "Programsko inženjerstvo (na engleskom jeziku)",
+        "cutoffByYear": {
+          "2025": 709.5
+        }
+      },
+      {
+        "name": "Programsko inženjerstvo (online) (izvanredni)",
+        "cutoffByYear": {
+          "2025": 253.1999969
+        }
+      },
+      {
+        "name": "Razvoj računalnih igara (stručni)",
+        "cutoffByYear": {
+          "2025": 367.7000122
+        }
+      }
+    ]
+  },
+  {
+    "name": "Sveučilište VERN",
+    "city": "Zagreb",
+    "provider": "Sveučilište VERN",
+    "institutionType": "Sveučilište",
+    "programs": [
+      {
+        "name": "Cyber komunikacije i znanost o mreži",
+        "cutoffByYear": {
+          "2025": 346
+        }
+      },
+      {
+        "name": "Cyber komunikacije i znanost o mreži (izvanredni)",
+        "cutoffByYear": {
+          "2025": 346.8999939
+        }
+      },
+      {
+        "name": "Ekonomija poduzetništva (izvanredni, stručni)",
+        "cutoffByYear": {
+          "2025": 359.5
+        }
+      },
+      {
+        "name": "Ekonomija poduzetništva (stručni)",
+        "cutoffByYear": {
+          "2025": 292.7000122
+        }
+      },
+      {
+        "name": "Filmsko, televizijsko i multimedijsko oblikovanje (stručni)",
+        "cutoffByYear": {
+          "2025": 625.4000244
+        }
+      },
+      {
+        "name": "Internet stvari",
+        "cutoffByYear": {
+          "2025": 367.7999878
+        }
+      },
+      {
+        "name": "Internet stvari (izvanredni)",
+        "cutoffByYear": {
+          "2025": 289
+        }
+      },
+      {
+        "name": "Novinarstvo (stručni)",
+        "cutoffByYear": {
+          "2025": 322
+        }
+      },
+      {
+        "name": "Odnosi s javnošću i studij medija (izvanredni, stručni)",
+        "cutoffByYear": {
+          "2025": 382.2000122
+        }
+      },
+      {
+        "name": "Odnosi s javnošću i studij medija (stručni)",
+        "cutoffByYear": {
+          "2025": 361.6000061
+        }
+      },
+      {
+        "name": "Poslovna informatika (izvanredni, stručni)",
+        "cutoffByYear": {
+          "2025": 545.7000122
+        }
+      },
+      {
+        "name": "Poslovna informatika (stručni)",
+        "cutoffByYear": {
+          "2025": 349.5
+        }
+      },
+      {
+        "name": "Tehnički menadžment (izvanredni, stručni)",
+        "cutoffByYear": {
+          "2025": 284.3999939
+        }
+      },
+      {
+        "name": "Tehnički menadžment (stručni)",
+        "cutoffByYear": {
+          "2025": 570
+        }
+      },
+      {
+        "name": "Transmedijska dramaturgija",
+        "cutoffByYear": {
+          "2025": 333.2000122
+        }
+      },
+      {
+        "name": "Turizam (izvanredni, stručni)",
+        "cutoffByYear": {
+          "2025": 625
+        }
+      },
+      {
+        "name": "Turizam (stručni)",
+        "cutoffByYear": {
+          "2025": 281
+        }
+      }
+    ]
+  },
+  {
+    "name": "Tehničko veleučilište u Zagrebu",
+    "city": "Zagreb",
+    "provider": "Tehničko veleučilište u Zagrebu",
+    "institutionType": "Veleučilište",
+    "programs": [
+      {
+        "name": "Graditeljstvo; smjerovi: Visokogradnja, Niskogradnja, Građevinsko poduzetništvo, Okoliš u graditeljstvu (izvanredni, stručni)",
+        "cutoffByYear": {
+          "2025": 286.3999939
+        }
+      },
+      {
+        "name": "Graditeljstvo; smjerovi: Visokogradnja, Niskogradnja, Građevinsko poduzetništvo, Okoliš u graditeljstvu (stručni)",
+        "cutoffByYear": {
+          "2025": 515.2999878
+        }
+      },
+      {
+        "name": "Informatika; smjer: Elektroničko poslovanje (izvanredni, stručni)",
+        "cutoffByYear": {
+          "2025": 527
+        }
+      },
+      {
+        "name": "Informatika; smjer: Elektroničko poslovanje (stručni)",
+        "cutoffByYear": {
+          "2025": 578.4000244
+        }
+      },
+      {
+        "name": "Informatika; smjer: Informatički dizajn (izvanredni, stručni)",
+        "cutoffByYear": {
+          "2025": 475.7999878
+        }
+      },
+      {
+        "name": "Informatika; smjer: Informatički dizajn (stručni)",
+        "cutoffByYear": {
+          "2025": 594.0999756
+        }
+      },
+      {
+        "name": "Informatika; smjer: Organizacija i informatizacija ureda (izvanredni, stručni)",
+        "cutoffByYear": {
+          "2025": 278.3999939
+        }
+      },
+      {
+        "name": "Informatika; smjer: Organizacija i informatizacija ureda (stručni)",
+        "cutoffByYear": {
+          "2025": 605.9000244
+        }
+      },
+      {
+        "name": "Mehatronika (izvanredni, stručni)",
+        "cutoffByYear": {
+          "2025": 413.7999878
+        }
+      },
+      {
+        "name": "Mehatronika (stručni)",
+        "cutoffByYear": {
+          "2025": 573.4000244
+        }
+      },
+      {
+        "name": "Računarstvo; smjerovi: Programsko inženjerstvo, Inženjerstvo računalnih sustava i mreža (izvanredni, stručni)",
+        "cutoffByYear": {
+          "2025": 479
+        }
+      },
+      {
+        "name": "Računarstvo; smjerovi: Programsko inženjerstvo, Inženjerstvo računalnih sustava i mreža (stručni)",
+        "cutoffByYear": {
+          "2025": 701.5999756
+        }
+      },
+      {
+        "name": "Strojarstvo (izvanredni, stručni)",
+        "cutoffByYear": {
+          "2025": 437.7000122
+        }
+      },
+      {
+        "name": "Strojarstvo (stručni)",
+        "cutoffByYear": {
+          "2025": 527
+        }
+      }
+    ]
+  },
+  {
+    "name": "Tekstilno-tehnološki fakultet Sveučilišta u Zagrebu",
+    "city": "Zagreb",
+    "provider": "Sveučilište u Zagrebu",
+    "institutionType": "Sveučilište",
+    "programs": [
+      {
+        "name": "Tekstilna tehnologija i inženjerstvo, smjer: Industrijski dizajn tekstila i odjeće",
+        "cutoffByYear": {
+          "2025": 480.3999939
+        }
+      },
+      {
+        "name": "Tekstilni i modni dizajn; smjerovi: Modni dizajn, Dizajn tekstila",
+        "cutoffByYear": {
+          "2025": 515.2000122
+        }
+      },
+      {
+        "name": "Tekstilni i modni dizajn; smjerovi: Modni dizajn, Dizajn tekstila (Hrvati izvan RH)",
+        "cutoffByYear": {
+          "2025": 926
+        }
+      }
+    ]
+  },
+  {
+    "name": "Učiteljski fakultet Sveučilišta u Zagrebu",
+    "city": "Zagreb",
+    "provider": "Sveučilište u Zagrebu",
+    "institutionType": "Sveučilište",
+    "programs": [
+      {
+        "name": "Rani i predškolski odgoj i obrazovanje",
+        "cutoffByYear": {
+          "2025": 577.5999756
+        }
+      },
+      {
+        "name": "Rani i predškolski odgoj i obrazovanje (izvanredni) (izvanredni)",
+        "cutoffByYear": {
+          "2025": 551.2999878
+        }
+      },
+      {
+        "name": "Rani i predškolski odgoj i obrazovanje (završili prije 2010.) (izvanredni)",
+        "cutoffByYear": {
+          "2025": 529.7999878
+        }
+      },
+      {
+        "name": "Učiteljski studij",
+        "cutoffByYear": {
+          "2025": 581.4000244
+        }
+      },
+      {
+        "name": "Učiteljski studij (s engleskim jezikom)",
+        "cutoffByYear": {
+          "2025": 616.5
+        }
+      },
+      {
+        "name": "Učiteljski studij (s njemačkim jezikom)",
+        "cutoffByYear": {
+          "2025": 385.7999878
+        }
+      }
+    ]
+  },
+  {
+    "name": "Veleučilište Algebra Bernays",
+    "city": "Zagreb",
+    "provider": "Veleučilište Algebra Bernays",
+    "institutionType": "Veleučilište",
+    "programs": [
+      {
+        "name": "Komunikacijski menadžment (izvanredni, stručni)",
+        "cutoffByYear": {
+          "2025": 605.7000122
+        }
+      },
+      {
+        "name": "Komunikacijski menadžment (stručni)",
+        "cutoffByYear": {
+          "2025": 394.7999878
+        }
+      }
+    ]
+  },
+  {
+    "name": "Veleučilište Aspira",
+    "city": "Zagreb",
+    "provider": "Veleučilište Aspira",
+    "institutionType": "Veleučilište",
+    "programs": [
+      {
+        "name": "Međunarodni menadžment u hotelijerstvu i turizmu (izvanredni, stručni)",
+        "cutoffByYear": {
+          "2025": 700.4000244
+        }
+      },
+      {
+        "name": "Međunarodni menadžment u hotelijerstvu i turizmu (stručni)",
+        "cutoffByYear": {
+          "2025": 614.7000122
+        }
+      }
+    ]
+  },
+  {
+    "name": "Veleučilište studija sigurnosti",
+    "city": "Zagreb",
+    "provider": "Veleučilište studija sigurnosti",
+    "institutionType": "Veleučilište",
+    "programs": [
+      {
+        "name": "Sigurnost; smjerovi: Zaštita na radu, Zaštita od požara (izvanredni, stručni)",
+        "cutoffByYear": {
+          "2025": 388.7999878
+        }
+      }
+    ]
+  },
+  {
+    "name": "Veleučilište suvremenih informacijskih tehnologija",
+    "city": "Zagreb",
+    "provider": "Veleučilište suvremenih informacijskih tehnologija",
+    "institutionType": "Veleučilište",
+    "programs": [
+      {
+        "name": "Informacijska tehnologija (stručni)",
+        "cutoffByYear": {
+          "2025": 542.5999756
+        }
+      }
+    ]
+  },
+  {
+    "name": "Veterinarski fakultet Sveučilišta u Zagrebu",
+    "city": "Zagreb",
+    "provider": "Sveučilište u Zagrebu",
+    "institutionType": "Sveučilište",
+    "programs": [
+      {
+        "name": "Veterinarska medicina",
+        "cutoffByYear": {
+          "2025": 503.6000061
+        }
+      },
+      {
+        "name": "Veterinary Medicine",
+        "cutoffByYear": {
+          "2025": 213.1000061
+        }
+      }
+    ]
+  },
+  {
+    "name": "Zagrebačka škola ekonomije i managementa",
+    "city": "Zagreb",
+    "provider": "Zagrebačka škola ekonomije i managementa",
+    "institutionType": "Ostalo",
+    "programs": [
+      {
+        "name": "Ekonomija i management (stručni)",
+        "cutoffByYear": {
+          "2025": 424.1000061
+        }
+      },
+      {
+        "name": "Poslovna matematika i ekonomija (stručni)",
+        "cutoffByYear": {
+          "2025": 514.9000244
+        }
+      }
+    ]
+  },
+  {
+    "name": "Zdravstveno veleučilište u Zagrebu",
+    "city": "Zagreb",
+    "provider": "Zdravstveno veleučilište u Zagrebu",
+    "institutionType": "Veleučilište",
+    "programs": [
+      {
+        "name": "Fizioterapija (izvanredni, stručni)",
+        "cutoffByYear": {
+          "2025": 618.2000122
+        }
+      },
+      {
+        "name": "Fizioterapija (online studij) (izvanredni, stručni)",
+        "cutoffByYear": {
+          "2025": 303.6000061
+        }
+      },
+      {
+        "name": "Fizioterapija (stručni)",
+        "cutoffByYear": {
+          "2025": 639.7999878
+        }
+      },
+      {
+        "name": "Medicinsko-laboratorijska dijagnostika (izvanredni, stručni)",
+        "cutoffByYear": {
+          "2025": 589.5
+        }
+      },
+      {
+        "name": "Medicinsko-laboratorijska dijagnostika (stručni)",
+        "cutoffByYear": {
+          "2025": 643.5999756
+        }
+      },
+      {
+        "name": "Radiološka tehnologija (izvanredni, stručni)",
+        "cutoffByYear": {
+          "2025": 544.9000244
+        }
+      },
+      {
+        "name": "Radiološka tehnologija (stručni)",
+        "cutoffByYear": {
+          "2025": 623.0999756
+        }
+      },
+      {
+        "name": "Radna terapija (izvanredni, stručni)",
+        "cutoffByYear": {
+          "2025": 477.7000122
+        }
+      },
+      {
+        "name": "Radna terapija (stručni)",
+        "cutoffByYear": {
+          "2025": 588.5999756
+        }
+      },
+      {
+        "name": "Sanitarno inženjerstvo (izvanredni, stručni)",
+        "cutoffByYear": {
+          "2025": 455.1000061
+        }
+      },
+      {
+        "name": "Sanitarno inženjerstvo (stručni)",
+        "cutoffByYear": {
+          "2025": 493.3999939
+        }
+      },
+      {
+        "name": "Sestrinstvo (izvanredni, stručni)",
+        "cutoffByYear": {
+          "2025": 539.2999878
+        }
+      },
+      {
+        "name": "Sestrinstvo (online studij) (izvanredni, stručni)",
+        "cutoffByYear": {
+          "2025": 668.4000244
+        }
+      },
+      {
+        "name": "Sestrinstvo (stručni)",
+        "cutoffByYear": {
+          "2025": 549.4000244
+        }
+      }
+    ]
+  },
+  {
+    "name": "Veleučilište s pravom javnosti BALTAZAR ZAPREŠIĆ",
+    "city": "Zaprešić",
+    "provider": "Veleučilište s pravom javnosti BALTAZAR ZAPREŠIĆ",
+    "institutionType": "Veleučilište",
+    "programs": [
+      {
+        "name": "Informacijske tehnologije ((online studij (završili prije 2010.) (izvanredni, stručni)",
+        "cutoffByYear": {
+          "2025": 268
+        }
+      },
+      {
+        "name": "Informacijske tehnologije (online studij) (izvanredni, stručni)",
+        "cutoffByYear": {
+          "2025": 260.7999878
+        }
+      },
+      {
+        "name": "Informacijske tehnologije (online studij) (stručni)",
+        "cutoffByYear": {
+          "2025": 433.2000122
+        }
+      },
+      {
+        "name": "Poslovanje i upravljanje ((online studij) završili prije 2010.) (izvanredni, stručni)",
+        "cutoffByYear": {
+          "2025": 210.3999939
+        }
+      },
+      {
+        "name": "Poslovanje i upravljanje (online studij) (izvanredni, stručni)",
+        "cutoffByYear": {
+          "2025": 220
+        }
+      },
+      {
+        "name": "Poslovanje i upravljanje (online studij) (stručni)",
+        "cutoffByYear": {
+          "2025": 502.8999939
+        }
+      }
+    ]
+  }
+]

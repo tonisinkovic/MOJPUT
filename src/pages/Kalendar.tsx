@@ -5,51 +5,40 @@ import { useState } from "react";
 import { toast } from "sonner";
 
 const events = [
-  // --- Opći rokovi ---
-  { year: 2026, month: 0, day: 15, title: "Prijave za državnu maturu", type: "Rok", urgent: true },
-  { year: 2026, month: 1, day: 1, title: "Početak priprema – probna matura", type: "Priprema", urgent: false },
-  { year: 2026, month: 2, day: 15, title: "Rok za prijavu izbornih predmeta", type: "Rok", urgent: true },
+  // --- Rokovi prijava (prema slici: kalendar mature i upisa 2025./2026.) ---
+  { year: 2025, month: 11, day: 1, title: "Početak prijava ispita mature", type: "Rok", urgent: true },
+  { year: 2026, month: 1, day: 1, title: "Početak prijava studija", type: "Upisi", urgent: true },
+  { year: 2026, month: 1, day: 15, title: "Kraj prijava ispita mature", type: "Rok", urgent: true },
+  { year: 2026, month: 3, day: 27, title: "Orijentacijske rang-liste upisa na studije", type: "Upisi", urgent: false },
+  { year: 2026, month: 4, day: 22, title: "Kraj nastave za maturante i norijada", type: "Rok", urgent: false },
 
   // --- Ljetni rok ispita (lipanj 2026) ---
-  { year: 2026, month: 5, day: 1, title: "Manjinski jezici (češki, mađarski, srpski, talijanski)", type: "Ispit", urgent: false },
-  { year: 2026, month: 5, day: 3, title: "Biologija • Geografija", type: "Ispit", urgent: false },
-  { year: 2026, month: 5, day: 8, title: "Španjolski jezik • Latinski jezik", type: "Ispit", urgent: false },
-  { year: 2026, month: 5, day: 9, title: "Njemački jezik • Filozofija", type: "Ispit", urgent: false },
-  { year: 2026, month: 5, day: 10, title: "Talijanski jezik • Likovna umjetnost", type: "Ispit", urgent: false },
-  { year: 2026, month: 5, day: 15, title: "Hrvatski jezik – test i sažetak", type: "Ispit", urgent: true },
-  { year: 2026, month: 5, day: 16, title: "Hrvatski jezik – esej", type: "Ispit", urgent: true },
-  { year: 2026, month: 5, day: 17, title: "Politika i gospodarstvo • Povijest", type: "Ispit", urgent: false },
-  { year: 2026, month: 5, day: 18, title: "Fizika • Logika", type: "Ispit", urgent: false },
-  { year: 2026, month: 5, day: 19, title: "Engleski jezik", type: "Ispit", urgent: true },
-  { year: 2026, month: 5, day: 23, title: "Psihologija • Informatika", type: "Ispit", urgent: false },
-  { year: 2026, month: 5, day: 24, title: "Kemija • Sociologija", type: "Ispit", urgent: false },
-  { year: 2026, month: 5, day: 25, title: "Matematika", type: "Ispit", urgent: true },
-  { year: 2026, month: 5, day: 26, title: "Glazbena umjetnost • Vjeronauk i etika", type: "Ispit", urgent: false },
+  { year: 2026, month: 5, day: 3, title: "Biologija (9h) • Geografija (14h)", type: "Ispit", urgent: false },
+  { year: 2026, month: 5, day: 9, title: "Njemački jezik (9h) • Filozofija (14h)", type: "Ispit", urgent: false },
+  { year: 2026, month: 5, day: 10, title: "Talijanski jezik (9h) • Likovna umjetnost (14h)", type: "Ispit", urgent: false },
+  { year: 2026, month: 5, day: 15, title: "Hrvatski jezik – test + sažetak (9h)", type: "Ispit", urgent: true },
+  { year: 2026, month: 5, day: 16, title: "Hrvatski jezik – esej (9h)", type: "Ispit", urgent: true },
+  { year: 2026, month: 5, day: 17, title: "Politika i gospodarstvo (9h) • Povijest (14h)", type: "Ispit", urgent: false },
+  { year: 2026, month: 5, day: 18, title: "Fizika (9h) • Logika (14h)", type: "Ispit", urgent: false },
+  { year: 2026, month: 5, day: 19, title: "Engleski jezik – viša razina (9h)", type: "Ispit", urgent: true },
+  { year: 2026, month: 5, day: 23, title: "Psihologija (9h) • Informatika (14h)", type: "Ispit", urgent: false },
+  { year: 2026, month: 5, day: 24, title: "Kemija (9h) • Sociologija (14h)", type: "Ispit", urgent: false },
+  { year: 2026, month: 5, day: 25, title: "Matematika – viša i osnovna (9h)", type: "Ispit", urgent: true },
+  { year: 2026, month: 5, day: 26, title: "Glazbena umjetnost (9h) • Etika (14h) • Vjeronauk (14h)", type: "Ispit", urgent: false },
 
-  // --- Rezultati ljetnog roka ---
-  { year: 2026, month: 6, day: 8, title: "Objava rezultata ljetnog roka", type: "Rezultati", urgent: false },
-  { year: 2026, month: 6, day: 15, title: "Konačni rezultati ljetnog roka", type: "Rezultati", urgent: false },
-  { year: 2026, month: 6, day: 17, title: "Podjela svjedodžbi i potvrda", type: "Rezultati", urgent: false },
-  { year: 2026, month: 6, day: 18, title: "Prijave za jesenski rok (do 29. 7.)", type: "Rok", urgent: false },
-  { year: 2026, month: 6, day: 20, title: "Početak upisa na fakultete", type: "Upisi", urgent: true },
-  { year: 2026, month: 6, day: 30, title: "Završetak prvog upisnog roka", type: "Upisi", urgent: true },
-
-  // --- Jesenski rok ispita (kolovoz 2026) ---
-  { year: 2026, month: 7, day: 19, title: "Informatika • Politika i gospodarstvo", type: "Ispit", urgent: false },
-  { year: 2026, month: 7, day: 20, title: "Hrvatski jezik – test i sažetak • Filozofija", type: "Ispit", urgent: true },
-  { year: 2026, month: 7, day: 21, title: "Hrvatski jezik – esej • Glazbena umjetnost", type: "Ispit", urgent: true },
-  { year: 2026, month: 7, day: 24, title: "Fizika • Geografija", type: "Ispit", urgent: false },
-  { year: 2026, month: 7, day: 25, title: "Biologija • Povijest", type: "Ispit", urgent: false },
-  { year: 2026, month: 7, day: 26, title: "Matematika • Sociologija", type: "Ispit", urgent: true },
-  { year: 2026, month: 7, day: 27, title: "Kemija • Psihologija", type: "Ispit", urgent: false },
-  { year: 2026, month: 7, day: 28, title: "Engleski jezik • Logika", type: "Ispit", urgent: true },
-
-  // --- Rujan: ispiti i rezultati ---
-  { year: 2026, month: 8, day: 1, title: "Strani jezici • Likovna i Glazbena umjetnost • Vjeronauk", type: "Ispit", urgent: false },
-  { year: 2026, month: 8, day: 9, title: "Objava rezultata jesenskog roka", type: "Rezultati", urgent: false },
-  { year: 2026, month: 8, day: 15, title: "Drugi upisni rok", type: "Upisi", urgent: false },
-  { year: 2026, month: 8, day: 16, title: "Konačni rezultati jesenskog roka", type: "Rezultati", urgent: false },
-  { year: 2026, month: 8, day: 17, title: "Podjela svjedodžbi (jesenski rok)", type: "Rezultati", urgent: false },
+  // --- Srpanj 2026 (Postani student, rezultati, upisi) ---
+  { year: 2026, month: 6, day: 1, title: "Kraj registracija u sustavu Postani student (stariji kandidati)", type: "Upisi", urgent: false },
+  { year: 2026, month: 6, day: 8, title: "Privremeni rezultati mature • privremene rang-liste upisa na studije", type: "Rezultati", urgent: false },
+  { year: 2026, month: 6, day: 10, title: "Rok za prigovore na rezultate mature", type: "Rok", urgent: true },
+  {
+    year: 2026,
+    month: 6,
+    day: 15,
+    title:
+      "Konačni rezultati mature • rok za prijavu i odjavu studija (do 13:59) • konačne liste upisa na studije (iza 15h)",
+    type: "Rezultati",
+    urgent: true,
+  },
 ];
 
 const croatianMonths = [

@@ -2,8 +2,6 @@ import Layout from "@/components/Layout";
 import { motion } from "framer-motion";
 import {
   ArrowLeft,
-  Eye,
-  EyeOff,
   Heart,
   LogOut,
   Mail,
@@ -15,20 +13,13 @@ import {
   User,
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
-
-type ForumUser = {
-  id: number;
-  username: string;
-  email: string;
-  password: string;
-  avatar: string;
-};
+import { apiGet, apiPost } from "@/lib/api";
+import { authLogin, authLogout, authMe, authRegister, type AuthUser } from "@/lib/auth";
 
 type ForumMessage = {
   id: number;
   userId: number;
   username: string;
-  avatar: string;
   text: string;
   timestamp: Date;
   likes: number;
@@ -47,9 +38,10 @@ type ForumConversation = {
 
 const Forum = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [currentUser, setCurrentUser] = useState<ForumUser | null>(null);
+  const [currentUser, setCurrentUser] = useState<AuthUser | null>(null);
   const [authMode, setAuthMode] = useState<"login" | "register">("login");
   const [showPassword, setShowPassword] = useState(false);
+  const [authError, setAuthError] = useState("");
   const [authForm, setAuthForm] = useState({
     username: "",
     email: "",
@@ -57,62 +49,9 @@ const Forum = () => {
     confirmPassword: "",
   });
 
-  const [users, setUsers] = useState<ForumUser[]>([
-    { id: 1, username: "marko123", email: "marko@example.com", password: "pass123", avatar: "👨‍💼" },
-    { id: 2, username: "ana_k", email: "ana@example.com", password: "pass123", avatar: "👩‍💻" },
-  ]);
-
-  const [conversations, setConversations] = useState<ForumConversation[]>([
-    {
-      id: 1,
-      title: "Najbolji fakulteti za informatiku",
-      description: "Diskusija o fakultetima sa najboljim IT programima",
-      creator: "marko123",
-      creatorId: 1,
-      createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
-      participants: [1, 2],
-      messages: [
-        {
-          id: 1,
-          userId: 1,
-          username: "marko123",
-          avatar: "👨‍💼",
-          text: "FER je sigurno najbolji izbor",
-          timestamp: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
-          likes: 5,
-        },
-        {
-          id: 2,
-          userId: 2,
-          username: "ana_k",
-          avatar: "👩‍💻",
-          text: "FOI ima odličan omjer kvalitete",
-          timestamp: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000),
-          likes: 3,
-        },
-      ],
-    },
-    {
-      id: 2,
-      title: "Iskustva sa maturom",
-      description: "Savjeti i trikovi za maturu",
-      creator: "ana_k",
-      creatorId: 2,
-      createdAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000),
-      participants: [1, 2],
-      messages: [
-        {
-          id: 1,
-          userId: 2,
-          username: "ana_k",
-          avatar: "👩‍💻",
-          text: "Koja su bila vaša iskustva?",
-          timestamp: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000),
-          likes: 2,
-        },
-      ],
-    },
-  ]);
+  const [conversations, setConversations] = useState<ForumConversation[]>([]);
+  const [loadingConversations, setLoadingConversations] = useState(true);
+  const [loadingMessages, setLoadingMessages] = useState(false);
 
   const [selectedConversation, setSelectedConversation] = useState<ForumConversation | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
@@ -123,59 +62,141 @@ const Forum = () => {
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
+    let alive = true;
+    authMe().then((res) => {
+      if (!alive) return;
+      if (res.success) {
+        const user = (res as any).user ?? (res as any).data?.user ?? null;
+        if (user) {
+          setCurrentUser(user);
+          setIsAuthenticated(true);
+        }
+      }
+    });
+    return () => {
+      alive = false;
+    };
+  }, []);
+
+  const loadConversations = async () => {
+    setLoadingConversations(true);
+    const res = await apiGet<{ data: any[] }>("/api/forum/conversations");
+    if (res.success) {
+      const rows = (res as any).data ?? (res as any).data?.data ?? (res as any).data;
+      const list = (rows?.data ?? rows ?? []) as any[];
+      setConversations(
+        list.map((c) => ({
+          id: c.id,
+          title: c.title,
+          description: c.description || "",
+          creator: c.creator_username || "",
+          creatorId: -1,
+          createdAt: new Date(c.created_at),
+          participants: [],
+          messages: [],
+        })),
+      );
+    }
+    setLoadingConversations(false);
+  };
+
+  const loadMessages = async (conversationId: number) => {
+    setLoadingMessages(true);
+    const res = await apiGet<{ data: any[] }>(`/api/forum/conversations/${conversationId}/messages`);
+    if (res.success) {
+      const rows = (res as any).data ?? (res as any).data?.data ?? (res as any).data;
+      const list = (rows?.data ?? rows ?? []) as any[];
+      setConversations((prev) =>
+        prev.map((c) =>
+          c.id === conversationId
+            ? {
+                ...c,
+                messages: list.map((m) => ({
+                  id: m.id,
+                  userId: m.user_id,
+                  username: m.username,
+                  text: m.text,
+                  timestamp: new Date(m.created_at),
+                  likes: 0,
+                })),
+              }
+            : c,
+        ),
+      );
+      setSelectedConversation((prev) => {
+        if (!prev || prev.id !== conversationId) return prev;
+        return {
+          ...prev,
+          messages: list.map((m) => ({
+            id: m.id,
+            userId: m.user_id,
+            username: m.username,
+            text: m.text,
+            timestamp: new Date(m.created_at),
+            likes: 0,
+          })),
+        };
+      });
+    }
+    setLoadingMessages(false);
+  };
+
+  useEffect(() => {
+    loadConversations();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
     if (selectedConversation?.messages.length) {
       messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
     }
   }, [selectedConversation?.messages]);
 
-  const handleAuthSubmit = (e: React.FormEvent) => {
+  const handleAuthSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setAuthError("");
 
     if (authMode === "login") {
-      const user = users.find(
-        (u) => u.username === authForm.username.trim() && u.password === authForm.password,
-      );
-      if (user) {
-        setCurrentUser(user);
-        setIsAuthenticated(true);
-        setAuthForm({ username: "", email: "", password: "", confirmPassword: "" });
-      } else {
-        // U pravoj aplikaciji ovdje bi išla ljepša validacija / toast
-        alert("Netačno korisničko ime ili lozinka!");
+      // Login is by email + password (real auth)
+      const res = await authLogin({ email: authForm.username.trim(), password: authForm.password });
+      if (!res.success) {
+        setAuthError(res.message);
+        return;
       }
+      const user = (res as any).user ?? (res as any).data?.user ?? null;
+      setCurrentUser(user);
+      setIsAuthenticated(true);
+      setAuthForm({ username: "", email: "", password: "", confirmPassword: "" });
     } else {
       if (authForm.password !== authForm.confirmPassword) {
-        alert("Lozinke se ne poklapaju!");
+        setAuthError("Lozinke se ne poklapaju!");
         return;
       }
-
-      if (users.find((u) => u.username === authForm.username.trim())) {
-        alert("Korisničko ime je već zauzeto!");
-        return;
-      }
-
-      const newUser: ForumUser = {
-        id: Math.max(...users.map((u) => u.id), 0) + 1,
+      const res = await authRegister({
         username: authForm.username.trim(),
         email: authForm.email.trim(),
         password: authForm.password,
-        avatar: ["👨‍💼", "👩‍💻", "👨‍🎓", "👩‍🏫"][Math.floor(Math.random() * 4)],
-      };
-
-      setUsers((prev) => [...prev, newUser]);
-      setCurrentUser(newUser);
-      setIsAuthenticated(true);
+      });
+      if (!res.success) {
+        setAuthError(res.message);
+        return;
+      }
+      // After registration we REQUIRE email verification. Do not log in automatically.
+      setCurrentUser(null);
+      setIsAuthenticated(false);
+      setAuthError("Registracija uspješna. Provjeri email i potvrdi račun pa se zatim prijavi.");
       setAuthForm({ username: "", email: "", password: "", confirmPassword: "" });
     }
   };
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    await authLogout();
     setIsAuthenticated(false);
     setCurrentUser(null);
     setSelectedConversation(null);
   };
 
-  const handleCreateConversation = (e: React.FormEvent) => {
+  const handleCreateConversation = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!currentUser) return;
 
@@ -184,14 +205,24 @@ const Forum = () => {
       return;
     }
 
-    const newConversation: ForumConversation = {
-      id: Math.max(...conversations.map((c) => c.id), 0) + 1,
+    const res = await apiPost<any>("/api/forum/conversations", {
       title: newConvTitle.trim(),
       description: newConvDescription.trim(),
-      creator: currentUser.username,
+    });
+    if (!res.success) {
+      alert(res.message);
+      return;
+    }
+    const c = (res as any).data ?? (res as any).data?.data ?? (res as any).data;
+    const convRow = c?.data ?? c;
+    const newConversation: ForumConversation = {
+      id: convRow.id,
+      title: convRow.title,
+      description: convRow.description || "",
+      creator: convRow.creator_username || currentUser.username,
       creatorId: currentUser.id,
-      createdAt: new Date(),
-      participants: [currentUser.id],
+      createdAt: new Date(convRow.created_at),
+      participants: [],
       messages: [],
     };
 
@@ -202,42 +233,39 @@ const Forum = () => {
     setSelectedConversation(newConversation);
   };
 
-  const handleSendMessage = (e: React.FormEvent) => {
+  const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!currentUser || !selectedConversation) return;
     if (!messageInput.trim()) return;
 
-    const nextId =
-      selectedConversation.messages.length > 0
-        ? Math.max(...selectedConversation.messages.map((m) => m.id)) + 1
-        : 1;
-
-    const newMessage: ForumMessage = {
-      id: nextId,
-      userId: currentUser.id,
-      username: currentUser.username,
-      avatar: currentUser.avatar,
+    const res = await apiPost<any>(`/api/forum/conversations/${selectedConversation.id}/messages`, {
       text: messageInput.trim(),
-      timestamp: new Date(),
+    });
+    if (!res.success) {
+      alert(res.message);
+      return;
+    }
+    const payload = (res as any).data ?? (res as any).data?.data ?? (res as any).data;
+    const msgRow = payload?.data ?? payload;
+    const newMessage: ForumMessage = {
+      id: msgRow.id,
+      userId: msgRow.user_id,
+      username: msgRow.username,
+      text: msgRow.text,
+      timestamp: new Date(msgRow.created_at),
       likes: 0,
     };
 
-    const updatedConversations = conversations.map((conv) => {
-      if (conv.id === selectedConversation.id) {
-        const updatedConv: ForumConversation = {
-          ...conv,
-          messages: [...conv.messages, newMessage],
-          participants: conv.participants.includes(currentUser.id)
-            ? conv.participants
-            : [...conv.participants, currentUser.id],
-        };
-        setSelectedConversation(updatedConv);
-        return updatedConv;
-      }
-      return conv;
-    });
-
-    setConversations(updatedConversations);
+    setConversations((prev) =>
+      prev.map((conv) =>
+        conv.id === selectedConversation.id
+          ? { ...conv, messages: [...conv.messages, newMessage] }
+          : conv,
+      ),
+    );
+    setSelectedConversation((prev) =>
+      prev ? { ...prev, messages: [...prev.messages, newMessage] } : prev,
+    );
     setMessageInput("");
   };
 
@@ -317,14 +345,16 @@ const Forum = () => {
 
               <form onSubmit={handleAuthSubmit} className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-foreground mb-1">Korisničko ime</label>
+                  <label className="block text-sm font-medium text-foreground mb-1">
+                    {authMode === "login" ? "Email" : "Korisničko ime"}
+                  </label>
                   <div className="relative">
                     <User className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
                     <input
-                      type="text"
+                      type={authMode === "login" ? "email" : "text"}
                       value={authForm.username}
                       onChange={(e) => setAuthForm({ ...authForm, username: e.target.value })}
-                      placeholder="Unesi korisničko ime"
+                      placeholder={authMode === "login" ? "Unesi email" : "Unesi korisničko ime"}
                       className="w-full pl-9 pr-3 py-2 rounded-md border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/60"
                     />
                   </div>
@@ -383,6 +413,12 @@ const Forum = () => {
                   </div>
                 )}
 
+                {authError && (
+                  <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700 font-medium">
+                    {authError}
+                  </div>
+                )}
+
                 <button
                   type="submit"
                   className="w-full mt-2 py-2.5 rounded-lg bg-gradient-to-r from-blue-600 to-purple-600 text-white text-sm font-semibold shadow-sm hover:from-blue-700 hover:to-purple-700 transition-all"
@@ -392,9 +428,9 @@ const Forum = () => {
               </form>
 
               <div className="pt-4 mt-4 border-t text-xs text-muted-foreground">
-                <p className="mb-1">Demo računi:</p>
-                <p>marko123 / pass123</p>
-                <p>ana_k / pass123</p>
+                <p className="mb-1">
+                  Napomena: email nije “povezan s Gmailom” — samo se sprema u bazu kao identifikator.
+                </p>
               </div>
             </div>
 
@@ -461,7 +497,11 @@ const Forum = () => {
                 </div>
 
                 <div className="flex-1 overflow-y-auto">
-                  {filteredConversations.length === 0 ? (
+                  {loadingConversations ? (
+                    <div className="p-6 text-center text-xs text-muted-foreground">
+                      Učitavam razgovore...
+                    </div>
+                  ) : filteredConversations.length === 0 ? (
                     <div className="p-6 text-center text-xs text-muted-foreground">
                       <MessageCircle className="mx-auto mb-2 h-8 w-8 opacity-30" />
                       <p>Nema razgovora. Kreiraj prvi!</p>
@@ -470,7 +510,10 @@ const Forum = () => {
                     filteredConversations.map((conv) => (
                       <button
                         key={conv.id}
-                        onClick={() => setSelectedConversation(conv)}
+                        onClick={async () => {
+                          setSelectedConversation(conv);
+                          if (conv.messages.length === 0) await loadMessages(conv.id);
+                        }}
                         className={`w-full text-left px-3 py-3 border-b text-xs transition-colors hover:bg-muted ${
                           selectedConversation?.id === conv.id ? "bg-primary/5 border-l-2 border-l-primary" : ""
                         }`}
@@ -515,7 +558,11 @@ const Forum = () => {
                     </div>
 
                     <div className="flex-1 overflow-y-auto p-4 space-y-3">
-                      {selectedConversation.messages.length === 0 ? (
+                      {loadingMessages ? (
+                        <div className="h-full flex items-center justify-center text-xs text-muted-foreground">
+                          Učitavam poruke...
+                        </div>
+                      ) : selectedConversation.messages.length === 0 ? (
                         <div className="h-full flex items-center justify-center text-xs text-muted-foreground">
                           <div className="text-center max-w-xs">
                             <MessageCircle className="mx-auto mb-2 h-10 w-10 opacity-20" />
@@ -530,8 +577,8 @@ const Forum = () => {
                               msg.userId === currentUser?.id ? "flex-row-reverse" : ""
                             }`}
                           >
-                            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-base flex-shrink-0">
-                              {msg.avatar}
+                            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-base flex-shrink-0 text-white">
+                              {msg.username?.[0]?.toUpperCase() || "U"}
                             </div>
                             <div className={`max-w-xs md:max-w-sm ${msg.userId === currentUser?.id ? "text-right" : ""}`}>
                               <div className="flex items-center gap-2 mb-0.5 text-[11px] text-muted-foreground">

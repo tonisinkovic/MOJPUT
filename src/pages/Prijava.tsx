@@ -1,10 +1,7 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Layout from "@/components/Layout";
 import { Mail, Lock, LogIn } from "lucide-react";
-
-interface LoggedUser {
-  email: string;
-}
+import { authLogin, authLogout, authMe, authVerifyEmail, type AuthUser } from "@/lib/auth";
 
 const Prijava = () => {
   const [loginData, setLoginData] = useState({
@@ -12,7 +9,46 @@ const Prijava = () => {
     password: "",
   });
   const [loginError, setLoginError] = useState("");
-  const [loggedUser, setLoggedUser] = useState<LoggedUser | null>(null);
+  const [loggedUser, setLoggedUser] = useState<AuthUser | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [info, setInfo] = useState("");
+
+  useEffect(() => {
+    let alive = true;
+    const params = new URLSearchParams(window.location.search);
+    const verify = params.get("verify");
+    if (verify) {
+      setInfo("Potvrđujem email...");
+      authVerifyEmail(verify)
+        .then((res) => {
+          if (!alive) return;
+          if (res.success) {
+            setInfo("Email je potvrđen. Sada se možeš prijaviti.");
+          } else {
+            setInfo(res.message);
+          }
+          params.delete("verify");
+          const next = params.toString();
+          window.history.replaceState({}, "", `${window.location.pathname}${next ? `?${next}` : ""}`);
+        })
+        .catch(() => {
+          if (!alive) return;
+          setInfo("Greška kod potvrde emaila.");
+        });
+    }
+
+    authMe()
+      .then((res) => {
+        if (!alive) return;
+        if (res.success) setLoggedUser(res.user ?? (res as any).user ?? (res as any).data?.user ?? null);
+      })
+      .finally(() => {
+        if (alive) setLoading(false);
+      });
+    return () => {
+      alive = false;
+    };
+  }, []);
 
   const handleLoginChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -22,28 +58,36 @@ const Prijava = () => {
     }));
   };
 
-  const handleLoginSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleLoginSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setLoginError("");
+    setInfo("");
 
     if (!loginData.email || !loginData.password) {
       setLoginError("Molimo ispuni sva polja.");
       return;
     }
 
-    // Ovdje bi inače išla provjera s backendom.
-    setLoggedUser({ email: loginData.email });
+    const res = await authLogin({
+      email: loginData.email,
+      password: loginData.password,
+    });
+    if (!res.success) {
+      setLoginError(res.message);
+      return;
+    }
+    setLoggedUser((res as any).user ?? (res as any).data?.user ?? null);
+    setLoginData({ email: "", password: "" });
   };
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    await authLogout();
     setLoggedUser(null);
     setLoginData({ email: "", password: "" });
     setLoginError("");
   };
 
-  const namePart = loggedUser?.email.split("@")[0] || "";
-  const displayName =
-    namePart.charAt(0).toUpperCase() + namePart.slice(1).toLowerCase();
+  const displayName = loggedUser?.username || "";
 
   return (
     <Layout>
@@ -63,6 +107,18 @@ const Prijava = () => {
                 </p>
               </div>
             </div>
+
+            {loading && (
+              <div className="p-3 bg-slate-50 border border-slate-200 rounded-lg text-sm text-slate-700 font-medium mb-4">
+                Provjeravam prijavu...
+              </div>
+            )}
+
+            {info && (
+              <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg text-sm text-blue-800 font-medium mb-4">
+                {info}
+              </div>
+            )}
 
             <form onSubmit={handleLoginSubmit} className="space-y-4">
               <div>
@@ -105,6 +161,7 @@ const Prijava = () => {
 
               <button
                 type="submit"
+                disabled={loading}
                 className="w-full py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-all duration-300 transform hover:scale-[1.01] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 mt-2 text-sm"
               >
                 Prijavi se
