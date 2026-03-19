@@ -1,10 +1,8 @@
 import { useState, useRef, useEffect } from "react";
 import Layout from "@/components/Layout";
 import { motion } from "framer-motion";
-import { Bot, Send, Sparkles, GraduationCap, MapPin, BookOpen, ChevronRight, RotateCcw } from "lucide-react";
+import { Bot, Send, Sparkles, ChevronRight, RotateCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { apiGet } from "@/lib/api";
 
 const API_BASE = import.meta.env.VITE_API_URL || (import.meta.env.DEV ? "http://localhost:3000" : "");
 
@@ -20,28 +18,13 @@ interface Message {
   content: string;
 }
 
-interface Fakultet {
-  id: number;
-  naziv: string;
-  grad: string;
-  sveuciliste?: string;
-  web_stranica?: string;
-  opis?: string;
-  studiji?: { naziv_studija: string; razina: string }[];
-}
-
-interface Grad {
-  id: number;
-  naziv: string;
-}
-
 const AI_NAME = "Marko";
 const AI_WELCOME = `Pozdrav ja se zovem ${AI_NAME} kako ti mogu pomoći:`;
 
 const RobotAIWindow = () => {
   // Mali robot s hrvatskim bojama (plavo-crveno-bijelo + šahovnica) koji drži "AI prozor".
   return (
-    <svg viewBox="0 0 120 120" width="64" height="64" aria-hidden="true">
+    <svg viewBox="0 0 120 120" width="76" height="76" aria-hidden="true">
       <defs>
         <linearGradient id="aiWindow" x1="38" y1="56" x2="86" y2="88" gradientUnits="userSpaceOnUse">
           <stop offset="0%" stopColor="#93c5fd" stopOpacity="0.95" />
@@ -118,29 +101,11 @@ const Chatbot = () => {
   }, []);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [fakulteti, setFakulteti] = useState<Fakultet[]>([]);
-  const [gradovi, setGradovi] = useState<Grad[]>([]);
-  const [sidebarError, setSidebarError] = useState<string | null>(null);
-  const [sidebarLoaded, setSidebarLoaded] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const scrollToBottom = () => messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   useEffect(() => scrollToBottom(), [messages, isLoading]);
-
-  useEffect(() => {
-    setSidebarError(null);
-    setSidebarLoaded(false);
-    Promise.all([
-      apiGet<Fakultet[]>(`${API_BASE}/api/fakulteti`),
-      apiGet<Grad[]>(`${API_BASE}/api/gradovi`),
-    ]).then(([fRes, gRes]) => {
-      setSidebarLoaded(true);
-      if (fRes.success && fRes.data) setFakulteti(Array.isArray(fRes.data) ? fRes.data : []);
-      else if (!fRes.success) setSidebarError("Backend nije dostupan. Pokreni npm run start.");
-      if (gRes.success && gRes.data) setGradovi(Array.isArray(gRes.data) ? gRes.data : []);
-    });
-  }, []);
 
   const autoResize = (el: HTMLTextAreaElement) => {
     el.style.height = "24px";
@@ -254,67 +219,18 @@ const Chatbot = () => {
     <Layout>
       <section className="container py-6">
         <div className="flex flex-col lg:flex-row gap-6 max-w-6xl mx-auto">
-          {/* Sidebar - informacije o fakultetima */}
-          <motion.aside
+          {/* Samo robot (drži AI prozor) */}
+          <motion.div
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             className="w-full lg:w-72 shrink-0"
           >
-            <div className="rounded-2xl border border-border bg-card shadow-card p-4 h-fit lg:sticky lg:top-24">
-              <div className="mb-3">
-                <div className="flex items-center gap-3">
-                  <div className="shrink-0">
-                    <RobotAIWindow />
-                  </div>
-                  <div className="min-w-0">
-                    <h3 className="font-semibold text-sm leading-tight">AI prozor na Markovom robotu</h3>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      Podaci iz baze pomažu da odgovori budu točni i korisni.
-                    </p>
-                  </div>
-                </div>
+            <div className="h-fit lg:sticky lg:top-24">
+              <div className="flex items-center justify-center">
+                <RobotAIWindow />
               </div>
-              <ScrollArea className="h-[280px] pr-2">
-                <div className="space-y-2">
-                  {gradovi.length > 0 && (
-                    <div className="flex items-center gap-2 text-xs text-muted-foreground mb-2">
-                      <MapPin className="w-3 h-3" />
-                      {gradovi.map((g) => g.naziv).join(", ")}
-                    </div>
-                  )}
-                  {fakulteti.slice(0, 12).map((f) => (
-                    <div
-                      key={f.id}
-                      className="p-2 rounded-lg bg-muted/50 border border-border/50 hover:border-primary/20 transition-colors"
-                    >
-                      <p className="font-medium text-sm">{f.naziv}</p>
-                      <p className="text-xs text-muted-foreground">{f.grad}</p>
-                      {f.studiji && f.studiji.length > 0 && (
-                        <p className="text-xs mt-1 flex items-center gap-1">
-                          <BookOpen className="w-3 h-3" />
-                          {f.studiji.map((s) => s.naziv_studija).slice(0, 3).join(", ")}
-                          {f.studiji.length > 3 && "…"}
-                        </p>
-                      )}
-                    </div>
-                  ))}
-                  {!sidebarLoaded && !sidebarError && (
-                    <p className="text-sm text-muted-foreground">Učitavanje…</p>
-                  )}
-                  {sidebarLoaded && fakulteti.length === 0 && !sidebarError && (
-                    <p className="text-sm text-muted-foreground">
-                      Baza je prazna. Pokreni <code className="text-xs">npm run db:seed</code>.
-                    </p>
-                  )}
-                  {sidebarError && (
-                    <p className="text-sm text-amber-600 dark:text-amber-500">
-                      {sidebarError}
-                    </p>
-                  )}
-                </div>
-              </ScrollArea>
             </div>
-          </motion.aside>
+          </motion.div>
 
           {/* Chat */}
           <motion.div
