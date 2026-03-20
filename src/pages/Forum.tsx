@@ -36,6 +36,96 @@ type ForumConversation = {
   messages: ForumMessage[];
 };
 
+const FALLBACK_CONVERSATIONS: ForumConversation[] = [
+  {
+    id: 1001,
+    title: "Kako se najbolje pripremiti za maturu iz matematike?",
+    description: "Podijelite strategije učenja, skripte i što vam je najviše pomoglo.",
+    creator: "AnaMatura",
+    creatorId: -1,
+    createdAt: new Date("2026-03-10T18:30:00+01:00"),
+    messageCount: 3,
+    messages: [
+      {
+        id: 5001,
+        userId: -1,
+        username: "AnaMatura",
+        text: "Meni je najviše pomoglo rješavanje starih ispita po temama.",
+        timestamp: new Date("2026-03-10T18:35:00+01:00"),
+        likeCount: 4,
+        userLiked: false,
+      },
+      {
+        id: 5002,
+        userId: -2,
+        username: "Marko95",
+        text: "Isto, plus kratke ponavljajuće bilješke za formule prije spavanja.",
+        timestamp: new Date("2026-03-10T19:02:00+01:00"),
+        likeCount: 2,
+        userLiked: false,
+      },
+      {
+        id: 5003,
+        userId: -3,
+        username: "Lana",
+        text: "Probajte i timer metodu 50/10, meni je puno dignula fokus.",
+        timestamp: new Date("2026-03-10T19:20:00+01:00"),
+        likeCount: 1,
+        userLiked: false,
+      },
+    ],
+  },
+  {
+    id: 1002,
+    title: "FER vs TVZ za softverski razvoj",
+    description: "Iskustva, težina kolegija, praksa i mogućnosti zapošljavanja.",
+    creator: "NikolaIT",
+    creatorId: -1,
+    createdAt: new Date("2026-03-12T16:10:00+01:00"),
+    messageCount: 2,
+    messages: [
+      {
+        id: 5101,
+        userId: -4,
+        username: "NikolaIT",
+        text: "Ako netko studira na jednom od ta dva faksa, super bi došli realni dojmovi.",
+        timestamp: new Date("2026-03-12T16:11:00+01:00"),
+        likeCount: 3,
+        userLiked: false,
+      },
+      {
+        id: 5102,
+        userId: -5,
+        username: "MiaDev",
+        text: "FER je teorijski intenzivniji, TVZ je često više praktično orijentiran.",
+        timestamp: new Date("2026-03-12T18:07:00+01:00"),
+        likeCount: 5,
+        userLiked: false,
+      },
+    ],
+  },
+  {
+    id: 1003,
+    title: "Kako odabrati fakultet ako nisam siguran što želim?",
+    description: "Pitanja o interesima, testovima samoprocjene i savjetovanju.",
+    creator: "Petra",
+    creatorId: -1,
+    createdAt: new Date("2026-03-13T12:00:00+01:00"),
+    messageCount: 1,
+    messages: [
+      {
+        id: 5201,
+        userId: -6,
+        username: "Petra",
+        text: "Ako ste bili neodlučni, kako ste na kraju donijeli odluku?",
+        timestamp: new Date("2026-03-13T12:03:00+01:00"),
+        likeCount: 2,
+        userLiked: false,
+      },
+    ],
+  },
+];
+
 const Forum = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [currentUser, setCurrentUser] = useState<AuthUser | null>(null);
@@ -94,6 +184,8 @@ const Forum = () => {
           messages: [],
         })),
       );
+    } else {
+      setConversations(FALLBACK_CONVERSATIONS);
     }
     setLoadingConversations(false);
   };
@@ -132,6 +224,29 @@ const Forum = () => {
         if (!prev || prev.id !== conversationId) return prev;
         return { ...prev, messages, messageCount: messages.length };
       });
+    } else {
+      const fallbackConv = FALLBACK_CONVERSATIONS.find((c) => c.id === conversationId);
+      if (fallbackConv) {
+        setConversations((prev) =>
+          prev.map((c) =>
+            c.id === conversationId
+              ? {
+                  ...c,
+                  messages: fallbackConv.messages,
+                  messageCount: fallbackConv.messages.length,
+                }
+              : c,
+          ),
+        );
+        setSelectedConversation((prev) => {
+          if (!prev || prev.id !== conversationId) return prev;
+          return {
+            ...prev,
+            messages: fallbackConv.messages,
+            messageCount: fallbackConv.messages.length,
+          };
+        });
+      }
     }
     setLoadingMessages(false);
   };
