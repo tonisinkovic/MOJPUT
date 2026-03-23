@@ -17,6 +17,13 @@ import {
   Sparkles,
   TrendingUp,
   AlertCircle,
+  Info,
+  ChevronDown,
+  ChevronUp,
+  MapPin,
+  X,
+  Search,
+  Building2,
 } from "lucide-react";
 import {
   Card,
@@ -44,49 +51,58 @@ import {
   CommandItem,
   CommandList,
 } from "@/components/ui/command";
+import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import {
-  facultyInstitutions,
-  getCutoffForYear,
-} from "@/data/faculties";
+  scoringFormulas,
+  calculateProgramPoints,
+  type ProgramScoring,
+  type ScoringComponent,
+} from "@/data/scoringFormulas";
 
-// Flatten faculties + programs for search
+// ─── Types ───
+
 type ProgramOption = {
-  facultyId: string;
-  facultyName: string;
-  city: string;
-  programName: string;
+  formula: ProgramScoring;
   cutoff: number | null;
 };
 
+type ChanceLevel = "high" | "medium" | "low";
+
+type InstitutionType = "all" | "sveuciliste" | "veleuciliste";
+
+// ─── Build flat program list directly from scoring formulas (710 programa) ───
+
 function buildProgramOptions(): ProgramOption[] {
-  const options: ProgramOption[] = [];
-  const year = "2025";
-  for (const inst of facultyInstitutions) {
-    for (const prog of inst.programs) {
-      const cutoff = getCutoffForYear(prog.cutoffByYear, year);
-      options.push({
-        facultyId: inst.id,
-        facultyName: inst.name,
-        city: inst.city,
-        programName: prog.name,
-        cutoff: cutoff,
-      });
-    }
-  }
-  return options.sort((a, b) => a.facultyName.localeCompare(b.facultyName, "hr"));
+  return scoringFormulas.map((f) => ({
+    formula: f,
+    cutoff: f.pragovi["2025"] ?? null,
+  }));
 }
 
 const PROGRAM_OPTIONS = buildProgramOptions();
 
-// Matura subjects
-const MATURA_SUBJECTS = [
-  { key: "hrvatski", label: "Hrvatski jezik", levelKey: "hrvatski_level" },
-  { key: "matematika", label: "Matematika", levelKey: "matematika_level" },
-  { key: "engleski", label: "Engleski jezik", levelKey: "engleski_level" },
-] as const;
+// ─── Extract cities sorted by program count ───
+const ALL_CITIES = (() => {
+  const counts = new Map<string, number>();
+  for (const o of PROGRAM_OPTIONS) {
+    counts.set(o.formula.grad, (counts.get(o.formula.grad) ?? 0) + 1);
+  }
+  return [...counts.entries()]
+    .sort((a, b) => b[1] - a[1])
+    .map(([city, count]) => ({ city, count }));
+})();
 
-// Additional points options (natjecanja, posebna postignuća)
+const TOP_CITIES = ALL_CITIES.slice(0, 7); // Zagreb, Split, Rijeka, Osijek, Zadar, Pula, Dubrovnik
+
+function getInstitutionType(name: string): InstitutionType {
+  const lower = name.toLowerCase();
+  if (lower.includes("veleučilišt") || lower.includes("visok")) return "veleuciliste";
+  return "sveuciliste";
+}
+
+// ─── Additional points options ───
+
 const ADDITIONAL_OPTIONS = [
   { key: "natjecanje_znanost", label: "Natjecanje iz znanosti", maxPoints: 10 },
   { key: "natjecanje_sport", label: "Natjecanje iz sporta", maxPoints: 5 },
@@ -96,25 +112,7 @@ const ADDITIONAL_OPTIONS = [
 
 const MAX_POINTS = 1000;
 
-function calculatePoints(values: {
-  prosjek: number;
-  matura_hrv: number;
-  matura_mat: number;
-  matura_eng: number;
-  additional: number;
-}): number {
-  const { prosjek, matura_hrv, matura_mat, matura_eng, additional } = values;
-  const base =
-    prosjek * 40 + matura_hrv * 2 + matura_mat * 3 + matura_eng * 1.5;
-  return Math.round(Math.min(base + additional, MAX_POINTS));
-}
-
-type ChanceLevel = "high" | "medium" | "low";
-
-function getChanceLevel(
-  totalPoints: number,
-  cutoff: number | null
-): ChanceLevel {
+function getChanceLevel(totalPoints: number, cutoff: number | null): ChanceLevel {
   if (!cutoff) return "medium";
   const diff = totalPoints - cutoff;
   if (diff >= 50) return "high";
@@ -122,73 +120,176 @@ function getChanceLevel(
   return "low";
 }
 
+// ═══════════════════════════════════════════════════════════════
+//  COMPONENT
+// ═══════════════════════════════════════════════════════════════
+
 const Kalkulator = () => {
-  const [selectedProgram, setSelectedProgram] = useState<ProgramOption | null>(
-    null
-  );
+  // ─── State: program selection ───
+  const [selectedProgram, setSelectedProgram] = useState<ProgramOption | null>(null);
   const [facultyOpen, setFacultyOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
 
-  // Grades: prosjek (1-5) ili po razredima
-  const [useAverage, setUseAverage] = useState(true);
-  const [prosjek, setProsjek] = useState<number>(4);
-  const [gradesByYear, setGradesByYear] = useState<Record<number, number>>({
-    1: 4,
-    2: 4,
-    3: 4,
-    4: 4,
-  });
+  // ─── State: filters ───
+  const [selectedCity, setSelectedCity] = useState<string | null>(null);
+  const [institutionType, setInstitutionType] = useState<InstitutionType>("all");
+  const [showAllCities, setShowAllCities] = useState(false);
 
-  // Matura
-  const [matura, setMatura] = useState<Record<string, number>>({
-    hrvatski: 70,
-    matematika: 70,
-    engleski: 70,
-  });
+  // ─── State: formula-based inputs ───
+  const [formulaInputs, setFormulaInputs] = useState<Record<string, number>>({});
 
-  // Additional points
-  const [additionalPoints, setAdditionalPoints] = useState<
-    Record<string, number>
-  >({});
+  // ─── State: additional points ───
+  const [additionalPoints, setAdditionalPoints] = useState<Record<string, number>>({});
 
-  const effectiveProsjek = useAverage
-    ? prosjek
-    : (gradesByYear[1] + gradesByYear[2] + gradesByYear[3] + gradesByYear[4]) /
-      4;
+  // ─── State: UI ───
+  const [showBreakdown, setShowBreakdown] = useState(true);
 
+  // ─── Current formula (always available when program selected) ───
+  const selectedFormula = selectedProgram?.formula ?? null;
+
+  // ─── Handle program selection ───
+  const handleSelectProgram = (opt: ProgramOption) => {
+    setSelectedProgram(opt);
+    setFacultyOpen(false);
+
+    // Initialize inputs with reasonable defaults
+    const defaults: Record<string, number> = {};
+    for (const comp of opt.formula.komponente) {
+      if (comp.type === "ocjena") {
+        defaults[comp.id] = formulaInputs[comp.id] ?? 4;
+      } else if (comp.type === "matura") {
+        defaults[comp.id] = formulaInputs[comp.id] ?? 70;
+      } else if (comp.type === "matura_izborni") {
+        defaults[comp.id] = formulaInputs[comp.id] ?? 0;
+      } else {
+        defaults[comp.id] = formulaInputs[comp.id] ?? 0;
+      }
+    }
+    setFormulaInputs(defaults);
+  };
+
+  // ─── Calculation ───
   const totalAdditional = useMemo(() => {
     return Object.values(additionalPoints).reduce((a, b) => a + b, 0);
   }, [additionalPoints]);
 
+  const formulaResult = useMemo(() => {
+    if (!selectedFormula) return null;
+    return calculateProgramPoints(selectedFormula, formulaInputs);
+  }, [selectedFormula, formulaInputs]);
+
   const totalPoints = useMemo(() => {
-    return calculatePoints({
-      prosjek: effectiveProsjek,
-      matura_hrv: matura.hrvatski,
-      matura_mat: matura.matematika,
-      matura_eng: matura.engleski,
-      additional: totalAdditional,
-    });
-  }, [
-    effectiveProsjek,
-    matura.hrvatski,
-    matura.matematika,
-    matura.engleski,
-    totalAdditional,
-  ]);
+    if (formulaResult) {
+      return Math.min(MAX_POINTS, Math.round(formulaResult.total + totalAdditional));
+    }
+    return 0;
+  }, [formulaResult, totalAdditional]);
 
   const cutoff = selectedProgram?.cutoff ?? null;
   const chanceLevel = getChanceLevel(totalPoints, cutoff);
 
+  // ─── Pre-filter by city and institution type ───
+  const preFilteredPrograms = useMemo(() => {
+    let list = PROGRAM_OPTIONS;
+    if (selectedCity) {
+      list = list.filter((o) => o.formula.grad === selectedCity);
+    }
+    if (institutionType !== "all") {
+      list = list.filter((o) => getInstitutionType(o.formula.fakultet) === institutionType);
+    }
+    return list;
+  }, [selectedCity, institutionType]);
+
   const filteredPrograms = useMemo(() => {
-    if (!searchQuery.trim()) return PROGRAM_OPTIONS.slice(0, 50);
     const q = searchQuery.toLowerCase().trim();
-    return PROGRAM_OPTIONS.filter(
-      (o) =>
-        o.facultyName.toLowerCase().includes(q) ||
-        o.programName.toLowerCase().includes(q) ||
-        o.city.toLowerCase().includes(q)
-    ).slice(0, 80);
-  }, [searchQuery]);
+    if (!q) {
+      // Group by institution, sorted alphabetically
+      const sorted = [...preFilteredPrograms].sort((a, b) =>
+        a.formula.fakultet.localeCompare(b.formula.fakultet, "hr")
+      );
+      return sorted.slice(0, 50);
+    }
+
+    // Aliasi za popularne kratice
+    const aliases: Record<string, string> = {
+      fer: "elektrotehnike i računarstva zagreb",
+      fsb: "strojarstva i brodogradnje zagreb",
+      efzg: "ekonomski fakultet zagreb",
+      pmf: "prirodoslovno-matematički zagreb",
+      ffzg: "filozofski fakultet zagreb",
+      fesb: "elektrotehnike strojarstva brodogradnje split",
+      ferit: "računarstva informacijskih tehnologija osijek",
+      tvz: "tehničko veleučilište zagreb",
+      foi: "organizacije i informatike",
+      fpzg: "političkih znanosti zagreb",
+      fkit: "kemijskog inženjerstva zagreb",
+      pbf: "prehrambeno-biotehnološki zagreb",
+      rgn: "rudarsko-geološko-naftni",
+      alu: "akademija likovnih umjetnosti",
+      adu: "akademija dramske umjetnosti",
+      kif: "kineziološki fakultet zagreb",
+      fidit: "informatike i digitalnih tehnologija rijeka",
+      riteh: "tehnički fakultet rijeka",
+      mef: "medicinski fakultet",
+      pravo: "pravni fakultet",
+      medicina: "medicinski fakultet",
+      ekonomija: "ekonomski fakultet",
+      stomatologija: "stomatološki",
+      farmacija: "farmaceutsko",
+      veterina: "veterinarski",
+      agronomija: "agronomski",
+      arhitektura: "arhitektonski",
+      geodezija: "geodetski",
+      grafika: "grafički",
+      promet: "prometnih znanosti",
+      algebra: "algebra",
+      vern: "vern",
+    };
+
+    // Expand aliases
+    let expanded = q;
+    for (const [alias, full] of Object.entries(aliases)) {
+      if (q === alias || q.startsWith(alias + " ")) {
+        expanded = q.replace(alias, full);
+        break;
+      }
+    }
+
+    const words = expanded.split(/\s+/);
+    const results = preFilteredPrograms.filter((o) => {
+      const haystack = `${o.formula.fakultet} ${o.formula.program} ${o.formula.grad}`.toLowerCase();
+      return words.every((w) => haystack.includes(w));
+    });
+
+    // Sort: exact program name matches first, then by faculty name
+    results.sort((a, b) => {
+      const aProgMatch = a.formula.program.toLowerCase().includes(q) ? 0 : 1;
+      const bProgMatch = b.formula.program.toLowerCase().includes(q) ? 0 : 1;
+      if (aProgMatch !== bProgMatch) return aProgMatch - bProgMatch;
+      return a.formula.fakultet.localeCompare(b.formula.fakultet, "hr");
+    });
+
+    return results.slice(0, 50);
+  }, [searchQuery, preFilteredPrograms]);
+
+  // ─── Group filtered results by institution for dropdown ───
+  const groupedFilteredPrograms = useMemo(() => {
+    const groups = new Map<string, ProgramOption[]>();
+    for (const opt of filteredPrograms) {
+      const key = opt.formula.fakultet;
+      if (!groups.has(key)) groups.set(key, []);
+      groups.get(key)!.push(opt);
+    }
+    return groups;
+  }, [filteredPrograms]);
+
+  const activeFilterCount = (selectedCity ? 1 : 0) + (institutionType !== "all" ? 1 : 0);
+
+  const clearFilters = () => {
+    setSelectedCity(null);
+    setInstitutionType("all");
+    setShowAllCities(false);
+  };
 
   const chanceConfig = {
     high: {
@@ -217,6 +318,32 @@ const Kalkulator = () => {
   const config = chanceConfig[chanceLevel];
   const ChanceIcon = config.icon;
 
+  // ─── Group formula components by type for rendering ───
+  const groupedComponents = useMemo(() => {
+    if (!selectedFormula) return null;
+    const ocjene: ScoringComponent[] = [];
+    const maturaObv: ScoringComponent[] = [];
+    const maturaIzb: ScoringComponent[] = [];
+    const dodatno: ScoringComponent[] = [];
+
+    for (const c of selectedFormula.komponente) {
+      if (c.type === "ocjena") ocjene.push(c);
+      else if (c.type === "matura") maturaObv.push(c);
+      else if (c.type === "matura_izborni") maturaIzb.push(c);
+      else dodatno.push(c);
+    }
+    return { ocjene, maturaObv, maturaIzb, dodatno };
+  }, [selectedFormula]);
+
+  // ─── Helper: update formula input ───
+  const updateInput = (id: string, value: number) => {
+    setFormulaInputs((prev) => ({ ...prev, [id]: value }));
+  };
+
+  // ═══════════════════════════════════════════════════════════════
+  //  RENDER
+  // ═══════════════════════════════════════════════════════════════
+
   return (
     <Layout>
       <TooltipProvider delayDuration={300}>
@@ -235,29 +362,128 @@ const Kalkulator = () => {
                 Kalkulator bodova
               </h1>
               <p className="text-muted-foreground text-lg max-w-xl mx-auto">
-                Izračunaj bodove za upis na fakultet. Unesi podatke i odmah vidi
-                procjenu šanse.
+                Izračunaj bodove za upis na fakultet. Odaberi program i unesi
+                svoje podatke – formula se automatski prilagođava.
               </p>
             </div>
 
             {/* Main grid: inputs left, result right */}
             <div className="grid lg:grid-cols-5 gap-6 lg:gap-8">
-              {/* Inputs column */}
+              {/* ═══ Inputs column ═══ */}
               <div className="lg:col-span-3 space-y-6">
                 {/* 1. Odabir fakulteta i smjera */}
                 <Card className="rounded-2xl border-2 shadow-card overflow-hidden">
                   <CardHeader className="pb-3">
-                    <div className="flex items-center gap-2">
-                      <GraduationCap className="w-5 h-5 text-primary" />
-                      <CardTitle className="text-lg">
-                        Odabir fakulteta i smjera
-                      </CardTitle>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <GraduationCap className="w-5 h-5 text-primary" />
+                        <CardTitle className="text-lg">
+                          Odabir fakulteta i smjera
+                        </CardTitle>
+                      </div>
+                      <Badge variant="secondary" className="text-xs">
+                        {preFilteredPrograms.length} programa
+                      </Badge>
                     </div>
                     <CardDescription>
-                      Pretraži po gradu, fakultetu ili smjeru
+                      Filtriraj po gradu ili vrsti, pa pretraži
                     </CardDescription>
                   </CardHeader>
-                  <CardContent>
+                  <CardContent className="space-y-4">
+                    {/* ── City filter chips ── */}
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
+                        <MapPin className="w-3.5 h-3.5" />
+                        Grad
+                      </div>
+                      <div className="flex flex-wrap gap-1.5">
+                        {(showAllCities ? ALL_CITIES : TOP_CITIES).map(({ city, count }) => (
+                          <button
+                            key={city}
+                            onClick={() => setSelectedCity(selectedCity === city ? null : city)}
+                            className={cn(
+                              "inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-medium transition-colors",
+                              selectedCity === city
+                                ? "bg-primary text-primary-foreground shadow-sm"
+                                : "bg-secondary text-secondary-foreground hover:bg-secondary/80"
+                            )}
+                          >
+                            {city}
+                            <span className={cn(
+                              "text-[10px]",
+                              selectedCity === city ? "text-primary-foreground/70" : "text-muted-foreground"
+                            )}>
+                              {count}
+                            </span>
+                          </button>
+                        ))}
+                        {!showAllCities && ALL_CITIES.length > 7 && (
+                          <button
+                            onClick={() => setShowAllCities(true)}
+                            className="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-secondary/80 transition-colors"
+                          >
+                            +{ALL_CITIES.length - 7} gradova
+                          </button>
+                        )}
+                        {showAllCities && (
+                          <button
+                            onClick={() => setShowAllCities(false)}
+                            className="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-secondary/80 transition-colors"
+                          >
+                            Manje
+                          </button>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* ── Institution type toggle ── */}
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
+                        <Building2 className="w-3.5 h-3.5" />
+                        Vrsta ustanove
+                      </div>
+                      <div className="flex gap-1.5">
+                        {([
+                          { value: "all", label: "Sve" },
+                          { value: "sveuciliste", label: "Sveučilišta i fakulteti" },
+                          { value: "veleuciliste", label: "Veleučilišta i visoke škole" },
+                        ] as const).map((opt) => (
+                          <button
+                            key={opt.value}
+                            onClick={() => setInstitutionType(opt.value)}
+                            className={cn(
+                              "px-2.5 py-1 rounded-lg text-xs font-medium transition-colors",
+                              institutionType === opt.value
+                                ? "bg-primary text-primary-foreground shadow-sm"
+                                : "bg-secondary text-secondary-foreground hover:bg-secondary/80"
+                            )}
+                          >
+                            {opt.label}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* ── Active filters summary ── */}
+                    {activeFilterCount > 0 && (
+                      <div className="flex items-center justify-between px-3 py-2 rounded-lg bg-primary/5 border border-primary/10">
+                        <span className="text-xs text-muted-foreground">
+                          {preFilteredPrograms.length} programa
+                          {selectedCity && <> u <strong>{selectedCity}</strong></>}
+                          {institutionType === "sveuciliste" && <> · sveučilišta</>}
+                          {institutionType === "veleuciliste" && <> · veleučilišta</>}
+                        </span>
+                        <button
+                          onClick={clearFilters}
+                          className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
+                        >
+                          <X className="w-3 h-3" />
+                          Očisti
+                        </button>
+                      </div>
+                    )}
+
+                    {/* ── Program selector dropdown ── */}
                     <Popover open={facultyOpen} onOpenChange={setFacultyOpen}>
                       <PopoverTrigger asChild>
                         <Button
@@ -268,14 +494,15 @@ const Kalkulator = () => {
                         >
                           {selectedProgram ? (
                             <span className="truncate">
-                              {selectedProgram.facultyName} – {selectedProgram.programName}{" "}
+                              {selectedProgram.formula.program}{" "}
                               <span className="text-muted-foreground">
-                                ({selectedProgram.city})
+                                – {selectedProgram.formula.fakultet} ({selectedProgram.formula.grad})
                               </span>
                             </span>
                           ) : (
-                            <span className="text-muted-foreground">
-                              Odaberi fakultet i smjer...
+                            <span className="text-muted-foreground flex items-center gap-2">
+                              <Search className="w-4 h-4" />
+                              Pretraži ili odaberi program...
                             </span>
                           )}
                           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
@@ -285,191 +512,324 @@ const Kalkulator = () => {
                         className="w-[var(--radix-popover-trigger-width)] p-0 rounded-xl"
                         align="start"
                       >
-                        <Command>
+                        <Command shouldFilter={false}>
                           <CommandInput
-                            placeholder="Pretraži fakultet, smjer, grad..."
+                            placeholder="Pretraži fakultet, smjer ili kraticu (FER, FSB, PMF...)"
                             value={searchQuery}
                             onValueChange={setSearchQuery}
                           />
-                          <CommandList>
-                            <CommandEmpty>Nema rezultata.</CommandEmpty>
-                            <CommandGroup>
-                              {filteredPrograms.map((opt) => (
-                                <CommandItem
-                                  key={`${opt.facultyId}-${opt.programName}`}
-                                  value={`${opt.facultyName} ${opt.programName} ${opt.city}`}
-                                  onSelect={() => {
-                                    setSelectedProgram(opt);
-                                    setFacultyOpen(false);
-                                  }}
-                                  className="flex flex-col items-start gap-0.5 py-3"
-                                >
-                                  <span className="font-medium">
-                                    {opt.facultyName}
+                          <CommandList className="max-h-[320px]">
+                            <CommandEmpty>
+                              <div className="py-4 text-center text-sm text-muted-foreground">
+                                <p>Nema rezultata za "{searchQuery}"</p>
+                                {activeFilterCount > 0 && (
+                                  <button
+                                    onClick={clearFilters}
+                                    className="mt-1 text-primary hover:underline"
+                                  >
+                                    Očisti filtere i pokušaj ponovo
+                                  </button>
+                                )}
+                              </div>
+                            </CommandEmpty>
+                            {[...groupedFilteredPrograms.entries()].map(([institution, programs]) => (
+                              <CommandGroup
+                                key={institution}
+                                heading={
+                                  <span className="flex items-center justify-between">
+                                    <span className="truncate">{institution}</span>
+                                    <Badge variant="outline" className="ml-2 text-[10px] shrink-0">
+                                      {programs[0].formula.grad}
+                                    </Badge>
                                   </span>
-                                  <span className="text-sm text-muted-foreground">
-                                    {opt.programName} · {opt.city}
+                                }
+                              >
+                                {programs.map((opt) => (
+                                  <CommandItem
+                                    key={opt.formula.programId}
+                                    value={opt.formula.programId}
+                                    onSelect={() => handleSelectProgram(opt)}
+                                    className="flex items-center justify-between py-2.5"
+                                  >
+                                    <span className="truncate">{opt.formula.program}</span>
                                     {opt.cutoff != null && (
-                                      <span className="ml-1 font-medium text-foreground">
-                                        · min. {Math.round(opt.cutoff)} bodova
+                                      <span className="text-xs text-muted-foreground whitespace-nowrap ml-2">
+                                        min. {Math.round(opt.cutoff)} bod.
                                       </span>
                                     )}
-                                  </span>
-                                </CommandItem>
-                              ))}
-                            </CommandGroup>
+                                  </CommandItem>
+                                ))}
+                              </CommandGroup>
+                            ))}
                           </CommandList>
                         </Command>
                       </PopoverContent>
                     </Popover>
-                  </CardContent>
-                </Card>
 
-                {/* 2. Ocjene iz srednje škole */}
-                <Card className="rounded-2xl border-2 shadow-card overflow-hidden">
-                  <CardHeader className="pb-3">
-                    <div className="flex items-center gap-2">
-                      <BookOpen className="w-5 h-5 text-primary" />
-                      <CardTitle className="text-lg">
-                        Ocjene iz srednje škole
-                      </CardTitle>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <HelpCircle className="w-4 h-4 text-muted-foreground cursor-help" />
-                        </TooltipTrigger>
-                        <TooltipContent className="max-w-xs">
-                          Prosjek ocjena iz svih predmeta tijekom 4 godine
-                          srednje škole (1–5).
-                        </TooltipContent>
-                      </Tooltip>
-                    </div>
-                    <CardDescription>
-                      Unesi prosjek ili ocjene po razredima
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div className="flex items-center gap-2">
-                      <Checkbox
-                        id="useAverage"
-                        checked={useAverage}
-                        onCheckedChange={(v) => setUseAverage(!!v)}
-                      />
-                      <Label htmlFor="useAverage" className="cursor-pointer">
-                        Koristi samo prosjek (jednostavnije)
-                      </Label>
-                    </div>
-
-                    {useAverage ? (
-                      <div className="space-y-2">
-                        <div className="flex justify-between text-sm">
-                          <Label>Prosjek ocjena</Label>
-                          <span className="font-medium">{prosjek.toFixed(1)}</span>
+                    {/* Formula info */}
+                    {selectedFormula && (
+                      <motion.div
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: "auto" }}
+                        className={cn(
+                          "flex items-start gap-2 p-3 rounded-xl border",
+                          selectedFormula.izvor === "tocna_formula"
+                            ? "bg-emerald-50 dark:bg-emerald-950/30 border-emerald-200 dark:border-emerald-800"
+                            : "bg-blue-50 dark:bg-blue-950/30 border-blue-200 dark:border-blue-800"
+                        )}
+                      >
+                        <Info className={cn("w-4 h-4 mt-0.5 shrink-0", selectedFormula.izvor === "tocna_formula" ? "text-emerald-600" : "text-blue-600")} />
+                        <div className="text-sm">
+                          <p className={cn("font-medium", selectedFormula.izvor === "tocna_formula" ? "text-emerald-700 dark:text-emerald-400" : "text-blue-700 dark:text-blue-400")}>
+                            {selectedFormula.izvor === "tocna_formula"
+                              ? "Verificirana formula bodovanja"
+                              : `Formula za tip: ${selectedFormula.kategorija ?? "opći"}`}
+                          </p>
+                          {selectedFormula.napomena && (
+                            <p className="text-muted-foreground mt-1 italic">
+                              {selectedFormula.napomena}
+                            </p>
+                          )}
                         </div>
-                        <Slider
-                          value={[prosjek]}
-                          onValueChange={([v]) => setProsjek(v)}
-                          min={1}
-                          max={5}
-                          step={0.1}
-                          className="py-2"
-                        />
-                      </div>
-                    ) : (
-                      <div className="grid grid-cols-4 gap-3">
-                        {[1, 2, 3, 4].map((year) => (
-                          <div key={year} className="space-y-1">
-                            <Label className="text-xs">
-                              {year}. razred
-                            </Label>
-                            <Input
-                              type="number"
-                              min={1}
-                              max={5}
-                              step={0.1}
-                              value={gradesByYear[year] || ""}
-                              onChange={(e) => {
-                                const v = parseFloat(e.target.value);
-                                if (!Number.isNaN(v))
-                                  setGradesByYear((prev) => ({
-                                    ...prev,
-                                    [year]: Math.min(5, Math.max(1, v)),
-                                  }));
-                              }}
-                              className="h-10 rounded-lg"
-                            />
-                          </div>
-                        ))}
-                        <div className="col-span-4 text-sm text-muted-foreground pt-1">
-                          Prosjek: {effectiveProsjek.toFixed(2)}
-                        </div>
-                      </div>
+                      </motion.div>
                     )}
                   </CardContent>
                 </Card>
 
-                {/* 3. Rezultati mature */}
-                <Card className="rounded-2xl border-2 shadow-card overflow-hidden">
-                  <CardHeader className="pb-3">
-                    <div className="flex items-center gap-2">
-                      <Award className="w-5 h-5 text-primary" />
-                      <CardTitle className="text-lg">
-                        Rezultati državne mature
-                      </CardTitle>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <HelpCircle className="w-4 h-4 text-muted-foreground cursor-help" />
-                        </TooltipTrigger>
-                        <TooltipContent className="max-w-xs">
-                          Unesi postotak (0–100) za svaki predmet. A razina
-                          donosi više bodova od B razine.
-                        </TooltipContent>
-                      </Tooltip>
-                    </div>
-                    <CardDescription>
-                      Postotak (0–100) za svaki predmet
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    {MATURA_SUBJECTS.map((s) => (
-                      <div key={s.key} className="space-y-2">
-                        <div className="flex justify-between text-sm">
-                          <Label>{s.label}</Label>
-                          <span className="font-medium">
-                            {matura[s.key]}%
-                          </span>
+                {/* ═══ FORMULA-BASED INPUTS ═══ */}
+                {selectedFormula && groupedComponents && (
+                  <>
+                    {/* Ocjene */}
+                    <Card className="rounded-2xl border-2 shadow-card overflow-hidden">
+                      <CardHeader className="pb-3">
+                        <div className="flex items-center gap-2">
+                          <BookOpen className="w-5 h-5 text-primary" />
+                          <CardTitle className="text-lg">
+                            Ocjene iz srednje škole
+                          </CardTitle>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <HelpCircle className="w-4 h-4 text-muted-foreground cursor-help" />
+                            </TooltipTrigger>
+                            <TooltipContent className="max-w-xs">
+                              Prosjek ocjena iz svih predmeta za svaki razred (1–5).
+                              Formula: (prosjek / 5) × max bodovi.
+                            </TooltipContent>
+                          </Tooltip>
                         </div>
-                        <Slider
-                          value={[matura[s.key]]}
-                          onValueChange={([v]) =>
-                            setMatura((prev) => ({ ...prev, [s.key]: v }))
-                          }
-                          min={0}
-                          max={100}
-                          step={1}
-                          className="py-2"
-                        />
-                      </div>
-                    ))}
-                  </CardContent>
-                </Card>
+                        <CardDescription>
+                          Ukupno do {groupedComponents.ocjene.reduce((s, c) => s + c.max, 0)} bodova iz ocjena
+                        </CardDescription>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                          {groupedComponents.ocjene.map((comp) => (
+                            <div key={comp.id} className="space-y-2">
+                              <div className="flex justify-between text-sm">
+                                <Label className="text-xs">{comp.label}</Label>
+                                <span className="text-xs text-muted-foreground">
+                                  max {comp.max} bod.
+                                </span>
+                              </div>
+                              <Slider
+                                value={[formulaInputs[comp.id] ?? 4]}
+                                onValueChange={([v]) => updateInput(comp.id, v)}
+                                min={1}
+                                max={5}
+                                step={0.1}
+                                className="py-2"
+                              />
+                              <p className="text-center text-sm font-medium">
+                                {(formulaInputs[comp.id] ?? 4).toFixed(1)}
+                              </p>
+                            </div>
+                          ))}
+                        </div>
+                      </CardContent>
+                    </Card>
 
-                {/* 4. Dodatni bodovi */}
+                    {/* Matura – obavezni predmeti */}
+                    {groupedComponents.maturaObv.length > 0 && (
+                      <Card className="rounded-2xl border-2 shadow-card overflow-hidden">
+                        <CardHeader className="pb-3">
+                          <div className="flex items-center gap-2">
+                            <Award className="w-5 h-5 text-primary" />
+                            <CardTitle className="text-lg">
+                              Državna matura – obavezni predmeti
+                            </CardTitle>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <HelpCircle className="w-4 h-4 text-muted-foreground cursor-help" />
+                              </TooltipTrigger>
+                              <TooltipContent className="max-w-xs">
+                                Unesi postotak (0–100). Razina A/B je označena – A razina donosi više bodova.
+                              </TooltipContent>
+                            </Tooltip>
+                          </div>
+                          <CardDescription>
+                            Ukupno do {groupedComponents.maturaObv.reduce((s, c) => s + c.max, 0)} bodova
+                          </CardDescription>
+                        </CardHeader>
+                        <CardContent className="space-y-4">
+                          {groupedComponents.maturaObv.map((comp) => (
+                            <div key={comp.id} className="space-y-2">
+                              <div className="flex justify-between text-sm">
+                                <Label className="flex items-center gap-1.5">
+                                  {comp.label}
+                                  {comp.razina && (
+                                    <span className={cn(
+                                      "text-xs px-1.5 py-0.5 rounded-md font-medium",
+                                      comp.razina === "A"
+                                        ? "bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300"
+                                        : "bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400"
+                                    )}>
+                                      {comp.razina}
+                                    </span>
+                                  )}
+                                </Label>
+                                <span className="text-muted-foreground">
+                                  {formulaInputs[comp.id] ?? 70}% → {Math.round(((formulaInputs[comp.id] ?? 70) / 100) * comp.max)} / {comp.max} bod.
+                                </span>
+                              </div>
+                              <Slider
+                                value={[formulaInputs[comp.id] ?? 70]}
+                                onValueChange={([v]) => updateInput(comp.id, v)}
+                                min={0}
+                                max={100}
+                                step={1}
+                                className="py-2"
+                              />
+                            </div>
+                          ))}
+                        </CardContent>
+                      </Card>
+                    )}
+
+                    {/* Matura – izborni predmeti */}
+                    {groupedComponents.maturaIzb.length > 0 && (
+                      <Card className="rounded-2xl border-2 shadow-card overflow-hidden">
+                        <CardHeader className="pb-3">
+                          <div className="flex items-center gap-2">
+                            <Plus className="w-5 h-5 text-primary" />
+                            <CardTitle className="text-lg">
+                              Izborni predmeti mature
+                            </CardTitle>
+                          </div>
+                          <CardDescription>
+                            Opcionalno – donose dodatne bodove (do {groupedComponents.maturaIzb.reduce((s, c) => s + c.max, 0)} bod.)
+                          </CardDescription>
+                        </CardHeader>
+                        <CardContent className="space-y-4">
+                          {groupedComponents.maturaIzb.map((comp) => (
+                            <div key={comp.id} className="space-y-2">
+                              <div className="flex justify-between text-sm">
+                                <Label className="flex items-center gap-1.5">
+                                  {comp.label}
+                                  {comp.razina && (
+                                    <span className="text-xs px-1.5 py-0.5 rounded-md font-medium bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300">
+                                      {comp.razina}
+                                    </span>
+                                  )}
+                                  {comp.opis && (
+                                    <Tooltip>
+                                      <TooltipTrigger asChild>
+                                        <HelpCircle className="w-3.5 h-3.5 text-muted-foreground cursor-help" />
+                                      </TooltipTrigger>
+                                      <TooltipContent>{comp.opis}</TooltipContent>
+                                    </Tooltip>
+                                  )}
+                                </Label>
+                                <span className="text-muted-foreground">
+                                  {formulaInputs[comp.id] ?? 0}% → {Math.round(((formulaInputs[comp.id] ?? 0) / 100) * comp.max)} / {comp.max} bod.
+                                </span>
+                              </div>
+                              <Slider
+                                value={[formulaInputs[comp.id] ?? 0]}
+                                onValueChange={([v]) => updateInput(comp.id, v)}
+                                min={0}
+                                max={100}
+                                step={1}
+                                className="py-2"
+                              />
+                            </div>
+                          ))}
+                        </CardContent>
+                      </Card>
+                    )}
+
+                    {/* Dodatne komponente (prijemni ispit itd.) */}
+                    {groupedComponents.dodatno.length > 0 && (
+                      <Card className="rounded-2xl border-2 shadow-card overflow-hidden">
+                        <CardHeader className="pb-3">
+                          <div className="flex items-center gap-2">
+                            <Award className="w-5 h-5 text-primary" />
+                            <CardTitle className="text-lg">
+                              Prijemni ispit / posebne provjere
+                            </CardTitle>
+                          </div>
+                        </CardHeader>
+                        <CardContent className="space-y-4">
+                          {groupedComponents.dodatno.map((comp) => (
+                            <div key={comp.id} className="space-y-2">
+                              <div className="flex justify-between text-sm">
+                                <Label className="flex items-center gap-1.5">
+                                  {comp.label}
+                                  {comp.opis && (
+                                    <Tooltip>
+                                      <TooltipTrigger asChild>
+                                        <HelpCircle className="w-3.5 h-3.5 text-muted-foreground cursor-help" />
+                                      </TooltipTrigger>
+                                      <TooltipContent className="max-w-xs">{comp.opis}</TooltipContent>
+                                    </Tooltip>
+                                  )}
+                                </Label>
+                                <span className="text-muted-foreground">
+                                  max {comp.max} bodova
+                                </span>
+                              </div>
+                              <Input
+                                type="number"
+                                min={0}
+                                max={comp.max}
+                                value={formulaInputs[comp.id] ?? 0}
+                                onChange={(e) => {
+                                  const v = parseFloat(e.target.value);
+                                  if (!Number.isNaN(v))
+                                    updateInput(comp.id, Math.min(comp.max, Math.max(0, v)));
+                                }}
+                                className="h-10 rounded-lg"
+                              />
+                            </div>
+                          ))}
+                        </CardContent>
+                      </Card>
+                    )}
+                  </>
+                )}
+
+                {/* Placeholder kad nema odabranog programa */}
+                {!selectedFormula && (
+                  <Card className="rounded-2xl border-2 border-dashed shadow-card overflow-hidden">
+                    <CardContent className="py-12 text-center">
+                      <GraduationCap className="w-10 h-10 text-muted-foreground/40 mx-auto mb-3" />
+                      <p className="text-muted-foreground">
+                        Odaberi fakultet i smjer iznad da vidiš formulu bodovanja
+                      </p>
+                      <p className="text-sm text-muted-foreground/60 mt-1">
+                        {PROGRAM_OPTIONS.length} programa dostupno
+                      </p>
+                    </CardContent>
+                  </Card>
+                )}
+
+                {/* Dodatni bodovi – uvijek vidljivi */}
                 <Card className="rounded-2xl border-2 shadow-card overflow-hidden">
                   <CardHeader className="pb-3">
                     <div className="flex items-center gap-2">
                       <Plus className="w-5 h-5 text-primary" />
                       <CardTitle className="text-lg">
-                        Dodatni bodovi
+                        Dodatni bodovi (natjecanja, volonterstvo)
                       </CardTitle>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <HelpCircle className="w-4 h-4 text-muted-foreground cursor-help" />
-                        </TooltipTrigger>
-                        <TooltipContent className="max-w-xs">
-                          Natjecanja, volonterstvo i posebna postignuća mogu
-                          donijeti dodatne bodove. Provjeri uvjete na fakultetu.
-                        </TooltipContent>
-                      </Tooltip>
                     </div>
                     <CardDescription>
                       Označi i unesi bodove ako imaš
@@ -507,10 +867,7 @@ const Kalkulator = () => {
                               if (!Number.isNaN(v))
                                 setAdditionalPoints((prev) => ({
                                   ...prev,
-                                  [opt.key]: Math.min(
-                                    opt.maxPoints,
-                                    Math.max(0, v)
-                                  ),
+                                  [opt.key]: Math.min(opt.maxPoints, Math.max(0, v)),
                                 }));
                             }}
                             className="w-16 h-8 text-center rounded-lg"
@@ -527,9 +884,10 @@ const Kalkulator = () => {
                 </Card>
               </div>
 
-              {/* Result column - sticky on desktop */}
+              {/* ═══ Result column – sticky on desktop ═══ */}
               <div className="lg:col-span-2">
-                <div className="lg:sticky lg:top-24">
+                <div className="lg:sticky lg:top-24 space-y-4">
+                  {/* Main result card */}
                   <Card
                     className={cn(
                       "rounded-2xl border-2 shadow-card overflow-hidden",
@@ -542,9 +900,7 @@ const Kalkulator = () => {
                         <Sparkles className="w-5 h-5 text-primary" />
                         Tvoj rezultat
                       </CardTitle>
-                      <CardDescription>
-                        Izračun u realnom vremenu
-                      </CardDescription>
+                      <CardDescription>Izračun u realnom vremenu</CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-6">
                       {/* Big number */}
@@ -575,7 +931,14 @@ const Kalkulator = () => {
                           <span>0</span>
                           <span>{MAX_POINTS}</span>
                         </div>
-                        <div className="h-3 rounded-full bg-secondary overflow-hidden">
+                        <div className="h-3 rounded-full bg-secondary overflow-hidden relative">
+                          {/* Cutoff marker */}
+                          {cutoff != null && (
+                            <div
+                              className="absolute top-0 bottom-0 w-0.5 bg-foreground/40 z-10"
+                              style={{ left: `${(cutoff / MAX_POINTS) * 100}%` }}
+                            />
+                          )}
                           <motion.div
                             className={cn("h-full rounded-full", config.bg)}
                             initial={{ width: 0 }}
@@ -585,6 +948,11 @@ const Kalkulator = () => {
                             transition={{ type: "spring", stiffness: 100 }}
                           />
                         </div>
+                        {cutoff != null && (
+                          <p className="text-xs text-muted-foreground text-center">
+                            Prag: {Math.round(cutoff)} bodova (crtica na traci)
+                          </p>
+                        )}
                       </div>
 
                       {/* Chance estimate */}
@@ -608,7 +976,7 @@ const Kalkulator = () => {
                           <p className="font-semibold">{config.label}</p>
                           {selectedProgram && cutoff != null && (
                             <p className="text-sm text-muted-foreground">
-                              Bodovni prag za {selectedProgram.programName}:{" "}
+                              Prag za {selectedFormula?.program}:{" "}
                               {Math.round(cutoff)}
                             </p>
                           )}
@@ -620,30 +988,128 @@ const Kalkulator = () => {
                         </div>
                       </div>
 
+                      {/* Contextual guidance */}
                       {selectedProgram && cutoff != null && (
                         <div className="text-sm text-muted-foreground space-y-1">
                           {chanceLevel === "high" && (
-                            <p>
-                              Tvoj rezultat je znatno iznad bodovnog praga.
-                              Dobra šansa za upis!
-                            </p>
+                            <p>Tvoj rezultat je znatno iznad bodovnog praga. Dobra šansa za upis!</p>
                           )}
                           {chanceLevel === "medium" && (
-                            <p>
-                              Blizu si praga. Bodovni pragovi se mijenjaju svake
-                              godine – pripremi se dobro.
-                            </p>
+                            <p>Blizu si praga. Bodovni pragovi se mijenjaju svake godine – pripremi se dobro.</p>
                           )}
                           {chanceLevel === "low" && (
-                            <p>
-                              Potrebno je više bodova. Razmisli o dodatnoj
-                              pripremi ili drugim opcijama.
-                            </p>
+                            <p>Potrebno je više bodova. Razmisli o dodatnoj pripremi ili drugim opcijama.</p>
                           )}
+                        </div>
+                      )}
+
+                      {/* Historical thresholds */}
+                      {selectedFormula && Object.keys(selectedFormula.pragovi).length > 1 && (
+                        <div className="pt-2 border-t space-y-1">
+                          <p className="text-xs font-medium text-muted-foreground">Pragovi prethodnih godina:</p>
+                          <div className="flex flex-wrap gap-2">
+                            {Object.entries(selectedFormula.pragovi)
+                              .sort(([a], [b]) => b.localeCompare(a))
+                              .map(([year, prag]) => (
+                                <span
+                                  key={year}
+                                  className="text-xs px-2 py-1 rounded-lg bg-secondary"
+                                >
+                                  {year}: {prag ? Math.round(prag) : "–"} bod.
+                                </span>
+                              ))}
+                          </div>
                         </div>
                       )}
                     </CardContent>
                   </Card>
+
+                  {/* ═══ Breakdown card ═══ */}
+                  {formulaResult && (
+                    <Card className="rounded-2xl border-2 shadow-card overflow-hidden">
+                      <CardHeader className="pb-2">
+                        <button
+                          onClick={() => setShowBreakdown(!showBreakdown)}
+                          className="flex items-center justify-between w-full"
+                        >
+                          <CardTitle className="text-lg flex items-center gap-2">
+                            <CalcIcon className="w-5 h-5 text-primary" />
+                            Raspodjela bodova
+                          </CardTitle>
+                          {showBreakdown ? (
+                            <ChevronUp className="w-4 h-4 text-muted-foreground" />
+                          ) : (
+                            <ChevronDown className="w-4 h-4 text-muted-foreground" />
+                          )}
+                        </button>
+                      </CardHeader>
+                      <AnimatePresence>
+                        {showBreakdown && (
+                          <motion.div
+                            initial={{ height: 0, opacity: 0 }}
+                            animate={{ height: "auto", opacity: 1 }}
+                            exit={{ height: 0, opacity: 0 }}
+                            transition={{ duration: 0.2 }}
+                          >
+                            <CardContent className="space-y-2 pt-0">
+                              {formulaResult.breakdown.map((item) => {
+                                const pct = item.max > 0 ? (item.points / item.max) * 100 : 0;
+                                return (
+                                  <div key={item.id} className="space-y-1">
+                                    <div className="flex justify-between text-xs">
+                                      <span className="text-muted-foreground truncate mr-2">
+                                        {item.label}
+                                      </span>
+                                      <span className="font-medium whitespace-nowrap">
+                                        {item.points.toFixed(1)} / {item.max}
+                                      </span>
+                                    </div>
+                                    <div className="h-2 rounded-full bg-secondary overflow-hidden">
+                                      <motion.div
+                                        className={cn(
+                                          "h-full rounded-full",
+                                          pct >= 80
+                                            ? "bg-emerald-500"
+                                            : pct >= 50
+                                              ? "bg-amber-500"
+                                              : "bg-rose-400"
+                                        )}
+                                        initial={{ width: 0 }}
+                                        animate={{ width: `${pct}%` }}
+                                        transition={{ type: "spring", stiffness: 100 }}
+                                      />
+                                    </div>
+                                  </div>
+                                );
+                              })}
+                              {totalAdditional > 0 && (
+                                <div className="space-y-1">
+                                  <div className="flex justify-between text-xs">
+                                    <span className="text-muted-foreground">
+                                      Natjecanja / volonterstvo
+                                    </span>
+                                    <span className="font-medium">
+                                      +{totalAdditional}
+                                    </span>
+                                  </div>
+                                  <div className="h-2 rounded-full bg-secondary overflow-hidden">
+                                    <div
+                                      className="h-full rounded-full bg-violet-500"
+                                      style={{ width: `${Math.min(100, (totalAdditional / 30) * 100)}%` }}
+                                    />
+                                  </div>
+                                </div>
+                              )}
+                              <div className="pt-2 border-t flex justify-between text-sm font-semibold">
+                                <span>Ukupno</span>
+                                <span>{totalPoints} / {MAX_POINTS}</span>
+                              </div>
+                            </CardContent>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                    </Card>
+                  )}
                 </div>
               </div>
             </div>
