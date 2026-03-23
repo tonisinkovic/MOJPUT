@@ -72,7 +72,7 @@ const Footer = () => {
             © {new Date().getFullYear()} MojPut. Sva prava pridržana.
           </p>
           <p className="text-xs text-muted-foreground">
-            Izrađeno s ❤️ za maturante Hrvatske
+            Izrađeno sa ❤️ za maturante Hrvatske
           </p>
         </div>
       </div>
