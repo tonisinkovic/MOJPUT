@@ -20,6 +20,10 @@ import {
   Info,
   ChevronDown,
   ChevronUp,
+  MapPin,
+  X,
+  Search,
+  Building2,
 } from "lucide-react";
 import {
   Card,
@@ -47,6 +51,7 @@ import {
   CommandItem,
   CommandList,
 } from "@/components/ui/command";
+import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import {
   scoringFormulas,
@@ -64,7 +69,9 @@ type ProgramOption = {
 
 type ChanceLevel = "high" | "medium" | "low";
 
-// ─── Build flat program list directly from scoring formulas (943 programa) ───
+type InstitutionType = "all" | "sveuciliste" | "veleuciliste";
+
+// ─── Build flat program list directly from scoring formulas (710 programa) ───
 
 function buildProgramOptions(): ProgramOption[] {
   return scoringFormulas.map((f) => ({
@@ -74,6 +81,25 @@ function buildProgramOptions(): ProgramOption[] {
 }
 
 const PROGRAM_OPTIONS = buildProgramOptions();
+
+// ─── Extract cities sorted by program count ───
+const ALL_CITIES = (() => {
+  const counts = new Map<string, number>();
+  for (const o of PROGRAM_OPTIONS) {
+    counts.set(o.formula.grad, (counts.get(o.formula.grad) ?? 0) + 1);
+  }
+  return [...counts.entries()]
+    .sort((a, b) => b[1] - a[1])
+    .map(([city, count]) => ({ city, count }));
+})();
+
+const TOP_CITIES = ALL_CITIES.slice(0, 7); // Zagreb, Split, Rijeka, Osijek, Zadar, Pula, Dubrovnik
+
+function getInstitutionType(name: string): InstitutionType {
+  const lower = name.toLowerCase();
+  if (lower.includes("veleučilišt") || lower.includes("visok")) return "veleuciliste";
+  return "sveuciliste";
+}
 
 // ─── Additional points options ───
 
@@ -103,6 +129,11 @@ const Kalkulator = () => {
   const [selectedProgram, setSelectedProgram] = useState<ProgramOption | null>(null);
   const [facultyOpen, setFacultyOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+
+  // ─── State: filters ───
+  const [selectedCity, setSelectedCity] = useState<string | null>(null);
+  const [institutionType, setInstitutionType] = useState<InstitutionType>("all");
+  const [showAllCities, setShowAllCities] = useState(false);
 
   // ─── State: formula-based inputs ───
   const [formulaInputs, setFormulaInputs] = useState<Record<string, number>>({});
@@ -157,9 +188,27 @@ const Kalkulator = () => {
   const cutoff = selectedProgram?.cutoff ?? null;
   const chanceLevel = getChanceLevel(totalPoints, cutoff);
 
+  // ─── Pre-filter by city and institution type ───
+  const preFilteredPrograms = useMemo(() => {
+    let list = PROGRAM_OPTIONS;
+    if (selectedCity) {
+      list = list.filter((o) => o.formula.grad === selectedCity);
+    }
+    if (institutionType !== "all") {
+      list = list.filter((o) => getInstitutionType(o.formula.fakultet) === institutionType);
+    }
+    return list;
+  }, [selectedCity, institutionType]);
+
   const filteredPrograms = useMemo(() => {
     const q = searchQuery.toLowerCase().trim();
-    if (!q) return PROGRAM_OPTIONS.slice(0, 30);
+    if (!q) {
+      // Group by institution, sorted alphabetically
+      const sorted = [...preFilteredPrograms].sort((a, b) =>
+        a.formula.fakultet.localeCompare(b.formula.fakultet, "hr")
+      );
+      return sorted.slice(0, 50);
+    }
 
     // Aliasi za popularne kratice
     const aliases: Record<string, string> = {
@@ -207,7 +256,7 @@ const Kalkulator = () => {
     }
 
     const words = expanded.split(/\s+/);
-    const results = PROGRAM_OPTIONS.filter((o) => {
+    const results = preFilteredPrograms.filter((o) => {
       const haystack = `${o.formula.fakultet} ${o.formula.program} ${o.formula.grad}`.toLowerCase();
       return words.every((w) => haystack.includes(w));
     });
@@ -221,7 +270,26 @@ const Kalkulator = () => {
     });
 
     return results.slice(0, 50);
-  }, [searchQuery]);
+  }, [searchQuery, preFilteredPrograms]);
+
+  // ─── Group filtered results by institution for dropdown ───
+  const groupedFilteredPrograms = useMemo(() => {
+    const groups = new Map<string, ProgramOption[]>();
+    for (const opt of filteredPrograms) {
+      const key = opt.formula.fakultet;
+      if (!groups.has(key)) groups.set(key, []);
+      groups.get(key)!.push(opt);
+    }
+    return groups;
+  }, [filteredPrograms]);
+
+  const activeFilterCount = (selectedCity ? 1 : 0) + (institutionType !== "all" ? 1 : 0);
+
+  const clearFilters = () => {
+    setSelectedCity(null);
+    setInstitutionType("all");
+    setShowAllCities(false);
+  };
 
   const chanceConfig = {
     high: {
@@ -306,17 +374,116 @@ const Kalkulator = () => {
                 {/* 1. Odabir fakulteta i smjera */}
                 <Card className="rounded-2xl border-2 shadow-card overflow-hidden">
                   <CardHeader className="pb-3">
-                    <div className="flex items-center gap-2">
-                      <GraduationCap className="w-5 h-5 text-primary" />
-                      <CardTitle className="text-lg">
-                        Odabir fakulteta i smjera
-                      </CardTitle>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <GraduationCap className="w-5 h-5 text-primary" />
+                        <CardTitle className="text-lg">
+                          Odabir fakulteta i smjera
+                        </CardTitle>
+                      </div>
+                      <Badge variant="secondary" className="text-xs">
+                        {preFilteredPrograms.length} programa
+                      </Badge>
                     </div>
                     <CardDescription>
-                      Pretraži po gradu, fakultetu ili smjeru
+                      Filtriraj po gradu ili vrsti, pa pretraži
                     </CardDescription>
                   </CardHeader>
-                  <CardContent className="space-y-3">
+                  <CardContent className="space-y-4">
+                    {/* ── City filter chips ── */}
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
+                        <MapPin className="w-3.5 h-3.5" />
+                        Grad
+                      </div>
+                      <div className="flex flex-wrap gap-1.5">
+                        {(showAllCities ? ALL_CITIES : TOP_CITIES).map(({ city, count }) => (
+                          <button
+                            key={city}
+                            onClick={() => setSelectedCity(selectedCity === city ? null : city)}
+                            className={cn(
+                              "inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-medium transition-colors",
+                              selectedCity === city
+                                ? "bg-primary text-primary-foreground shadow-sm"
+                                : "bg-secondary text-secondary-foreground hover:bg-secondary/80"
+                            )}
+                          >
+                            {city}
+                            <span className={cn(
+                              "text-[10px]",
+                              selectedCity === city ? "text-primary-foreground/70" : "text-muted-foreground"
+                            )}>
+                              {count}
+                            </span>
+                          </button>
+                        ))}
+                        {!showAllCities && ALL_CITIES.length > 7 && (
+                          <button
+                            onClick={() => setShowAllCities(true)}
+                            className="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-secondary/80 transition-colors"
+                          >
+                            +{ALL_CITIES.length - 7} gradova
+                          </button>
+                        )}
+                        {showAllCities && (
+                          <button
+                            onClick={() => setShowAllCities(false)}
+                            className="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-secondary/80 transition-colors"
+                          >
+                            Manje
+                          </button>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* ── Institution type toggle ── */}
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
+                        <Building2 className="w-3.5 h-3.5" />
+                        Vrsta ustanove
+                      </div>
+                      <div className="flex gap-1.5">
+                        {([
+                          { value: "all", label: "Sve" },
+                          { value: "sveuciliste", label: "Sveučilišta i fakulteti" },
+                          { value: "veleuciliste", label: "Veleučilišta i visoke škole" },
+                        ] as const).map((opt) => (
+                          <button
+                            key={opt.value}
+                            onClick={() => setInstitutionType(opt.value)}
+                            className={cn(
+                              "px-2.5 py-1 rounded-lg text-xs font-medium transition-colors",
+                              institutionType === opt.value
+                                ? "bg-primary text-primary-foreground shadow-sm"
+                                : "bg-secondary text-secondary-foreground hover:bg-secondary/80"
+                            )}
+                          >
+                            {opt.label}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* ── Active filters summary ── */}
+                    {activeFilterCount > 0 && (
+                      <div className="flex items-center justify-between px-3 py-2 rounded-lg bg-primary/5 border border-primary/10">
+                        <span className="text-xs text-muted-foreground">
+                          {preFilteredPrograms.length} programa
+                          {selectedCity && <> u <strong>{selectedCity}</strong></>}
+                          {institutionType === "sveuciliste" && <> · sveučilišta</>}
+                          {institutionType === "veleuciliste" && <> · veleučilišta</>}
+                        </span>
+                        <button
+                          onClick={clearFilters}
+                          className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
+                        >
+                          <X className="w-3 h-3" />
+                          Očisti
+                        </button>
+                      </div>
+                    )}
+
+                    {/* ── Program selector dropdown ── */}
                     <Popover open={facultyOpen} onOpenChange={setFacultyOpen}>
                       <PopoverTrigger asChild>
                         <Button
@@ -327,15 +494,15 @@ const Kalkulator = () => {
                         >
                           {selectedProgram ? (
                             <span className="truncate">
-                              {selectedProgram.formula.fakultet} –{" "}
                               {selectedProgram.formula.program}{" "}
                               <span className="text-muted-foreground">
-                                ({selectedProgram.formula.grad})
+                                – {selectedProgram.formula.fakultet} ({selectedProgram.formula.grad})
                               </span>
                             </span>
                           ) : (
-                            <span className="text-muted-foreground">
-                              Odaberi fakultet i smjer...
+                            <span className="text-muted-foreground flex items-center gap-2">
+                              <Search className="w-4 h-4" />
+                              Pretraži ili odaberi program...
                             </span>
                           )}
                           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
@@ -347,34 +514,53 @@ const Kalkulator = () => {
                       >
                         <Command shouldFilter={false}>
                           <CommandInput
-                            placeholder="Pretraži fakultet, smjer, grad..."
+                            placeholder="Pretraži fakultet, smjer ili kraticu (FER, FSB, PMF...)"
                             value={searchQuery}
                             onValueChange={setSearchQuery}
                           />
-                          <CommandList>
-                            <CommandEmpty>Nema rezultata.</CommandEmpty>
-                            <CommandGroup>
-                              {filteredPrograms.map((opt) => (
-                                <CommandItem
-                                  key={opt.formula.programId}
-                                  value={opt.formula.programId}
-                                  onSelect={() => handleSelectProgram(opt)}
-                                  className="flex flex-col items-start gap-0.5 py-3"
-                                >
-                                  <span className="font-medium">
-                                    {opt.formula.fakultet}
+                          <CommandList className="max-h-[320px]">
+                            <CommandEmpty>
+                              <div className="py-4 text-center text-sm text-muted-foreground">
+                                <p>Nema rezultata za "{searchQuery}"</p>
+                                {activeFilterCount > 0 && (
+                                  <button
+                                    onClick={clearFilters}
+                                    className="mt-1 text-primary hover:underline"
+                                  >
+                                    Očisti filtere i pokušaj ponovo
+                                  </button>
+                                )}
+                              </div>
+                            </CommandEmpty>
+                            {[...groupedFilteredPrograms.entries()].map(([institution, programs]) => (
+                              <CommandGroup
+                                key={institution}
+                                heading={
+                                  <span className="flex items-center justify-between">
+                                    <span className="truncate">{institution}</span>
+                                    <Badge variant="outline" className="ml-2 text-[10px] shrink-0">
+                                      {programs[0].formula.grad}
+                                    </Badge>
                                   </span>
-                                  <span className="text-sm text-muted-foreground">
-                                    {opt.formula.program} · {opt.formula.grad}
+                                }
+                              >
+                                {programs.map((opt) => (
+                                  <CommandItem
+                                    key={opt.formula.programId}
+                                    value={opt.formula.programId}
+                                    onSelect={() => handleSelectProgram(opt)}
+                                    className="flex items-center justify-between py-2.5"
+                                  >
+                                    <span className="truncate">{opt.formula.program}</span>
                                     {opt.cutoff != null && (
-                                      <span className="ml-1 font-medium text-foreground">
-                                        · min. {Math.round(opt.cutoff)} bodova
+                                      <span className="text-xs text-muted-foreground whitespace-nowrap ml-2">
+                                        min. {Math.round(opt.cutoff)} bod.
                                       </span>
                                     )}
-                                  </span>
-                                </CommandItem>
-                              ))}
-                            </CommandGroup>
+                                  </CommandItem>
+                                ))}
+                              </CommandGroup>
+                            ))}
                           </CommandList>
                         </Command>
                       </PopoverContent>
