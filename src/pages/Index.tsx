@@ -16,8 +16,9 @@ import {
   GraduationCap,
   ArrowRight,
   Sparkles,
-  TrendingUp,
   Award,
+  Building2,
+  ShieldCheck,
 } from "lucide-react";
 
 const features = [
@@ -146,6 +147,62 @@ const Index = () => {
             </motion.div>
           </div>
         </div>
+      </section>
+
+      {/* Faculty Hub Entry */}
+      <section className="container py-8 md:py-12">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          className="relative overflow-hidden rounded-3xl border bg-card/80 p-6 md:p-8 shadow-card"
+        >
+          <div className="absolute -top-20 -right-20 w-56 h-56 bg-primary/10 rounded-full blur-3xl" />
+          <div className="absolute -bottom-24 -left-12 w-56 h-56 bg-accent/10 rounded-full blur-3xl" />
+          <div className="relative grid gap-6 lg:grid-cols-[1.4fr_1fr] lg:items-center">
+            <div>
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-semibold">
+                <Building2 className="w-4 h-4" />
+                Nova sekcija
+              </div>
+              <h2 className="text-2xl md:text-3xl font-bold mt-4">
+                Profili fakulteta na zasebnom mjestu
+              </h2>
+              <p className="text-muted-foreground mt-3 max-w-2xl">
+                Fakulteti sada imaju vlastite profile s objavama, događanjima i obavijestima.
+                Učenici mogu pregledavati sadržaj javno, a fakulteti upravljaju objavama kroz svoj dashboard.
+              </p>
+              <div className="flex flex-col sm:flex-row gap-3 mt-6">
+                <Button asChild>
+                  <Link to="/fakulteti">Pogledaj profile fakulteta</Link>
+                </Button>
+                <Button asChild variant="outline">
+                  <Link to="/fakulteti/prijava">Prijava fakulteta</Link>
+                </Button>
+              </div>
+            </div>
+
+            <div className="rounded-2xl border bg-background/70 p-5">
+              <div className="flex items-center gap-2 text-sm font-semibold">
+                <ShieldCheck className="w-4 h-4 text-primary" />
+                Verificirani profili
+              </div>
+              <p className="text-sm text-muted-foreground mt-2">
+                Svaki fakultet ima svoj račun i vidi samo svoje objave.
+              </p>
+              <div className="grid grid-cols-2 gap-3 mt-4 text-sm">
+                <div className="rounded-xl border p-3">
+                  <p className="font-semibold">Javne objave</p>
+                  <p className="text-muted-foreground text-xs mt-1">Novosti i događanja</p>
+                </div>
+                <div className="rounded-xl border p-3">
+                  <p className="font-semibold">Siguran pristup</p>
+                  <p className="text-muted-foreground text-xs mt-1">Email + lozinka</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </motion.div>
       </section>
 
       {/* Stats */}

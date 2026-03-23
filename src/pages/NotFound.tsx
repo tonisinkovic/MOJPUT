@@ -1,5 +1,6 @@
 import { useLocation } from "react-router-dom";
 import { useEffect } from "react";
+import { Link } from "react-router-dom";
 
 const NotFound = () => {
   const location = useLocation();
@@ -9,56 +10,24 @@ const NotFound = () => {
   }, [location.pathname]);
 
   return (
-    <div className="flex min-h-screen flex-col justify-between bg-muted">
-      <main className="flex flex-1 items-start justify-center pt-12">
-        <div className="max-w-2xl px-4 text-center">
-          <h1 className="mb-4 text-4xl font-extrabold tracking-tight">
-            O nama
-          </h1>
-          <p className="mb-4 text-lg text-muted-foreground">
-            MojPut je platforma stvorena s ciljem da mladima od 16 do 18 godina
-            olakša odabir karijere i fakulteta.
-          </p>
-          <p className="mb-8 text-lg text-muted-foreground">
-            Naša misija je pružiti jasne informacije, korisne alate i inspiraciju
-            koja pomaže maturantima da donesu važne odluke o svojoj budućnosti.
-          </p>
-
-          <h2 className="mb-4 text-2xl font-semibold">
-            Platformu su osmislili i razvili:
-          </h2>
-          <ul className="mb-8 space-y-2 text-left text-lg text-muted-foreground">
-            <li>
-              <span className="font-semibold">Toni Šinković</span> – autor i
-              dizajner
-            </li>
-            <li>
-              <span className="font-semibold">Ivano Perišić</span> – developer
-            </li>
-            <li>
-              <span className="font-semibold">Josip Šinković</span> – developer i
-              UX dizajn
-            </li>
-          </ul>
-
-          <p className="text-lg text-muted-foreground">
-            Za sve upite ili suradnju, možete nas kontaktirati na{" "}
-            <a
-              href="mailto:moj-put@gmail.com"
-              className="font-semibold text-primary underline hover:text-primary/90"
-            >
-              moj-put@gmail.com
-            </a>
-            .
-          </p>
+    <div className="min-h-screen bg-muted flex items-center justify-center px-4">
+      <main className="w-full max-w-xl rounded-2xl border bg-card p-8 text-center shadow-card">
+        <p className="text-sm font-semibold text-primary">404</p>
+        <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight mt-2">
+          Stranica nije pronađena
+        </h1>
+        <p className="mt-3 text-muted-foreground">
+          Tražena stranica ne postoji ili je premještena. Vrati se na početnu i nastavi istraživati MojPut.
+        </p>
+        <div className="mt-6">
+          <Link
+            to="/"
+            className="inline-flex items-center justify-center rounded-lg bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground hover:opacity-95 transition"
+          >
+            Povratak na početnu
+          </Link>
         </div>
       </main>
-
-      <div className="pb-8 text-center">
-        <a href="/" className="text-primary underline hover:text-primary/90">
-          Return to Home
-        </a>
-      </div>
     </div>
   );
 };

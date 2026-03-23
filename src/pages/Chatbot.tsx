@@ -3,6 +3,7 @@ import Layout from "@/components/Layout";
 import { motion } from "framer-motion";
 import { Bot, Send, Sparkles, ChevronRight, RotateCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { facultyInstitutions } from "@/data/faculties";
 
 const API_BASE = import.meta.env.VITE_API_URL || (import.meta.env.DEV ? "http://localhost:3000" : "");
 
@@ -20,6 +21,38 @@ interface Message {
 
 const AI_NAME = "Marko";
 const AI_WELCOME = `Pozdrav ja se zovem ${AI_NAME} kako ti mogu pomoći:`;
+
+function buildLocalChatReply(question: string): string {
+  const q = question.toLowerCase();
+  const cities = Array.from(new Set(facultyInstitutions.map((f) => f.city)));
+  const matchedCity = cities.find((city) => q.includes(city.toLowerCase()));
+
+  if (matchedCity) {
+    const inCity = facultyInstitutions.filter((f) => f.city.toLowerCase() === matchedCity.toLowerCase()).slice(0, 8);
+    if (inCity.length) {
+      return `U gradu ${matchedCity} sam pronašao ove ustanove:\n- ${inCity.map((f) => f.name).join("\n- ")}\n\nAko želiš, mogu suziti popis po području (npr. računarstvo, ekonomija, medicina).`;
+    }
+  }
+
+  if (q.includes("računar") || q.includes("informat") || q.includes("it")) {
+    const matches = facultyInstitutions
+      .filter((f) => f.programs.some((p) => /računar|informat|softver|it/i.test(p.name)))
+      .slice(0, 8);
+    if (matches.length) {
+      return `Za računarstvo/informatiku pronašao sam:\n- ${matches.map((f) => `${f.name} (${f.city})`).join("\n- ")}\n\nMogu ti odmah izdvojiti i bodovne pragove gdje su dostupni.`;
+    }
+  }
+
+  if (q.includes("medicin")) {
+    const matches = facultyInstitutions.filter((f) => /medicin|zdrav/i.test(f.name)).slice(0, 8);
+    if (matches.length) {
+      return `Medicinski i srodni fakulteti koje vidim u bazi:\n- ${matches.map((f) => `${f.name} (${f.city})`).join("\n- ")}`;
+    }
+  }
+
+  const sample = facultyInstitutions.slice(0, 6);
+  return `Trenutno radim u lokalnom modu (bez backenda), ali i dalje mogu pomoći kroz podatke iz baze.\n\nPrimjeri koje mogu odmah odgovoriti:\n- Fakulteti u određenom gradu (npr. Zagreb, Split, Rijeka)\n- Studiji računarstva/informatike\n- Osnovni popis fakulteta po području\n\nPrimjer ustanova iz baze:\n- ${sample.map((f) => `${f.name} (${f.city})`).join("\n- ")}`;
+}
 
 const RobotAIWindow = () => {
   // Mali robot s hrvatskim bojama (plavo-crveno-bijelo + šahovnica) koji drži "AI prozor".
@@ -139,6 +172,19 @@ const Chatbot = () => {
     setMessages((m) => [...m, { role: "assistant", content: "" }]);
     const assistantIdx = conversationHistory.length;
 
+    // Static hosting fallback: when backend is unavailable, answer from local dataset.
+    const shouldUseLocalFallback = !API_BASE && !import.meta.env.DEV;
+    if (shouldUseLocalFallback) {
+      const localReply = buildLocalChatReply(content);
+      setMessages((m) => {
+        const next = [...m];
+        next[assistantIdx] = { role: "assistant", content: localReply };
+        return next;
+      });
+      setIsLoading(false);
+      return;
+    }
+
     try {
       const res = await fetch(`${API_BASE}/api/chat`, {
         method: "POST",
@@ -194,7 +240,7 @@ const Chatbot = () => {
     } catch (err) {
       let msg = err instanceof Error ? err.message : "Došlo je do greške. Pokušajte ponovo.";
       if (msg.includes("404") || msg.includes("502") || msg.includes("Failed to fetch")) {
-        msg = "Backend nije dostupan. Pokreni u zasebnom terminalu: npm run start";
+        msg = buildLocalChatReply(content);
       } else if (msg.includes("429") || msg.includes("quota") || msg.includes("OpenAI")) {
         msg = "Chatbot koristi samo bazu podataka. Osvježi stranicu (F5) i pokušaj ponovo.";
       }

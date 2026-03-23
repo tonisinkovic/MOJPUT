@@ -36,6 +36,8 @@ type ForumConversation = {
   messages: ForumMessage[];
 };
 
+const FORUM_LOCAL_KEY = "mojput_forum_local_conversations";
+
 const FALLBACK_CONVERSATIONS: ForumConversation[] = [
   {
     id: 1001,
@@ -126,6 +128,42 @@ const FALLBACK_CONVERSATIONS: ForumConversation[] = [
   },
 ];
 
+const readLocalConversations = (): ForumConversation[] => {
+  try {
+    const raw = localStorage.getItem(FORUM_LOCAL_KEY);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw) as Array<{
+      id: number;
+      title: string;
+      description: string;
+      creator: string;
+      creatorId: number;
+      createdAt: string;
+      messageCount: number;
+      messages: Array<{
+        id: number;
+        userId: number;
+        username: string;
+        text: string;
+        timestamp: string;
+        likeCount: number;
+        userLiked: boolean;
+      }>;
+    }>;
+    return parsed.map((conv) => ({
+      ...conv,
+      createdAt: new Date(conv.createdAt),
+      messages: conv.messages.map((msg) => ({ ...msg, timestamp: new Date(msg.timestamp) })),
+    }));
+  } catch {
+    return [];
+  }
+};
+
+const writeLocalConversations = (conversations: ForumConversation[]) => {
+  localStorage.setItem(FORUM_LOCAL_KEY, JSON.stringify(conversations));
+};
+
 const Forum = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [currentUser, setCurrentUser] = useState<AuthUser | null>(null);
@@ -162,18 +200,23 @@ const Forum = () => {
 
   const loadConversations = async () => {
     setLoadingConversations(true);
-    const res = await apiGet<{ data: unknown }>("/api/forum/conversations");
-    if (res.success) {
-      const rows = ((res as { data?: unknown }).data ?? []) as Array<{
-        id: number;
-        title: string;
-        description: string;
-        creator_username: string;
-        created_at: string;
-        message_count: number;
-      }>;
-      setConversations(
-        rows.map((c) => ({
+    try {
+      const res = await apiGet<{ data: unknown }>("/api/forum/conversations");
+      if (res.success) {
+        const raw = (res as { data?: unknown }).data;
+        const rows = Array.isArray(raw)
+          ? raw
+          : Array.isArray((raw as { data?: unknown[] } | undefined)?.data)
+            ? ((raw as { data?: unknown[] }).data as unknown[])
+            : [];
+        const mapped = (rows as Array<{
+          id: number;
+          title: string;
+          description: string;
+          creator_username: string;
+          created_at: string;
+          message_count: number;
+        }>).map((c) => ({
           id: c.id,
           title: c.title,
           description: c.description || "",
@@ -182,49 +225,86 @@ const Forum = () => {
           createdAt: new Date(c.created_at),
           messageCount: typeof c.message_count === "number" ? c.message_count : 0,
           messages: [],
-        })),
-      );
-    } else {
-      setConversations(FALLBACK_CONVERSATIONS);
+        }));
+        const localOnly = readLocalConversations();
+        setConversations([...localOnly, ...mapped]);
+      } else {
+        const localOnly = readLocalConversations();
+        setConversations([...localOnly, ...FALLBACK_CONVERSATIONS]);
+      }
+    } catch {
+      const localOnly = readLocalConversations();
+      setConversations([...localOnly, ...FALLBACK_CONVERSATIONS]);
+    } finally {
+      setLoadingConversations(false);
     }
-    setLoadingConversations(false);
   };
 
   const loadMessages = async (conversationId: number) => {
     setLoadingMessages(true);
-    const res = await apiGet<{ data: unknown }>(`/api/forum/conversations/${conversationId}/messages`);
-    if (res.success) {
-      const rows = ((res as { data?: unknown }).data ?? []) as Array<{
-        id: number;
-        user_id: number;
-        username: string;
-        text: string;
-        created_at: string;
-        like_count: number;
-        user_liked: boolean;
-      }>;
-      const messages: ForumMessage[] = rows.map((m) => ({
-        id: m.id,
-        userId: m.user_id,
-        username: m.username,
-        text: m.text,
-        timestamp: new Date(m.created_at),
-        likeCount: m.like_count ?? 0,
-        userLiked: m.user_liked ?? false,
-      }));
+    try {
+      const res = await apiGet<{ data: unknown }>(`/api/forum/conversations/${conversationId}/messages`);
+      if (res.success) {
+        const raw = (res as { data?: unknown }).data;
+        const rows = Array.isArray(raw)
+          ? raw
+          : Array.isArray((raw as { data?: unknown[] } | undefined)?.data)
+            ? ((raw as { data?: unknown[] }).data as unknown[])
+            : [];
+        const messages: ForumMessage[] = (rows as Array<{
+          id: number;
+          user_id: number;
+          username: string;
+          text: string;
+          created_at: string;
+          like_count: number;
+          user_liked: boolean;
+        }>).map((m) => ({
+          id: m.id,
+          userId: m.user_id,
+          username: m.username,
+          text: m.text,
+          timestamp: new Date(m.created_at),
+          likeCount: m.like_count ?? 0,
+          userLiked: m.user_liked ?? false,
+        }));
 
-      setConversations((prev) =>
-        prev.map((c) =>
-          c.id === conversationId
-            ? { ...c, messages, messageCount: messages.length }
-            : c,
-        ),
-      );
-      setSelectedConversation((prev) => {
-        if (!prev || prev.id !== conversationId) return prev;
-        return { ...prev, messages, messageCount: messages.length };
-      });
-    } else {
+        setConversations((prev) =>
+          prev.map((c) =>
+            c.id === conversationId
+              ? { ...c, messages, messageCount: messages.length }
+              : c,
+          ),
+        );
+        setSelectedConversation((prev) => {
+          if (!prev || prev.id !== conversationId) return prev;
+          return { ...prev, messages, messageCount: messages.length };
+        });
+      } else {
+        const fallbackConv = FALLBACK_CONVERSATIONS.find((c) => c.id === conversationId);
+        if (fallbackConv) {
+          setConversations((prev) =>
+            prev.map((c) =>
+              c.id === conversationId
+                ? {
+                    ...c,
+                    messages: fallbackConv.messages,
+                    messageCount: fallbackConv.messages.length,
+                  }
+                : c,
+            ),
+          );
+          setSelectedConversation((prev) => {
+            if (!prev || prev.id !== conversationId) return prev;
+            return {
+              ...prev,
+              messages: fallbackConv.messages,
+              messageCount: fallbackConv.messages.length,
+            };
+          });
+        }
+      }
+    } catch {
       const fallbackConv = FALLBACK_CONVERSATIONS.find((c) => c.id === conversationId);
       if (fallbackConv) {
         setConversations((prev) =>
@@ -247,8 +327,9 @@ const Forum = () => {
           };
         });
       }
+    } finally {
+      setLoadingMessages(false);
     }
-    setLoadingMessages(false);
   };
 
   useEffect(() => {
@@ -277,24 +358,38 @@ const Forum = () => {
       "/api/forum/conversations",
       { title: newConvTitle.trim(), description: newConvDescription.trim() },
     );
-    if (!res.success) {
-      alert((res as { message?: string }).message);
-      return;
+    let newConversation: ForumConversation | null = null;
+    if (res.success) {
+      const c = (res as { data?: { id: number; title: string; description: string; created_at: string; creator_username: string; message_count: number } }).data;
+      if (c) {
+        newConversation = {
+          id: c.id,
+          title: c.title,
+          description: c.description || "",
+          creator: c.creator_username || currentUser.username,
+          creatorId: currentUser.id,
+          createdAt: new Date(c.created_at),
+          messageCount: c.message_count ?? 0,
+          messages: [],
+        };
+      }
+    } else {
+      // Backend fallback: create locally so authenticated users can always open new topics.
+      newConversation = {
+        id: Date.now(),
+        title: newConvTitle.trim(),
+        description: newConvDescription.trim(),
+        creator: currentUser.username,
+        creatorId: currentUser.id,
+        createdAt: new Date(),
+        messageCount: 0,
+        messages: [],
+      };
     }
-    const c = (res as { data?: { id: number; title: string; description: string; created_at: string; creator_username: string; message_count: number } }).data;
-    if (!c) return;
-    const newConversation: ForumConversation = {
-      id: c.id,
-      title: c.title,
-      description: c.description || "",
-      creator: c.creator_username || currentUser.username,
-      creatorId: currentUser.id,
-      createdAt: new Date(c.created_at),
-      messageCount: c.message_count ?? 0,
-      messages: [],
-    };
+    if (!newConversation) return;
 
     setConversations((prev) => [newConversation, ...prev]);
+    writeLocalConversations([newConversation, ...readLocalConversations()]);
     setNewConvTitle("");
     setNewConvDescription("");
     setShowNewConversationModal(false);
@@ -311,21 +406,33 @@ const Forum = () => {
       { text: messageInput.trim() },
     );
     setSendingMessage(false);
-    if (!res.success) {
-      alert((res as { message?: string }).message);
-      return;
+    let newMessage: ForumMessage | null = null;
+    if (res.success) {
+      const payload = (res as { data?: { id: number; user_id: number; username: string; text: string; created_at: string; like_count: number; user_liked: boolean } }).data;
+      if (payload) {
+        newMessage = {
+          id: payload.id,
+          userId: payload.user_id,
+          username: payload.username,
+          text: payload.text,
+          timestamp: new Date(payload.created_at),
+          likeCount: payload.like_count ?? 0,
+          userLiked: payload.user_liked ?? false,
+        };
+      }
+    } else {
+      // Backend fallback: keep forum interactive for logged-in users.
+      newMessage = {
+        id: Date.now(),
+        userId: currentUser.id,
+        username: currentUser.username,
+        text: messageInput.trim(),
+        timestamp: new Date(),
+        likeCount: 0,
+        userLiked: false,
+      };
     }
-    const payload = (res as { data?: { id: number; user_id: number; username: string; text: string; created_at: string; like_count: number; user_liked: boolean } }).data;
-    if (!payload) return;
-    const newMessage: ForumMessage = {
-      id: payload.id,
-      userId: payload.user_id,
-      username: payload.username,
-      text: payload.text,
-      timestamp: new Date(payload.created_at),
-      likeCount: payload.like_count ?? 0,
-      userLiked: payload.user_liked ?? false,
-    };
+    if (!newMessage) return;
 
     setConversations((prev) =>
       prev.map((conv) =>
@@ -337,6 +444,13 @@ const Forum = () => {
     setSelectedConversation((prev) =>
       prev ? { ...prev, messages: [...prev.messages, newMessage], messageCount: prev.messageCount + 1 } : prev,
     );
+    const localConvs = readLocalConversations();
+    const updatedLocal = localConvs.map((conv) =>
+      conv.id === selectedConversation.id
+        ? { ...conv, messages: [...conv.messages, newMessage], messageCount: conv.messageCount + 1 }
+        : conv,
+    );
+    writeLocalConversations(updatedLocal);
     setMessageInput("");
   };
 
@@ -344,9 +458,16 @@ const Forum = () => {
     if (!isAuthenticated || !currentUser || !selectedConversation) return;
 
     const res = await apiPost<{ liked?: boolean; like_count?: number }>(`/api/forum/messages/${messageId}/like`, {});
-    if (!res.success) return;
-
-    const { liked = false, like_count = 0 } = res as { liked?: boolean; like_count?: number };
+    let liked = false;
+    let like_count = 0;
+    if (res.success) {
+      ({ liked = false, like_count = 0 } = res as { liked?: boolean; like_count?: number });
+    } else {
+      const msg = selectedConversation.messages.find((m) => m.id === messageId);
+      if (!msg) return;
+      liked = !msg.userLiked;
+      like_count = liked ? msg.likeCount + 1 : Math.max(0, msg.likeCount - 1);
+    }
     const updateMsg = (m: ForumMessage) =>
       m.id === messageId ? { ...m, likeCount: like_count, userLiked: liked } : m;
 
@@ -360,6 +481,15 @@ const Forum = () => {
     setSelectedConversation((prev) =>
       prev ? { ...prev, messages: prev.messages.map(updateMsg) } : prev,
     );
+    const localConvs = readLocalConversations();
+    if (localConvs.length) {
+      const updatedLocal = localConvs.map((conv) =>
+        conv.id === selectedConversation.id
+          ? { ...conv, messages: conv.messages.map(updateMsg) }
+          : conv,
+      );
+      writeLocalConversations(updatedLocal);
+    }
   };
 
   const filteredConversations = conversations.filter(

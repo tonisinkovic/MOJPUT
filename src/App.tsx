@@ -12,13 +12,22 @@ import VideoPage from "./pages/VideoPage";
 import Forum from "./pages/Forum";
 import Kalendar from "./pages/Kalendar";
 import Roditelji from "./pages/Roditelji";
-import RoditeljiPlaceholder from "./pages/RoditeljiPlaceholder";
+import ParentGuide from "./pages/ParentGuide";
+import ParentMentalHealth from "./pages/ParentMentalHealth";
+import ParentForum from "./pages/ParentForum";
+import ParentAssessment from "./pages/ParentAssessment";
+import ParentArticleDetail from "./pages/ParentArticleDetail";
 import Kontakt from "./pages/Kontakt";
 import UvjetiKoristenja from "./pages/UvjetiKoristenja";
+import About from "./pages/About";
 import Chatbot from "./pages/Chatbot";
 import NotFound from "./pages/NotFound";
 import Registracija from "./pages/Registracija";
 import Prijava from "./pages/Prijava";
+import FacultyProfiles from "./pages/FacultyProfiles";
+import FacultyProfile from "./pages/FacultyProfile";
+import FacultyLogin from "./pages/FacultyLogin";
+import FacultyDashboard from "./pages/FacultyDashboard";
 
 const queryClient = new QueryClient();
 
@@ -38,14 +47,22 @@ const App = () => (
           <Route path="/forum" element={<Forum />} />
           <Route path="/kalendar" element={<Kalendar />} />
           <Route path="/roditelji" element={<Roditelji />} />
-          <Route path="/roditelji/vodic" element={<RoditeljiPlaceholder title="Vodič za roditelje" />} />
-          <Route path="/roditelji/mentalno-zdravlje" element={<RoditeljiPlaceholder title="Mentalno zdravlje" />} />
-          <Route path="/roditelji/zajednicka-procjena" element={<RoditeljiPlaceholder title="Zajednička procjena" />} />
+          <Route path="/roditeljski-kutak" element={<Roditelji />} />
+          <Route path="/roditeljski-kutak/vodic-za-roditelje" element={<ParentGuide />} />
+          <Route path="/roditeljski-kutak/mentalno-zdravlje" element={<ParentMentalHealth />} />
+          <Route path="/roditeljski-kutak/forum" element={<ParentForum />} />
+          <Route path="/roditeljski-kutak/zajednicka-procjena" element={<ParentAssessment />} />
+          <Route path="/roditeljski-kutak/preporuceni-clanak/:slug" element={<ParentArticleDetail />} />
           <Route path="/kontakt" element={<Kontakt />} />
+          <Route path="/o-nama" element={<About />} />
           <Route path="/uvjeti" element={<UvjetiKoristenja />} />
           <Route path="/chatbot" element={<Chatbot />} />
           <Route path="/prijava" element={<Prijava />} />
           <Route path="/registracija" element={<Registracija />} />
+          <Route path="/fakulteti" element={<FacultyProfiles />} />
+          <Route path="/fakulteti/:facultyId" element={<FacultyProfile />} />
+          <Route path="/fakulteti/prijava" element={<FacultyLogin />} />
+          <Route path="/fakulteti/dashboard" element={<FacultyDashboard />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </HashRouter>
