@@ -23,8 +23,20 @@ export async function authRegister(params: {
   username: string;
   email: string;
   password: string;
-}): Promise<ApiResponse<{ user: AuthUser; verification_required?: boolean; dev_verification_url?: string }>> {
-  return apiPost<{ user: AuthUser; verification_required?: boolean; dev_verification_url?: string }>(
+}): Promise<
+    ApiResponse<{
+      user?: AuthUser;
+      email?: string;
+      verification_required?: boolean;
+      dev_verification_url?: string;
+    }>
+  > {
+  return apiPost<{
+    user?: AuthUser;
+    email?: string;
+    verification_required?: boolean;
+    dev_verification_url?: string;
+  }>(
     "/api/auth/register",
     params,
   );

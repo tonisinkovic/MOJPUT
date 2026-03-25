@@ -1,0 +1,17 @@
+# Render.com — „New Blueprint Instance” s ovog repozitorija
+# Nakon deploya kopiraj javni URL servisa u APP_ORIGIN (frontend) i API_PUBLIC_URL
+services:
+  - type: web
+    name: mojput-api
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: "3000"
+      # Postavi u Render dashboardu (Sync / Environment):
+      # JWT_SECRET, APP_ORIGIN, API_PUBLIC_URL (isti kao javni URL ovog servisa, bez /)
+      # SMTP_*, MAIL_FROM

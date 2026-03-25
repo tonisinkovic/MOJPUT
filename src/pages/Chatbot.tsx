@@ -5,7 +5,9 @@ import { Bot, Send, Sparkles, ChevronRight, RotateCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { facultyInstitutions } from "@/data/faculties";
 
-const API_BASE = import.meta.env.VITE_API_URL || (import.meta.env.DEV ? "http://localhost:3000" : "");
+const API_BASE = import.meta.env.DEV
+  ? ""
+  : String(import.meta.env.VITE_API_URL || "").replace(/\/$/, "");
 
 const SUGGESTIONS = [
   "Koje fakultete mogu upisati u Zagrebu?",

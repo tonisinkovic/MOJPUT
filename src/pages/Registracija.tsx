@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import Layout from "@/components/Layout";
 import { Mail, Lock, User } from "lucide-react";
-import { authRegister } from "@/lib/auth";
+import { authRegister, authResendVerification } from "@/lib/auth";
 
 const Registracija = () => {
   const [verifyInfo, setVerifyInfo] = useState<{
@@ -18,6 +18,9 @@ const Registracija = () => {
     status: "",
   });
   const [submitted, setSubmitted] = useState(false);
+  const [registeredEmail, setRegisteredEmail] = useState<string | null>(null);
+  const [resendLoading, setResendLoading] = useState(false);
+  const [resendInfo, setResendInfo] = useState("");
   const [error, setError] = useState("");
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -48,7 +51,15 @@ const Registracija = () => {
       return;
     }
 
-    const data = res as { dev_verification_url?: string; email_preview_url?: string };
+    const data = res as {
+      email?: string;
+      user?: { email?: string };
+      dev_verification_url?: string;
+      email_preview_url?: string;
+    };
+    const sentTo = data.email?.trim() || data.user?.email?.trim() || formData.email.trim();
+    setRegisteredEmail(sentTo || null);
+    setResendInfo("");
     setVerifyInfo({
       emailPreviewUrl: data.email_preview_url || undefined,
       directVerifyUrl: data.dev_verification_url || undefined,
@@ -248,10 +259,15 @@ const Registracija = () => {
                 <h3 className="text-xl font-bold text-slate-900">
                   Uspješna registracija!
                 </h3>
+                {registeredEmail && (
+                  <p className="text-slate-800 text-sm font-medium break-all">
+                    Poslano na: <span className="text-primary">{registeredEmail}</span>
+                  </p>
+                )}
                 <p className="text-slate-600 text-sm">
                   {verifyInfo?.emailPreviewUrl
-                    ? "Email je poslan. Pregledaj ga u testnom inboxu i klikni na link za potvrdu, ili koristi direktan link ispod:"
-                    : "Provjerite e-mail i kliknite na link za potvrdu računa, pa se zatim prijavite."}
+                    ? "Poslan je email za potvrdu. U testnom inboxu otvori poruku i klikni link, ili koristi direktan link ispod (samo razvoj)."
+                    : "Otvori primljeni email i klikni link za potvrdu. U Gmailu provjeri i mapu Promocije / Spam ako ne vidiš poruku odmah. Bez potvrde se ne možeš prijaviti."}
                 </p>
                 {verifyInfo?.emailPreviewUrl && (
                   <a
@@ -268,8 +284,33 @@ const Registracija = () => {
                     href={verifyInfo.directVerifyUrl}
                     className="inline-block px-4 py-2 bg-blue-600 text-white text-sm font-semibold rounded-lg hover:bg-blue-700 transition"
                   >
-                    Potvrdi račun i prijavi se
+                    Otvori link za potvrdu
                   </a>
+                )}
+                {registeredEmail && !verifyInfo?.emailPreviewUrl && (
+                  <div className="space-y-2 text-left">
+                    <button
+                      type="button"
+                      disabled={resendLoading}
+                      onClick={async () => {
+                        setResendInfo("");
+                        setResendLoading(true);
+                        const r = await authResendVerification(registeredEmail);
+                        setResendLoading(false);
+                        if (r.success) {
+                          setResendInfo("Ako račun postoji i nije potvrđen, poslan je novi link za potvrdu.");
+                        } else {
+                          setResendInfo(r.message);
+                        }
+                      }}
+                      className="w-full py-2.5 border border-slate-300 rounded-lg hover:bg-slate-50 transition text-sm font-semibold text-slate-900 disabled:opacity-60"
+                    >
+                      {resendLoading ? "Šaljem…" : "Pošalji ponovno email za potvrdu"}
+                    </button>
+                    {resendInfo && (
+                      <p className="text-xs text-slate-600">{resendInfo}</p>
+                    )}
+                  </div>
                 )}
                 <p className="pt-2">
                   <Link

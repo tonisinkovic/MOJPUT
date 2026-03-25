@@ -22,26 +22,52 @@ const Prijava = () => {
     const hashQueryStart = hash.indexOf("?");
     const queryString = hashQueryStart >= 0 ? hash.substring(hashQueryStart + 1) : "";
     const params = new URLSearchParams(queryString || window.location.search);
-    const verify = params.get("verify");
-    if (verify) {
-      setInfo("Potvrđujem email...");
-      authVerifyEmail(verify)
-        .then((res) => {
-          if (!alive) return;
-          if (res.success) {
-            setInfo("Email je potvrđen. Sada se možeš prijaviti.");
-          } else {
-            setInfo(res.message);
-          }
-          params.delete("verify");
-          const next = params.toString();
-          const newHash = `/prijava${next ? `?${next}` : ""}`;
-          window.history.replaceState({}, "", `${window.location.pathname}${window.location.search}#${newHash}`);
-        })
-        .catch(() => {
-          if (!alive) return;
-          setInfo("Greška kod potvrde emaila.");
-        });
+    const verifiedFlag = params.get("verified");
+    const verifyErr = params.get("verify_error");
+
+    if (verifiedFlag === "1") {
+      setInfo("Email je potvrđen. Sada se možeš prijaviti.");
+      window.history.replaceState(
+        {},
+        "",
+        `${window.location.pathname}${window.location.search}#/prijava`,
+      );
+    } else if (verifyErr === "expired") {
+      setInfo("Link je istekao. Registriraj se ponovno.");
+      window.history.replaceState(
+        {},
+        "",
+        `${window.location.pathname}${window.location.search}#/prijava`,
+      );
+    } else if (verifyErr === "invalid" || verifyErr === "missing") {
+      setInfo("Link za potvrdu nije važeći. Registriraj se ponovno ili zatraži novi mail.");
+      window.history.replaceState(
+        {},
+        "",
+        `${window.location.pathname}${window.location.search}#/prijava`,
+      );
+    } else {
+      const verify = params.get("verify");
+      if (verify) {
+        setInfo("Potvrđujem email...");
+        authVerifyEmail(verify)
+          .then((res) => {
+            if (!alive) return;
+            if (res.success) {
+              setInfo("Email je potvrđen. Sada se možeš prijaviti.");
+            } else {
+              setInfo(res.message);
+            }
+            params.delete("verify");
+            const next = params.toString();
+            const newHash = `/prijava${next ? `?${next}` : ""}`;
+            window.history.replaceState({}, "", `${window.location.pathname}${window.location.search}#${newHash}`);
+          })
+          .catch(() => {
+            if (!alive) return;
+            setInfo("Greška kod potvrde emaila.");
+          });
+      }
     }
 
     authMe()
@@ -82,7 +108,11 @@ const Prijava = () => {
     });
     if (!res.success) {
       setLoginError(res.message);
-      if ((res as any).code === "EMAIL_NOT_VERIFIED" || /potvrdi email/i.test(res.message)) {
+      if (
+        (res as any).code === "EMAIL_NOT_VERIFIED" ||
+        (res as any).code === "PENDING_VERIFICATION" ||
+        /potvrdi email|nije aktiviran/i.test(res.message)
+      ) {
         setNeedsVerification(true);
       }
       return;

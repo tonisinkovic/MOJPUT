@@ -27,16 +27,14 @@ async function main() {
   console.log("REGISTER", regRes.status, regJson);
 
   const db = new Database(path.join(__dirname, "..", "data", "mojput.db"));
-  const row = db
-    .prepare("SELECT email_verify_token, email_verified FROM users WHERE email = ?")
-    .get(email);
-  console.log("DB", row);
-  if (!row?.email_verify_token) {
+  const row = db.prepare("SELECT verify_token FROM pending_registrations WHERE email = ?").get(email);
+  console.log("DB pending", row);
+  if (!row?.verify_token) {
     process.exitCode = 2;
     return;
   }
 
-  const verRes = await fetch(`${base}/api/auth/verify?token=${encodeURIComponent(row.email_verify_token)}`, {
+  const verRes = await fetch(`${base}/api/auth/verify?token=${encodeURIComponent(row.verify_token)}`, {
     method: "GET",
     headers: { Accept: "application/json" },
   });

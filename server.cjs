@@ -1,4 +1,5 @@
 require("dotenv").config({ path: require("path").join(__dirname, ".env") });
+require("dotenv").config({ path: require("path").join(__dirname, ".env.local"), override: true });
 
 process.on("uncaughtException", (err) => {
   console.error("[server] uncaughtException:", err?.message || err);
@@ -25,11 +26,141 @@ const TOKEN_COOKIE = "mojput_token";
 // Example dev URL: http://localhost:8080/MOJPUT/#/prijava
 const APP_ORIGIN = process.env.APP_ORIGIN || "http://localhost:8080/MOJPUT";
 
+/**
+ * Javni URL frontenda nakon potvrde (redirect u mailu).
+ * APP_ORIGIN u .env ima prednost (npr. GitHub Pages) — ne koristi se localhost iz preglednika.
+ * Ako APP_ORIGIN nije postavljen, koristi Origin (lokalni dev) ili fallback.
+ */
+function publicAppOrigin(req) {
+  const fromEnv = String(process.env.APP_ORIGIN || "").trim().replace(/\/$/, "");
+  if (fromEnv && /^https?:\/\//i.test(fromEnv)) {
+    return fromEnv;
+  }
+  const origin = req.get("origin");
+  if (origin && /^https?:\/\//i.test(origin)) {
+    try {
+      return `${new URL(origin).origin}/MOJPUT`;
+    } catch {
+      /* ignore */
+    }
+  }
+  return String(APP_ORIGIN || "http://localhost:8080/MOJPUT").replace(/\/$/, "");
+}
+
+/** Javni URL ovog API-ja iz HTTP zahtjeva (debug / drugi endpointi — ne za link u mailu). */
+function getApiPublicBase(req) {
+  const xfProto = req.get("x-forwarded-proto");
+  const proto = (xfProto ? xfProto.split(",")[0].trim() : "") || req.protocol || "http";
+  const xfHost = req.get("x-forwarded-host");
+  const host = (xfHost ? xfHost.split(",")[0].trim() : "") || req.get("host") || `localhost:${PORT}`;
+  return `${proto}://${host}`;
+}
+
+/** Učitaj .env pa .env.local (override) — uvijek oba, inače API_PUBLIC_URL može ostati stari iz .env kad .env.local još nema ključ. */
+function reloadAllEnv() {
+  const root = __dirname;
+  require("dotenv").config({ path: path.join(root, ".env") });
+  if (fs.existsSync(path.join(root, ".env.local"))) {
+    require("dotenv").config({ path: path.join(root, ".env.local"), override: true });
+  }
+}
+
+/** API_PUBLIC_URL s diska: prvo .env.local (tunel), pa .env — ne oslanjaj se samo na process.env. */
+function readApiPublicUrlFromDisk() {
+  const root = __dirname;
+  for (const name of [".env.local", ".env"]) {
+    const fp = path.join(root, name);
+    if (!fs.existsSync(fp)) continue;
+    let raw;
+    try {
+      raw = fs.readFileSync(fp, "utf8");
+    } catch {
+      continue;
+    }
+    for (const line of raw.split(/\r?\n/)) {
+      const t = line.trim();
+      if (!t || t.startsWith("#")) continue;
+      const m = t.match(/^API_PUBLIC_URL\s*=\s*(.*)$/);
+      if (!m) continue;
+      let v = m[1].trim();
+      if ((v.startsWith('"') && v.endsWith('"')) || (v.startsWith("'") && v.endsWith("'"))) {
+        v = v.slice(1, -1);
+      }
+      v = v.replace(/\/$/, "");
+      if (v) return v;
+    }
+  }
+  return "";
+}
+
+/** Javni HTTPS URL (ne localhost) — za redirect i za link u mailu. */
+const GH_PAGES_DEFAULT = "https://tonisinkovic.github.io/MOJPUT";
+
+function isPublicHttpsNotLocalhost(url) {
+  const s = String(url || "").trim().replace(/\/$/, "");
+  if (!s || !/^https:\/\//i.test(s)) return false;
+  try {
+    const h = new URL(s).hostname.toLowerCase();
+    return h !== "localhost" && h !== "127.0.0.1" && h !== "::1";
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Baza URL-a u mailu — UVIJEK nešto što mobitel može otvoriti (GitHub Pages).
+ * APP_ORIGIN/localhost iz .env ne smije ikad ući u mail (npr. https://localhost:8082).
+ * Opcionalno: EMAIL_VERIFY_PAGE_BASE=https://… (samo javni HTTPS).
+ */
+function getEmailVerifyLinkBase() {
+  reloadAllEnv();
+  const custom = String(process.env.EMAIL_VERIFY_PAGE_BASE || "").trim().replace(/\/$/, "");
+  if (isPublicHttpsNotLocalhost(custom)) return custom;
+  const pub = String(process.env.APP_ORIGIN_PUBLIC || "").trim().replace(/\/$/, "");
+  if (isPublicHttpsNotLocalhost(pub)) return pub;
+  const origin = String(process.env.APP_ORIGIN || "").trim().replace(/\/$/, "");
+  if (isPublicHttpsNotLocalhost(origin)) return origin;
+  return GH_PAGES_DEFAULT;
+}
+
+/** Redirect nakon GET /api/auth/verify?redirect=1 — isto pravilo, nikad localhost. */
+function getRedirectAfterVerifyBase() {
+  return getEmailVerifyLinkBase();
+}
+
+/**
+ * Potpuni URL u mailu — GitHub Pages (ili EMAIL_VERIFY_PAGE_BASE). Stranica zove API (VITE_API_URL).
+ */
+function buildEmailVerifyUrl(_req, verifyToken) {
+  const siteBase = getEmailVerifyLinkBase().replace(/\/$/, "");
+  const u = `${siteBase}/#/prijava?verify=${encodeURIComponent(verifyToken)}`;
+  if (/localhost|127\.0\.0\.1/i.test(u)) {
+    console.error("[mail] buildEmailVerifyUrl: neočekivano localhost — forsiram GH Pages.");
+    return `${GH_PAGES_DEFAULT.replace(/\/$/, "")}/#/prijava?verify=${encodeURIComponent(verifyToken)}`;
+  }
+  return u;
+}
+
 const hasSmtp = Boolean(
   process.env.SMTP_HOST && process.env.SMTP_PORT && process.env.SMTP_USER && process.env.SMTP_PASS
 );
 console.log("[config] SMTP konfiguriran:", hasSmtp, hasSmtp ? "(pravi email)" : "(Ethereal testni inbox)");
-console.log("[config] APP_ORIGIN:", APP_ORIGIN);
+if (hasSmtp && process.env.SMTP_USER) {
+  console.log("[config] Registracija — potvrda se šalje s adrese:", String(process.env.SMTP_USER).trim());
+}
+console.log("[config] APP_ORIGIN (.env):", APP_ORIGIN);
+console.log("[config] Stvarni redirect nakon potvrde (mobitel):", getRedirectAfterVerifyBase());
+{
+  const fromDisk = readApiPublicUrlFromDisk();
+  const fromEnv = String(process.env.API_PUBLIC_URL || "").trim();
+  const shown = fromDisk || fromEnv || "(nema)";
+  console.log("[config] API_PUBLIC_URL (za VITE build / direktan API poziv):", shown);
+  if (!fromDisk && !fromEnv) {
+    console.warn(
+      "[config] Nema API_PUBLIC_URL — link u mailu i dalje vodi na GitHub Pages; za potvrdu s mobitela treba VITE_API_URL u buildu = javni API (Render/tunel).",
+    );
+  }
+}
 
 function ensureDir(dirPath) {
   if (!fs.existsSync(dirPath)) fs.mkdirSync(dirPath, { recursive: true });
@@ -85,6 +216,21 @@ function migrate(db) {
       FOREIGN KEY (user_id) REFERENCES users(id),
       FOREIGN KEY (message_id) REFERENCES forum_messages(id)
     );
+
+    CREATE TABLE IF NOT EXISTS pending_registrations (
+      email TEXT PRIMARY KEY,
+      username TEXT NOT NULL,
+      password_hash TEXT NOT NULL,
+      verify_token TEXT NOT NULL UNIQUE,
+      expires_at TEXT NOT NULL,
+      created_at TEXT NOT NULL DEFAULT (datetime('now')),
+      app_base_url TEXT
+    );
+
+    CREATE TABLE IF NOT EXISTS app_meta (
+      key TEXT PRIMARY KEY,
+      value TEXT NOT NULL
+    );
   `);
 
   // Lightweight migration for existing DBs (SQLite doesn't add columns automatically)
@@ -106,6 +252,50 @@ function migrate(db) {
         FOREIGN KEY (message_id) REFERENCES forum_messages(id)
       )
     `);
+  }
+
+  try {
+    db.prepare("SELECT 1 FROM pending_registrations LIMIT 1").get();
+  } catch {
+    db.exec(`
+      CREATE TABLE pending_registrations (
+        email TEXT PRIMARY KEY,
+        username TEXT NOT NULL,
+        password_hash TEXT NOT NULL,
+        verify_token TEXT NOT NULL UNIQUE,
+        expires_at TEXT NOT NULL,
+        created_at TEXT NOT NULL DEFAULT (datetime('now')),
+        app_base_url TEXT
+      )
+    `);
+  }
+
+  const pendingCols = db.prepare("PRAGMA table_info(pending_registrations)").all().map((c) => c.name);
+  if (pendingCols.length && !pendingCols.includes("app_base_url")) {
+    db.exec("ALTER TABLE pending_registrations ADD COLUMN app_base_url TEXT");
+  }
+
+  try {
+    db.prepare("SELECT 1 FROM app_meta LIMIT 1").get();
+  } catch {
+    db.exec(`CREATE TABLE app_meta (key TEXT PRIMARY KEY, value TEXT NOT NULL)`);
+  }
+
+  const migrated = db.prepare("SELECT 1 FROM app_meta WHERE key = 'pending_registration_flow_v1'").get();
+  if (!migrated) {
+    db.exec("PRAGMA foreign_keys = OFF");
+    db.exec("DELETE FROM forum_likes");
+    db.exec("DELETE FROM forum_messages");
+    db.exec("DELETE FROM forum_conversations");
+    db.exec("DELETE FROM users");
+    try {
+      db.exec("DELETE FROM pending_registrations");
+    } catch {
+      /* ignore */
+    }
+    db.exec("PRAGMA foreign_keys = ON");
+    db.prepare("INSERT INTO app_meta (key, value) VALUES ('pending_registration_flow_v1', '1')").run();
+    console.log("[migrate] Jednokratno očišćeni korisnici i nepotvrđene prijave (račun nastaje tek nakon klika u mailu).");
   }
 }
 
@@ -190,12 +380,21 @@ function optionalAuthMiddleware(db) {
 }
 
 function getMailTransportSync() {
-  const host = process.env.SMTP_HOST;
+  const host = String(process.env.SMTP_HOST || "").trim();
   const port = process.env.SMTP_PORT ? Number(process.env.SMTP_PORT) : undefined;
-  const user = process.env.SMTP_USER;
-  const pass = process.env.SMTP_PASS;
+  const user = String(process.env.SMTP_USER || "").trim();
+  const pass = String(process.env.SMTP_PASS || "").replace(/\s/g, "");
 
   if (!host || !port || !user || !pass) return null;
+
+  const isGmail =
+    /gmail\.com$/i.test(host) || /@gmail\.com$/i.test(user) || host === "smtp.gmail.com";
+  if (isGmail) {
+    return nodemailer.createTransport({
+      service: "gmail",
+      auth: { user, pass },
+    });
+  }
 
   return nodemailer.createTransport({
     host,
@@ -231,27 +430,47 @@ function isValidEmail(email) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(s);
 }
 
+/** Gmail šalje samo s adrese na koju si se autentificirao (SMTP_USER). */
+function getVerificationMailFrom() {
+  const userRaw = String(process.env.SMTP_USER || "").trim();
+  const userLc = userRaw.toLowerCase();
+  if (!userRaw) return String(process.env.MAIL_FROM || "").trim() || "MojPut <noreply@mojput.hr>";
+  const raw = String(process.env.MAIL_FROM || "").trim();
+  const m = raw.match(/^(.+?)\s*<([^>]+@[^>]+)>\s*$/i);
+  if (m) {
+    const inFrom = m[2].trim().toLowerCase();
+    if (inFrom === userLc) return `${m[1].trim()} <${m[2].trim()}>`;
+  }
+  return `MojPut <${userRaw}>`;
+}
+
 async function sendVerificationEmail({ to, username, verifyUrl }) {
+  const u = String(verifyUrl || "");
+  console.log("[mail] Link za potvrdu (GitHub Pages → prijava zove API):", u);
   const { transport, isEthereal } = await getMailTransport();
-  const from = process.env.MAIL_FROM || process.env.SMTP_USER || "MojPut <noreply@mojput.hr>";
+  const from = getVerificationMailFrom();
+  const replyTo = String(process.env.SMTP_USER || "").trim() || undefined;
+  const hrefHtml = String(verifyUrl).replace(/&/g, "&amp;");
   try {
     const info = await transport.sendMail({
       from,
       to,
-      subject: "MojPut - Potvrda email adrese",
-      text: `Pozdrav ${username},\n\nKlikni na link za potvrdu računa:\n${verifyUrl}\n\nAko nisi ti napravio račun, ignoriraj ovu poruku.\n`,
+      replyTo,
+      subject: "MojPut — potvrdi svoj račun",
+      text: `Pozdrav ${username},\n\nZa aktivaciju MojPut računa otvori ovaj link u pregledniku:\n${verifyUrl}\n\nLink vrijedi 24 sata. Ako nisi ti tražio registraciju, zanemari ovu poruku.\n`,
       html: `
         <p>Pozdrav ${username},</p>
-        <p>Klikni na link za potvrdu računa:</p>
-        <p><a href="${verifyUrl}">${verifyUrl}</a></p>
-        <p>Ako nisi ti napravio račun, ignoriraj ovu poruku.</p>
+        <p>Da bi se prijavio/la na MojPut, potvrdi račun klikom na gumb ili link ispod (otvara se u pregledniku).</p>
+        <p><a href="${hrefHtml}" style="display:inline-block;padding:10px 16px;background:#1e293b;color:#fff;text-decoration:none;border-radius:8px;font-weight:600;">Potvrdi račun</a></p>
+        <p style="word-break:break-all;font-size:13px;"><a href="${hrefHtml}">${hrefHtml}</a></p>
+        <p style="font-size:13px;color:#64748b;">Link vrijedi 24 sata. Ako nisi ti tražio registraciju, zanemari ovu poruku.</p>
       `,
     });
     const previewUrl = isEthereal && nodemailer.getTestMessageUrl ? nodemailer.getTestMessageUrl(info) : null;
     if (previewUrl) {
       console.log("[mail] Ethereal preview (email nije stigao korisniku):", previewUrl);
     } else {
-      console.log("[mail] verification email sent:", { to, messageId: info?.messageId });
+      console.log("[mail] OK — potvrda poslana na:", to, "| od:", from, "| id:", info?.messageId || "—");
     }
     return { sent: true, previewUrl: previewUrl || undefined };
   } catch (err) {
@@ -291,6 +510,7 @@ async function main() {
   await loadUniversitiesData(); // ensures file exists on first run
 
   const app = express();
+  app.set("trust proxy", 1);
   app.disable("x-powered-by");
   app.use(cors({ origin: true, credentials: true }));
   app.use(express.json());
@@ -300,84 +520,111 @@ async function main() {
 
   // Auth
   app.post("/api/auth/register", async (req, res) => {
-    const { username, email, password } = req.body || {};
-    const cleanUsername = String(username || "").trim();
-    const cleanEmail = String(email || "").trim().toLowerCase();
-    const cleanPassword = String(password || "");
+    try {
+      const { username, email, password } = req.body || {};
+      const cleanUsername = String(username || "").trim();
+      const cleanEmail = String(email || "").trim().toLowerCase();
+      const cleanPassword = String(password || "");
 
-    if (!cleanUsername || !cleanEmail || !cleanPassword) {
-      return res.status(400).json({ success: false, message: "Molimo ispuni sva polja." });
+      if (!cleanUsername || !cleanEmail || !cleanPassword) {
+        return res.status(400).json({ success: false, message: "Molimo ispuni sva polja." });
+      }
+      if (!isValidEmail(cleanEmail)) {
+        return res.status(400).json({ success: false, message: "Unesi valjanu email adresu." });
+      }
+      if (cleanPassword.length < 6) {
+        return res.status(400).json({ success: false, message: "Lozinka mora imati barem 6 znakova." });
+      }
+
+      const existingUser = db.prepare("SELECT id FROM users WHERE email = ?").get(cleanEmail);
+      if (existingUser) {
+        return res.status(409).json({ success: false, message: "Email je već registriran." });
+      }
+
+      const passwordHash = bcrypt.hashSync(cleanPassword, 12);
+      const verifyToken = crypto.randomBytes(32).toString("hex");
+      const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
+
+      const verifyUrl = buildEmailVerifyUrl(req, verifyToken);
+
+      db.prepare("DELETE FROM pending_registrations WHERE email = ?").run(cleanEmail);
+      const appBase = publicAppOrigin(req);
+      db.prepare(
+        "INSERT INTO pending_registrations (email, username, password_hash, verify_token, expires_at, app_base_url) VALUES (?, ?, ?, ?, ?, ?)",
+      ).run(cleanEmail, cleanUsername, passwordHash, verifyToken, expiresAt, appBase);
+
+      const mail = await sendVerificationEmail({ to: cleanEmail, username: cleanUsername, verifyUrl });
+
+      if (!mail.sent) {
+        db.prepare("DELETE FROM pending_registrations WHERE email = ?").run(cleanEmail);
+        return res.status(502).json({
+          success: false,
+          message:
+            mail.error ||
+            "Ne mogu poslati potvrdu emailom. Provjeri SMTP postavke (Gmail: app lozinka bez razmaka, 2FA uključena).",
+        });
+      }
+
+      const payload = { success: true, email: cleanEmail, verification_required: true };
+      if (mail.previewUrl) payload.email_preview_url = mail.previewUrl;
+      if (mail.previewUrl) payload.dev_verification_url = verifyUrl;
+      return res.json(payload);
+    } catch (err) {
+      console.error("[auth/register]", err?.message || err);
+      return res.status(500).json({ success: false, message: "Interna greška servera." });
     }
-    if (!isValidEmail(cleanEmail)) {
-      return res.status(400).json({ success: false, message: "Unesi valjanu email adresu." });
-    }
-    if (cleanPassword.length < 6) {
-      return res.status(400).json({ success: false, message: "Lozinka mora imati barem 6 znakova." });
-    }
-
-    const existing = db.prepare("SELECT id FROM users WHERE email = ?").get(cleanEmail);
-    if (existing) {
-      return res.status(409).json({ success: false, message: "Email je već registriran." });
-    }
-
-    const passwordHash = bcrypt.hashSync(cleanPassword, 12);
-    const verifyToken = crypto.randomBytes(32).toString("hex");
-    const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
-    const info = db
-      .prepare(
-        "INSERT INTO users (username, email, password_hash, email_verified, email_verify_token, email_verify_expires_at) VALUES (?, ?, ?, 0, ?, ?)",
-      )
-      .run(cleanUsername, cleanEmail, passwordHash, verifyToken, expiresAt);
-    const userId = info.lastInsertRowid;
-
-    const user = db
-      .prepare("SELECT id, username, email, created_at, email_verified FROM users WHERE id = ?")
-      .get(userId);
-
-    seedForum(db);
-
-    const verifyUrl = `${APP_ORIGIN}/#/prijava?verify=${verifyToken}`;
-    const mail = await sendVerificationEmail({ to: cleanEmail, username: cleanUsername, verifyUrl });
-
-    if (!mail.sent) {
-      db.prepare("DELETE FROM users WHERE id = ?").run(userId);
-      return res.status(502).json({
-        success: false,
-        message:
-          "Ne mogu poslati potvrdu emailom. Provjeri SMTP postavke ili pokušaj ponovno.",
-      });
-    }
-
-    const payload = { success: true, user, verification_required: true };
-    if (mail.previewUrl) payload.email_preview_url = mail.previewUrl;
-    if (mail.previewUrl) payload.dev_verification_url = verifyUrl;
-    return res.json(payload);
   });
 
   app.get("/api/auth/verify", (req, res) => {
+    reloadAllEnv();
     const token = String(req.query.token || "").trim();
-    if (!token) return res.status(400).json({ success: false, message: "Nedostaje token." });
+    const wantRedirect = String(req.query.redirect || "") === "1";
+    const siteBase = getRedirectAfterVerifyBase();
 
-    const row = db
+    function redirectPrijava(qs) {
+      res.redirect(302, `${siteBase}/#/prijava?${qs}`);
+    }
+
+    if (!token) {
+      if (wantRedirect) return redirectPrijava("verify_error=missing");
+      return res.status(400).json({ success: false, message: "Nedostaje token." });
+    }
+
+    const pending = db
       .prepare(
-        "SELECT id, email_verified, email_verify_expires_at FROM users WHERE email_verify_token = ?",
+        "SELECT email, username, password_hash, expires_at, app_base_url FROM pending_registrations WHERE verify_token = ?",
       )
       .get(token);
 
-    if (!row) return res.status(400).json({ success: false, message: "Link nije važeći." });
-    if (row.email_verified) return res.json({ success: true });
+    if (!pending) {
+      if (wantRedirect) return res.redirect(302, `${siteBase}/#/prijava?verify_error=invalid`);
+      return res.status(400).json({ success: false, message: "Link nije važeći ili je već iskorišten." });
+    }
 
-    if (row.email_verify_expires_at) {
-      const exp = new Date(row.email_verify_expires_at).getTime();
+    if (pending.expires_at) {
+      const exp = new Date(pending.expires_at).getTime();
       if (Number.isFinite(exp) && exp < Date.now()) {
+        db.prepare("DELETE FROM pending_registrations WHERE verify_token = ?").run(token);
+        if (wantRedirect) return res.redirect(302, `${siteBase}/#/prijava?verify_error=expired`);
         return res.status(400).json({ success: false, message: "Link je istekao. Registriraj se ponovno." });
       }
     }
 
-    db.prepare(
-      "UPDATE users SET email_verified = 1, email_verify_token = NULL, email_verify_expires_at = NULL WHERE id = ?",
-    ).run(row.id);
+    const already = db.prepare("SELECT id FROM users WHERE email = ?").get(pending.email);
+    if (already) {
+      db.prepare("DELETE FROM pending_registrations WHERE email = ?").run(pending.email);
+      if (wantRedirect) return res.redirect(302, `${siteBase}/#/prijava?verified=1`);
+      return res.json({ success: true });
+    }
 
+    db.prepare(
+      "INSERT INTO users (username, email, password_hash, email_verified, email_verify_token, email_verify_expires_at) VALUES (?, ?, ?, 1, NULL, NULL)",
+    ).run(pending.username, pending.email, pending.password_hash);
+
+    db.prepare("DELETE FROM pending_registrations WHERE email = ?").run(pending.email);
+    seedForum(db);
+
+    if (wantRedirect) return res.redirect(302, `${siteBase}/#/prijava?verified=1`);
     return res.json({ success: true });
   });
 
@@ -388,25 +635,36 @@ async function main() {
       return res.status(400).json({ success: false, message: "Unesi valjanu email adresu." });
     }
 
-    const row = db
-      .prepare("SELECT id, username, email_verified FROM users WHERE email = ?")
-      .get(cleanEmail);
-    if (!row) {
+    const userRow = db.prepare("SELECT id FROM users WHERE email = ?").get(cleanEmail);
+    if (userRow) {
       return res.json({ success: true });
     }
-    if (row.email_verified) return res.json({ success: true });
+
+    const pending = db.prepare("SELECT username FROM pending_registrations WHERE email = ?").get(cleanEmail);
+    if (!pending) {
+      return res.json({ success: true });
+    }
 
     const verifyToken = crypto.randomBytes(32).toString("hex");
     const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
-    db.prepare("UPDATE users SET email_verify_token = ?, email_verify_expires_at = ? WHERE id = ?").run(
+
+    const verifyUrl = buildEmailVerifyUrl(req, verifyToken);
+
+    db.prepare("UPDATE pending_registrations SET verify_token = ?, expires_at = ?, app_base_url = ? WHERE email = ?").run(
       verifyToken,
       expiresAt,
-      row.id,
+      publicAppOrigin(req),
+      cleanEmail,
     );
 
-    const verifyUrl = `${APP_ORIGIN}/#/prijava?verify=${verifyToken}`;
     try {
-      const mail = await sendVerificationEmail({ to: cleanEmail, username: row.username, verifyUrl });
+      const mail = await sendVerificationEmail({ to: cleanEmail, username: pending.username, verifyUrl });
+      if (!mail.sent) {
+        return res.status(502).json({
+          success: false,
+          message: mail.error || "Ne mogu poslati email. Pokušaj kasnije.",
+        });
+      }
       const payload = { success: true };
       if (mail.previewUrl) payload.email_preview_url = mail.previewUrl;
       if (mail.previewUrl) payload.dev_verification_url = verifyUrl;
@@ -417,43 +675,65 @@ async function main() {
   });
 
   app.post("/api/auth/login", (req, res) => {
-    const { email, password } = req.body || {};
-    const cleanEmail = String(email || "").trim().toLowerCase();
-    const cleanPassword = String(password || "");
+    try {
+      const { email, password } = req.body || {};
+      const cleanEmail = String(email || "").trim().toLowerCase();
+      const cleanPassword = String(password || "");
 
-    if (!cleanEmail || !cleanPassword) {
-      return res.status(400).json({ success: false, message: "Molimo ispuni sva polja." });
+      if (!cleanEmail || !cleanPassword) {
+        return res.status(400).json({ success: false, message: "Molimo ispuni sva polja." });
+      }
+      if (!isValidEmail(cleanEmail)) {
+        return res.status(400).json({ success: false, message: "Unesi valjanu email adresu." });
+      }
+
+      const row = db
+        .prepare("SELECT id, username, email, password_hash, created_at, email_verified FROM users WHERE email = ?")
+        .get(cleanEmail);
+      if (!row) {
+        const pend = db
+          .prepare("SELECT password_hash FROM pending_registrations WHERE email = ?")
+          .get(cleanEmail);
+        if (pend && bcrypt.compareSync(cleanPassword, pend.password_hash)) {
+          return res.status(403).json({
+            success: false,
+            message: "Račun još nije aktiviran. Potvrdi email klikom na link u pismu.",
+            code: "PENDING_VERIFICATION",
+          });
+        }
+        return res.status(401).json({ success: false, message: "Neispravan email ili lozinka." });
+      }
+
+      if (!row.password_hash || typeof row.password_hash !== "string") {
+        console.error("[auth/login] korisnik bez valjanog password_hash:", row.id);
+        return res.status(500).json({ success: false, message: "Račun je nepotpun. Kontaktiraj podršku ili registriraj se ponovno." });
+      }
+
+      if (!row.email_verified) {
+        return res.status(403).json({
+          success: false,
+          message: "Potvrdi email prije prijave.",
+          code: "EMAIL_NOT_VERIFIED",
+        });
+      }
+
+      const ok = bcrypt.compareSync(cleanPassword, row.password_hash);
+      if (!ok) return res.status(401).json({ success: false, message: "Neispravan email ili lozinka." });
+
+      const user = {
+        id: row.id,
+        username: row.username,
+        email: row.email,
+        created_at: row.created_at,
+        email_verified: row.email_verified,
+      };
+      const token = signToken({ sub: user.id });
+      setAuthCookie(res, token);
+      return res.json({ success: true, user });
+    } catch (err) {
+      console.error("[auth/login] greška:", err?.message || err);
+      return res.status(500).json({ success: false, message: "Interna greška servera." });
     }
-    if (!isValidEmail(cleanEmail)) {
-      return res.status(400).json({ success: false, message: "Unesi valjanu email adresu." });
-    }
-
-    const row = db
-      .prepare("SELECT id, username, email, password_hash, created_at, email_verified FROM users WHERE email = ?")
-      .get(cleanEmail);
-    if (!row) return res.status(401).json({ success: false, message: "Neispravan email ili lozinka." });
-
-    if (!row.email_verified) {
-      return res.status(403).json({
-        success: false,
-        message: "Potvrdi email prije prijave.",
-        code: "EMAIL_NOT_VERIFIED",
-      });
-    }
-
-    const ok = bcrypt.compareSync(cleanPassword, row.password_hash);
-    if (!ok) return res.status(401).json({ success: false, message: "Neispravan email ili lozinka." });
-
-    const user = {
-      id: row.id,
-      username: row.username,
-      email: row.email,
-      created_at: row.created_at,
-      email_verified: row.email_verified,
-    };
-    const token = signToken({ sub: user.id });
-    setAuthCookie(res, token);
-    return res.json({ success: true, user });
   });
 
   app.post("/api/auth/logout", (_req, res) => {
@@ -674,6 +954,18 @@ async function main() {
     );
     if (uni) return res.json({ success: true, data: uni });
     return res.status(404).json({ success: false, message: "Sveučilište nije pronađeno" });
+  });
+
+  app.use((err, req, res, next) => {
+    if (res.headersSent) return next(err);
+    if (req.path && String(req.path).startsWith("/api")) {
+      console.error("[api]", req.method, req.path, err?.message || err);
+      return res.status(500).json({
+        success: false,
+        message: process.env.NODE_ENV === "production" ? "Interna greška servera." : String(err?.message || err),
+      });
+    }
+    next(err);
   });
 
   app.listen(PORT, () => {
