@@ -93,52 +93,25 @@ function readApiPublicUrlFromDisk() {
   return "";
 }
 
-/** Javni HTTPS URL (ne localhost) — za redirect i za link u mailu. */
-const GH_PAGES_DEFAULT = "https://tonisinkovic.github.io/MOJPUT";
+/** Javni front (redirect nakon API potvrde). */
+const MOJPUT_PUBLIC_PAGES_ORIGIN = "https://tonisinkovic.github.io/MOJPUT";
 
-function isPublicHttpsNotLocalhost(url) {
-  const s = String(url || "").trim().replace(/\/$/, "");
-  if (!s || !/^https:\/\//i.test(s)) return false;
-  try {
-    const h = new URL(s).hostname.toLowerCase();
-    return h !== "localhost" && h !== "127.0.0.1" && h !== "::1";
-  } catch {
-    return false;
-  }
-}
-
-/**
- * Baza URL-a u mailu — UVIJEK nešto što mobitel može otvoriti (GitHub Pages).
- * APP_ORIGIN/localhost iz .env ne smije ikad ući u mail (npr. https://localhost:8082).
- * Opcionalno: EMAIL_VERIFY_PAGE_BASE=https://… (samo javni HTTPS).
- */
 function getEmailVerifyLinkBase() {
-  reloadAllEnv();
-  const custom = String(process.env.EMAIL_VERIFY_PAGE_BASE || "").trim().replace(/\/$/, "");
-  if (isPublicHttpsNotLocalhost(custom)) return custom;
-  const pub = String(process.env.APP_ORIGIN_PUBLIC || "").trim().replace(/\/$/, "");
-  if (isPublicHttpsNotLocalhost(pub)) return pub;
-  const origin = String(process.env.APP_ORIGIN || "").trim().replace(/\/$/, "");
-  if (isPublicHttpsNotLocalhost(origin)) return origin;
-  return GH_PAGES_DEFAULT;
+  return MOJPUT_PUBLIC_PAGES_ORIGIN;
 }
 
-/** Redirect nakon GET /api/auth/verify?redirect=1 — isto pravilo, nikad localhost. */
 function getRedirectAfterVerifyBase() {
   return getEmailVerifyLinkBase();
 }
 
 /**
- * Potpuni URL u mailu — GitHub Pages (ili EMAIL_VERIFY_PAGE_BASE). Stranica zove API (VITE_API_URL).
+ * Link u Gmailu — gradi se SAMO ovdje, jedan literal (ne .env, ne req).
+ * Svi pozivi šalju samo verifyToken; URL se ne smije proslijediti izvana.
  */
-function buildEmailVerifyUrl(_req, verifyToken) {
-  const siteBase = getEmailVerifyLinkBase().replace(/\/$/, "");
-  const u = `${siteBase}/#/prijava?verify=${encodeURIComponent(verifyToken)}`;
-  if (/localhost|127\.0\.0\.1/i.test(u)) {
-    console.error("[mail] buildEmailVerifyUrl: neočekivano localhost — forsiram GH Pages.");
-    return `${GH_PAGES_DEFAULT.replace(/\/$/, "")}/#/prijava?verify=${encodeURIComponent(verifyToken)}`;
-  }
-  return u;
+function mailVerifyUrlFromToken(verifyToken) {
+  return (
+    "https://tonisinkovic.github.io/MOJPUT/#/prijava?verify=" + encodeURIComponent(String(verifyToken || ""))
+  );
 }
 
 const hasSmtp = Boolean(
@@ -149,7 +122,8 @@ if (hasSmtp && process.env.SMTP_USER) {
   console.log("[config] Registracija — potvrda se šalje s adrese:", String(process.env.SMTP_USER).trim());
 }
 console.log("[config] APP_ORIGIN (.env):", APP_ORIGIN);
-console.log("[config] Stvarni redirect nakon potvrde (mobitel):", getRedirectAfterVerifyBase());
+console.log("[config] Potvrda u mailu — uvijek:", MOJPUT_PUBLIC_PAGES_ORIGIN + "/#/prijava?verify=…");
+console.log("[config] Redirect nakon /api/auth/verify:", getRedirectAfterVerifyBase());
 {
   const fromDisk = readApiPublicUrlFromDisk();
   const fromEnv = String(process.env.API_PUBLIC_URL || "").trim();
@@ -444,13 +418,13 @@ function getVerificationMailFrom() {
   return `MojPut <${userRaw}>`;
 }
 
-async function sendVerificationEmail({ to, username, verifyUrl }) {
-  const u = String(verifyUrl || "");
-  console.log("[mail] Link za potvrdu (GitHub Pages → prijava zove API):", u);
+async function sendVerificationEmail({ to, username, verifyToken }) {
+  const verifyUrl = mailVerifyUrlFromToken(verifyToken);
+  console.log("[mail] Šaljem potvrdni link (mora biti github.io):", verifyUrl);
   const { transport, isEthereal } = await getMailTransport();
   const from = getVerificationMailFrom();
   const replyTo = String(process.env.SMTP_USER || "").trim() || undefined;
-  const hrefHtml = String(verifyUrl).replace(/&/g, "&amp;");
+  const hrefHtml = verifyUrl.replace(/&/g, "&amp;");
   try {
     const info = await transport.sendMail({
       from,
@@ -545,7 +519,7 @@ async function main() {
       const verifyToken = crypto.randomBytes(32).toString("hex");
       const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
 
-      const verifyUrl = buildEmailVerifyUrl(req, verifyToken);
+      const verifyUrlForUi = mailVerifyUrlFromToken(verifyToken);
 
       db.prepare("DELETE FROM pending_registrations WHERE email = ?").run(cleanEmail);
       const appBase = publicAppOrigin(req);
@@ -553,7 +527,7 @@ async function main() {
         "INSERT INTO pending_registrations (email, username, password_hash, verify_token, expires_at, app_base_url) VALUES (?, ?, ?, ?, ?, ?)",
       ).run(cleanEmail, cleanUsername, passwordHash, verifyToken, expiresAt, appBase);
 
-      const mail = await sendVerificationEmail({ to: cleanEmail, username: cleanUsername, verifyUrl });
+      const mail = await sendVerificationEmail({ to: cleanEmail, username: cleanUsername, verifyToken });
 
       if (!mail.sent) {
         db.prepare("DELETE FROM pending_registrations WHERE email = ?").run(cleanEmail);
@@ -567,7 +541,7 @@ async function main() {
 
       const payload = { success: true, email: cleanEmail, verification_required: true };
       if (mail.previewUrl) payload.email_preview_url = mail.previewUrl;
-      if (mail.previewUrl) payload.dev_verification_url = verifyUrl;
+      if (mail.previewUrl) payload.dev_verification_url = verifyUrlForUi;
       return res.json(payload);
     } catch (err) {
       console.error("[auth/register]", err?.message || err);
@@ -648,7 +622,7 @@ async function main() {
     const verifyToken = crypto.randomBytes(32).toString("hex");
     const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
 
-    const verifyUrl = buildEmailVerifyUrl(req, verifyToken);
+    const verifyUrlForUi = mailVerifyUrlFromToken(verifyToken);
 
     db.prepare("UPDATE pending_registrations SET verify_token = ?, expires_at = ?, app_base_url = ? WHERE email = ?").run(
       verifyToken,
@@ -658,7 +632,7 @@ async function main() {
     );
 
     try {
-      const mail = await sendVerificationEmail({ to: cleanEmail, username: pending.username, verifyUrl });
+      const mail = await sendVerificationEmail({ to: cleanEmail, username: pending.username, verifyToken });
       if (!mail.sent) {
         return res.status(502).json({
           success: false,
@@ -667,7 +641,7 @@ async function main() {
       }
       const payload = { success: true };
       if (mail.previewUrl) payload.email_preview_url = mail.previewUrl;
-      if (mail.previewUrl) payload.dev_verification_url = verifyUrl;
+      if (mail.previewUrl) payload.dev_verification_url = verifyUrlForUi;
       return res.json(payload);
     } catch {
       return res.status(500).json({ success: false, message: "Ne mogu poslati email. Pokušaj kasnije." });
