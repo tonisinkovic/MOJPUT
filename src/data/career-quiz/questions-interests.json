@@ -1,0 +1,312 @@
+{
+  "interests": [
+    {
+      "id": 1,
+      "question": "Želiš li studij s puno praktičnog rada i vježbi (strojarstvo, građevina, poljoprivreda)?",
+      "category": "realistic",
+      "description": "Tehnički i građevinski fakulteti"
+    },
+    {
+      "id": 2,
+      "question": "Želiš li studij s matematikom, prirodnim znanostima ili laboratorijem (npr. PMF, medicina, FER)?",
+      "category": "investigative",
+      "description": "STEM i medicinski fakulteti"
+    },
+    {
+      "id": 3,
+      "question": "Želiš li umjetničku akademiju, arhitekturu, dizajn, glazbu ili film?",
+      "category": "artistic",
+      "description": "Akademije i Arhitektonski"
+    },
+    {
+      "id": 4,
+      "question": "Želiš li studij za rad s ljudima (pedagogija, medicina, socijalni rad, pravo)?",
+      "category": "social",
+      "description": "Društveni i zdravstveni smjerovi"
+    },
+    {
+      "id": 5,
+      "question": "Želiš li ekonomiju, menadžment, marketing ili poduzetništvo?",
+      "category": "enterprising",
+      "description": "Ekonomski fakulteti"
+    },
+    {
+      "id": 6,
+      "question": "Želiš li uredan studij s pravilima: računovodstvo, javna uprava, poslovna informatika?",
+      "category": "conventional",
+      "description": "Ekonomija, uprava, administracija"
+    },
+    {
+      "id": 7,
+      "question": "Zanimaju te materijali, metal, drvo, brod ili građevinski radovi?",
+      "category": "realistic",
+      "description": "Strojarstvo, brodogradnja, građevina"
+    },
+    {
+      "id": 8,
+      "question": "Želiš li učiti kako strojevi i tehnički sustavi rade?",
+      "category": "investigative",
+      "description": "Strojarstvo, elektrotehnika, IT"
+    },
+    {
+      "id": 9,
+      "question": "Želiš li studij s naglaskom na jezik, književnost ili kreativno pisanje?",
+      "category": "artistic",
+      "description": "Filozofski, hrvatski, jezici"
+    },
+    {
+      "id": 10,
+      "question": "Želiš li puno rada u timu, s mentorima ili s ljudima na praksi?",
+      "category": "social",
+      "description": "Pedagogija, psihologija, medicina"
+    },
+    {
+      "id": 11,
+      "question": "Želiš li studij koji otvara posao u firmi ili vlastiti posao?",
+      "category": "enterprising",
+      "description": "Ekonomija, menadžment"
+    },
+    {
+      "id": 12,
+      "question": "Želiš li jasan raspored predmeta i ispita bez puno iznenađenja?",
+      "category": "conventional",
+      "description": "Strukturirani programi"
+    },
+    {
+      "id": 13,
+      "question": "Želiš li konkretnu struku (elektrika, mehanika, geodezija)?",
+      "category": "realistic",
+      "description": "Stručni studiji"
+    },
+    {
+      "id": 14,
+      "question": "Želiš li kemiju, biologiju ili fiziku kao glavni fokus studija?",
+      "category": "investigative",
+      "description": "PMF, kemija, biologija"
+    },
+    {
+      "id": 15,
+      "question": "Želiš li prostorni dizajn, arhitekturu ili digitalni dizajn?",
+      "category": "artistic",
+      "description": "Arhitektura, dizajn"
+    },
+    {
+      "id": 16,
+      "question": "Želiš li timske projekte i stalni kontakt s ljudima?",
+      "category": "social",
+      "description": "Grupni rad na faksu"
+    },
+    {
+      "id": 17,
+      "question": "Želiš li prezentacije, prodaju ili poslovnu komunikaciju?",
+      "category": "enterprising",
+      "description": "Marketing, menadžment"
+    },
+    {
+      "id": 18,
+      "question": "Želiš li točne zadatke i pravila (financije, pravo)?",
+      "category": "conventional",
+      "description": "Pravo, računovodstvo"
+    },
+    {
+      "id": 19,
+      "question": "Želiš li teren, šumu, polje ili rad izvan učionice?",
+      "category": "realistic",
+      "description": "Geodezija, šumarstvo, poljoprivreda"
+    },
+    {
+      "id": 20,
+      "question": "Želiš li puno čitanja literature i pisanja seminara?",
+      "category": "investigative",
+      "description": "Društvene i prirodne znanosti"
+    },
+    {
+      "id": 21,
+      "question": "Želiš li glazbu ili likovnu umjetnost kao glavni predmet?",
+      "category": "artistic",
+      "description": "Muzička i likovna akademija"
+    },
+    {
+      "id": 22,
+      "question": "Želiš li postati učitelj ili mentor?",
+      "category": "social",
+      "description": "Pedagoški fakulteti"
+    },
+    {
+      "id": 23,
+      "question": "Želiš li voditi projekte ili studentske aktivnosti?",
+      "category": "enterprising",
+      "description": "Menadžment"
+    },
+    {
+      "id": 24,
+      "question": "Želiš li matematiku u financijama, statistiku ili poslovno pravo?",
+      "category": "conventional",
+      "description": "Ekonomija"
+    },
+    {
+      "id": 25,
+      "question": "Želiš li sport, kineziologiju ili zdravlje kroz pokret?",
+      "category": "realistic",
+      "description": "Kineziologija, fizioterapija"
+    },
+    {
+      "id": 26,
+      "question": "Želiš li proučavati ljude i društvo (psihologija, sociologija)?",
+      "category": "investigative",
+      "description": "Društvene znanosti"
+    },
+    {
+      "id": 27,
+      "question": "Želiš li glumu, scenu ili režiju?",
+      "category": "artistic",
+      "description": "Dramska akademija"
+    },
+    {
+      "id": 28,
+      "question": "Želiš li pomoći ljudima u teškim situacijama (savjetovanje, socijalna služba)?",
+      "category": "social",
+      "description": "Socijalni rad, psihologija"
+    },
+    {
+      "id": 29,
+      "question": "Želiš li poduzetništvo ili rad u inovacijama?",
+      "category": "enterprising",
+      "description": "Ekonomija, startup"
+    },
+    {
+      "id": 30,
+      "question": "Želiš li stabilnu karijeru u državi ili institucijama?",
+      "category": "conventional",
+      "description": "Javna uprava, pravo"
+    },
+    {
+      "id": 31,
+      "question": "Želiš li popravke, održavanje ili tehničku sigurnost?",
+      "category": "realistic",
+      "description": "Tehnički smjerovi"
+    },
+    {
+      "id": 32,
+      "question": "Želiš li duboko učiti kroz istraživanje i znanstvene radove?",
+      "category": "investigative",
+      "description": "Znanstveni smjerovi"
+    },
+    {
+      "id": 33,
+      "question": "Želiš li fotografiju, video ili animaciju?",
+      "category": "artistic",
+      "description": "Dizajn, mediji"
+    },
+    {
+      "id": 34,
+      "question": "Želiš li medicinu, njegu ili zdravstvenu zaštitu?",
+      "category": "social",
+      "description": "Medicinski i zdravstveni studiji"
+    },
+    {
+      "id": 35,
+      "question": "Želiš li prodaju, javni nastup ili uvjeravanje?",
+      "category": "enterprising",
+      "description": "Marketing, komunikacija"
+    },
+    {
+      "id": 36,
+      "question": "Želiš li rad s podacima u uredu i na računalu?",
+      "category": "conventional",
+      "description": "Poslovna informatika"
+    },
+    {
+      "id": 37,
+      "question": "Želiš li životinje, poljoprivredu ili prirodu?",
+      "category": "realistic",
+      "description": "Veterina, agronomija"
+    },
+    {
+      "id": 38,
+      "question": "Želiš li jak matematički program?",
+      "category": "investigative",
+      "description": "PMF, FER, informatika"
+    },
+    {
+      "id": 39,
+      "question": "Želiš li modu, tekstil ili industrijski dizajn?",
+      "category": "artistic",
+      "description": "Dizajn odjeće"
+    },
+    {
+      "id": 40,
+      "question": "Želiš li medicinu, farmaciju ili laboratorij?",
+      "category": "social",
+      "description": "Medicinski fakulteti"
+    },
+    {
+      "id": 41,
+      "question": "Želiš li učiti kako pokrenuti vlastiti posao?",
+      "category": "enterprising",
+      "description": "Poduzetništvo"
+    },
+    {
+      "id": 42,
+      "question": "Želiš li strogo pravila i rokove kao na poslu?",
+      "category": "conventional",
+      "description": "Pravo, revizija"
+    },
+    {
+      "id": 43,
+      "question": "Želiš li sigurnost, red ili vojsku?",
+      "category": "realistic",
+      "description": "Policija, vojska"
+    },
+    {
+      "id": 44,
+      "question": "Želiš li programiranje ili informatiku?",
+      "category": "investigative",
+      "description": "FER, FOI"
+    },
+    {
+      "id": 45,
+      "question": "Želiš li kameru, pozornicu ili novinarstvo?",
+      "category": "artistic",
+      "description": "Mediji, ADU"
+    },
+    {
+      "id": 46,
+      "question": "Želiš li pravo i sudstvo?",
+      "category": "social",
+      "description": "Pravni fakultet"
+    },
+    {
+      "id": 47,
+      "question": "Želiš li administraciju, logistiku ili brojke u uredu?",
+      "category": "conventional",
+      "description": "Ekonomija, logistika"
+    }
+  ],
+  "categories": {
+    "realistic": {
+      "name": "Realistični (R)",
+      "description": "Tipični smjerovi: strojarstvo, građevina, poljoprivreda, šumarstvo, nautika, veterina — puno prakse i terena"
+    },
+    "investigative": {
+      "name": "Istraživački (I)",
+      "description": "Tipični smjerovi: PMF, prirodne znanosti, kemija/biologija, medicina, FER, elektrotehnika — laboratorij i teorija"
+    },
+    "artistic": {
+      "name": "Umjetnički (A)",
+      "description": "Tipični smjerovi: akademije (likovna, glazbena, dramska), arhitektura, dizajn, filmska umjetnost"
+    },
+    "social": {
+      "name": "Socijalni (S)",
+      "description": "Tipični smjerovi: pedagogija, psihologija, socijalni rad, pravo, medicina, politologija — rad s ljudima"
+    },
+    "enterprising": {
+      "name": "Poduzetni (E)",
+      "description": "Tipični smjerovi: ekonomija, menadžment, marketing, poduzetništvo, političke znanosti"
+    },
+    "conventional": {
+      "name": "Konvencionalni (C)",
+      "description": "Tipični smjerovi: računovodstvo, javna uprava, informatika u administraciji, knjižničarstvo, logistika"
+    }
+  }
+}

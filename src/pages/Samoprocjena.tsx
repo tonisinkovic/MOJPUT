@@ -751,18 +751,25 @@ function ConfidenceQuiz() {
   );
 }
 
+type QuizId = "confidence" | "serenity";
+
 const quizFrameClass =
   "relative overflow-hidden rounded-2xl border-2 border-border/80 bg-gradient-to-b from-card to-muted/20 shadow-card ring-1 ring-black/5 dark:ring-white/5";
 
-const QUIZ_CARDS = [
+const QUIZ_TITLES: Record<QuizId, string> = {
+  confidence: "Samopouzdanje",
+  serenity: "Test Anksioznosti",
+};
+
+const QUIZ_CARDS: { id: QuizId; icon: string; title: string; description: string }[] = [
   {
-    id: "confidence" as const,
+    id: "confidence",
     icon: "💪",
     title: "Samopouzdanje",
     description: "Brza procjena razine samopouzdanja u manje od 2 minute.",
   },
   {
-    id: "serenity" as const,
+    id: "serenity",
     icon: "📋",
     title: "Test Anksioznosti",
     description: "PHQ-9 i GAD-7 upitnik iz Serenity Programme obrasca.",
@@ -770,10 +777,10 @@ const QUIZ_CARDS = [
 ];
 
 const Samoprocjena = () => {
-  const [selectedQuiz, setSelectedQuiz] = useState<"confidence" | "serenity" | null>(null);
+  const [selectedQuiz, setSelectedQuiz] = useState<QuizId | null>(null);
   const quizContentRef = useRef<HTMLDivElement>(null);
 
-  const openQuiz = (id: "confidence" | "serenity") => {
+  const openQuiz = (id: QuizId) => {
     setSelectedQuiz(id);
     requestAnimationFrame(() => {
       quizContentRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -798,12 +805,16 @@ const Samoprocjena = () => {
               Upoznaj svoje interese, vrijednosti i sposobnosti
             </p>
             <p className="mx-auto mt-2 max-w-lg text-sm text-muted-foreground/90">
-              Odaberi kviz ispod — svaki je u vlastitom okviru.
+              Odaberi kviz ispod — svaki je u vlastitom okviru. Za upis na fakultet koristi{" "}
+              <Link to="/kviz" className="font-medium text-primary underline-offset-4 hover:underline">
+                Koji je fakultet za mene?
+              </Link>{" "}
+              (zasebna stranica).
             </p>
           </div>
         </motion.div>
 
-        <div className="mb-8 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
+        <div className="mb-8 grid grid-cols-1 gap-4 sm:grid-cols-2">
           {QUIZ_CARDS.map((card, i) => (
             <motion.article
               key={card.id}
@@ -843,7 +854,7 @@ const Samoprocjena = () => {
             <div className={quizFrameClass}>
               <div className="flex items-center justify-between border-b border-border/60 bg-muted/30 px-5 py-3 md:px-6">
                 <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
-                  Kviz · {selectedQuiz === "confidence" ? "Samopouzdanje" : "Test Anksioznosti"}
+                  Kviz · {QUIZ_TITLES[selectedQuiz]}
                 </h2>
                 <Button
                   type="button"
@@ -856,7 +867,11 @@ const Samoprocjena = () => {
                 </Button>
               </div>
               <div className="p-5 md:p-7">
-                {selectedQuiz === "confidence" ? <ConfidenceQuiz /> : <SerenityIntakeQuiz />}
+                {selectedQuiz === "confidence" ? (
+                  <ConfidenceQuiz />
+                ) : (
+                  <SerenityIntakeQuiz />
+                )}
               </div>
             </div>
           </motion.div>

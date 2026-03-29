@@ -5,7 +5,6 @@ import Layout from "@/components/Layout";
 import FeatureCard from "@/components/FeatureCard";
 import {
   Map,
-  Brain,
   Calculator,
   Video,
   MessageSquare,
@@ -29,9 +28,9 @@ const features = [
     path: "/karta",
   },
   {
-    icon: <Brain className="w-6 h-6 text-primary-foreground" />,
-    title: "Kviz za odabir",
-    description: "Otkrij koji fakultet i karijera odgovaraju tvojim interesima.",
+    icon: <GraduationCap className="w-6 h-6 text-primary-foreground" />,
+    title: "Koji je fakultet za mene?",
+    description: "Kviz interesa i kompetencija (47+47) — RIASEC i preporuke smjerova upisa.",
     path: "/kviz",
   },
   {

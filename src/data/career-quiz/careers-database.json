@@ -1,0 +1,747 @@
+{
+  "careers": [
+    {
+      "id": 1,
+      "name": "Softverski inženjer",
+      "description": "Put: studij informatike ili srodnog STEM-a, zatim rad na razvoju softvera.",
+      "facultyPaths": [
+        "FER, FOI, FERIT, Algebra — računarstvo, informatika, matematika (IT smjerovi)"
+      ],
+      "interestCategories": [
+        "investigative",
+        "artistic"
+      ],
+      "competencyCategories": [
+        "technical",
+        "problem_solving",
+        "analytical"
+      ],
+      "education": "Preddiplomski/diplomski — informatika ili računarstvo",
+      "salary": "50000–80000 HRK",
+      "employmentPerspective": "Odličan",
+      "keywords": [
+        "programiranje",
+        "IT",
+        "razvoj"
+      ]
+    },
+    {
+      "id": 2,
+      "name": "Medicinska sestra / tehničar",
+      "description": "Put: zdravstvena struka (viša ili sveučilišni studij zdravstva), praksa u ustanovama.",
+      "facultyPaths": [
+        "Medicinski fakulteti (srodni programi), visoke zdravstvene škole — zdravstvena njega"
+      ],
+      "interestCategories": [
+        "social",
+        "investigative"
+      ],
+      "competencyCategories": [
+        "communication",
+        "interpersonal",
+        "stress_management"
+      ],
+      "education": "Viša škola / sveučilišni prijediplomski — zdravstvo",
+      "salary": "30000–45000 HRK",
+      "employmentPerspective": "Odličan",
+      "keywords": [
+        "zdravstvo",
+        "medicina",
+        "bolnica"
+      ]
+    },
+    {
+      "id": 3,
+      "name": "Arhitekt",
+      "description": "Put: Arhitektonski fakultet, studij arhitekture ili urbanizma.",
+      "facultyPaths": [
+        "Arhitektonski fakultet (Zagreb, Split…) — arhitektura, urbanizam"
+      ],
+      "interestCategories": [
+        "artistic",
+        "investigative"
+      ],
+      "competencyCategories": [
+        "design",
+        "technical",
+        "creativity"
+      ],
+      "education": "Integrirani/diplomski studij arhitekture",
+      "salary": "40000–70000 HRK",
+      "employmentPerspective": "Dobar",
+      "keywords": [
+        "gradnja",
+        "dizajn",
+        "projekti"
+      ]
+    },
+    {
+      "id": 4,
+      "name": "Učitelj osnovne škole",
+      "description": "Put: Pedagoški fakultet ili učiteljski smjer, predmetno usmjerenje.",
+      "facultyPaths": [
+        "Pedagoški fakulteti — učiteljski studiji (razredna, predmetna nastava)"
+      ],
+      "interestCategories": [
+        "social",
+        "conventional"
+      ],
+      "competencyCategories": [
+        "communication",
+        "patience",
+        "interpersonal"
+      ],
+      "education": "Sveučilišni učiteljski studij",
+      "salary": "25000–40000 HRK",
+      "employmentPerspective": "Dobar",
+      "keywords": [
+        "edukacija",
+        "škola",
+        "učenje"
+      ]
+    },
+    {
+      "id": 5,
+      "name": "Menadžer projekta",
+      "description": "Put: ekonomija, menadžment, industrijsko inženjerstvo — često MBA ili iskustvo nakon diplome.",
+      "facultyPaths": [
+        "Ekonomski fakulteti — menadžment, poslovna ekonomija; FER/SFS — projektni menadžment"
+      ],
+      "interestCategories": [
+        "enterprising",
+        "conventional"
+      ],
+      "competencyCategories": [
+        "leadership",
+        "organization",
+        "time_management"
+      ],
+      "education": "Fakultet — ekonomija, menadžment ili inženjerstvo",
+      "salary": "45000–80000 HRK",
+      "employmentPerspective": "Odličan",
+      "keywords": [
+        "vodstvo",
+        "projektni rad",
+        "organizacija"
+      ]
+    },
+    {
+      "id": 6,
+      "name": "Grafički dizajner",
+      "description": "Put: dizajn na Akademiji ili viša škola dizajna, multimedija.",
+      "facultyPaths": [
+        "Akademija likovnih umjetnosti, Algebra — grafički dizajn, multimedijski dizajn"
+      ],
+      "interestCategories": [
+        "artistic",
+        "investigative"
+      ],
+      "competencyCategories": [
+        "design",
+        "creativity",
+        "technical"
+      ],
+      "education": "Viša škola / sveučilišni — dizajn",
+      "salary": "25000–45000 HRK",
+      "employmentPerspective": "Dobar",
+      "keywords": [
+        "dizajn",
+        "grafika",
+        "kreativnost"
+      ]
+    },
+    {
+      "id": 7,
+      "name": "Psihoterapeut",
+      "description": "Put: psihologija, zatim specijalizacija u psihoterapiji (licenca).",
+      "facultyPaths": [
+        "Filozofski / Humanistički — psihologija; medicinski srodnosti za kliničku psihologiju"
+      ],
+      "interestCategories": [
+        "social",
+        "investigative"
+      ],
+      "competencyCategories": [
+        "communication",
+        "emotional_intelligence",
+        "interpersonal"
+      ],
+      "education": "Diplomski psihologija + specijalizacija",
+      "salary": "35000–60000 HRK",
+      "employmentPerspective": "Dobar",
+      "keywords": [
+        "psihologija",
+        "terapija",
+        "mentalno zdravlje"
+      ]
+    },
+    {
+      "id": 8,
+      "name": "Električar / elektrotehničar",
+      "description": "Put: elektrotehničko usmjerenje (srednja + stručni studij ili FER smjerovi za održavanje).",
+      "facultyPaths": [
+        "FER — elektrotehnika; stručni prijediplomski elektrotehnički smjerovi"
+      ],
+      "interestCategories": [
+        "realistic",
+        "investigative"
+      ],
+      "competencyCategories": [
+        "technical",
+        "problem_solving",
+        "attention_to_detail"
+      ],
+      "education": "Stručni studij / elektrotehnika",
+      "salary": "30000–50000 HRK",
+      "employmentPerspective": "Dobar",
+      "keywords": [
+        "elektrika",
+        "instalacija",
+        "održavanje"
+      ]
+    },
+    {
+      "id": 9,
+      "name": "Prodajni predstavnik",
+      "description": "Put: ekonomija, marketing, trgovina; često i stručni studiji.",
+      "facultyPaths": [
+        "Ekonomski fakulteti — marketing, trgovina; Odjel za komunikacijske studije"
+      ],
+      "interestCategories": [
+        "enterprising",
+        "social"
+      ],
+      "competencyCategories": [
+        "communication",
+        "negotiation",
+        "customer_service"
+      ],
+      "education": "Ekonomija / marketing / srodno",
+      "salary": "25000–60000 HRK",
+      "employmentPerspective": "Dobar",
+      "keywords": [
+        "prodaja",
+        "komercijala",
+        "pregovaranje"
+      ]
+    },
+    {
+      "id": 10,
+      "name": "Poljoprivrednik / agronom",
+      "description": "Put: Agronomski fakultet, biotehnologija, prehrambena tehnologija.",
+      "facultyPaths": [
+        "Agronomski fakulteti — agronomija, stočarstvo, biotehnologija"
+      ],
+      "interestCategories": [
+        "realistic",
+        "investigative"
+      ],
+      "competencyCategories": [
+        "technical",
+        "organization",
+        "work_ethic"
+      ],
+      "education": "Sveučilišni studij agronomije ili srodnog",
+      "salary": "20000–40000 HRK",
+      "employmentPerspective": "Dobar",
+      "keywords": [
+        "poljoprivreda",
+        "uzgoj",
+        "priroda"
+      ]
+    },
+    {
+      "id": 11,
+      "name": "Sudski odvjetnik",
+      "description": "Put: Pravni fakultet, pravosudni ispit, specijalizacija.",
+      "facultyPaths": [
+        "Pravni fakulteti u HR — integrirani pravni studij"
+      ],
+      "interestCategories": [
+        "social",
+        "enterprising"
+      ],
+      "competencyCategories": [
+        "communication",
+        "analytical",
+        "critical_thinking"
+      ],
+      "education": "Pravni fakultet",
+      "salary": "40000–100000+ HRK",
+      "employmentPerspective": "Dobar",
+      "keywords": [
+        "pravo",
+        "odvjetnik",
+        "sud"
+      ]
+    },
+    {
+      "id": 12,
+      "name": "Novinar",
+      "description": "Put: novinarstvo, medijske znanosti, politologija komunikacijski moduli.",
+      "facultyPaths": [
+        "Političke znanosti, Fakultet političkih znanosti — novinarstvo; Odjel za komunikacijske studije"
+      ],
+      "interestCategories": [
+        "artistic",
+        "social"
+      ],
+      "competencyCategories": [
+        "writing",
+        "research",
+        "communication"
+      ],
+      "education": "Sveučilišni studij novinarstva ili medija",
+      "salary": "25000–50000 HRK",
+      "employmentPerspective": "Dobar",
+      "keywords": [
+        "novinarstvo",
+        "pisanje",
+        "mediji"
+      ]
+    },
+    {
+      "id": 13,
+      "name": "Inženjer strojarstva",
+      "description": "Put: Strojarski fakultet — dizajn, proizvodnja, mehatronika.",
+      "facultyPaths": [
+        "FSB, strojarski smjerovi — strojarstvo, brodogradnja, aeronautika"
+      ],
+      "interestCategories": [
+        "realistic",
+        "investigative"
+      ],
+      "competencyCategories": [
+        "technical",
+        "problem_solving",
+        "analytical"
+      ],
+      "education": "Integrirani prijediplomski/diplomski — strojarstvo",
+      "salary": "35000–60000 HRK",
+      "employmentPerspective": "Odličan",
+      "keywords": [
+        "strojarstvo",
+        "inženjerstvo",
+        "proizvodnja"
+      ]
+    },
+    {
+      "id": 14,
+      "name": "Liječnik",
+      "description": "Put: Medicinski fakultet, pripravnički staž, specijalizacija.",
+      "facultyPaths": [
+        "Medicinski fakulteti — integrirani studij medicine"
+      ],
+      "interestCategories": [
+        "social",
+        "investigative"
+      ],
+      "competencyCategories": [
+        "analytical",
+        "interpersonal",
+        "stress_management"
+      ],
+      "education": "Medicinski fakultet",
+      "salary": "40000–80000 HRK",
+      "employmentPerspective": "Odličan",
+      "keywords": [
+        "medicina",
+        "zdravstvo",
+        "liječenje"
+      ]
+    },
+    {
+      "id": 15,
+      "name": "Web dizajner",
+      "description": "Put: dizajn, informatika, multimedija — kombinacija kreativnih i IT predmeta.",
+      "facultyPaths": [
+        "FER/FOI/Algebra — dizajn i multimedija; Akademija — digitalni dizajn"
+      ],
+      "interestCategories": [
+        "artistic",
+        "investigative"
+      ],
+      "competencyCategories": [
+        "design",
+        "technical",
+        "creativity"
+      ],
+      "education": "Viša škola ili sveučilišni — web/multimedija",
+      "salary": "30000–50000 HRK",
+      "employmentPerspective": "Odličan",
+      "keywords": [
+        "web",
+        "internet",
+        "dizajn"
+      ]
+    },
+    {
+      "id": 16,
+      "name": "Kuhar / gastronom",
+      "description": "Put: ugostiteljsko-turističke škole, stručni studiji prehrane.",
+      "facultyPaths": [
+        "Sveučilište u Splitu — gastronomija; stručni studiji turizma i prehrane"
+      ],
+      "interestCategories": [
+        "artistic",
+        "realistic"
+      ],
+      "competencyCategories": [
+        "creativity",
+        "organization",
+        "attention_to_detail"
+      ],
+      "education": "Srednja / stručni studij ugostiteljstva",
+      "salary": "25000–45000 HRK",
+      "employmentPerspective": "Dobar",
+      "keywords": [
+        "kuhinja",
+        "hrana",
+        "ugostiteljstvo"
+      ]
+    },
+    {
+      "id": 17,
+      "name": "Marketinški specijalista",
+      "description": "Put: ekonomski ili komunikacijski fakultet, smjer marketing.",
+      "facultyPaths": [
+        "Ekonomski fakulteti — marketing; Odjel za ekonomiju i turizam — marketing"
+      ],
+      "interestCategories": [
+        "enterprising",
+        "artistic"
+      ],
+      "competencyCategories": [
+        "communication",
+        "creativity",
+        "analytical"
+      ],
+      "education": "Fakultet — marketing ili poslovna ekonomija",
+      "salary": "35000–60000 HRK",
+      "employmentPerspective": "Odličan",
+      "keywords": [
+        "marketing",
+        "reklama",
+        "prodaja"
+      ]
+    },
+    {
+      "id": 18,
+      "name": "Fizioterapeut",
+      "description": "Put: zdravstveni studiji, kineziologija s rehabilitacijom.",
+      "facultyPaths": [
+        "Kineziološki fakulteti; zdravstveni studiji — fizioterapija"
+      ],
+      "interestCategories": [
+        "social",
+        "realistic"
+      ],
+      "competencyCategories": [
+        "interpersonal",
+        "communication",
+        "patience"
+      ],
+      "education": "Sveučilišni studij fizioterapije ili kineziologije",
+      "salary": "25000–45000 HRK",
+      "employmentPerspective": "Dobar",
+      "keywords": [
+        "fizioterapija",
+        "zdravstvo",
+        "vježbe"
+      ]
+    },
+    {
+      "id": 19,
+      "name": "Vozač / logistika",
+      "description": "Put: često stručni studij logistike ili prometa; vozački certifikati.",
+      "facultyPaths": [
+        "Prometni fakulteti — logistika; stručni studiji prometa"
+      ],
+      "interestCategories": [
+        "realistic",
+        "conventional"
+      ],
+      "competencyCategories": [
+        "work_ethic",
+        "attention_to_detail",
+        "independence"
+      ],
+      "education": "Stručni studij logistike / stručna srednja",
+      "salary": "30000–50000 HRK",
+      "employmentPerspective": "Dobar",
+      "keywords": [
+        "transport",
+        "vožnja",
+        "logistika"
+      ]
+    },
+    {
+      "id": 20,
+      "name": "Računovođa",
+      "description": "Put: ekonomija, računovodstvo, financije — certifikati računovođe.",
+      "facultyPaths": [
+        "Ekonomski fakulteti — računovodstvo i financije"
+      ],
+      "interestCategories": [
+        "conventional",
+        "investigative"
+      ],
+      "competencyCategories": [
+        "numerical",
+        "organization",
+        "attention_to_detail"
+      ],
+      "education": "Ekonomski fakultet — financije / računovodstvo",
+      "salary": "30000–50000 HRK",
+      "employmentPerspective": "Dobar",
+      "keywords": [
+        "financije",
+        "brojevi",
+        "računi"
+      ]
+    },
+    {
+      "id": 21,
+      "name": "Glazbenik",
+      "description": "Put: Muzička akademija, glazbena pedagogija.",
+      "facultyPaths": [
+        "Muzička akademija — izvođački ili pedagogki smjer"
+      ],
+      "interestCategories": [
+        "artistic",
+        "social"
+      ],
+      "competencyCategories": [
+        "creativity",
+        "communication",
+        "patience"
+      ],
+      "education": "Muzička akademija",
+      "salary": "20000–50000 HRK",
+      "employmentPerspective": "Dobar",
+      "keywords": [
+        "glazba",
+        "izvedba"
+      ]
+    },
+    {
+      "id": 22,
+      "name": "Građevinski inženjer",
+      "description": "Put: Građevinski fakultet — graditeljstvo, geotehnika, promet.",
+      "facultyPaths": [
+        "Građevinski fakulteti — građevinarstvo, arhitektonsko građevni"
+      ],
+      "interestCategories": [
+        "realistic",
+        "conventional"
+      ],
+      "competencyCategories": [
+        "technical",
+        "organization",
+        "safety"
+      ],
+      "education": "Građevinski fakultet",
+      "salary": "30000–50000 HRK",
+      "employmentPerspective": "Dobar",
+      "keywords": [
+        "gradnja",
+        "infrastruktura"
+      ]
+    },
+    {
+      "id": 23,
+      "name": "Kemičar",
+      "description": "Put: kemija, kemijsko inženjerstvo, farmaceutska kemija.",
+      "facultyPaths": [
+        "PMF, kemijsko-tehnološki / kemijski odsjeci — kemija, kemijsko inženjerstvo"
+      ],
+      "interestCategories": [
+        "investigative",
+        "realistic"
+      ],
+      "competencyCategories": [
+        "analytical",
+        "technical",
+        "critical_thinking"
+      ],
+      "education": "Fakultet — kemija ili kemijsko inženjerstvo",
+      "salary": "35000–60000 HRK",
+      "employmentPerspective": "Dobar",
+      "keywords": [
+        "kemija",
+        "znanost",
+        "laboratorij"
+      ]
+    },
+    {
+      "id": 24,
+      "name": "Fotograf / vizualni umjetnik",
+      "description": "Put: Akademija, dizajn, filmska umjetnost.",
+      "facultyPaths": [
+        "Akademija likovnih umjetnosti; Akademija dramske umjetnosti — fotografija"
+      ],
+      "interestCategories": [
+        "artistic",
+        "investigative"
+      ],
+      "competencyCategories": [
+        "design",
+        "creativity",
+        "technical"
+      ],
+      "education": "Umjetnička akademija / viša škola",
+      "salary": "20000–40000 HRK",
+      "employmentPerspective": "Dobar",
+      "keywords": [
+        "fotografija",
+        "slike"
+      ]
+    },
+    {
+      "id": 25,
+      "name": "HR specijalist",
+      "description": "Put: psihologija, ekonomija menadžment ljudskih potencijala, pravo rada.",
+      "facultyPaths": [
+        "Ekonomski fakulteti — menadžment; psihologija + HR moduli"
+      ],
+      "interestCategories": [
+        "social",
+        "enterprising"
+      ],
+      "competencyCategories": [
+        "communication",
+        "interpersonal",
+        "organization"
+      ],
+      "education": "Ekonomija / psihologija / menadžment",
+      "salary": "30000–50000 HRK",
+      "employmentPerspective": "Dobar",
+      "keywords": [
+        "HR",
+        "kadrovi"
+      ]
+    },
+    {
+      "id": 26,
+      "name": "Fizičar / znanstvenik",
+      "description": "Put: PMF — fizika, astronomija, nastavnički smjerovi.",
+      "facultyPaths": [
+        "PMF — fizika, matematika i fizika"
+      ],
+      "interestCategories": [
+        "investigative",
+        "realistic"
+      ],
+      "competencyCategories": [
+        "analytical",
+        "critical_thinking",
+        "research"
+      ],
+      "education": "PMF ili srodni prirodoslovni studij",
+      "salary": "35000–60000 HRK",
+      "employmentPerspective": "Dobar",
+      "keywords": [
+        "fizika",
+        "znanost"
+      ]
+    },
+    {
+      "id": 27,
+      "name": "Glumac / glumica",
+      "description": "Put: Akademija dramske umjetnosti.",
+      "facultyPaths": [
+        "ADU Zagreb — gluma, režija, kazališna pedagogija"
+      ],
+      "interestCategories": [
+        "artistic",
+        "social"
+      ],
+      "competencyCategories": [
+        "communication",
+        "creativity",
+        "emotional_intelligence"
+      ],
+      "education": "Akademija dramske umjetnosti",
+      "salary": "20000–50000 HRK",
+      "employmentPerspective": "Dobar",
+      "keywords": [
+        "gluma",
+        "kazalište",
+        "film"
+      ]
+    },
+    {
+      "id": 28,
+      "name": "Knjižničar / informacijski stručnjak",
+      "description": "Put: informacijske znanosti, knjižničarstvo.",
+      "facultyPaths": [
+        "FFZG — informacijske znanosti; Odjel za informacijske znanosti"
+      ],
+      "interestCategories": [
+        "conventional",
+        "investigative"
+      ],
+      "competencyCategories": [
+        "organization",
+        "communication",
+        "research"
+      ],
+      "education": "Sveučilišni studij informacijskih znanosti",
+      "salary": "25000–40000 HRK",
+      "employmentPerspective": "Dobar",
+      "keywords": [
+        "knjižnica",
+        "informacije"
+      ]
+    },
+    {
+      "id": 29,
+      "name": "Veterinar",
+      "description": "Put: Veterinarski fakultet.",
+      "facultyPaths": [
+        "Veterinarski fakultet — integrirani studij veterinarstva"
+      ],
+      "interestCategories": [
+        "realistic",
+        "social"
+      ],
+      "competencyCategories": [
+        "analytical",
+        "interpersonal",
+        "stress_management"
+      ],
+      "education": "Veterinarski fakultet",
+      "salary": "35000–60000 HRK",
+      "employmentPerspective": "Dobar",
+      "keywords": [
+        "veterina",
+        "životinje"
+      ]
+    },
+    {
+      "id": 30,
+      "name": "Ekonomist / financijski analitičar",
+      "description": "Put: ekonomski fakultet, smjerovi financija, ekonomska analiza.",
+      "facultyPaths": [
+        "Ekonomski fakulteti — financije, ekonomija, poslovna matematika"
+      ],
+      "interestCategories": [
+        "investigative",
+        "enterprising"
+      ],
+      "competencyCategories": [
+        "analytical",
+        "numerical",
+        "critical_thinking"
+      ],
+      "education": "Ekonomski fakultet",
+      "salary": "35000–70000 HRK",
+      "employmentPerspective": "Dobar",
+      "keywords": [
+        "ekonomija",
+        "analiza",
+        "financije"
+      ]
+    }
+  ]
+}

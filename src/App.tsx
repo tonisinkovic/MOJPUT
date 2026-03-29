@@ -28,6 +28,7 @@ import FacultyProfiles from "./pages/FacultyProfiles";
 import FacultyProfile from "./pages/FacultyProfile";
 import FacultyLogin from "./pages/FacultyLogin";
 import FacultyDashboard from "./pages/FacultyDashboard";
+import ScrollToTop from "./components/ScrollToTop";
 
 const queryClient = new QueryClient();
 
@@ -37,6 +38,7 @@ const App = () => (
       <Toaster />
       <Sonner />
       <HashRouter>
+        <ScrollToTop />
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/karta" element={<KartaFakulteta />} />
