@@ -93,11 +93,29 @@ function readApiPublicUrlFromDisk() {
   return "";
 }
 
-/** Javni front (redirect nakon API potvrde). */
+/** Zadani javni front ako u .env nema EMAIL_VERIFY_PAGE_BASE / APP_ORIGIN (nikad localhost — mobitel ne može otvoriti localhost). */
 const MOJPUT_PUBLIC_PAGES_ORIGIN = "https://tonisinkovic.github.io/MOJPUT";
 
+function isPublicHttpOrigin(s) {
+  return Boolean(s && /^https?:\/\//i.test(s) && !/localhost|127\.0\.0\.1/i.test(s));
+}
+
+/**
+ * Baza URL-a za link u mailu i redirect nakon potvrde.
+ * Prioritet: EMAIL_VERIFY_PAGE_BASE → APP_ORIGIN (iz .env, ne localhost) → zadani GitHub Pages.
+ */
 function getEmailVerifyLinkBase() {
-  return MOJPUT_PUBLIC_PAGES_ORIGIN;
+  const explicit = String(process.env.EMAIL_VERIFY_PAGE_BASE || "")
+    .trim()
+    .replace(/\/$/, "");
+  if (explicit && /^https?:\/\//i.test(explicit)) return explicit;
+
+  const fromEnv = String(process.env.APP_ORIGIN || "")
+    .trim()
+    .replace(/\/$/, "");
+  if (isPublicHttpOrigin(fromEnv)) return fromEnv;
+
+  return MOJPUT_PUBLIC_PAGES_ORIGIN.replace(/\/$/, "");
 }
 
 function getRedirectAfterVerifyBase() {
@@ -105,13 +123,11 @@ function getRedirectAfterVerifyBase() {
 }
 
 /**
- * Link u Gmailu — gradi se SAMO ovdje, jedan literal (ne .env, ne req).
- * Svi pozivi šalju samo verifyToken; URL se ne smije proslijediti izvana.
+ * Link u mailu — baza iz env-a (vidi EMAIL_VERIFY_PAGE_BASE). Token se ne smije proslijediti iz tijela zahtjeva.
  */
 function mailVerifyUrlFromToken(verifyToken) {
-  return (
-    "https://tonisinkovic.github.io/MOJPUT/#/prijava?verify=" + encodeURIComponent(String(verifyToken || ""))
-  );
+  const base = getEmailVerifyLinkBase();
+  return `${base}/#/prijava?verify=${encodeURIComponent(String(verifyToken || ""))}`;
 }
 
 const hasSmtp = Boolean(
@@ -121,9 +137,17 @@ console.log("[config] SMTP konfiguriran:", hasSmtp, hasSmtp ? "(pravi email)" : 
 if (hasSmtp && process.env.SMTP_USER) {
   console.log("[config] Registracija — potvrda se šalje s adrese:", String(process.env.SMTP_USER).trim());
 }
-console.log("[config] APP_ORIGIN (.env):", APP_ORIGIN);
-console.log("[config] Potvrda u mailu — uvijek:", MOJPUT_PUBLIC_PAGES_ORIGIN + "/#/prijava?verify=…");
+console.log("[config] APP_ORIGIN (konstanta / default za ostalo):", APP_ORIGIN);
+console.log("[config] Potvrda u mailu — baza URL-a:", getEmailVerifyLinkBase(), "(EMAIL_VERIFY_PAGE_BASE ili APP_ORIGIN iz .env, inače github.io)");
 console.log("[config] Redirect nakon /api/auth/verify:", getRedirectAfterVerifyBase());
+{
+  const b = getEmailVerifyLinkBase();
+  if (/localhost|127\.0\.0\.1/i.test(b)) {
+    console.warn(
+      "[config] Link u mailu sadrži localhost — na mobitelu neće raditi. Postavi EMAIL_VERIFY_PAGE_BASE=https://…/MOJPUT ili APP_ORIGIN na javni HTTPS URL frontenda.",
+    );
+  }
+}
 {
   const fromDisk = readApiPublicUrlFromDisk();
   const fromEnv = String(process.env.API_PUBLIC_URL || "").trim();

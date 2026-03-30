@@ -9,6 +9,7 @@ const navItems = [
   { label: "Kviz", path: "/kviz" },
   { label: "Samoprocjena", path: "/samoprocjena" },
   { label: "Kalkulator", path: "/kalkulator" },
+  { label: "Domovi", path: "/kalkulator-doma" },
   { label: "Video", path: "/video" },
   { label: "Forum", path: "/forum" },
   { label: "Kalendar", path: "/kalendar" },

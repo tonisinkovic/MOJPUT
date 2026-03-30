@@ -1,0 +1,99 @@
+[
+  {
+    "id": "zagreb",
+    "city": "Zagreb",
+    "name": "Studentski centar u Zagrebu",
+    "shortName": "SCZG",
+    "website": "https://www.sczg.unizg.hr/",
+    "natječaj_info_url": "https://natjecaj.sczg.hr/student/",
+    "scoring_rules": {
+      "grade_weight": 100,
+      "income_weight": 100,
+      "distance_weight": 0,
+      "special_points": 100,
+      "reference_cohort_grade": 3.92,
+      "notes_hr": "Referentni prosjek s tvog učilišta objavljuje SCZG u PDF-u uz natječaj. Ako ostaviš zadani broj, to je samo procjena."
+    },
+    "published_cutoff": {
+      "academic_year": "2025./2026.",
+      "scope_hr": "Službeno objavljena bodna granica (zadnji rang s pravom na smještaj u domu).",
+      "points": 1324,
+      "source_url": "https://www.sczg.unizg.hr/obavijesti/rezultati-natjecaja-za-subvencionirani-smjestaj-studenata-u-studentske-domove-za-akademsku-godinu-2025-2026",
+      "source_label_hr": "SCZG — obavijest o rezultatima natječaja"
+    },
+    "last_year_cutoff": {},
+    "provider_notes_hr": "Referentni iznosi za prihod: 100 % proračunske osnovice i 60 % — točne brojeve uvijek provjeri u tekstu natječaja na sczg.hr."
+  },
+  {
+    "id": "split",
+    "city": "Split",
+    "name": "Studentski centar u Splitu",
+    "shortName": "SCST",
+    "website": "https://www.scst.unist.hr/",
+    "natječaj_info_url": "https://www.scst.unist.hr/novosti/opcenito/2164-raspisan-je-natjecaj-za-raspodjelu-mjesta-u-studentskim-domovima-u-splitu-i-ucenickim-domovima-u-splitu-te-smjestajnim-kapacitetima-u-makarskoj-i-subvenciju-kod-privatnih-stanodavaca-za-akademsku-2025-2026-g",
+    "scoring_rules": {
+      "grade_weight": 100,
+      "income_weight": 100,
+      "distance_weight": 0,
+      "special_points": 100,
+      "reference_cohort_grade": 3.85,
+      "notes_hr": "Prosjeke po učilištima vidi u PDF-u na stranici SCST-a uz natječaj."
+    },
+    "published_cutoff": {
+      "academic_year": "—",
+      "scope_hr": "Javni brojčani prag nije u aplikaciji — rezultat ispod je procjena snage prijave (ukupni bodovi), ne usporedba s pragom.",
+      "points": null,
+      "source_url": "https://www.scst.unist.hr/",
+      "source_label_hr": "SCST — službene obavijesti i rang liste"
+    },
+    "last_year_cutoff": {}
+  },
+  {
+    "id": "rijeka",
+    "city": "Rijeka",
+    "name": "Studentski centar u Rijeci",
+    "shortName": "SCR",
+    "website": "https://www.scri.uniri.hr/",
+    "natječaj_info_url": "https://www.scri.uniri.hr/",
+    "scoring_rules": {
+      "grade_weight": 100,
+      "income_weight": 100,
+      "distance_weight": 0,
+      "special_points": 100,
+      "reference_cohort_grade": 3.88,
+      "notes_hr": "Smještaj u domu i subvencija kod privatnog stanodavca mogu biti zasebni natječaji — prati objave na scri.uniri.hr."
+    },
+    "published_cutoff": {
+      "academic_year": "—",
+      "scope_hr": "Javni brojčani prag nije u aplikaciji — prikazana je procjena prema ukupnim bodovima.",
+      "points": null,
+      "source_url": "https://www.scri.uniri.hr/",
+      "source_label_hr": "SCR — službene obavijesti"
+    },
+    "last_year_cutoff": {}
+  },
+  {
+    "id": "osijek",
+    "city": "Osijek",
+    "name": "Studentski centar u Osijeku",
+    "shortName": "SC Osijek",
+    "website": "https://www.stucos.unios.hr/",
+    "natječaj_info_url": "https://www.stucos.unios.hr/?page_id=3448",
+    "scoring_rules": {
+      "grade_weight": 100,
+      "income_weight": 100,
+      "distance_weight": 0,
+      "special_points": 100,
+      "reference_cohort_grade": 3.78,
+      "notes_hr": "Rang liste i upute objavljuje SC Osijek na stucos.unios.hr."
+    },
+    "published_cutoff": {
+      "academic_year": "—",
+      "scope_hr": "Javni brojčani prag nije u aplikaciji — procjena šanse temelji se na ukupnom broju bodova.",
+      "points": null,
+      "source_url": "https://www.stucos.unios.hr/?page_id=3448",
+      "source_label_hr": "SC Osijek — natječaji i rezultati"
+    },
+    "last_year_cutoff": {}
+  }
+]

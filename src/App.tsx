@@ -8,6 +8,7 @@ import KartaFakulteta from "./pages/KartaFakulteta";
 import Kviz from "./pages/Kviz";
 import Samoprocjena from "./pages/Samoprocjena";
 import Kalkulator from "./pages/Kalkulator";
+import KalkulatorDoma from "./pages/KalkulatorDoma";
 import VideoPage from "./pages/VideoPage";
 import Forum from "./pages/Forum";
 import Kalendar from "./pages/Kalendar";
@@ -45,6 +46,7 @@ const App = () => (
           <Route path="/kviz" element={<Kviz />} />
           <Route path="/samoprocjena" element={<Samoprocjena />} />
           <Route path="/kalkulator" element={<Kalkulator />} />
+          <Route path="/kalkulator-doma" element={<KalkulatorDoma />} />
           <Route path="/video" element={<VideoPage />} />
           <Route path="/forum" element={<Forum />} />
           <Route path="/kalendar" element={<Kalendar />} />

@@ -21,15 +21,21 @@ function run(cmd, allowFail) {
 output.push("Repo root: " + repoRoot);
 output.push("");
 
+const COMMIT_MSG =
+  process.env.GIT_COMMIT_MSG ||
+  "feat: kalkulator doma, podaci o domovima, server i UI";
+
 try {
-  output.push("=== GIT STATUS ===");
+  output.push("=== DROP SQLITE SIDECARS FROM INDEX (if tracked) ===");
+  run("git rm --cached -f data/mojput.db-shm data/mojput.db-wal", true);
+  output.push("\n=== GIT STATUS ===");
   run("git status");
   output.push("\n=== GIT ADD ===");
   run("git add -A");
   output.push("\n=== GIT STATUS AFTER ADD ===");
   run("git status");
   output.push("\n=== GIT COMMIT ===");
-  run('git commit -m "Kalkulator bodova, Karta fakulteta, Kviz - moderni UI i funkcionalnosti"', true);
+  run(`git commit -m ${JSON.stringify(COMMIT_MSG)}`, true);
   output.push("\n=== GIT PUSH ===");
   run("git push origin main");
   output.push("\n=== DONE ===");

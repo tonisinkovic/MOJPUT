@@ -6,12 +6,34 @@
 cd "c:\Users\Korisnik\Documents\MOJPUT-main\MOJPUT-2"
 ```
 
-## Korak 2: Pokreni git naredbe
+## Korak 2: Commit i push (najbrže)
+
+U mapi projekta pokreni (skripta sve sredi, uključujući uklanjanje SQLite `.db-shm`/`.db-wal` iz indeksa ako treba, i zapisuje log u `git-output.txt`):
+
+```powershell
+npm run git:push
+```
+
+Opcionalno drugačija poruka commita:
+
+```powershell
+$env:GIT_COMMIT_MSG = "tvoja poruka"; npm run git:push
+```
+
+## Korak 2b: Ručno (isti rezultat)
+
+SQLite privremene datoteke (`*.db-shm`, `*.db-wal`) su u `.gitignore` — ako su ranije bile u indeksu, jednom ukloni iz praćenja:
+
+```powershell
+git rm --cached -f data/mojput.db-shm data/mojput.db-wal 2>$null
+```
+
+Zatim:
 
 ```powershell
 git add -A
 git status
-git commit -m "Kalkulator bodova, Karta fakulteta, Kviz - moderni UI"
+git commit -m "feat: kalkulator doma, podaci o domovima, server i UI"
 ```
 
 Ako piše "nothing to commit" – promjene su već commitane, samo pokreni:

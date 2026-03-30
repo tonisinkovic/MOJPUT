@@ -16,8 +16,9 @@ import {
   ArrowRight,
   Sparkles,
   Award,
-  Building2,
   ShieldCheck,
+  Home,
+  Lock,
 } from "lucide-react";
 
 const features = [
@@ -44,6 +45,12 @@ const features = [
     title: "Kalkulator bodova",
     description: "Izračunaj bodove za upis i saznaj koje fakultete možeš upisati.",
     path: "/kalkulator",
+  },
+  {
+    icon: <Home className="w-6 h-6 text-primary-foreground" />,
+    title: "Studentski domovi",
+    description: "Okvirni bodovi za natječaj; prag u alatu samo za Zagreb, za ostale gradove procjena šanse.",
+    path: "/kalkulator-doma",
   },
   {
     icon: <Video className="w-6 h-6 text-primary-foreground" />,
@@ -148,57 +155,87 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Faculty Hub Entry */}
+      {/* Faculty Hub — kompaktno, zaključano (u izradi) */}
+      <section className="container py-4 md:py-5">
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          className="relative overflow-hidden rounded-2xl border border-dashed border-muted-foreground/35 bg-muted/30 px-4 py-3 md:px-5 md:py-3.5 shadow-sm"
+          role="status"
+          aria-live="polite"
+        >
+          <div className="absolute -right-8 -top-8 h-24 w-24 rounded-full bg-primary/5 blur-2xl pointer-events-none" aria-hidden />
+          <div className="relative flex flex-col gap-2.5 sm:flex-row sm:items-center sm:gap-4">
+            <div
+              className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-muted-foreground/25 bg-background shadow-inner"
+              aria-hidden
+            >
+              <Lock className="h-5 w-5 text-muted-foreground" strokeWidth={2} />
+            </div>
+            <div className="min-w-0 flex-1">
+              <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+                <h2 className="text-base md:text-lg font-semibold leading-tight">
+                  Profili fakulteta na zasebnom mjestu
+                </h2>
+                <span className="inline-flex items-center rounded-full border border-muted-foreground/30 bg-background/80 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-muted-foreground">
+                  U izradi
+                </span>
+              </div>
+              <p className="text-xs md:text-sm text-muted-foreground leading-snug mt-1">
+                Sekcija još nije dostupna — radimo na profilima s objavama i obavijestima. Uskoro ovdje.
+              </p>
+            </div>
+            <div className="hidden sm:flex shrink-0 items-center gap-1.5 text-[11px] text-muted-foreground/90">
+              <ShieldCheck className="h-3.5 w-3.5 text-primary/80" aria-hidden />
+              <span className="max-w-[140px] leading-tight">Verificirani profili · siguran pristup</span>
+            </div>
+          </div>
+        </motion.div>
+      </section>
+
+      {/* Studentski domovi — kalkulator (ispod pregleda fakultetskih profila) */}
       <section className="container py-8 md:py-12">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          className="relative overflow-hidden rounded-3xl border bg-card/80 p-6 md:p-8 shadow-card"
+          className="relative overflow-hidden rounded-3xl border bg-gradient-to-br from-primary/8 via-card to-accent/10 p-6 md:p-8 shadow-card"
         >
-          <div className="absolute -top-20 -right-20 w-56 h-56 bg-primary/10 rounded-full blur-3xl" />
-          <div className="absolute -bottom-24 -left-12 w-56 h-56 bg-accent/10 rounded-full blur-3xl" />
-          <div className="relative grid gap-6 lg:grid-cols-[1.4fr_1fr] lg:items-center">
+          <div className="absolute -top-16 -right-16 w-64 h-64 bg-primary/15 rounded-full blur-3xl" />
+          <div className="absolute bottom-0 left-1/4 w-48 h-48 bg-accent/10 rounded-full blur-3xl" />
+          <div className="relative grid gap-6 lg:grid-cols-[1.35fr_1fr] lg:items-center">
             <div>
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-semibold">
-                <Building2 className="w-4 h-4" />
-                Nova sekcija
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/15 text-primary text-xs font-semibold">
+                <Home className="w-4 h-4" />
+                Novo na MojPutu
               </div>
               <h2 className="text-2xl md:text-3xl font-bold mt-4">
-                Profili fakulteta na zasebnom mjestu
+                Kalkulator bodova za studentske domove
               </h2>
-              <p className="text-muted-foreground mt-3 max-w-2xl">
-                Fakulteti sada imaju vlastite profile s objavama, događanjima i obavijestima.
-                Učenici mogu pregledavati sadržaj javno, a fakulteti upravljaju objavama kroz svoj dashboard.
+              <p className="text-muted-foreground mt-3 max-w-2xl leading-relaxed">
+                Unesi prosjek, prihod, godinu studija i što se tiče tebe — dobiješ okvirni broj bodova. Za Zagreb usporedba
+                s objavljenim pragom; za druge gradove procjena šanse bez točnog praga u aplikaciji.
               </p>
               <div className="flex flex-col sm:flex-row gap-3 mt-6">
-                <Button asChild>
-                  <Link to="/fakulteti">Pogledaj profile fakulteta</Link>
+                <Button asChild className="gradient-hero border-0 text-primary-foreground shadow-md">
+                  <Link to="/kalkulator-doma">
+                    Otvori kalkulator
+                    <ArrowRight className="w-4 h-4 ml-2" />
+                  </Link>
                 </Button>
                 <Button asChild variant="outline">
-                  <Link to="/fakulteti/prijava">Prijava fakulteta</Link>
+                  <Link to="/kalkulator">Kalkulator za upis</Link>
                 </Button>
               </div>
             </div>
-
-            <div className="rounded-2xl border bg-background/70 p-5">
-              <div className="flex items-center gap-2 text-sm font-semibold">
-                <ShieldCheck className="w-4 h-4 text-primary" />
-                Verificirani profili
-              </div>
-              <p className="text-sm text-muted-foreground mt-2">
-                Svaki fakultet ima svoj račun i vidi samo svoje objave.
-              </p>
-              <div className="grid grid-cols-2 gap-3 mt-4 text-sm">
-                <div className="rounded-xl border p-3">
-                  <p className="font-semibold">Javne objave</p>
-                  <p className="text-muted-foreground text-xs mt-1">Novosti i događanja</p>
-                </div>
-                <div className="rounded-xl border p-3">
-                  <p className="font-semibold">Siguran pristup</p>
-                  <p className="text-muted-foreground text-xs mt-1">Email + lozinka</p>
-                </div>
-              </div>
+            <div className="rounded-2xl border bg-background/80 backdrop-blur-sm p-5 space-y-3">
+              <p className="text-sm font-semibold text-foreground">Što uključuje</p>
+              <ul className="text-sm text-muted-foreground space-y-2 list-disc list-inside">
+                <li>Prosjek ocjena, prihod po članu kućanstva, godina studija</li>
+                <li>Posebni uvjeti — označi što imaš (uz prijavu ide dokumentacija)</li>
+                <li>Za Zagreb traka do praga; za ostale gradove procjena prema bodovima</li>
+              </ul>
             </div>
           </div>
         </motion.div>

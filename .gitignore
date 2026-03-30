@@ -30,3 +30,10 @@ dist-ssr
 # Prisma SQLite
 prisma/chatbot.db
 prisma/chatbot.db-journal
+
+# SQLite WAL mode sidecar files (local runtime, not source)
+*.db-shm
+*.db-wal
+
+# Local log from npm run git:push
+git-output.txt
