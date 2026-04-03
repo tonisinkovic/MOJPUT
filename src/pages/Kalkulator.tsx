@@ -55,7 +55,8 @@ import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import {
   scoringFormulas,
-  calculateProgramPoints,
+  calculateTotal,
+  usesWeightedPrijemni,
   type ProgramScoring,
   type ScoringComponent,
 } from "@/data/scoringFormulas";
@@ -138,6 +139,9 @@ const Kalkulator = () => {
   // ─── State: formula-based inputs ───
   const [formulaInputs, setFormulaInputs] = useState<Record<string, number>>({});
 
+  /** Postotak ili bodovi prijemnog kad program ima weightMatura/weightPrijemni; null = još nije uneseno */
+  const [prijemniInput, setPrijemniInput] = useState<number | null>(0);
+
   // ─── State: additional points ───
   const [additionalPoints, setAdditionalPoints] = useState<Record<string, number>>({});
 
@@ -165,6 +169,8 @@ const Kalkulator = () => {
         defaults[comp.id] = formulaInputs[comp.id] ?? 0;
       }
     }
+    setPrijemniInput(usesWeightedPrijemni(opt.formula) ? null : 0);
+
     setFormulaInputs(defaults);
   };
 
@@ -173,20 +179,22 @@ const Kalkulator = () => {
     return Object.values(additionalPoints).reduce((a, b) => a + b, 0);
   }, [additionalPoints]);
 
-  const formulaResult = useMemo(() => {
+  const admissionResult = useMemo(() => {
     if (!selectedFormula) return null;
-    return calculateProgramPoints(selectedFormula, formulaInputs);
-  }, [selectedFormula, formulaInputs]);
+    const weighted = usesWeightedPrijemni(selectedFormula);
+    return calculateTotal(selectedFormula, formulaInputs, {
+      prijemniInput: weighted ? prijemniInput : 0,
+      additionalPointsFromUi: totalAdditional,
+    });
+  }, [selectedFormula, formulaInputs, prijemniInput, totalAdditional]);
 
   const totalPoints = useMemo(() => {
-    if (formulaResult) {
-      return Math.min(MAX_POINTS, Math.round(formulaResult.total + totalAdditional));
-    }
-    return 0;
-  }, [formulaResult, totalAdditional]);
+    if (!admissionResult || admissionResult.blocked) return null;
+    return Math.min(MAX_POINTS, Math.round(admissionResult.total));
+  }, [admissionResult]);
 
   const cutoff = selectedProgram?.cutoff ?? null;
-  const chanceLevel = getChanceLevel(totalPoints, cutoff);
+  const chanceLevel = getChanceLevel(totalPoints ?? 0, cutoff);
 
   // ─── Pre-filter by city and institution type ───
   const preFilteredPrograms = useMemo(() => {
@@ -323,22 +331,28 @@ const Kalkulator = () => {
     if (!selectedFormula) return null;
     const ocjene: ScoringComponent[] = [];
     const maturaObv: ScoringComponent[] = [];
+    const dodatneProvjere: ScoringComponent[] = [];
     const maturaIzb: ScoringComponent[] = [];
     const dodatno: ScoringComponent[] = [];
 
     for (const c of selectedFormula.komponente) {
       if (c.type === "ocjena") ocjene.push(c);
-      else if (c.type === "matura") maturaObv.push(c);
-      else if (c.type === "matura_izborni") maturaIzb.push(c);
+      else if (c.type === "matura") {
+        if (c.id.startsWith("dod_")) dodatneProvjere.push(c);
+        else maturaObv.push(c);
+      } else if (c.type === "matura_izborni") maturaIzb.push(c);
       else dodatno.push(c);
     }
-    return { ocjene, maturaObv, maturaIzb, dodatno };
+    return { ocjene, maturaObv, dodatneProvjere, maturaIzb, dodatno };
   }, [selectedFormula]);
 
   // ─── Helper: update formula input ───
   const updateInput = (id: string, value: number) => {
     setFormulaInputs((prev) => ({ ...prev, [id]: value }));
   };
+
+  const pointsForBreakdownId = (id: string) =>
+    admissionResult?.breakdown.find((b) => b.id === id)?.points;
 
   // ═══════════════════════════════════════════════════════════════
   //  RENDER
@@ -662,7 +676,7 @@ const Kalkulator = () => {
                                 <HelpCircle className="w-4 h-4 text-muted-foreground cursor-help" />
                               </TooltipTrigger>
                               <TooltipContent className="max-w-xs">
-                                Unesi postotak (0–100). Razina A/B je označena – A razina donosi više bodova.
+                                Unesi postotak (0–100). Oznaka razine pokazuje što studij traži na natječaju.
                               </TooltipContent>
                             </Tooltip>
                           </div>
@@ -671,9 +685,15 @@ const Kalkulator = () => {
                           </CardDescription>
                         </CardHeader>
                         <CardContent className="space-y-4">
-                          {groupedComponents.maturaObv.map((comp) => (
+                          {groupedComponents.maturaObv.map((comp) => {
+                            const pts = pointsForBreakdownId(comp.id);
+                            const displayPts =
+                              pts !== undefined
+                                ? pts
+                                : Math.round(((formulaInputs[comp.id] ?? 70) / 100) * comp.max);
+                            return (
                             <div key={comp.id} className="space-y-2">
-                              <div className="flex justify-between text-sm">
+                              <div className="flex flex-wrap justify-between gap-2 text-sm">
                                 <Label className="flex items-center gap-1.5">
                                   {comp.label}
                                   {comp.razina && (
@@ -683,12 +703,12 @@ const Kalkulator = () => {
                                         ? "bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300"
                                         : "bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400"
                                     )}>
-                                      {comp.razina}
+                                      obavezna razina {comp.razina}
                                     </span>
                                   )}
                                 </Label>
-                                <span className="text-muted-foreground">
-                                  {formulaInputs[comp.id] ?? 70}% → {Math.round(((formulaInputs[comp.id] ?? 70) / 100) * comp.max)} / {comp.max} bod.
+                                <span className="text-muted-foreground text-right">
+                                  {formulaInputs[comp.id] ?? 70}% → {displayPts.toFixed(1)} / {comp.max} bod.
                                 </span>
                               </div>
                               <Slider
@@ -700,7 +720,63 @@ const Kalkulator = () => {
                                 className="py-2"
                               />
                             </div>
-                          ))}
+                          );})}
+                        </CardContent>
+                      </Card>
+                    )}
+
+                    {/* Dodatne provjere (fakultetski testovi) – id komponente u podacima počinje s dod_ */}
+                    {groupedComponents.dodatneProvjere.length > 0 && (
+                      <Card className="rounded-2xl border-2 shadow-card overflow-hidden">
+                        <CardHeader className="pb-3">
+                          <div className="flex items-center gap-2">
+                            <Award className="w-5 h-5 text-primary" />
+                            <CardTitle className="text-lg">
+                              Dodatne provjere specifičnih znanja, vještina i sposobnosti
+                            </CardTitle>
+                          </div>
+                          <CardDescription>
+                            Unesi postotak ostvaren na provjeri (0–100). Ukupno do{" "}
+                            {groupedComponents.dodatneProvjere.reduce((s, c) => s + c.max, 0)} bodova.
+                          </CardDescription>
+                        </CardHeader>
+                        <CardContent className="space-y-4">
+                          {groupedComponents.dodatneProvjere.map((comp) => {
+                            const pts = pointsForBreakdownId(comp.id);
+                            const displayPts =
+                              pts !== undefined
+                                ? pts
+                                : Math.round(((formulaInputs[comp.id] ?? 70) / 100) * comp.max);
+                            return (
+                              <div key={comp.id} className="space-y-2">
+                                <div className="flex flex-wrap justify-between gap-2 text-sm">
+                                  <Label className="flex items-center gap-1.5 flex-wrap">
+                                    {comp.label}
+                                    {comp.opis && (
+                                      <Tooltip>
+                                        <TooltipTrigger asChild>
+                                          <HelpCircle className="w-3.5 h-3.5 text-muted-foreground cursor-help shrink-0" />
+                                        </TooltipTrigger>
+                                        <TooltipContent className="max-w-sm">{comp.opis}</TooltipContent>
+                                      </Tooltip>
+                                    )}
+                                  </Label>
+                                  <span className="text-muted-foreground text-right">
+                                    {formulaInputs[comp.id] ?? 70}% → {displayPts.toFixed(1)} / {comp.max}{" "}
+                                    bod.
+                                  </span>
+                                </div>
+                                <Slider
+                                  value={[formulaInputs[comp.id] ?? 70]}
+                                  onValueChange={([v]) => updateInput(comp.id, v)}
+                                  min={0}
+                                  max={100}
+                                  step={1}
+                                  className="py-2"
+                                />
+                              </div>
+                            );
+                          })}
                         </CardContent>
                       </Card>
                     )}
@@ -720,14 +796,20 @@ const Kalkulator = () => {
                           </CardDescription>
                         </CardHeader>
                         <CardContent className="space-y-4">
-                          {groupedComponents.maturaIzb.map((comp) => (
+                          {groupedComponents.maturaIzb.map((comp) => {
+                            const pts = pointsForBreakdownId(comp.id);
+                            const displayPts =
+                              pts !== undefined
+                                ? pts
+                                : Math.round(((formulaInputs[comp.id] ?? 0) / 100) * comp.max);
+                            return (
                             <div key={comp.id} className="space-y-2">
-                              <div className="flex justify-between text-sm">
+                              <div className="flex flex-wrap justify-between gap-2 text-sm">
                                 <Label className="flex items-center gap-1.5">
                                   {comp.label}
                                   {comp.razina && (
                                     <span className="text-xs px-1.5 py-0.5 rounded-md font-medium bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300">
-                                      {comp.razina}
+                                      obavezna razina {comp.razina}
                                     </span>
                                   )}
                                   {comp.opis && (
@@ -739,8 +821,8 @@ const Kalkulator = () => {
                                     </Tooltip>
                                   )}
                                 </Label>
-                                <span className="text-muted-foreground">
-                                  {formulaInputs[comp.id] ?? 0}% → {Math.round(((formulaInputs[comp.id] ?? 0) / 100) * comp.max)} / {comp.max} bod.
+                                <span className="text-muted-foreground text-right">
+                                  {formulaInputs[comp.id] ?? 0}% → {displayPts.toFixed(1)} / {comp.max} bod.
                                 </span>
                               </div>
                               <Slider
@@ -752,7 +834,96 @@ const Kalkulator = () => {
                                 className="py-2"
                               />
                             </div>
-                          ))}
+                          );})}
+                        </CardContent>
+                      </Card>
+                    )}
+
+                    {/* Prijemni ispit (ponder) – samo ako su u podacima programa zadane težine */}
+                    {selectedFormula && usesWeightedPrijemni(selectedFormula) && (
+                      <Card className="rounded-2xl border-2 shadow-card overflow-hidden">
+                        <CardHeader className="pb-3">
+                          <div className="flex items-center gap-2">
+                            <Award className="w-5 h-5 text-primary" />
+                            <CardTitle className="text-lg">Prijemni ispit</CardTitle>
+                          </div>
+                          <CardDescription>
+                            Udio u maksimalnom broju bodova: matura{" "}
+                            {Math.round((selectedFormula.weightMatura ?? 0) * 100)} %, prijemni{" "}
+                            {Math.round((selectedFormula.weightPrijemni ?? 0) * 100)} %
+                          </CardDescription>
+                        </CardHeader>
+                        <CardContent className="space-y-4">
+                          {selectedFormula.prijemniInputMode === "points" ? (
+                            <div className="space-y-2">
+                              <Label className="text-sm">
+                                Bodovi na prijemnom (0–
+                                {Math.round(
+                                  selectedFormula.maxBodovi * (selectedFormula.weightPrijemni ?? 0),
+                                )}
+                                )
+                              </Label>
+                              <Input
+                                type="number"
+                                min={0}
+                                max={selectedFormula.maxBodovi * (selectedFormula.weightPrijemni ?? 0)}
+                                value={prijemniInput ?? ""}
+                                onChange={(e) => {
+                                  const raw = e.target.value;
+                                  if (raw === "") {
+                                    setPrijemniInput(null);
+                                    return;
+                                  }
+                                  const v = parseFloat(raw);
+                                  if (!Number.isNaN(v)) {
+                                    const cap =
+                                      selectedFormula.maxBodovi * (selectedFormula.weightPrijemni ?? 0);
+                                    setPrijemniInput(Math.min(cap, Math.max(0, v)));
+                                  }
+                                }}
+                                className="h-10 rounded-lg"
+                                placeholder="Unesi bodove"
+                              />
+                            </div>
+                          ) : (
+                            <>
+                              <div className="flex justify-between text-sm">
+                                <Label>Rezultat prijemnog (0–100 %)</Label>
+                                <span className="text-muted-foreground">
+                                  {prijemniInput ?? "—"} %
+                                </span>
+                              </div>
+                              <Slider
+                                value={[prijemniInput ?? 0]}
+                                onValueChange={([v]) => setPrijemniInput(v)}
+                                min={0}
+                                max={100}
+                                step={1}
+                                className="py-2"
+                              />
+                              <Input
+                                type="number"
+                                min={0}
+                                max={100}
+                                value={prijemniInput === null ? "" : prijemniInput}
+                                onChange={(e) => {
+                                  const raw = e.target.value;
+                                  if (raw === "") {
+                                    setPrijemniInput(null);
+                                    return;
+                                  }
+                                  const v = parseInt(raw, 10);
+                                  if (!Number.isNaN(v)) setPrijemniInput(Math.min(100, Math.max(0, v)));
+                                }}
+                                className="h-10 rounded-lg max-w-[120px]"
+                                placeholder="%"
+                              />
+                            </>
+                          )}
+                          <p className="text-xs text-muted-foreground">
+                            Za izračun unesi rezultat (postotak ili bodove). Prazno polje blokira ukupni
+                            zbroj.
+                          </p>
                         </CardContent>
                       </Card>
                     )}
@@ -903,6 +1074,34 @@ const Kalkulator = () => {
                       <CardDescription>Izračun u realnom vremenu</CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-6">
+                      {admissionResult && admissionResult.warnings.length > 0 && (
+                        <div className="rounded-lg border border-amber-200 bg-amber-50 dark:bg-amber-950/30 dark:border-amber-800 px-3 py-2 text-sm text-amber-900 dark:text-amber-100 space-y-1">
+                          {admissionResult.warnings.map((w, i) => (
+                            <p key={i}>{w}</p>
+                          ))}
+                        </div>
+                      )}
+                      {admissionResult?.blocked && admissionResult.blockReason && (
+                        <div className="rounded-lg border border-rose-200 bg-rose-50 dark:bg-rose-950/30 dark:border-rose-800 px-3 py-2 text-sm text-rose-900 dark:text-rose-100">
+                          {admissionResult.blockReason}
+                        </div>
+                      )}
+                      {selectedFormula && usesWeightedPrijemni(selectedFormula) && admissionResult && !admissionResult.blocked && (
+                        <div className="rounded-xl border bg-muted/40 px-3 py-2 text-sm space-y-1">
+                          <div className="flex justify-between gap-2">
+                            <span className="text-muted-foreground">Matura i ostalo (ponder)</span>
+                            <span className="font-medium tabular-nums">
+                              {admissionResult.maturaBlockPoints.toFixed(1)} bod.
+                            </span>
+                          </div>
+                          <div className="flex justify-between gap-2">
+                            <span className="text-muted-foreground">Prijemni ispit (ponder)</span>
+                            <span className="font-medium tabular-nums">
+                              {admissionResult.prijemniPoints.toFixed(1)} / {admissionResult.prijemniMax.toFixed(1)}
+                            </span>
+                          </div>
+                        </div>
+                      )}
                       {/* Big number */}
                       <div className="text-center">
                         <p className="text-sm text-muted-foreground mb-1">
@@ -910,14 +1109,14 @@ const Kalkulator = () => {
                         </p>
                         <AnimatePresence mode="wait">
                           <motion.p
-                            key={totalPoints}
+                            key={totalPoints ?? "x"}
                             initial={{ scale: 0.9, opacity: 0.5 }}
                             animate={{ scale: 1, opacity: 1 }}
                             exit={{ scale: 0.9, opacity: 0.5 }}
                             transition={{ type: "spring", stiffness: 300 }}
                             className="text-5xl md:text-6xl font-extrabold text-gradient"
                           >
-                            {totalPoints}
+                            {totalPoints ?? "—"}
                           </motion.p>
                         </AnimatePresence>
                         <p className="text-sm text-muted-foreground mt-1">
@@ -943,7 +1142,7 @@ const Kalkulator = () => {
                             className={cn("h-full rounded-full", config.bg)}
                             initial={{ width: 0 }}
                             animate={{
-                              width: `${(totalPoints / MAX_POINTS) * 100}%`,
+                              width: `${((totalPoints ?? 0) / MAX_POINTS) * 100}%`,
                             }}
                             transition={{ type: "spring", stiffness: 100 }}
                           />
@@ -989,7 +1188,7 @@ const Kalkulator = () => {
                       </div>
 
                       {/* Contextual guidance */}
-                      {selectedProgram && cutoff != null && (
+                      {selectedProgram && cutoff != null && totalPoints != null && (
                         <div className="text-sm text-muted-foreground space-y-1">
                           {chanceLevel === "high" && (
                             <p>Tvoj rezultat je znatno iznad bodovnog praga. Dobra šansa za upis!</p>
@@ -1025,7 +1224,7 @@ const Kalkulator = () => {
                   </Card>
 
                   {/* ═══ Breakdown card ═══ */}
-                  {formulaResult && (
+                  {admissionResult && !admissionResult.blocked && (
                     <Card className="rounded-2xl border-2 shadow-card overflow-hidden">
                       <CardHeader className="pb-2">
                         <button
@@ -1052,7 +1251,7 @@ const Kalkulator = () => {
                             transition={{ duration: 0.2 }}
                           >
                             <CardContent className="space-y-2 pt-0">
-                              {formulaResult.breakdown.map((item) => {
+                              {admissionResult.breakdown.map((item) => {
                                 const pct = item.max > 0 ? (item.points / item.max) * 100 : 0;
                                 return (
                                   <div key={item.id} className="space-y-1">
@@ -1102,7 +1301,7 @@ const Kalkulator = () => {
                               )}
                               <div className="pt-2 border-t flex justify-between text-sm font-semibold">
                                 <span>Ukupno</span>
-                                <span>{totalPoints} / {MAX_POINTS}</span>
+                                <span>{totalPoints ?? "—"} / {MAX_POINTS}</span>
                               </div>
                             </CardContent>
                           </motion.div>

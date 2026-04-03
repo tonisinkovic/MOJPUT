@@ -12,8 +12,9 @@ import {
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { apiGet, apiPost } from "@/lib/api";
-import { Link } from "react-router-dom";
-import { authLogout, authMe, type AuthUser } from "@/lib/auth";
+import { Link, useLocation } from "react-router-dom";
+import { authLogout, authMe, userFromAuthMe, type AuthUser } from "@/lib/auth";
+import { cn } from "@/lib/utils";
 
 type ForumMessage = {
   id: number;
@@ -165,8 +166,9 @@ const writeLocalConversations = (conversations: ForumConversation[]) => {
 };
 
 const Forum = () => {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const location = useLocation();
   const [currentUser, setCurrentUser] = useState<AuthUser | null>(null);
+  const canUseForum = Boolean(currentUser);
 
   const [conversations, setConversations] = useState<ForumConversation[]>([]);
   const [loadingConversations, setLoadingConversations] = useState(true);
@@ -185,17 +187,32 @@ const Forum = () => {
     let alive = true;
     authMe().then((res) => {
       if (!alive) return;
-      if (res.success) {
-        const user = (res as { user?: AuthUser }).user ?? (res as { data?: { user?: AuthUser } }).data?.user ?? null;
-        if (user) {
-          setCurrentUser(user);
-          setIsAuthenticated(true);
-        }
+      const user = userFromAuthMe(res);
+      if (user) {
+        setCurrentUser(user);
+      } else {
+        setCurrentUser(null);
       }
     });
     return () => {
       alive = false;
     };
+  }, [location.pathname]);
+
+  useEffect(() => {
+    const onVis = () => {
+      if (document.visibilityState !== "visible") return;
+      authMe().then((res) => {
+        const user = userFromAuthMe(res);
+        if (user) {
+          setCurrentUser(user);
+        } else {
+          setCurrentUser(null);
+        }
+      });
+    };
+    document.addEventListener("visibilitychange", onVis);
+    return () => document.removeEventListener("visibilitychange", onVis);
   }, []);
 
   const loadConversations = async () => {
@@ -344,7 +361,6 @@ const Forum = () => {
 
   const handleLogout = async () => {
     await authLogout();
-    setIsAuthenticated(false);
     setCurrentUser(null);
     setSelectedConversation(null);
   };
@@ -455,7 +471,7 @@ const Forum = () => {
   };
 
   const handleLikeMessage = async (messageId: number) => {
-    if (!isAuthenticated || !currentUser || !selectedConversation) return;
+    if (!canUseForum || !currentUser || !selectedConversation) return;
 
     const res = await apiPost<{ liked?: boolean; like_count?: number }>(`/api/forum/messages/${messageId}/like`, {});
     let liked = false;
@@ -500,37 +516,37 @@ const Forum = () => {
 
   return (
     <Layout>
-      <section className="container py-8 md:py-12 max-w-6xl mx-auto px-4">
+      <section className="container py-4 sm:py-8 md:py-12 max-w-6xl mx-auto px-3 sm:px-4 pb-[max(1rem,env(safe-area-inset-bottom))]">
         <motion.div
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3 }}
-          className="mb-6"
+          className={cn("mb-4 md:mb-6", selectedConversation && "max-md:hidden")}
         >
-          <h1 className="text-2xl md:text-3xl font-bold text-slate-900 dark:text-slate-50 tracking-tight">
+          <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-slate-900 dark:text-slate-50 tracking-tight">
             Forum za učenike
           </h1>
-          <p className="text-slate-600 dark:text-slate-400 text-sm md:text-base mt-1">
+          <p className="text-slate-600 dark:text-slate-400 text-sm md:text-base mt-1 leading-snug">
             Razmijeni iskustva i postavi pitanja o maturi, fakultetima i studentskom životu.
           </p>
         </motion.div>
 
-        {!isAuthenticated && (
+        {!canUseForum && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className="mb-6 rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50/80 dark:bg-slate-900/50 p-4 md:p-5 shadow-sm"
+            className="mb-4 md:mb-6 rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50/80 dark:bg-slate-900/50 p-4 md:p-5 shadow-sm"
           >
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
               <div>
                 <p className="text-sm font-semibold text-slate-800 dark:text-slate-200">Samo pregled poruka</p>
-                <p className="text-xs text-slate-600 dark:text-slate-400 mt-0.5">
+                <p className="text-xs text-slate-600 dark:text-slate-400 mt-0.5 leading-relaxed">
                   Možeš čitati razgovore, ali za slanje poruka, lajkanje i kreiranje tema potrebna je prijava.
                 </p>
               </div>
               <Link
                 to="/prijava"
-                className="inline-flex items-center justify-center gap-2 rounded-xl bg-teal-600 hover:bg-teal-700 text-white px-4 py-2.5 text-sm font-semibold transition-colors shadow-sm"
+                className="inline-flex items-center justify-center gap-2 rounded-xl bg-teal-600 hover:bg-teal-700 text-white px-4 py-3 sm:py-2.5 text-sm font-semibold transition-colors shadow-sm touch-manipulation min-h-[44px] sm:min-h-0"
               >
                 <LogIn className="h-4 w-4" />
                 Prijavi se
@@ -545,10 +561,15 @@ const Forum = () => {
           transition={{ duration: 0.3, delay: 0.05 }}
           className="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 shadow-xl overflow-hidden"
         >
-          <div className="flex flex-col md:flex-row h-[min(75vh,640px)] md:h-[580px]">
+          <div className="flex flex-col md:flex-row min-h-0 h-[min(calc(100dvh-11rem),720px)] sm:h-[min(78dvh,680px)] md:h-[580px]">
             {/* Sidebar */}
-            <div className="md:w-80 border-b md:border-b-0 md:border-r border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-900/50 flex flex-col shrink-0">
-              <div className="p-4 border-b border-slate-200 dark:border-slate-700 flex items-center gap-3">
+            <div
+              className={cn(
+                "md:w-80 border-b md:border-b-0 md:border-r border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-900/50 flex flex-col shrink-0 min-h-0",
+                selectedConversation && "max-md:hidden",
+              )}
+            >
+              <div className="p-3 sm:p-4 border-b border-slate-200 dark:border-slate-700 flex items-center gap-3">
                 <div className="w-10 h-10 rounded-full bg-gradient-to-br from-teal-500 to-cyan-600 flex items-center justify-center text-white font-semibold shadow-md">
                   {(currentUser?.username?.[0] || "G").toUpperCase()}
                 </div>
@@ -557,13 +578,14 @@ const Forum = () => {
                     {currentUser?.username || "Gost"}
                   </p>
                   <p className="text-xs text-slate-500 dark:text-slate-400">
-                    {isAuthenticated ? "Član foruma" : "Samo pregled"}
+                    {canUseForum ? "Član foruma" : "Samo pregled"}
                   </p>
                 </div>
-                {isAuthenticated ? (
+                {canUseForum ? (
                   <button
+                    type="button"
                     onClick={handleLogout}
-                    className="p-2 rounded-xl hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-400 transition-colors"
+                    className="p-2.5 sm:p-2 rounded-xl hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-400 transition-colors touch-manipulation min-h-[44px] min-w-[44px] flex items-center justify-center"
                     title="Odjava"
                   >
                     <LogOut className="h-4 w-4" />
@@ -571,7 +593,7 @@ const Forum = () => {
                 ) : (
                   <Link
                     to="/prijava"
-                    className="p-2 rounded-xl hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-400 transition-colors"
+                    className="p-2.5 sm:p-2 rounded-xl hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-400 transition-colors touch-manipulation min-h-[44px] min-w-[44px] flex items-center justify-center"
                     title="Prijava"
                   >
                     <LogIn className="h-4 w-4" />
@@ -580,10 +602,11 @@ const Forum = () => {
               </div>
 
               <div className="p-3 border-b border-slate-200 dark:border-slate-700">
-                {isAuthenticated ? (
+                {canUseForum ? (
                   <button
+                    type="button"
                     onClick={() => setShowNewConversationModal(true)}
-                    className="w-full inline-flex items-center justify-center gap-2 rounded-xl bg-teal-600 hover:bg-teal-700 text-white px-4 py-2.5 text-sm font-semibold shadow-md transition-all hover:shadow-lg active:scale-[0.98]"
+                    className="w-full inline-flex items-center justify-center gap-2 rounded-xl bg-teal-600 hover:bg-teal-700 text-white px-4 py-3.5 sm:py-2.5 text-sm font-semibold shadow-md transition-all hover:shadow-lg active:scale-[0.98] touch-manipulation min-h-[48px]"
                   >
                     <Plus className="h-4 w-4" />
                     Novi razgovor
@@ -591,7 +614,7 @@ const Forum = () => {
                 ) : (
                   <Link
                     to="/prijava"
-                    className="w-full inline-flex items-center justify-center gap-2 rounded-xl border-2 border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 px-4 py-2.5 text-sm font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
+                    className="w-full inline-flex items-center justify-center gap-2 rounded-xl border-2 border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 px-4 py-3.5 sm:py-2.5 text-sm font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors touch-manipulation min-h-[48px]"
                   >
                     <LogIn className="h-4 w-4" />
                     Prijavi se za pisanje
@@ -607,7 +630,7 @@ const Forum = () => {
                     placeholder="Pretraži razgovore..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full pl-9 pr-4 py-2 rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 text-sm text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500/50 focus:border-teal-500"
+                    className="w-full pl-9 pr-4 py-2.5 sm:py-2 rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 text-base sm:text-sm text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500/50 focus:border-teal-500"
                   />
                 </div>
               </div>
@@ -622,7 +645,7 @@ const Forum = () => {
                   <div className="p-8 text-center">
                     <MessageCircle className="mx-auto h-12 w-12 text-slate-300 dark:text-slate-600 mb-3" />
                     <p className="text-sm text-slate-500 dark:text-slate-400">
-                      {isAuthenticated ? "Nema razgovora. Kreiraj prvi!" : "Trenutno nema razgovora."}
+                      {canUseForum ? "Nema razgovora. Kreiraj prvi!" : "Trenutno nema razgovora."}
                     </p>
                   </div>
                 ) : (
@@ -634,10 +657,10 @@ const Forum = () => {
                           setSelectedConversation(conv);
                           if (conv.messages.length === 0) await loadMessages(conv.id);
                         }}
-                        className={`w-full text-left px-4 py-3 rounded-xl mb-1 transition-all duration-200 ${
+                        className={`w-full text-left px-4 py-3.5 sm:py-3 rounded-xl mb-1 transition-all duration-200 touch-manipulation min-h-[52px] ${
                           selectedConversation?.id === conv.id
                             ? "bg-teal-500/15 dark:bg-teal-500/20 border-l-4 border-teal-500"
-                            : "hover:bg-slate-100 dark:hover:bg-slate-800/80"
+                            : "hover:bg-slate-100 dark:hover:bg-slate-800/80 active:bg-slate-100"
                         }`}
                       >
                         <p className="font-semibold text-slate-900 dark:text-slate-100 truncate text-sm">
@@ -657,7 +680,12 @@ const Forum = () => {
             </div>
 
             {/* Chat area */}
-            <div className="flex-1 flex flex-col min-w-0 bg-white dark:bg-slate-900">
+            <div
+              className={cn(
+                "flex-1 flex flex-col min-w-0 min-h-0 bg-white dark:bg-slate-900",
+                !selectedConversation && "max-md:hidden",
+              )}
+            >
               <AnimatePresence mode="wait">
                 {selectedConversation ? (
                   <motion.div
@@ -667,13 +695,14 @@ const Forum = () => {
                     exit={{ opacity: 0 }}
                     className="flex flex-col h-full"
                   >
-                    <div className="p-4 border-b border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-900/50 shrink-0">
+                    <div className="p-3 sm:p-4 border-b border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-900/50 shrink-0">
                       <button
+                        type="button"
                         onClick={() => setSelectedConversation(null)}
-                        className="inline-flex md:hidden items-center gap-1.5 text-sm text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 mb-2 transition-colors"
+                        className="inline-flex md:hidden items-center gap-2 text-sm font-medium text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 mb-2 transition-colors touch-manipulation min-h-[44px] -ml-1 px-2 rounded-lg hover:bg-slate-200/80 dark:hover:bg-slate-800/80"
                       >
-                        <ArrowLeft className="h-4 w-4" />
-                        Natrag
+                        <ArrowLeft className="h-5 w-5 shrink-0" />
+                        Popis razgovora
                       </button>
                       <h2 className="text-lg font-bold text-slate-900 dark:text-slate-100">
                         {selectedConversation.title}
@@ -683,7 +712,7 @@ const Forum = () => {
                       </p>
                     </div>
 
-                    <div className="flex-1 overflow-y-auto p-4 space-y-4">
+                    <div className="flex-1 overflow-y-auto overflow-x-hidden p-3 sm:p-4 space-y-4 [scrollbar-gutter:stable]">
                       {loadingMessages ? (
                         <div className="h-full flex items-center justify-center">
                           <div className="text-center">
@@ -718,7 +747,7 @@ const Forum = () => {
                               {msg.username?.[0]?.toUpperCase() || "U"}
                             </div>
                             <div
-                              className={`max-w-[85%] md:max-w-sm ${msg.userId === currentUser?.id ? "items-end" : "items-start"} flex flex-col`}
+                              className={`max-w-[min(92%,20rem)] sm:max-w-[85%] md:max-w-sm ${msg.userId === currentUser?.id ? "items-end" : "items-start"} flex flex-col`}
                             >
                               <div
                                 className={`flex items-center gap-2 mb-1 ${msg.userId === currentUser?.id ? "flex-row-reverse" : ""}`}
@@ -742,10 +771,11 @@ const Forum = () => {
                               >
                                 <p className="break-words whitespace-pre-wrap">{msg.text}</p>
                               </div>
-                              {isAuthenticated && (
+                              {canUseForum && (
                                 <button
+                                  type="button"
                                   onClick={() => handleLikeMessage(msg.id)}
-                                  className={`mt-1.5 inline-flex items-center gap-1.5 text-xs transition-colors ${
+                                  className={`mt-1.5 inline-flex items-center gap-1.5 text-xs transition-colors touch-manipulation min-h-[36px] px-1 -ml-1 ${
                                     msg.userLiked
                                       ? "text-teal-600 dark:text-teal-400"
                                       : "text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
@@ -764,36 +794,52 @@ const Forum = () => {
                       <div ref={messagesEndRef} />
                     </div>
 
-                    {isAuthenticated ? (
+                    {canUseForum ? (
                       <form
                         onSubmit={handleSendMessage}
-                        className="p-4 border-t border-slate-200 dark:border-slate-700 bg-slate-50/80 dark:bg-slate-900/80 shrink-0"
+                        className="p-3 sm:p-4 border-t border-slate-200 dark:border-slate-700 bg-slate-50/80 dark:bg-slate-900/80 shrink-0 pb-[max(0.75rem,env(safe-area-inset-bottom))]"
                       >
-                        <div className="flex items-center gap-3">
-                          <input
-                            type="text"
+                        <div className="flex items-end gap-2 sm:gap-3">
+                          <label className="sr-only" htmlFor="forum-message-input">
+                            Poruka
+                          </label>
+                          <textarea
+                            id="forum-message-input"
+                            rows={1}
                             value={messageInput}
                             onChange={(e) => setMessageInput(e.target.value)}
-                            placeholder="Upiši poruku..."
-                            className="flex-1 px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500/50 focus:border-teal-500 text-sm"
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter" && !e.shiftKey) {
+                                e.preventDefault();
+                                if (messageInput.trim() && !sendingMessage) {
+                                  (e.currentTarget.form as HTMLFormElement | null)?.requestSubmit();
+                                }
+                              }
+                            }}
+                            placeholder="Upiši poruku…"
+                            className="flex-1 min-h-[48px] max-h-32 px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500/50 focus:border-teal-500 text-base sm:text-sm resize-y touch-manipulation"
                           />
                           <button
                             type="submit"
                             disabled={!messageInput.trim() || sendingMessage}
-                            className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-teal-600 hover:bg-teal-700 text-white shadow-md disabled:opacity-50 disabled:cursor-not-allowed transition-all hover:shadow-lg active:scale-95"
+                            className="inline-flex items-center justify-center w-12 h-12 shrink-0 rounded-xl bg-teal-600 hover:bg-teal-700 text-white shadow-md disabled:opacity-50 disabled:cursor-not-allowed transition-all hover:shadow-lg active:scale-95 touch-manipulation"
+                            aria-label="Pošalji poruku"
                           >
                             <Send className="h-5 w-5" />
                           </button>
                         </div>
+                        <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-1.5 hidden sm:block">
+                          Enter šalje poruku, Shift+Enter novi red.
+                        </p>
                       </form>
                     ) : (
-                      <div className="p-4 border-t border-slate-200 dark:border-slate-700 bg-slate-50/80 dark:bg-slate-900/80 flex items-center justify-between gap-4">
-                        <p className="text-sm text-slate-600 dark:text-slate-400">
+                      <div className="p-3 sm:p-4 border-t border-slate-200 dark:border-slate-700 bg-slate-50/80 dark:bg-slate-900/80 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
+                        <p className="text-sm text-slate-600 dark:text-slate-400 leading-snug">
                           Prijavi se za slanje poruka
                         </p>
                         <Link
                           to="/prijava"
-                          className="shrink-0 inline-flex items-center gap-2 rounded-xl bg-teal-600 hover:bg-teal-700 text-white px-4 py-2.5 text-sm font-semibold transition-colors"
+                          className="shrink-0 inline-flex items-center justify-center gap-2 rounded-xl bg-teal-600 hover:bg-teal-700 text-white px-4 py-3 sm:py-2.5 text-sm font-semibold transition-colors touch-manipulation min-h-[44px]"
                         >
                           <LogIn className="h-4 w-4" />
                           Prijavi se
@@ -815,7 +861,7 @@ const Forum = () => {
                         Odaberi razgovor
                       </p>
                       <p className="text-sm text-slate-500 dark:text-slate-500 mt-1">
-                        {isAuthenticated ? "ili kreiraj novi za početak." : "kako bi pročitao poruke."}
+                        {canUseForum ? "ili kreiraj novi za početak." : "kako bi pročitao poruke."}
                       </p>
                     </div>
                   </motion.div>
@@ -827,20 +873,20 @@ const Forum = () => {
 
         {/* Modal za novi razgovor */}
         <AnimatePresence>
-          {showNewConversationModal && isAuthenticated && (
+          {showNewConversationModal && canUseForum && (
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setShowNewConversationModal(false)}
-              className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50"
+              className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4 z-50 pb-[env(safe-area-inset-bottom)]"
             >
               <motion.div
                 initial={{ scale: 0.95, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
                 exit={{ scale: 0.95, opacity: 0 }}
                 onClick={(e) => e.stopPropagation()}
-                className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl max-w-md w-full p-6 border border-slate-200 dark:border-slate-700"
+                className="bg-white dark:bg-slate-900 rounded-t-2xl sm:rounded-2xl shadow-2xl max-w-md w-full max-h-[min(92dvh,560px)] overflow-y-auto p-5 sm:p-6 border border-slate-200 dark:border-slate-700 sm:m-0"
               >
                 <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100 mb-1">
                   Novi razgovor

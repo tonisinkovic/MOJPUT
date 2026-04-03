@@ -15,6 +15,7 @@ services:
         value: "3000"
       # Postavi u Render dashboardu (Sync / Environment):
       # JWT_SECRET, APP_ORIGIN = https://<user>.github.io (javni frontend — link u mailu; NE localhost)
+      # RESEND_API_KEY (+ RESEND_FROM) — preporučeno za mail; bez Gmail SMTP
       # opcija: PUBLIC_APP_ORIGIN ako fork nije tonisinkovic.github.io
       # API_PUBLIC_URL (isti kao javni URL ovog servisa, bez /)
-      # SMTP_*, MAIL_FROM
+      # SMTP_*, MAIL_FROM — samo ako ne koristiš Resend

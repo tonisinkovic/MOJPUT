@@ -1,8 +1,9 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Menu, X, GraduationCap, Compass } from "lucide-react";
+import { Menu, X, Compass, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { authLogout, authMe, userFromAuthMe, type AuthUser } from "@/lib/auth";
 
 const navItems = [
   { label: "Karta fakulteta", path: "/karta" },
@@ -18,7 +19,42 @@ const navItems = [
 
 const Navbar = () => {
   const [open, setOpen] = useState(false);
+  const [user, setUser] = useState<AuthUser | null>(null);
   const location = useLocation();
+
+  useEffect(() => {
+    let alive = true;
+    authMe().then((res) => {
+      if (!alive) return;
+      setUser(userFromAuthMe(res));
+    });
+    return () => {
+      alive = false;
+    };
+  }, [location.pathname]);
+
+  useEffect(() => {
+    const onVis = () => {
+      if (document.visibilityState !== "visible") return;
+      authMe().then((res) => setUser(userFromAuthMe(res)));
+    };
+    document.addEventListener("visibilitychange", onVis);
+    return () => document.removeEventListener("visibilitychange", onVis);
+  }, []);
+
+  useEffect(() => {
+    const sync = () => {
+      authMe().then((res) => setUser(userFromAuthMe(res)));
+    };
+    window.addEventListener("mojput-auth-changed", sync);
+    return () => window.removeEventListener("mojput-auth-changed", sync);
+  }, []);
+
+  const handleLogout = async () => {
+    await authLogout();
+    setUser(null);
+    setOpen(false);
+  };
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 glass border-b">
@@ -47,13 +83,27 @@ const Navbar = () => {
           ))}
         </nav>
 
-        <div className="hidden lg:flex items-center gap-3">
-          <Button variant="ghost" size="sm" asChild>
-            <Link to="/prijava">Prijava</Link>
-          </Button>
-          <Button size="sm" className="gradient-hero border-0 text-primary-foreground" asChild>
-            <Link to="/registracija">Registracija</Link>
-          </Button>
+        <div className="hidden lg:flex items-center gap-2">
+          {user ? (
+            <>
+              <span className="text-sm text-muted-foreground max-w-[140px] truncate" title={user.username}>
+                {user.username}
+              </span>
+              <Button variant="outline" size="sm" className="gap-1.5" onClick={handleLogout}>
+                <LogOut className="h-3.5 w-3.5" />
+                Odjava
+              </Button>
+            </>
+          ) : (
+            <>
+              <Button variant="ghost" size="sm" asChild>
+                <Link to="/prijava">Prijava</Link>
+              </Button>
+              <Button size="sm" className="gradient-hero border-0 text-primary-foreground" asChild>
+                <Link to="/registracija">Registracija</Link>
+              </Button>
+            </>
+          )}
         </div>
 
         {/* Mobile toggle */}
@@ -89,13 +139,31 @@ const Navbar = () => {
                   {item.label}
                 </Link>
               ))}
-              <div className="flex gap-3 mt-4 pt-4 border-t">
-                <Button variant="outline" className="flex-1" asChild>
-                  <Link to="/prijava" onClick={() => setOpen(false)}>Prijava</Link>
-                </Button>
-                <Button className="flex-1 gradient-hero border-0 text-primary-foreground" asChild>
-                  <Link to="/registracija" onClick={() => setOpen(false)}>Registracija</Link>
-                </Button>
+              <div className="mt-4 pt-4 border-t">
+                {user ? (
+                  <div className="flex flex-col gap-3">
+                    <p className="text-sm text-muted-foreground px-1 truncate" title={user.username}>
+                      Prijavljen/a: <span className="font-medium text-foreground">{user.username}</span>
+                    </p>
+                    <Button variant="outline" className="w-full gap-2" onClick={handleLogout}>
+                      <LogOut className="h-4 w-4" />
+                      Odjava
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="flex gap-3">
+                    <Button variant="outline" className="flex-1" asChild>
+                      <Link to="/prijava" onClick={() => setOpen(false)}>
+                        Prijava
+                      </Link>
+                    </Button>
+                    <Button className="flex-1 gradient-hero border-0 text-primary-foreground" asChild>
+                      <Link to="/registracija" onClick={() => setOpen(false)}>
+                        Registracija
+                      </Link>
+                    </Button>
+                  </div>
+                )}
               </div>
             </nav>
           </motion.div>

@@ -15,6 +15,8 @@ import rawFormulas from "./scoringFormulas.json";
 
 export type MaturaRazina = "A" | "B";
 
+export type RequiredSubjectSpec = { name: string; level: MaturaRazina };
+
 export type ScoringComponent = {
   id: string;
   label: string;
@@ -36,6 +38,14 @@ export type ProgramScoring = {
   napomena?: string;
   kategorija?: string;
   izvor?: string;
+  /** Postotak ukupnog bodovnog fonda za maturu/ocjene (0–1); koristi se zajedno s weightPrijemni */
+  weightMatura?: number;
+  /** Postotak ukupnog bodovnog fonda za prijemni (0–1) */
+  weightPrijemni?: number;
+  /** Eksplicitni uvjeti razine po predmetu (opcionalno; inače se koristi razina na komponenti u JSON-u) */
+  requiredSubjects?: RequiredSubjectSpec[];
+  /** Način unosa prijemnog kad su zadane težine */
+  prijemniInputMode?: "percent" | "points";
 };
 
 // Parse JSON into typed array
@@ -58,35 +68,10 @@ export function searchScoringPrograms(query: string): ProgramScoring[] {
   );
 }
 
-/** Izračunaj bodove za program na temelju unosa korisnika */
-export function calculateProgramPoints(
-  formula: ProgramScoring,
-  inputs: Record<string, number>
-): { total: number; breakdown: { id: string; label: string; points: number; max: number }[] } {
-  const breakdown: { id: string; label: string; points: number; max: number }[] = [];
-  let total = 0;
-
-  for (const comp of formula.komponente) {
-    const raw = inputs[comp.id] ?? 0;
-    let points: number;
-
-    if (comp.type === "ocjena") {
-      // ocjena 1-5 → (ocjena / 5) × max
-      const clamped = Math.min(5, Math.max(1, raw));
-      points = Math.round(((clamped / 5) * comp.max) * 10) / 10;
-    } else if (comp.type === "matura" || comp.type === "matura_izborni") {
-      // postotak 0-100 → (postotak / 100) × max
-      const clamped = Math.min(100, Math.max(0, raw));
-      points = Math.round(((clamped / 100) * comp.max) * 10) / 10;
-    } else {
-      // dodatno - direktno bodovi
-      points = Math.min(comp.max, Math.max(0, raw));
-    }
-
-    breakdown.push({ id: comp.id, label: comp.label, points, max: comp.max });
-    total += points;
-  }
-
-  total = Math.round(Math.min(formula.maxBodovi, total) * 10) / 10;
-  return { total, breakdown };
-}
+export {
+  calculateProgramPointsLegacy as calculateProgramPoints,
+  calculateTotal,
+  calculateMaturaPoints,
+  calculatePrijemniPoints,
+  usesWeightedPrijemni,
+} from "@/lib/admissionCalculator";

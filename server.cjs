@@ -183,12 +183,20 @@ function frontendPrijavaUrl(querySuffix) {
   return `${origin}/MOJPUT/prijava${q}`;
 }
 
+const hasResend = Boolean(String(process.env.RESEND_API_KEY || "").trim());
 const hasSmtp = Boolean(
   process.env.SMTP_HOST && process.env.SMTP_PORT && process.env.SMTP_USER && process.env.SMTP_PASS
 );
-console.log("[config] SMTP konfiguriran:", hasSmtp, hasSmtp ? "(pravi email)" : "(Ethereal testni inbox)");
+console.log(
+  "[config] Mail za registraciju:",
+  hasResend
+    ? "Resend API (preporučeno na Renderu)"
+    : hasSmtp
+      ? "SMTP"
+      : "(Ethereal testni inbox ako nema SMTP)",
+);
 if (hasSmtp && process.env.SMTP_USER) {
-  console.log("[config] Registracija — potvrda se šalje s adrese:", String(process.env.SMTP_USER).trim());
+  console.log("[config] SMTP pošiljatelj:", String(process.env.SMTP_USER).trim());
 }
 console.log("[config] process.env.APP_ORIGIN:", String(process.env.APP_ORIGIN || "").trim() || "(nije postavljen)");
 console.log(
@@ -550,6 +558,19 @@ function smtpErrorForClient(err) {
   return "Ne mogu poslati email. Provjeri SMTP postavke ili pokušaj kasnije.";
 }
 
+function resendErrorForClient(json, status) {
+  const msg = typeof json?.message === "string" ? json.message.trim() : "";
+  const lower = msg.toLowerCase();
+  if (/domain|not valid|verify/i.test(lower)) {
+    return (
+      "Resend: adresa «from» mora biti dozvoljena u Resend konzoli (npr. onboarding@resend.dev ili tvoj verificirani domen). " +
+      "Postavi RESEND_FROM u Environment."
+    );
+  }
+  if (msg) return `Resend: ${msg}`;
+  return `Ne mogu poslati email (Resend, HTTP ${status}).`;
+}
+
 /** Gmail šalje samo s adrese na koju si se autentificirao (SMTP_USER). */
 function getVerificationMailFrom() {
   const userRaw = String(process.env.SMTP_USER || "").trim();
@@ -566,6 +587,52 @@ function getVerificationMailFrom() {
 
 async function sendVerificationEmail({ to, username, verifyToken }) {
   const verifyUrl = mailVerifyUrlFromToken(verifyToken);
+  const hrefHtml = verifyUrl.replace(/&/g, "&amp;");
+  const subject = "MojPut — potvrdi svoj račun";
+  const textBody = `Pozdrav ${username},\n\nZa aktivaciju MojPut računa otvori ovaj link u pregledniku:\n${verifyUrl}\n\nLink vrijedi 24 sata. Ako nisi ti tražio registraciju, zanemari ovu poruku.\n`;
+  const htmlBody = `
+        <p>Pozdrav ${username},</p>
+        <p>Da bi se prijavio/la na MojPut, potvrdi račun klikom na gumb ili link ispod (otvara se u pregledniku).</p>
+        <p><a href="${hrefHtml}" style="display:inline-block;padding:10px 16px;background:#1e293b;color:#fff;text-decoration:none;border-radius:8px;font-weight:600;">Potvrdi račun</a></p>
+        <p style="word-break:break-all;font-size:13px;"><a href="${hrefHtml}">${hrefHtml}</a></p>
+        <p style="font-size:13px;color:#64748b;">Link vrijedi 24 sata. Ako nisi ti tražio registraciju, zanemari ovu poruku.</p>
+      `;
+
+  /** Produkcija (Render): Resend ne koristi Gmail SMTP — samo API ključ. https://resend.com */
+  const resendKey = String(process.env.RESEND_API_KEY || "").trim();
+  if (resendKey) {
+    const from = String(process.env.RESEND_FROM || "").trim() || "MojPut <onboarding@resend.dev>";
+    try {
+      const r = await fetch("https://api.resend.com/emails", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${resendKey}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          from,
+          to: [to],
+          subject,
+          text: textBody,
+          html: htmlBody,
+        }),
+      });
+      const json = await r.json().catch(() => ({}));
+      if (!r.ok) {
+        console.error("[mail] Resend error:", r.status, json);
+        return { sent: false, error: resendErrorForClient(json, r.status) };
+      }
+      console.log("[mail] Resend OK — potvrda poslana na:", to, "| from:", from);
+      return { sent: true };
+    } catch (err) {
+      console.error("[mail] Resend fetch:", err?.message || err);
+      return {
+        sent: false,
+        error: "Ne mogu poslati email (Resend). Provjeri RESEND_API_KEY i mrežu.",
+      };
+    }
+  }
+
   let transport;
   let isEthereal;
   try {
@@ -576,26 +643,19 @@ async function sendVerificationEmail({ to, username, verifyToken }) {
     return {
       sent: false,
       error:
-        "Mail servis nije dostupan (nema SMTP ni testnog inboxa). Na Renderu postavi SMTP_* u Environment.",
+        "Mail nije konfiguriran. Na Renderu postavi RESEND_API_KEY (preporučeno) ili SMTP_* (Gmail app lozinka).",
     };
   }
   const from = getVerificationMailFrom();
   const replyTo = String(process.env.SMTP_USER || "").trim() || undefined;
-  const hrefHtml = verifyUrl.replace(/&/g, "&amp;");
   try {
     const info = await transport.sendMail({
       from,
       to,
       replyTo,
-      subject: "MojPut — potvrdi svoj račun",
-      text: `Pozdrav ${username},\n\nZa aktivaciju MojPut računa otvori ovaj link u pregledniku:\n${verifyUrl}\n\nLink vrijedi 24 sata. Ako nisi ti tražio registraciju, zanemari ovu poruku.\n`,
-      html: `
-        <p>Pozdrav ${username},</p>
-        <p>Da bi se prijavio/la na MojPut, potvrdi račun klikom na gumb ili link ispod (otvara se u pregledniku).</p>
-        <p><a href="${hrefHtml}" style="display:inline-block;padding:10px 16px;background:#1e293b;color:#fff;text-decoration:none;border-radius:8px;font-weight:600;">Potvrdi račun</a></p>
-        <p style="word-break:break-all;font-size:13px;"><a href="${hrefHtml}">${hrefHtml}</a></p>
-        <p style="font-size:13px;color:#64748b;">Link vrijedi 24 sata. Ako nisi ti tražio registraciju, zanemari ovu poruku.</p>
-      `,
+      subject,
+      text: textBody,
+      html: htmlBody,
     });
     const previewUrl = isEthereal && nodemailer.getTestMessageUrl ? nodemailer.getTestMessageUrl(info) : null;
     if (previewUrl) {
