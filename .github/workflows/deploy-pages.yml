@@ -31,9 +31,8 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      # VITE_API_URL iz .env.production (zadano: Render mojput-api). Secret VITE_API_URL ukloni ako je prazan — inače prazan string pregazi .env.
       - name: Build app
-        env:
-          VITE_API_URL: ${{ secrets.VITE_API_URL }}
         run: npm run build
 
       - name: Configure Pages

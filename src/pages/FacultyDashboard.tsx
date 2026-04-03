@@ -107,7 +107,7 @@ const FacultyDashboard = () => {
 
   const handleLogout = () => {
     logoutFaculty();
-    window.location.assign("#/fakulteti/prijava");
+    window.location.assign(`${import.meta.env.BASE_URL}fakulteti/prijava`);
   };
 
   const handleProfileSave = async (e: React.FormEvent<HTMLFormElement>) => {

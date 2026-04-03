@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "build": "vite build && node scripts/copy-gh-pages-404.cjs",
     "build:phone": "node scripts/build-with-tunnel-api.cjs",
     "build:dev": "vite build --mode development",
     "lint": "eslint .",
@@ -14,7 +14,7 @@
     "test:watch": "vitest",
     "start": "node server.cjs",
     "setup": "node scripts/setup-env.cjs",
-    "postinstall": "node scripts/setup-env.cjs",
+    "postinstall": "node -e \"const fs=require('fs');const {execFileSync}=require('child_process');if(fs.existsSync('scripts/setup-env.cjs'))execFileSync('node',['scripts/setup-env.cjs'],{stdio:'inherit'});\"",
     "dev:full": "concurrently --kill-others=false -n backend,frontend \"node server.cjs\" \"npm run dev\"",
     "tunnel": "wait-on tcp:127.0.0.1:3000 && node scripts/tunnel.cjs",
     "dev:public": "concurrently --kill-others=false -n backend,tunnel,frontend \"node server.cjs\" \"wait-on tcp:127.0.0.1:3000 && node scripts/tunnel.cjs\" \"npm run dev\"",

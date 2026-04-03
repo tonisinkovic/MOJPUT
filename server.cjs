@@ -1,5 +1,10 @@
 require("dotenv").config({ path: require("path").join(__dirname, ".env") });
-require("dotenv").config({ path: require("path").join(__dirname, ".env.local"), override: true });
+/** Na Renderu ne pregazi APP_ORIGIN iz dashboarda slučajnim .env.local u imageu. */
+const dotenvLocalPath = require("path").join(__dirname, ".env.local");
+const onRender = String(process.env.RENDER || "").toLowerCase() === "true" || process.env.RENDER === "1";
+if (require("fs").existsSync(dotenvLocalPath)) {
+  require("dotenv").config({ path: dotenvLocalPath, override: !onRender });
+}
 
 process.on("uncaughtException", (err) => {
   console.error("[server] uncaughtException:", err?.message || err);
@@ -22,37 +27,13 @@ const Database = require("better-sqlite3");
 const PORT = Number(process.env.PORT || 3000);
 const JWT_SECRET = process.env.JWT_SECRET || "dev-secret-change-me";
 const TOKEN_COOKIE = "mojput_token";
-// Vite dev server runs on 8080 and this app uses HashRouter + base "/MOJPUT/"
-// Example dev URL: http://localhost:8080/MOJPUT/#/prijava
-const APP_ORIGIN = process.env.APP_ORIGIN || "http://localhost:8080/MOJPUT";
-
-/**
- * Javni URL frontenda nakon potvrde (redirect u mailu).
- * APP_ORIGIN u .env ima prednost (npr. GitHub Pages) — ne koristi se localhost iz preglednika.
- * Ako APP_ORIGIN nije postavljen, koristi Origin (lokalni dev) ili fallback.
- */
-function publicAppOrigin(req) {
-  const fromEnv = String(process.env.APP_ORIGIN || "").trim().replace(/\/$/, "");
-  if (fromEnv && /^https?:\/\//i.test(fromEnv)) {
-    return fromEnv;
-  }
-  const origin = req.get("origin");
-  if (origin && /^https?:\/\//i.test(origin)) {
-    try {
-      return `${new URL(origin).origin}/MOJPUT`;
-    } catch {
-      /* ignore */
-    }
-  }
-  return String(APP_ORIGIN || "http://localhost:8080/MOJPUT").replace(/\/$/, "");
-}
 
 /** Javni URL ovog API-ja iz HTTP zahtjeva (debug / drugi endpointi — ne za link u mailu). */
 function getApiPublicBase(req) {
   const xfProto = req.get("x-forwarded-proto");
   const proto = (xfProto ? xfProto.split(",")[0].trim() : "") || req.protocol || "http";
   const xfHost = req.get("x-forwarded-host");
-  const host = (xfHost ? xfHost.split(",")[0].trim() : "") || req.get("host") || `localhost:${PORT}`;
+  const host = (xfHost ? xfHost.split(",")[0].trim() : "") || req.get("host") || `127.0.0.1:${PORT}`;
   return `${proto}://${host}`;
 }
 
@@ -60,8 +41,10 @@ function getApiPublicBase(req) {
 function reloadAllEnv() {
   const root = __dirname;
   require("dotenv").config({ path: path.join(root, ".env") });
-  if (fs.existsSync(path.join(root, ".env.local"))) {
-    require("dotenv").config({ path: path.join(root, ".env.local"), override: true });
+  const localPath = path.join(root, ".env.local");
+  if (fs.existsSync(localPath)) {
+    const onRender = String(process.env.RENDER || "").toLowerCase() === "true" || process.env.RENDER === "1";
+    require("dotenv").config({ path: localPath, override: !onRender });
   }
 }
 
@@ -93,41 +76,111 @@ function readApiPublicUrlFromDisk() {
   return "";
 }
 
-/** Zadani javni front ako u .env nema EMAIL_VERIFY_PAGE_BASE / APP_ORIGIN (nikad localhost — mobitel ne može otvoriti localhost). */
-const MOJPUT_PUBLIC_PAGES_ORIGIN = "https://tonisinkovic.github.io/MOJPUT";
-
-function isPublicHttpOrigin(s) {
-  return Boolean(s && /^https?:\/\//i.test(s) && !/localhost|127\.0\.0\.1/i.test(s));
-}
+/** GitHub Pages origin (bez /MOJPUT) — CORS u produkciji. */
+const GITHUB_PAGES_ORIGIN = "https://tonisinkovic.github.io";
 
 /**
- * Baza URL-a za link u mailu i redirect nakon potvrde.
- * Prioritet: EMAIL_VERIFY_PAGE_BASE → APP_ORIGIN (iz .env, ne localhost) → zadani GitHub Pages.
+ * APP_ORIGIN = javni origin frontenda (npr. https://tonisinkovic.github.io), bez putanje /MOJPUT.
  */
-function getEmailVerifyLinkBase() {
-  const explicit = String(process.env.EMAIL_VERIFY_PAGE_BASE || "")
+function normalizeAppOrigin() {
+  let o = String(process.env.APP_ORIGIN || "")
     .trim()
     .replace(/\/$/, "");
-  if (explicit && /^https?:\/\//i.test(explicit)) return explicit;
-
-  const fromEnv = String(process.env.APP_ORIGIN || "")
-    .trim()
-    .replace(/\/$/, "");
-  if (isPublicHttpOrigin(fromEnv)) return fromEnv;
-
-  return MOJPUT_PUBLIC_PAGES_ORIGIN.replace(/\/$/, "");
+  o = o.replace(/\/MOJPUT$/i, "");
+  return o;
 }
 
-function getRedirectAfterVerifyBase() {
-  return getEmailVerifyLinkBase();
+/** Javni HTTPS origin frontenda ako APP_ORIGIN na Renderu slučajno ostane localhost (fork / vlastiti Pages). */
+function publicAppOriginFallback() {
+  const pub = String(process.env.PUBLIC_APP_ORIGIN || "")
+    .trim()
+    .replace(/\/$/, "")
+    .replace(/\/MOJPUT$/i, "");
+  if (pub && /^https:\/\//i.test(pub)) return pub;
+  return GITHUB_PAGES_ORIGIN;
+}
+
+/** Render / ostali PaaS — uključi sve uobičajene Render varijable (RENDER ponekad nije postavljen kako očekujemo). */
+function isHostedEnvironment() {
+  if (process.env.NODE_ENV === "production") return true;
+  const r = String(process.env.RENDER || "").toLowerCase();
+  if (r === "true" || r === "1") return true;
+  if (String(process.env.RENDER_SERVICE_ID || "").trim().length > 0) return true;
+  if (String(process.env.RENDER_EXTERNAL_URL || "").includes("onrender.com")) return true;
+  if (String(process.env.RAILWAY_ENVIRONMENT || "").length > 0) return true;
+  if (String(process.env.FLY_APP_NAME || "").length > 0) return true;
+  return false;
 }
 
 /**
- * Link u mailu — baza iz env-a (vidi EMAIL_VERIFY_PAGE_BASE). Token se ne smije proslijediti iz tijela zahtjeva.
+ * Zadnja linija obrane: u stvarnom emailu nikad ne smije biti localhost (korisnik ne može otvoriti).
+ * Lokalni test s pravim SMTP-om: postavi ALLOW_LOCALHOST_IN_MAIL=1 u .env
+ */
+function originNeverLocalhostForMail() {
+  const allowLocal =
+    String(process.env.ALLOW_LOCALHOST_IN_MAIL || "").toLowerCase() === "1" ||
+    String(process.env.ALLOW_LOCALHOST_IN_MAIL || "").toLowerCase() === "true";
+  let origin = appOriginForLinks();
+  if (allowLocal) return origin;
+  if (origin && /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/i.test(origin)) {
+    const fb = publicAppOriginFallback();
+    console.warn("[mail] ZAMJENA localhost → javni origin za link u pismu:", fb);
+    return fb;
+  }
+  return origin;
+}
+
+function appOriginForLinks() {
+  const forced = String(process.env.FORCE_MAIL_APP_ORIGIN || "")
+    .trim()
+    .replace(/\/$/, "")
+    .replace(/\/MOJPUT$/i, "");
+  if (forced && /^https:\/\//i.test(forced)) {
+    return forced;
+  }
+
+  const o = normalizeAppOrigin();
+  const hosted = isHostedEnvironment();
+  const isLocalHttp = o && /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/i.test(o);
+
+  /** Hostano (Render, …): localhost u APP_ORIGIN nikad u mailu — čak i ako NODE_ENV nije "production". */
+  if (hosted && isLocalHttp) {
+    const fb = publicAppOriginFallback();
+    console.warn(
+      "[config] APP_ORIGIN je localhost na hostanom servisu — linkovi u mailu koriste:",
+      fb,
+      "(postavi APP_ORIGIN ili FORCE_MAIL_APP_ORIGIN=https://tvoj-user.github.io)",
+    );
+    return fb;
+  }
+
+  if (!o) {
+    console.warn("[config] APP_ORIGIN nije postavljen — koristi se", publicAppOriginFallback());
+    return publicAppOriginFallback();
+  }
+  if (/^https:\/\//i.test(o)) return o;
+  /** Samo pravi lokalni dev (nije Render/Fly/…): link u mailu vodi na Vite. */
+  if (isLocalHttp && !hosted) return o;
+  console.warn("[config] APP_ORIGIN nije valjan — koristi se", publicAppOriginFallback());
+  return publicAppOriginFallback();
+}
+
+/**
+ * Točno: ${APP_ORIGIN}/MOJPUT/verify?token=...
  */
 function mailVerifyUrlFromToken(verifyToken) {
-  const base = getEmailVerifyLinkBase();
-  return `${base}/#/prijava?verify=${encodeURIComponent(String(verifyToken || ""))}`;
+  const origin = originNeverLocalhostForMail();
+  const token = encodeURIComponent(String(verifyToken || ""));
+  const url = `${origin}/MOJPUT/verify?token=${token}`;
+  console.log("[mail] process.env.APP_ORIGIN:", process.env.APP_ORIGIN);
+  console.log("[mail] verification link (stvarni u mailu):", url);
+  return url;
+}
+
+function frontendPrijavaUrl(querySuffix) {
+  const origin = originNeverLocalhostForMail();
+  const q = querySuffix ? `?${querySuffix}` : "";
+  return `${origin}/MOJPUT/prijava${q}`;
 }
 
 const hasSmtp = Boolean(
@@ -137,17 +190,16 @@ console.log("[config] SMTP konfiguriran:", hasSmtp, hasSmtp ? "(pravi email)" : 
 if (hasSmtp && process.env.SMTP_USER) {
   console.log("[config] Registracija — potvrda se šalje s adrese:", String(process.env.SMTP_USER).trim());
 }
-console.log("[config] APP_ORIGIN (konstanta / default za ostalo):", APP_ORIGIN);
-console.log("[config] Potvrda u mailu — baza URL-a:", getEmailVerifyLinkBase(), "(EMAIL_VERIFY_PAGE_BASE ili APP_ORIGIN iz .env, inače github.io)");
-console.log("[config] Redirect nakon /api/auth/verify:", getRedirectAfterVerifyBase());
-{
-  const b = getEmailVerifyLinkBase();
-  if (/localhost|127\.0\.0\.1/i.test(b)) {
-    console.warn(
-      "[config] Link u mailu sadrži localhost — na mobitelu neće raditi. Postavi EMAIL_VERIFY_PAGE_BASE=https://…/MOJPUT ili APP_ORIGIN na javni HTTPS URL frontenda.",
-    );
-  }
-}
+console.log("[config] process.env.APP_ORIGIN:", String(process.env.APP_ORIGIN || "").trim() || "(nije postavljen)");
+console.log(
+  "[config] hostano (Render/…):",
+  isHostedEnvironment(),
+  "| NODE_ENV:",
+  process.env.NODE_ENV || "(nema)",
+  "| RENDER:",
+  process.env.RENDER || "(nema)",
+);
+console.log("[config] Origin u mailu (nikad localhost osim ALLOW_LOCALHOST_IN_MAIL):", originNeverLocalhostForMail());
 {
   const fromDisk = readApiPublicUrlFromDisk();
   const fromEnv = String(process.env.API_PUBLIC_URL || "").trim();
@@ -319,18 +371,55 @@ function signToken(payload) {
   return jwt.sign(payload, JWT_SECRET, { expiresIn: "14d" });
 }
 
-function setAuthCookie(res, token) {
-  res.cookie(TOKEN_COOKIE, token, {
-    httpOnly: true,
-    sameSite: "lax",
-    secure: false,
-    maxAge: 14 * 24 * 60 * 60 * 1000,
-    path: "/",
-  });
+/**
+ * Session cookie: za GitHub Pages → Render (različit host od API-ja) preglednik traži SameSite=None; Secure.
+ * Lokalno preko Vite proxyja (http → isti host u browseru): Lax je dovoljan.
+ */
+function authCookieOptions(req) {
+  const maxAge = 14 * 24 * 60 * 60 * 1000;
+  const base = { httpOnly: true, path: "/", maxAge };
+
+  const xfProto = String(req?.get?.("x-forwarded-proto") || "")
+    .split(",")[0]
+    .trim()
+    .toLowerCase();
+  const secureApi = xfProto === "https" || Boolean(req?.secure);
+
+  const origin = String(req?.get?.("origin") || "");
+  let crossSiteHttps = false;
+  if (origin.startsWith("https://") && secureApi) {
+    try {
+      const oh = new URL(origin).hostname;
+      const hh = String(req?.get?.("host") || "").split(":")[0];
+      if (oh && hh && oh !== hh) crossSiteHttps = true;
+    } catch {
+      /* ignore */
+    }
+  }
+
+  if (crossSiteHttps) {
+    return { ...base, sameSite: "none", secure: true };
+  }
+
+  if (process.env.NODE_ENV === "production" && secureApi) {
+    return { ...base, sameSite: "none", secure: true };
+  }
+
+  return { ...base, sameSite: "lax", secure: false };
 }
 
-function clearAuthCookie(res) {
-  res.clearCookie(TOKEN_COOKIE, { path: "/" });
+function setAuthCookie(res, token, req) {
+  res.cookie(TOKEN_COOKIE, token, authCookieOptions(req));
+}
+
+function clearAuthCookie(res, req) {
+  const o = authCookieOptions(req);
+  res.clearCookie(TOKEN_COOKIE, {
+    httpOnly: o.httpOnly,
+    path: o.path,
+    sameSite: o.sameSite,
+    secure: o.secure,
+  });
 }
 
 function authMiddleware(db) {
@@ -388,8 +477,11 @@ function getMailTransportSync() {
   const isGmail =
     /gmail\.com$/i.test(host) || /@gmail\.com$/i.test(user) || host === "smtp.gmail.com";
   if (isGmail) {
+    /** App password ili OAuth; 465 + TLS uobičajeno za smtp.gmail.com */
     return nodemailer.createTransport({
-      service: "gmail",
+      host: "smtp.gmail.com",
+      port: 465,
+      secure: true,
       auth: { user, pass },
     });
   }
@@ -408,17 +500,23 @@ async function getMailTransport() {
   const sync = getMailTransportSync();
   if (sync) return { transport: sync, isEthereal: false };
 
-  if (!etherealAccountPromise) {
-    etherealAccountPromise = nodemailer.createTestAccount();
+  try {
+    if (!etherealAccountPromise) {
+      etherealAccountPromise = nodemailer.createTestAccount();
+    }
+    const account = await etherealAccountPromise;
+    const transport = nodemailer.createTransport({
+      host: "smtp.ethereal.email",
+      port: 587,
+      secure: false,
+      auth: { user: account.user, pass: account.pass },
+    });
+    return { transport, isEthereal: true };
+  } catch (err) {
+    console.error("[mail] Ethereal testni račun nije dostupan:", err?.message || err);
+    etherealAccountPromise = null;
+    throw err;
   }
-  const account = await etherealAccountPromise;
-  const transport = nodemailer.createTransport({
-    host: "smtp.ethereal.email",
-    port: 587,
-    secure: false,
-    auth: { user: account.user, pass: account.pass },
-  });
-  return { transport, isEthereal: true };
 }
 
 function isValidEmail(email) {
@@ -426,6 +524,30 @@ function isValidEmail(email) {
   if (s.length < 6 || s.length > 254) return false;
   // Basic RFC-ish check: local@domain.tld (we can't prove inbox exists without sending)
   return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(s);
+}
+
+/**
+ * Ne izlagati sirove SMTP odgovore (npr. Gmail 535) u JSON-u za korisnika.
+ * 535 / BadCredentials = gotovo uvijek kriva lozinka ili korištenje obične lozinke umjesto App Password.
+ */
+function smtpErrorForClient(err) {
+  const raw = String(err?.message || err || "");
+  const lower = raw.toLowerCase();
+  if (
+    /\b535\b/i.test(raw) ||
+    /badcredentials|invalid login|authentication failed|eauth|username and password not accepted/i.test(lower)
+  ) {
+    return (
+      "Gmail je odbio SMTP prijavu. U .env koristi Google «Lozinka aplikacije» (16 znakova), ne lozinku za prijavu na Google. " +
+      "Postavke Google računa → Sigurnost → dvostruka provjera → Lozinke aplikacija → generiraj za «Pošta». " +
+      "SMTP_USER = puni email (npr. ime@gmail.com), SMTP_PASS = ta 16 znakova bez razmaka. " +
+      "Ako ne želiš Gmail, ukloni SMTP_* iz okruženja — u dev modu koristi se testni Ethereal inbox."
+    );
+  }
+  if (/econnrefused|etimedout|enotfound|getaddrinfo|certificate/i.test(lower)) {
+    return "Ne mogu se spojiti na mail server. Provjeri SMTP_HOST, port i mrežu.";
+  }
+  return "Ne mogu poslati email. Provjeri SMTP postavke ili pokušaj kasnije.";
 }
 
 /** Gmail šalje samo s adrese na koju si se autentificirao (SMTP_USER). */
@@ -444,8 +566,19 @@ function getVerificationMailFrom() {
 
 async function sendVerificationEmail({ to, username, verifyToken }) {
   const verifyUrl = mailVerifyUrlFromToken(verifyToken);
-  console.log("[mail] Šaljem potvrdni link (mora biti github.io):", verifyUrl);
-  const { transport, isEthereal } = await getMailTransport();
+  let transport;
+  let isEthereal;
+  try {
+    const t = await getMailTransport();
+    transport = t.transport;
+    isEthereal = t.isEthereal;
+  } catch {
+    return {
+      sent: false,
+      error:
+        "Mail servis nije dostupan (nema SMTP ni testnog inboxa). Na Renderu postavi SMTP_* u Environment.",
+    };
+  }
   const from = getVerificationMailFrom();
   const replyTo = String(process.env.SMTP_USER || "").trim() || undefined;
   const hrefHtml = verifyUrl.replace(/&/g, "&amp;");
@@ -473,7 +606,7 @@ async function sendVerificationEmail({ to, username, verifyToken }) {
     return { sent: true, previewUrl: previewUrl || undefined };
   } catch (err) {
     console.error("[mail] failed to send verification email:", err?.message || err);
-    return { sent: false, error: err?.message || String(err) };
+    return { sent: false, error: smtpErrorForClient(err) };
   }
 }
 
@@ -503,18 +636,31 @@ function readUniversitiesDataSync() {
 }
 
 async function main() {
+  const app = express();
+  app.set("trust proxy", 1);
+  app.disable("x-powered-by");
+
+  /** Prije CORS-a — neki health probeovi šalju zahtjev bez Origin; Render traži brz 200. */
+  app.get("/", (_req, res) => res.status(200).type("text/plain").send("ok"));
+  app.get("/api/health", (_req, res) => res.status(200).json({ success: true }));
+
+  app.listen(PORT, "0.0.0.0", () => {
+    console.log(`[server] API sluša port ${PORT} — health: / i /api/health`);
+  });
+
   const db = openDb();
   migrate(db);
   await loadUniversitiesData(); // ensures file exists on first run
 
-  const app = express();
-  app.set("trust proxy", 1);
-  app.disable("x-powered-by");
-  app.use(cors({ origin: true, credentials: true }));
+  /** Isti origin kao APP_ORIGIN / linkovi u mailu — inače fork ili drugi GH Pages URL ne može slati cookie na API. */
+  const productionCorsOrigin = appOriginForLinks();
+  app.use(
+    process.env.NODE_ENV === "production"
+      ? cors({ origin: productionCorsOrigin, credentials: true })
+      : cors({ origin: true, credentials: true }),
+  );
   app.use(express.json());
   app.use(cookieParser());
-
-  app.get("/api/health", (_req, res) => res.json({ success: true }));
 
   // Auth
   app.post("/api/auth/register", async (req, res) => {
@@ -546,7 +692,7 @@ async function main() {
       const verifyUrlForUi = mailVerifyUrlFromToken(verifyToken);
 
       db.prepare("DELETE FROM pending_registrations WHERE email = ?").run(cleanEmail);
-      const appBase = publicAppOrigin(req);
+      const appBase = appOriginForLinks();
       db.prepare(
         "INSERT INTO pending_registrations (email, username, password_hash, verify_token, expires_at, app_base_url) VALUES (?, ?, ?, ?, ?, ?)",
       ).run(cleanEmail, cleanUsername, passwordHash, verifyToken, expiresAt, appBase);
@@ -577,10 +723,9 @@ async function main() {
     reloadAllEnv();
     const token = String(req.query.token || "").trim();
     const wantRedirect = String(req.query.redirect || "") === "1";
-    const siteBase = getRedirectAfterVerifyBase();
 
     function redirectPrijava(qs) {
-      res.redirect(302, `${siteBase}/#/prijava?${qs}`);
+      res.redirect(302, frontendPrijavaUrl(qs));
     }
 
     if (!token) {
@@ -595,7 +740,7 @@ async function main() {
       .get(token);
 
     if (!pending) {
-      if (wantRedirect) return res.redirect(302, `${siteBase}/#/prijava?verify_error=invalid`);
+      if (wantRedirect) return redirectPrijava("verify_error=invalid");
       return res.status(400).json({ success: false, message: "Link nije važeći ili je već iskorišten." });
     }
 
@@ -603,7 +748,7 @@ async function main() {
       const exp = new Date(pending.expires_at).getTime();
       if (Number.isFinite(exp) && exp < Date.now()) {
         db.prepare("DELETE FROM pending_registrations WHERE verify_token = ?").run(token);
-        if (wantRedirect) return res.redirect(302, `${siteBase}/#/prijava?verify_error=expired`);
+        if (wantRedirect) return redirectPrijava("verify_error=expired");
         return res.status(400).json({ success: false, message: "Link je istekao. Registriraj se ponovno." });
       }
     }
@@ -611,7 +756,7 @@ async function main() {
     const already = db.prepare("SELECT id FROM users WHERE email = ?").get(pending.email);
     if (already) {
       db.prepare("DELETE FROM pending_registrations WHERE email = ?").run(pending.email);
-      if (wantRedirect) return res.redirect(302, `${siteBase}/#/prijava?verified=1`);
+      if (wantRedirect) return redirectPrijava("verified=1");
       return res.json({ success: true });
     }
 
@@ -622,7 +767,7 @@ async function main() {
     db.prepare("DELETE FROM pending_registrations WHERE email = ?").run(pending.email);
     seedForum(db);
 
-    if (wantRedirect) return res.redirect(302, `${siteBase}/#/prijava?verified=1`);
+    if (wantRedirect) return redirectPrijava("verified=1");
     return res.json({ success: true });
   });
 
@@ -651,7 +796,7 @@ async function main() {
     db.prepare("UPDATE pending_registrations SET verify_token = ?, expires_at = ?, app_base_url = ? WHERE email = ?").run(
       verifyToken,
       expiresAt,
-      publicAppOrigin(req),
+      appOriginForLinks(),
       cleanEmail,
     );
 
@@ -726,7 +871,7 @@ async function main() {
         email_verified: row.email_verified,
       };
       const token = signToken({ sub: user.id });
-      setAuthCookie(res, token);
+      setAuthCookie(res, token, req);
       return res.json({ success: true, user });
     } catch (err) {
       console.error("[auth/login] greška:", err?.message || err);
@@ -734,8 +879,8 @@ async function main() {
     }
   });
 
-  app.post("/api/auth/logout", (_req, res) => {
-    clearAuthCookie(res);
+  app.post("/api/auth/logout", (req, res) => {
+    clearAuthCookie(res, req);
     return res.json({ success: true });
   });
 
@@ -964,10 +1109,6 @@ async function main() {
       });
     }
     next(err);
-  });
-
-  app.listen(PORT, () => {
-    console.log(`🚀 API server pokrenut na http://localhost:${PORT}`);
   });
 }
 

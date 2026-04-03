@@ -62,7 +62,7 @@ const ParentAssessment = () => {
             <p className="text-muted-foreground mt-3">{result}</p>
             <div className="mt-5 flex gap-3">
               <Button onClick={() => { setStarted(false); setStep(0); setAnswers([]); }}>Ponovi procjenu</Button>
-              <Button variant="outline" onClick={() => window.location.assign("#/roditeljski-kutak/vodic-za-roditelje")}>
+              <Button variant="outline" onClick={() => window.location.assign(`${import.meta.env.BASE_URL}roditeljski-kutak/vodic-za-roditelje`)}>
                 Idi na vodič
               </Button>
             </div>

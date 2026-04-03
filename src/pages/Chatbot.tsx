@@ -4,10 +4,9 @@ import { motion } from "framer-motion";
 import { Bot, Send, Sparkles, ChevronRight, RotateCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { facultyInstitutions } from "@/data/faculties";
+import { API_BASE_URL } from "@/config/apiBase";
 
-const API_BASE = import.meta.env.DEV
-  ? ""
-  : String(import.meta.env.VITE_API_URL || "").replace(/\/$/, "");
+const API_BASE = API_BASE_URL;
 
 const SUGGESTIONS = [
   "Koje fakultete mogu upisati u Zagrebu?",

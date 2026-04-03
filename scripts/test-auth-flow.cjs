@@ -16,7 +16,7 @@ async function main() {
   const email = `iperija82+mojputtest${ts}@gmail.com`;
   const password = "Test1234!";
   const username = "Test User";
-  const base = "http://localhost:3000";
+  const base = "http://127.0.0.1:3000";
 
   const regRes = await fetch(`${base}/api/auth/register`, {
     method: "POST",

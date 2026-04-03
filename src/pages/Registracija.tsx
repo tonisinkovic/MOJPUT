@@ -82,11 +82,18 @@ const Registracija = () => {
           <div className="space-y-4">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-medium">
               <User className="w-4 h-4" />
-              Tvoj MojPut račun
+              Registracija — novi korisnik
             </div>
             <h1 className="text-3xl md:text-4xl font-bold tracking-tight">
               Kreiraj svoj besplatni MojPut račun
             </h1>
+            <p className="text-sm text-slate-600">
+              Ovdje otvaraš <strong className="text-slate-800">novi račun</strong>. Već imaš račun i želiš se samo prijaviti?{" "}
+              <Link to="/prijava" className="font-semibold text-primary hover:underline">
+                Idi na Prijavu
+              </Link>
+              .
+            </p>
             <p className="text-muted-foreground text-base md:text-lg">
               Spremi svoje rezultate kviza, planiraj upise i prati važne datume na jednom mjestu.
               Registracija traje manje od minute.

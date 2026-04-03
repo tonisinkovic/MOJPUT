@@ -1,9 +1,27 @@
 import React, { useEffect, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import Layout from "@/components/Layout";
-import { Mail, Lock, LogIn } from "lucide-react";
-import { authLogin, authLogout, authMe, authResendVerification, authVerifyEmail, type AuthUser } from "@/lib/auth";
+import { Mail, Lock, LogIn, Loader2, CheckCircle2, AlertCircle } from "lucide-react";
+import { authLogin, authLogout, authMe, authResendVerification, type AuthUser } from "@/lib/auth";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+
+/** Skočni prozor nakon redirecta s API-ja (npr. verified=1). */
+type EmailVerifyUi =
+  | { kind: "closed" }
+  | { kind: "loading" }
+  | { kind: "success"; message: string }
+  | { kind: "error"; message: string };
 
 const Prijava = () => {
+  const [searchParams, setSearchParams] = useSearchParams();
   const [loginData, setLoginData] = useState({
     email: "",
     password: "",
@@ -12,62 +30,33 @@ const Prijava = () => {
   const [loggedUser, setLoggedUser] = useState<AuthUser | null>(null);
   const [loading, setLoading] = useState(true);
   const [info, setInfo] = useState("");
+  const [emailVerifyUi, setEmailVerifyUi] = useState<EmailVerifyUi>({ kind: "closed" });
   const [needsVerification, setNeedsVerification] = useState(false);
   const [resendLoading, setResendLoading] = useState(false);
 
   useEffect(() => {
     let alive = true;
-    // HashRouter: URL je .../#/prijava?verify=TOKEN – parametri su u hash dijelu
-    const hash = window.location.hash || "";
-    const hashQueryStart = hash.indexOf("?");
-    const queryString = hashQueryStart >= 0 ? hash.substring(hashQueryStart + 1) : "";
-    const params = new URLSearchParams(queryString || window.location.search);
-    const verifiedFlag = params.get("verified");
-    const verifyErr = params.get("verify_error");
+    const verifiedFlag = searchParams.get("verified");
+    const verifyErr = searchParams.get("verify_error");
 
     if (verifiedFlag === "1") {
-      setInfo("Email je potvrđen. Sada se možeš prijaviti.");
-      window.history.replaceState(
-        {},
-        "",
-        `${window.location.pathname}${window.location.search}#/prijava`,
-      );
+      setEmailVerifyUi({
+        kind: "success",
+        message: "Račun je potvrđen. Možeš se prijaviti s emailom i lozinkom.",
+      });
+      setSearchParams({}, { replace: true });
     } else if (verifyErr === "expired") {
-      setInfo("Link je istekao. Registriraj se ponovno.");
-      window.history.replaceState(
-        {},
-        "",
-        `${window.location.pathname}${window.location.search}#/prijava`,
-      );
+      setEmailVerifyUi({
+        kind: "error",
+        message: "Link za potvrdu je istekao. Registriraj se ponovno ili zatraži novi mail.",
+      });
+      setSearchParams({}, { replace: true });
     } else if (verifyErr === "invalid" || verifyErr === "missing") {
-      setInfo("Link za potvrdu nije važeći. Registriraj se ponovno ili zatraži novi mail.");
-      window.history.replaceState(
-        {},
-        "",
-        `${window.location.pathname}${window.location.search}#/prijava`,
-      );
-    } else {
-      const verify = params.get("verify");
-      if (verify) {
-        setInfo("Potvrđujem email...");
-        authVerifyEmail(verify)
-          .then((res) => {
-            if (!alive) return;
-            if (res.success) {
-              setInfo("Email je potvrđen. Sada se možeš prijaviti.");
-            } else {
-              setInfo(res.message);
-            }
-            params.delete("verify");
-            const next = params.toString();
-            const newHash = `/prijava${next ? `?${next}` : ""}`;
-            window.history.replaceState({}, "", `${window.location.pathname}${window.location.search}#${newHash}`);
-          })
-          .catch(() => {
-            if (!alive) return;
-            setInfo("Greška kod potvrde emaila.");
-          });
-      }
+      setEmailVerifyUi({
+        kind: "error",
+        message: "Link za potvrdu nije važeći. Registriraj se ponovno ili zatraži novi mail.",
+      });
+      setSearchParams({}, { replace: true });
     }
 
     authMe()
@@ -81,7 +70,7 @@ const Prijava = () => {
     return () => {
       alive = false;
     };
-  }, []);
+  }, [searchParams, setSearchParams]);
 
   const handleLoginChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -107,7 +96,7 @@ const Prijava = () => {
       password: loginData.password,
     });
     if (!res.success) {
-      setLoginError(res.message);
+      setLoginError(res.message || "Prijava nije uspjela.");
       if (
         (res as any).code === "EMAIL_NOT_VERIFIED" ||
         (res as any).code === "PENDING_VERIFICATION" ||
@@ -117,7 +106,14 @@ const Prijava = () => {
       }
       return;
     }
-    setLoggedUser((res as any).user ?? (res as any).data?.user ?? null);
+    const user = (res as any).user ?? (res as any).data?.user ?? null;
+    if (!user) {
+      setLoginError(
+        "Server je odgovorio bez podataka o korisniku. Osvježi stranicu i pokušaj ponovno; ako se ponavlja, provjeri deploy API-ja.",
+      );
+      return;
+    }
+    setLoggedUser(user);
     setLoginData({ email: "", password: "" });
   };
 
@@ -147,8 +143,95 @@ const Prijava = () => {
 
   const displayName = loggedUser?.username || "";
 
+  const verifyOpen = emailVerifyUi.kind !== "closed";
+
   return (
     <Layout>
+      {verifyOpen ? (
+        <Dialog
+          open
+          onOpenChange={(open) => {
+            if (!open) setEmailVerifyUi({ kind: "closed" });
+          }}
+        >
+        <DialogContent
+          className={
+            emailVerifyUi.kind === "loading"
+              ? "sm:max-w-md [&>button:last-child]:hidden"
+              : "sm:max-w-md"
+          }
+          onPointerDownOutside={(e) => {
+            if (emailVerifyUi.kind === "loading") e.preventDefault();
+          }}
+          onEscapeKeyDown={(e) => {
+            if (emailVerifyUi.kind === "loading") e.preventDefault();
+          }}
+        >
+          {emailVerifyUi.kind === "loading" && (
+            <>
+              <DialogHeader>
+                <DialogTitle className="flex items-center gap-2">
+                  <Loader2 className="h-5 w-5 animate-spin text-primary" aria-hidden />
+                  Potvrda računa
+                </DialogTitle>
+                <DialogDescription>
+                  Potvrđujemo tvoj email. Pričekaj trenutak…
+                </DialogDescription>
+              </DialogHeader>
+              <div className="flex justify-center py-6">
+                <Loader2 className="h-12 w-12 animate-spin text-primary/80" aria-hidden />
+              </div>
+            </>
+          )}
+          {emailVerifyUi.kind === "success" && (
+            <>
+              <DialogHeader>
+                <div className="mx-auto mb-2 flex h-12 w-12 items-center justify-center rounded-full bg-emerald-100">
+                  <CheckCircle2 className="h-7 w-7 text-emerald-600" aria-hidden />
+                </div>
+                <DialogTitle className="text-center">Račun je potvrđen</DialogTitle>
+                <DialogDescription className="text-center text-base text-slate-700">
+                  {emailVerifyUi.message}
+                </DialogDescription>
+              </DialogHeader>
+              <DialogFooter className="sm:justify-center">
+                <Button
+                  type="button"
+                  className="w-full sm:w-auto"
+                  onClick={() => setEmailVerifyUi({ kind: "closed" })}
+                >
+                  U redu
+                </Button>
+              </DialogFooter>
+            </>
+          )}
+          {emailVerifyUi.kind === "error" && (
+            <>
+              <DialogHeader>
+                <div className="mx-auto mb-2 flex h-12 w-12 items-center justify-center rounded-full bg-red-100">
+                  <AlertCircle className="h-7 w-7 text-red-600" aria-hidden />
+                </div>
+                <DialogTitle className="text-center">Potvrda nije uspjela</DialogTitle>
+                <DialogDescription className="text-center text-base text-slate-700">
+                  {emailVerifyUi.message}
+                </DialogDescription>
+              </DialogHeader>
+              <DialogFooter className="sm:justify-center">
+                <Button
+                  type="button"
+                  variant="secondary"
+                  className="w-full sm:w-auto"
+                  onClick={() => setEmailVerifyUi({ kind: "closed" })}
+                >
+                  Zatvori
+                </Button>
+              </DialogFooter>
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
+      ) : null}
+
       <section className="container py-16 max-w-md mx-auto">
         {!loggedUser ? (
           <div className="bg-white rounded-2xl shadow-xl p-6 md:p-8 border border-slate-100">
@@ -240,6 +323,11 @@ const Prijava = () => {
                 Nemaš račun? Posjeti stranicu{" "}
                 <span className="font-semibold">Registracija</span> u glavnom
                 izborniku.
+              </p>
+              <p className="text-center text-[11px] text-slate-500 mt-3 leading-snug">
+                Račun s weba i račun s lokalnog testa nisu isti (različita baza). Email mora biti
+                potvrđen linkom iz pisma. Ako te stranica ne drži prijavljenim nakon osvježenja,
+                osvježi deploy API-ja (session cookie za GitHub Pages).
               </p>
             </form>
           </div>
