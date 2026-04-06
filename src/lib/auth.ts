@@ -15,6 +15,19 @@ export type AuthUser = {
   email: string;
   created_at: string;
   email_verified?: number;
+  /** Samo za račune navedene u ADMIN_EMAILS na serveru. */
+  is_admin?: boolean;
+};
+
+export type AdminStats = {
+  users_total: number;
+  users_verified: number;
+  pending_registrations: number;
+  site_feedback: number;
+  forum_conversations: number;
+  forum_messages: number;
+  forum_likes: number;
+  registrations_last_7_days: number;
 };
 
 /** Izvadi korisnika iz odgovora /api/auth/me (ili login) kad je success. */
@@ -46,14 +59,14 @@ export async function authRegister(params: {
       user?: AuthUser;
       email?: string;
       verification_required?: boolean;
-      dev_verification_url?: string;
+      email_preview_url?: string;
     }>
   > {
   return apiPost<{
     user?: AuthUser;
     email?: string;
     verification_required?: boolean;
-    dev_verification_url?: string;
+    email_preview_url?: string;
   }>(
     "/api/auth/register",
     params,
@@ -66,11 +79,15 @@ export async function authLogout(): Promise<ApiResponse<unknown>> {
   return res;
 }
 
-export async function authVerifyEmail(token: string): Promise<ApiResponse<unknown>> {
-  return apiGet<unknown>(`/api/auth/verify?token=${encodeURIComponent(token)}`);
+export async function authVerifyCode(params: { email: string; code: string }): Promise<ApiResponse<unknown>> {
+  return apiPost<unknown>("/api/auth/verify-code", params);
 }
 
 export async function authResendVerification(email: string): Promise<ApiResponse<unknown>> {
   return apiPost<unknown>("/api/auth/resend-verification", { email });
+}
+
+export async function fetchAdminStats(): Promise<ApiResponse<unknown>> {
+  return apiGet<unknown>("/api/admin/stats");
 }
 

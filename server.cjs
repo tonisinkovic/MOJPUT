@@ -309,15 +309,11 @@ function resolvePublicApiBaseForMail() {
   return localApiVerifyBaseUrl();
 }
 
-/**
- * Uvijek: GET /api/auth/verify?token=…&redirect=1 — potvrda na istom serveru gdje je token, zatim redirect na /prijavu.
- */
-function mailVerifyUrlFromToken(verifyToken) {
-  const token = encodeURIComponent(String(verifyToken || ""));
-  const base = resolvePublicApiBaseForMail().replace(/\/$/, "");
-  const url = `${base}/api/auth/verify?token=${token}&redirect=1`;
-  console.log("[mail] verification link (API → redirect na prijavu):", url);
-  return url;
+/** Stranica frontenda za unos 6-znamenkastog koda (nakon registracije). */
+function frontendVerifyPageUrl(querySuffix) {
+  const origin = getFrontendOriginForRedirect();
+  const q = querySuffix ? `?${querySuffix}` : "";
+  return `${origin}/MOJPUT/verify${q}`;
 }
 
 /** Nakon potvrde na Renderu: uvijek HTTPS GitHub Pages (APP_ORIGIN), bez lokalne Vite logike. */
@@ -354,23 +350,6 @@ function shouldUseVerifyRedirect(req) {
   return true;
 }
 
-/** Ako Express/query proxy skrati token, probaj iz raw URL-a. */
-function extractVerifyToken(req) {
-  let t = String(req.query.token || "").trim();
-  if (t) return t;
-  try {
-    const raw = String(req.url || "");
-    const qIdx = raw.indexOf("?");
-    if (qIdx === -1) return "";
-    const q = raw.slice(qIdx + 1).split("#")[0];
-    const m = q.match(/(?:^|&)token=([^&]*)/);
-    if (m) return decodeURIComponent(m[1].replace(/\+/g, "%20")).trim();
-  } catch {
-    /* ignore */
-  }
-  return "";
-}
-
 const hasResend = Boolean(String(process.env.RESEND_API_KEY || "").trim());
 const hasSmtp = Boolean(
   process.env.SMTP_HOST && process.env.SMTP_PORT && process.env.SMTP_USER && process.env.SMTP_PASS
@@ -388,7 +367,8 @@ if (hasSmtp && process.env.SMTP_USER) {
 }
 console.log("[config] APP_ORIGIN:", String(process.env.APP_ORIGIN || "").trim() || "(nije postavljen)");
 console.log("[config] Render/PaaS:", isDeployedOnPaaS(), "| NODE_ENV:", process.env.NODE_ENV || "(nema)");
-console.log("[config] Link u mailu (potvrda) →", resolvePublicApiBaseForMail());
+console.log("[config] Stranica za unos koda (potvrda) →", frontendVerifyPageUrl(""));
+console.log("[config] Javni API (ostalo) →", resolvePublicApiBaseForMail());
 console.log("[config] Redirect nakon potvrde →", getFrontendOriginForRedirect(), "/MOJPUT/prijava");
 if (isDeployedOnPaaS() && !String(process.env.API_PUBLIC_URL || "").trim() && !readApiPublicUrlFromDisk()) {
   console.warn("[config] API_PUBLIC_URL nije u env — koristi se zadani:", DEFAULT_PUBLIC_API_BASE);
@@ -463,6 +443,15 @@ function migrate(db) {
       key TEXT PRIMARY KEY,
       value TEXT NOT NULL
     );
+
+    CREATE TABLE IF NOT EXISTS site_feedback (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      user_id INTEGER NOT NULL,
+      message TEXT NOT NULL,
+      page_path TEXT,
+      created_at TEXT NOT NULL DEFAULT (datetime('now')),
+      FOREIGN KEY (user_id) REFERENCES users(id)
+    );
   `);
 
   // Lightweight migration for existing DBs (SQLite doesn't add columns automatically)
@@ -506,6 +495,9 @@ function migrate(db) {
   if (pendingCols.length && !pendingCols.includes("app_base_url")) {
     db.exec("ALTER TABLE pending_registrations ADD COLUMN app_base_url TEXT");
   }
+  if (pendingCols.length && !pendingCols.includes("verify_code_hash")) {
+    db.exec("ALTER TABLE pending_registrations ADD COLUMN verify_code_hash TEXT");
+  }
 
   try {
     db.prepare("SELECT 1 FROM app_meta LIMIT 1").get();
@@ -529,6 +521,23 @@ function migrate(db) {
     db.prepare("INSERT INTO app_meta (key, value) VALUES ('pending_registration_flow_v1', '1')").run();
     console.log("[migrate] Jednokratno očišćeni korisnici i nepotvrđene prijave (račun nastaje tek nakon klika u mailu).");
   }
+
+  const otpMigrated = db.prepare("SELECT 1 FROM app_meta WHERE key = 'email_verify_otp_v1'").get();
+  if (!otpMigrated) {
+    db.exec("PRAGMA foreign_keys = OFF");
+    db.exec("DELETE FROM forum_likes");
+    db.exec("DELETE FROM forum_messages");
+    db.exec("DELETE FROM forum_conversations");
+    db.exec("DELETE FROM users");
+    try {
+      db.exec("DELETE FROM pending_registrations");
+    } catch {
+      /* ignore */
+    }
+    db.exec("PRAGMA foreign_keys = ON");
+    db.prepare("INSERT INTO app_meta (key, value) VALUES ('email_verify_otp_v1', '1')").run();
+    console.log("[migrate] Potvrda računa 6-znamenkastim kodom — jednokratno očišćeni korisnici i nepotvrđene prijave.");
+  }
 }
 
 function seedForum(db) {
@@ -547,6 +556,49 @@ function seedForum(db) {
     anyUser.id,
   );
   insertConv.run("Iskustva sa maturom", "Savjeti i trikovi za maturu", anyUser.id);
+}
+
+function generateSixDigitCode() {
+  return String(crypto.randomInt(0, 1000000)).padStart(6, "0");
+}
+
+function hashVerifyCode(code) {
+  return bcrypt.hashSync(String(code || ""), 10);
+}
+
+function normalizeOtpCode(raw) {
+  return String(raw || "").replace(/\D/g, "").slice(0, 6);
+}
+
+/** @type {Map<string, { n: number, resetAt: number }>} */
+const verifyCodeAttempts = new Map();
+
+function verifyCodeRateLimitOk(emailKey) {
+  const now = Date.now();
+  const k = String(emailKey || "").toLowerCase().trim();
+  if (!k) return false;
+  let e = verifyCodeAttempts.get(k);
+  if (!e || e.resetAt < now) {
+    verifyCodeAttempts.set(k, { n: 1, resetAt: now + 15 * 60 * 1000 });
+    return true;
+  }
+  if (e.n >= 25) return false;
+  e.n += 1;
+  return true;
+}
+
+function finalizePendingRegistration(db, pending) {
+  const already = db.prepare("SELECT id FROM users WHERE email = ?").get(pending.email);
+  if (already) {
+    db.prepare("DELETE FROM pending_registrations WHERE email = ?").run(pending.email);
+    return { alreadyUser: true };
+  }
+  db.prepare(
+    "INSERT INTO users (username, email, password_hash, email_verified, email_verify_token, email_verify_expires_at) VALUES (?, ?, ?, 1, NULL, NULL)",
+  ).run(pending.username, pending.email, pending.password_hash);
+  db.prepare("DELETE FROM pending_registrations WHERE email = ?").run(pending.email);
+  seedForum(db);
+  return { alreadyUser: false };
 }
 
 function signToken(payload) {
@@ -648,6 +700,40 @@ function optionalAuthMiddleware(db) {
   };
 }
 
+/** Emailovi tima (razdvojeni zarezom ili točka-zarezom). Zadano: mojputhr@gmail.com. */
+function getAdminEmailSet() {
+  const raw = String(process.env.ADMIN_EMAILS || process.env.ADMIN_EMAIL || "mojputhr@gmail.com").trim();
+  return new Set(raw.split(/[,;]+/).map((s) => s.trim().toLowerCase()).filter(Boolean));
+}
+
+function isAdminEmail(email) {
+  return getAdminEmailSet().has(String(email || "").trim().toLowerCase());
+}
+
+function userPayloadWithAdminFlag(userRow) {
+  return {
+    id: userRow.id,
+    username: userRow.username,
+    email: userRow.email,
+    created_at: userRow.created_at,
+    email_verified: userRow.email_verified,
+    is_admin: isAdminEmail(userRow.email),
+  };
+}
+
+/** Nakon uspješne prijave: samo ako je email u ADMIN_EMAILS. */
+function adminMiddleware(db) {
+  const auth = authMiddleware(db);
+  return (req, res, next) => {
+    auth(req, res, () => {
+      if (!isAdminEmail(req.user.email)) {
+        return res.status(403).json({ success: false, message: "Nemaš pristup tim podacima." });
+      }
+      next();
+    });
+  };
+}
+
 function getMailTransportSync() {
   const host = String(process.env.SMTP_HOST || "").trim();
   const port = process.env.SMTP_PORT ? Number(process.env.SMTP_PORT) : undefined;
@@ -728,6 +814,19 @@ function isValidEmail(email) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(s);
 }
 
+function escapeHtml(s) {
+  return String(s ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
+
+/** Inbox za obavijesti o povratnim informacijama (moguće overrideati s FEEDBACK_NOTIFY_EMAIL). */
+function getFeedbackNotifyEmail() {
+  return String(process.env.FEEDBACK_NOTIFY_EMAIL || "mojputhr@gmail.com").trim();
+}
+
 /**
  * Ne izlagati sirove SMTP odgovore (npr. Gmail 535) u JSON-u za korisnika.
  * 535 / BadCredentials = gotovo uvijek kriva lozinka ili korištenje obične lozinke umjesto App Password.
@@ -779,17 +878,19 @@ function getVerificationMailFrom() {
   return `MojPut <${userRaw}>`;
 }
 
-async function sendVerificationEmail({ to, username, verifyToken }) {
-  const verifyUrl = mailVerifyUrlFromToken(verifyToken);
-  const hrefHtml = verifyUrl.replace(/&/g, "&amp;");
+async function sendVerificationEmail({ to, username, code }) {
+  const verifyPage = frontendVerifyPageUrl(`email=${encodeURIComponent(to)}`);
+  const pageHtml = verifyPage.replace(/&/g, "&amp;");
   const subject = "MojPut — potvrdi svoj račun";
-  const textBody = `Pozdrav ${username},\n\nZa aktivaciju MojPut računa otvori ovaj link u pregledniku:\n${verifyUrl}\n\nLink vrijedi 24 sata. Ako nisi ti tražio registraciju, zanemari ovu poruku.\n`;
+  const textBody = `Pozdrav ${username},\n\nTvoj kod za potvrdu MojPut računa: ${code}\n\nUpiši ga na stranici za potvrdu (otvori u pregledniku):\n${verifyPage}\n\nKod vrijedi 24 sata. Ako nisi ti tražio registraciju, zanemari ovu poruku.\n`;
   const htmlBody = `
         <p>Pozdrav ${username},</p>
-        <p>Da bi se prijavio/la na MojPut, potvrdi račun klikom na gumb ili link ispod (otvara se u pregledniku).</p>
-        <p><a href="${hrefHtml}" style="display:inline-block;padding:10px 16px;background:#1e293b;color:#fff;text-decoration:none;border-radius:8px;font-weight:600;">Potvrdi račun</a></p>
-        <p style="word-break:break-all;font-size:13px;"><a href="${hrefHtml}">${hrefHtml}</a></p>
-        <p style="font-size:13px;color:#64748b;">Link vrijedi 24 sata. Ako nisi ti tražio registraciju, zanemari ovu poruku.</p>
+        <p>Tvoj <strong>6-znamenkasti kod</strong> za potvrdu računa:</p>
+        <p style="font-size:28px;letter-spacing:0.25em;font-weight:700;font-family:ui-monospace,monospace;color:#0f172a;">${code}</p>
+        <p>Otvori stranicu za potvrdu i upiši kod zajedno s email adresom:</p>
+        <p><a href="${pageHtml}" style="display:inline-block;padding:10px 16px;background:#1e293b;color:#fff;text-decoration:none;border-radius:8px;font-weight:600;">Otvori stranicu za potvrdu</a></p>
+        <p style="word-break:break-all;font-size:13px;"><a href="${pageHtml}">${pageHtml}</a></p>
+        <p style="font-size:13px;color:#64748b;">Kod vrijedi 24 sata. Ako nisi ti tražio registraciju, zanemari ovu poruku.</p>
       `;
 
   /** Produkcija (Render): Resend ne koristi Gmail SMTP — samo API ključ. https://resend.com */
@@ -890,6 +991,102 @@ async function sendVerificationEmail({ to, username, verifyToken }) {
   }
 }
 
+/** Šalje adminu mail o novoj povratnoj informaciji (Resend ili SMTP kao kod registracije). */
+async function sendFeedbackNotifyEmail({ feedbackId, userEmail, username, message, pagePath }) {
+  const to = getFeedbackNotifyEmail();
+  if (!isValidEmail(to)) {
+    console.warn("[feedback-mail] nevaljana FEEDBACK_NOTIFY_EMAIL:", to);
+    return { sent: false, error: "invalid notify address" };
+  }
+
+  const subject = `MojPut — povratna informacija #${feedbackId}`;
+  const textBody = [
+    `Nova povratna informacija (ID ${feedbackId})`,
+    "",
+    `Korisnik: ${username}`,
+    `Email: ${userEmail}`,
+    `Stranica: ${pagePath || "(nije poslano)"}`,
+    "",
+    "Poruka:",
+    message,
+  ].join("\n");
+
+  const esc = (x) => escapeHtml(String(x));
+  const htmlBody = `
+        <p><strong>Nova povratna informacija</strong> · ID: ${feedbackId}</p>
+        <p><strong>Korisnik:</strong> ${esc(username)}<br/>
+        <strong>Email:</strong> <a href="mailto:${esc(userEmail)}">${esc(userEmail)}</a><br/>
+        <strong>Stranica:</strong> ${esc(pagePath || "—")}</p>
+        <hr style="border:none;border-top:1px solid #e2e8f0;margin:16px 0"/>
+        <p style="white-space:pre-wrap">${esc(message)}</p>
+      `;
+
+  const resendKey = String(process.env.RESEND_API_KEY || "").trim();
+  if (resendKey) {
+    const from = String(process.env.RESEND_FROM || "").trim() || "MojPut <onboarding@resend.dev>";
+    try {
+      const r = await fetch("https://api.resend.com/emails", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${resendKey}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          from,
+          to: [to],
+          reply_to: userEmail,
+          subject,
+          text: textBody,
+          html: htmlBody,
+        }),
+      });
+      const json = await r.json().catch(() => ({}));
+      if (!r.ok) {
+        console.error("[feedback-mail] Resend:", r.status, json);
+        return { sent: false, error: resendErrorForClient(json, r.status) };
+      }
+      console.log("[feedback-mail] Resend OK →", to);
+      return { sent: true };
+    } catch (err) {
+      console.error("[feedback-mail] Resend:", err?.message || err);
+      return { sent: false, error: String(err?.message || err) };
+    }
+  }
+
+  let transport;
+  let isEthereal;
+  try {
+    const t = await getMailTransport();
+    transport = t.transport;
+    isEthereal = t.isEthereal;
+  } catch {
+    console.warn("[feedback-mail] nema mail transporta — obavijest nije poslana (poruka je u bazi).");
+    return { sent: false, error: "no mail" };
+  }
+
+  const from = getVerificationMailFrom();
+  try {
+    const info = await transport.sendMail({
+      from,
+      to,
+      replyTo: userEmail,
+      subject,
+      text: textBody,
+      html: htmlBody,
+    });
+    if (isEthereal && nodemailer.getTestMessageUrl) {
+      const previewUrl = nodemailer.getTestMessageUrl(info);
+      if (previewUrl) console.log("[feedback-mail] Ethereal preview:", previewUrl);
+    } else {
+      console.log("[feedback-mail] poslano na", to);
+    }
+    return { sent: true };
+  } catch (err) {
+    console.error("[feedback-mail] SMTP:", err?.message || err);
+    return { sent: false, error: smtpErrorForClient(err) };
+  }
+}
+
 async function loadUniversitiesData() {
   const dataFile = path.join(__dirname, "universities_data.json");
   if (fs.existsSync(dataFile)) {
@@ -967,17 +1164,17 @@ async function main() {
 
       const passwordHash = bcrypt.hashSync(cleanPassword, 12);
       const verifyToken = crypto.randomBytes(32).toString("hex");
+      const plainCode = generateSixDigitCode();
+      const verifyCodeHash = hashVerifyCode(plainCode);
       const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
-
-      const verifyUrlForUi = mailVerifyUrlFromToken(verifyToken);
 
       db.prepare("DELETE FROM pending_registrations WHERE email = ?").run(cleanEmail);
       const appBase = appOriginForLinks();
       db.prepare(
-        "INSERT INTO pending_registrations (email, username, password_hash, verify_token, expires_at, app_base_url) VALUES (?, ?, ?, ?, ?, ?)",
-      ).run(cleanEmail, cleanUsername, passwordHash, verifyToken, expiresAt, appBase);
+        "INSERT INTO pending_registrations (email, username, password_hash, verify_token, verify_code_hash, expires_at, app_base_url) VALUES (?, ?, ?, ?, ?, ?, ?)",
+      ).run(cleanEmail, cleanUsername, passwordHash, verifyToken, verifyCodeHash, expiresAt, appBase);
 
-      const mail = await sendVerificationEmail({ to: cleanEmail, username: cleanUsername, verifyToken });
+      const mail = await sendVerificationEmail({ to: cleanEmail, username: cleanUsername, code: plainCode });
 
       if (!mail.sent) {
         db.prepare("DELETE FROM pending_registrations WHERE email = ?").run(cleanEmail);
@@ -991,7 +1188,7 @@ async function main() {
 
       const payload = { success: true, email: cleanEmail, verification_required: true };
       if (mail.previewUrl) payload.email_preview_url = mail.previewUrl;
-      if (mail.previewUrl || !isDeployedOnPaaS()) payload.dev_verification_url = verifyUrlForUi;
+      if (String(process.env.MOJPUT_E2E || "").trim() === "1") payload.dev_verification_code = plainCode;
       return res.json(payload);
     } catch (err) {
       console.error("[auth/register]", err?.message || err);
@@ -1001,57 +1198,73 @@ async function main() {
 
   app.get("/api/auth/verify", (req, res) => {
     reloadAllEnv();
-    const token = extractVerifyToken(req);
     let wantRedirect = String(req.query.redirect || "") === "1" || shouldUseVerifyRedirect(req);
     if (String(req.query.redirect || "") === "0") wantRedirect = false;
 
-    function redirectPrijava(qs) {
-      res.redirect(303, frontendPrijavaUrl(qs));
+    if (wantRedirect) {
+      return res.redirect(303, frontendVerifyPageUrl(""));
     }
+    return res.status(410).json({
+      success: false,
+      message:
+        "Potvrda računa više nije linkom. Otvori stranicu «Potvrda računa» na MojPutu i upiši email te 6-znamenkasti kod iz pisma.",
+    });
+  });
 
-    if (!token) {
-      console.warn("[auth/verify] missing token | Accept:", req.get("Accept") || "(nema)", "| url:", req.url?.slice(0, 120));
-      if (wantRedirect) return redirectPrijava("verify_error=missing");
-      return res.status(400).json({ success: false, message: "Nedostaje token." });
-    }
+  app.post("/api/auth/verify-code", (req, res) => {
+    try {
+      const { email, code } = req.body || {};
+      const cleanEmail = String(email || "").trim().toLowerCase();
+      const codeNorm = normalizeOtpCode(code);
 
-    const pending = db
-      .prepare(
-        "SELECT email, username, password_hash, expires_at, app_base_url FROM pending_registrations WHERE verify_token = ?",
-      )
-      .get(token);
-
-    if (!pending) {
-      console.warn("[auth/verify] no pending row | tokenLen:", token.length, "| Accept:", req.get("Accept") || "");
-      if (wantRedirect) return redirectPrijava("verify_error=invalid");
-      return res.status(400).json({ success: false, message: "Link nije važeći ili je već iskorišten." });
-    }
-
-    if (pending.expires_at) {
-      const exp = new Date(pending.expires_at).getTime();
-      if (Number.isFinite(exp) && exp < Date.now()) {
-        db.prepare("DELETE FROM pending_registrations WHERE verify_token = ?").run(token);
-        if (wantRedirect) return redirectPrijava("verify_error=expired");
-        return res.status(400).json({ success: false, message: "Link je istekao. Registriraj se ponovno." });
+      if (!isValidEmail(cleanEmail)) {
+        return res.status(400).json({ success: false, message: "Unesi valjanu email adresu." });
       }
-    }
+      if (codeNorm.length !== 6) {
+        return res.status(400).json({ success: false, message: "Kod mora imati točno 6 znamenki." });
+      }
 
-    const already = db.prepare("SELECT id FROM users WHERE email = ?").get(pending.email);
-    if (already) {
-      db.prepare("DELETE FROM pending_registrations WHERE email = ?").run(pending.email);
-      if (wantRedirect) return redirectPrijava("verified=1");
+      if (!verifyCodeRateLimitOk(cleanEmail)) {
+        return res.status(429).json({
+          success: false,
+          message: "Previše pokušaja. Pričekaj oko 15 minuta ili zatraži novi kod.",
+        });
+      }
+
+      const pending = db
+        .prepare(
+          "SELECT email, username, password_hash, expires_at, verify_code_hash FROM pending_registrations WHERE email = ?",
+        )
+        .get(cleanEmail);
+
+      if (!pending || !pending.verify_code_hash) {
+        return res.status(400).json({
+          success: false,
+          message: "Nema aktivne registracije za taj email ili je kod već iskorišten. Registriraj se ponovno.",
+        });
+      }
+
+      if (pending.expires_at) {
+        const exp = new Date(pending.expires_at).getTime();
+        if (Number.isFinite(exp) && exp < Date.now()) {
+          db.prepare("DELETE FROM pending_registrations WHERE email = ?").run(cleanEmail);
+          return res.status(400).json({
+            success: false,
+            message: "Kod je istekao. Registriraj se ponovno ili zatraži novi email.",
+          });
+        }
+      }
+
+      if (!bcrypt.compareSync(codeNorm, pending.verify_code_hash)) {
+        return res.status(400).json({ success: false, message: "Kod nije točan." });
+      }
+
+      finalizePendingRegistration(db, pending);
       return res.json({ success: true });
+    } catch (err) {
+      console.error("[auth/verify-code]", err?.message || err);
+      return res.status(500).json({ success: false, message: "Interna greška servera." });
     }
-
-    db.prepare(
-      "INSERT INTO users (username, email, password_hash, email_verified, email_verify_token, email_verify_expires_at) VALUES (?, ?, ?, 1, NULL, NULL)",
-    ).run(pending.username, pending.email, pending.password_hash);
-
-    db.prepare("DELETE FROM pending_registrations WHERE email = ?").run(pending.email);
-    seedForum(db);
-
-    if (wantRedirect) return redirectPrijava("verified=1");
-    return res.json({ success: true });
   });
 
   app.post("/api/auth/resend-verification", async (req, res) => {
@@ -1072,19 +1285,16 @@ async function main() {
     }
 
     const verifyToken = crypto.randomBytes(32).toString("hex");
+    const plainCode = generateSixDigitCode();
+    const verifyCodeHash = hashVerifyCode(plainCode);
     const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
 
-    const verifyUrlForUi = mailVerifyUrlFromToken(verifyToken);
-
-    db.prepare("UPDATE pending_registrations SET verify_token = ?, expires_at = ?, app_base_url = ? WHERE email = ?").run(
-      verifyToken,
-      expiresAt,
-      appOriginForLinks(),
-      cleanEmail,
-    );
+    db.prepare(
+      "UPDATE pending_registrations SET verify_token = ?, verify_code_hash = ?, expires_at = ?, app_base_url = ? WHERE email = ?",
+    ).run(verifyToken, verifyCodeHash, expiresAt, appOriginForLinks(), cleanEmail);
 
     try {
-      const mail = await sendVerificationEmail({ to: cleanEmail, username: pending.username, verifyToken });
+      const mail = await sendVerificationEmail({ to: cleanEmail, username: pending.username, code: plainCode });
       if (!mail.sent) {
         return res.status(502).json({
           success: false,
@@ -1093,7 +1303,6 @@ async function main() {
       }
       const payload = { success: true };
       if (mail.previewUrl) payload.email_preview_url = mail.previewUrl;
-      if (mail.previewUrl || !isDeployedOnPaaS()) payload.dev_verification_url = verifyUrlForUi;
       return res.json(payload);
     } catch {
       return res.status(500).json({ success: false, message: "Ne mogu poslati email. Pokušaj kasnije." });
@@ -1123,7 +1332,7 @@ async function main() {
         if (pend && bcrypt.compareSync(cleanPassword, pend.password_hash)) {
           return res.status(403).json({
             success: false,
-            message: "Račun još nije aktiviran. Potvrdi email klikom na link u pismu.",
+            message: "Račun još nije aktiviran. Upiši 6-znamenkasti kod s pisma na stranici za potvrdu računa.",
             code: "PENDING_VERIFICATION",
           });
         }
@@ -1146,13 +1355,7 @@ async function main() {
       const ok = bcrypt.compareSync(cleanPassword, row.password_hash);
       if (!ok) return res.status(401).json({ success: false, message: "Neispravan email ili lozinka." });
 
-      const user = {
-        id: row.id,
-        username: row.username,
-        email: row.email,
-        created_at: row.created_at,
-        email_verified: row.email_verified,
-      };
+      const user = userPayloadWithAdminFlag(row);
       const token = signToken({ sub: user.id });
       setAuthCookie(res, token, req);
       return res.json({ success: true, user });
@@ -1168,7 +1371,68 @@ async function main() {
   });
 
   app.get("/api/auth/me", authMiddleware(db), (req, res) => {
-    return res.json({ success: true, user: req.user });
+    return res.json({ success: true, user: userPayloadWithAdminFlag(req.user) });
+  });
+
+  /** Sažetak za tim održavanja (samo ADMIN_EMAILS). */
+  app.get("/api/admin/stats", adminMiddleware(db), (_req, res) => {
+    try {
+      const one = (sql) => Number(db.prepare(sql).get()?.c ?? 0);
+      return res.json({
+        success: true,
+        data: {
+          users_total: one("SELECT COUNT(*) as c FROM users"),
+          users_verified: one("SELECT COUNT(*) as c FROM users WHERE email_verified = 1"),
+          pending_registrations: one("SELECT COUNT(*) as c FROM pending_registrations"),
+          site_feedback: one("SELECT COUNT(*) as c FROM site_feedback"),
+          forum_conversations: one("SELECT COUNT(*) as c FROM forum_conversations"),
+          forum_messages: one("SELECT COUNT(*) as c FROM forum_messages"),
+          forum_likes: one("SELECT COUNT(*) as c FROM forum_likes"),
+          registrations_last_7_days: one(
+            "SELECT COUNT(*) as c FROM users WHERE datetime(created_at) >= datetime('now', '-7 days')",
+          ),
+        },
+      });
+    } catch (err) {
+      console.error("[admin/stats]", err?.message || err);
+      return res.status(500).json({ success: false, message: "Ne mogu učitati statistiku." });
+    }
+  });
+
+  /** Povratne informacije — samo za prijavljene; nema javnog popisa (samo u bazi za održavanje). */
+  app.post("/api/feedback", authMiddleware(db), (req, res) => {
+    try {
+      const raw = String((req.body || {}).message || "").trim();
+      const pageRaw = String((req.body || {}).pagePath || "").trim();
+      if (raw.length < 3) {
+        return res.status(400).json({ success: false, message: "Poruka je prekratka (barem 3 znaka)." });
+      }
+      if (raw.length > 4000) {
+        return res.status(400).json({ success: false, message: "Poruka je predugačka (najviše 4000 znakova)." });
+      }
+      const pagePath = pageRaw.length > 500 ? pageRaw.slice(0, 500) : pageRaw;
+      const insertInfo = db
+        .prepare("INSERT INTO site_feedback (user_id, message, page_path) VALUES (?, ?, ?)")
+        .run(req.user.id, raw, pagePath || null);
+      const feedbackId = Number(insertInfo.lastInsertRowid);
+
+      res.json({ success: true });
+
+      sendFeedbackNotifyEmail({
+        feedbackId,
+        userEmail: req.user.email,
+        username: req.user.username,
+        message: raw,
+        pagePath: pagePath || "",
+      }).then((mailRes) => {
+        if (!mailRes?.sent) {
+          console.warn("[feedback-mail] nije poslan:", mailRes?.error || "nepoznato");
+        }
+      });
+    } catch (err) {
+      console.error("[feedback]", err?.message || err);
+      return res.status(500).json({ success: false, message: "Nije moguće spremiti poruku. Pokušaj kasnije." });
+    }
   });
 
   // Forum

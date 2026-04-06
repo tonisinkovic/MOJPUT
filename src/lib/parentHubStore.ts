@@ -62,6 +62,23 @@ export function incrementView(slug: string) {
   setState({ ...state, views });
 }
 
+/** Spriječi dvostruko brojanje (npr. React Strict Mode) u kratkom intervalu. */
+const lastViewIncrementAt = new Map<string, number>();
+const VIEW_DEDUP_MS = 1500;
+
+export function incrementViewDeduped(slug: string) {
+  const now = Date.now();
+  const prev = lastViewIncrementAt.get(slug) ?? 0;
+  if (now - prev < VIEW_DEDUP_MS) return;
+  lastViewIncrementAt.set(slug, now);
+  incrementView(slug);
+}
+
+export function getTotalViews(slug: string, baseViews: number) {
+  const state = getState();
+  return baseViews + (state.views[slug] || 0);
+}
+
 export function readParentHubState() {
   return getState();
 }

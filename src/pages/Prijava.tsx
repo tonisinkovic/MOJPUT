@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useSearchParams } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import Layout from "@/components/Layout";
 import { Mail, Lock, LogIn, Loader2, CheckCircle2, AlertCircle } from "lucide-react";
 import { authLogin, authLogout, authMe, authResendVerification, type AuthUser } from "@/lib/auth";
@@ -48,13 +48,13 @@ const Prijava = () => {
     } else if (verifyErr === "expired") {
       setEmailVerifyUi({
         kind: "error",
-        message: "Link za potvrdu je istekao. Registriraj se ponovno ili zatraži novi mail.",
+        message: "Kod za potvrdu je istekao. Registriraj se ponovno ili zatraži novi kod na stranici za potvrdu.",
       });
       setSearchParams({}, { replace: true });
     } else if (verifyErr === "invalid" || verifyErr === "missing") {
       setEmailVerifyUi({
         kind: "error",
-        message: "Link za potvrdu nije važeći. Registriraj se ponovno ili zatraži novi mail.",
+        message: "Potvrda više nije linkom. Otvori stranicu za potvrdu i upiši email te kod iz pisma.",
       });
       setSearchParams({}, { replace: true });
     }
@@ -131,7 +131,7 @@ const Prijava = () => {
       setLoginError(res.message);
       return;
     }
-    setInfo("Ako email postoji i nije potvrđen, poslan je novi link za potvrdu.");
+    setInfo("Ako email postoji i nije potvrđen, poslan je novi 6-znamenkasti kod.");
   };
 
   const handleLogout = async () => {
@@ -301,14 +301,26 @@ const Prijava = () => {
               )}
 
               {needsVerification && (
-                <button
-                  type="button"
-                  onClick={handleResend}
-                  disabled={resendLoading}
-                  className="w-full py-2.5 border border-slate-300 rounded-lg hover:bg-slate-50 transition text-sm font-semibold text-slate-900"
-                >
-                  {resendLoading ? "Šaljem potvrdu..." : "Pošalji ponovno potvrdu na email"}
-                </button>
+                <div className="space-y-2">
+                  <Link
+                    to={
+                      loginData.email.trim()
+                        ? `/verify?email=${encodeURIComponent(loginData.email.trim().toLowerCase())}`
+                        : "/verify"
+                    }
+                    className="block w-full py-2.5 text-center rounded-lg bg-slate-900 text-white text-sm font-semibold hover:bg-slate-800 transition"
+                  >
+                    Upiši kod za potvrdu
+                  </Link>
+                  <button
+                    type="button"
+                    onClick={handleResend}
+                    disabled={resendLoading}
+                    className="w-full py-2.5 border border-slate-300 rounded-lg hover:bg-slate-50 transition text-sm font-semibold text-slate-900"
+                  >
+                    {resendLoading ? "Šaljem…" : "Pošalji novi kod na email"}
+                  </button>
+                </div>
               )}
 
               <button
@@ -326,7 +338,7 @@ const Prijava = () => {
               </p>
               <p className="text-center text-[11px] text-slate-500 mt-3 leading-snug">
                 Račun s weba i račun s lokalnog testa nisu isti (različita baza). Email mora biti
-                potvrđen linkom iz pisma. Ako te stranica ne drži prijavljenim nakon osvježenja,
+                potvrđen 6-znamenkastim kodom iz pisma. Ako te stranica ne drži prijavljenim nakon osvježenja,
                 osvježi deploy API-ja (session cookie za GitHub Pages).
               </p>
             </form>

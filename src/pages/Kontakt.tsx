@@ -1,21 +1,27 @@
 import Layout from "@/components/Layout";
 import { motion } from "framer-motion";
-import { Mail, MessageSquare, Send } from "lucide-react";
+import { Mail, MessageSquare, Send, Users } from "lucide-react";
+
+const creators = [
+  { name: "Toni Šinković", role: "Autor i dizajner", initials: "TŠ" },
+  { name: "Ivano Perišić", role: "Developer", initials: "IP" },
+  { name: "Josip Šinković", role: "Developer i UX dizajn", initials: "JŠ" },
+];
 
 const Kontakt = () => {
   return (
     <Layout>
-      <section className="container py-12">
+      <section className="container py-12 md:py-16">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="mb-10 text-center max-w-2xl mx-auto"
+          className="mb-10 max-w-2xl mx-auto text-center"
         >
-          <div className="w-16 h-16 rounded-2xl gradient-hero flex items-center justify-center mx-auto mb-6">
-            <Mail className="w-8 h-8 text-primary-foreground" />
+          <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-2xl gradient-hero shadow-card">
+            <Mail className="h-8 w-8 text-primary-foreground" />
           </div>
-          <h1 className="text-3xl md:text-4xl font-bold mb-3">Kontakt</h1>
-          <p className="text-muted-foreground text-lg">
+          <h1 className="mb-3 text-3xl font-bold md:text-4xl">Kontakt</h1>
+          <p className="text-lg text-muted-foreground">
             Imate pitanja, prijedloge ili želite suradnju? Javite nam se!
           </p>
         </motion.div>
@@ -24,39 +30,52 @@ const Kontakt = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
-          className="max-w-2xl mx-auto space-y-8"
+          className="mx-auto max-w-2xl space-y-8"
         >
-          <div className="rounded-xl border bg-card p-6 shadow-sm">
-            <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
-              <MessageSquare className="w-5 h-5" />
-              Kontaktirajte nas
-            </h2>
-            <p className="text-muted-foreground mb-4">
-              Za sve upite o platformi MojPut, suradnju ili povratne informacije,
-              možete nas kontaktirati putem e-pošte:
-            </p>
-            <a
-              href="mailto:moj-put@gmail.com"
-              className="inline-flex items-center gap-2 font-semibold text-primary hover:text-primary/90 transition-colors"
-            >
-              <Send className="w-4 h-4" />
-              moj-put@gmail.com
-            </a>
+          <div className="relative overflow-hidden rounded-3xl border bg-card p-6 shadow-card md:p-8">
+            <div className="absolute -right-16 -top-20 h-56 w-56 rounded-full bg-primary/10 blur-3xl" />
+            <div className="relative">
+              <h2 className="mb-4 flex items-center gap-2 text-xl font-semibold">
+                <MessageSquare className="h-5 w-5 text-primary" />
+                Kontaktirajte nas
+              </h2>
+              <p className="mb-4 text-muted-foreground">
+                Za sve upite o platformi MojPut, suradnju ili povratne informacije, možete nas kontaktirati putem e-pošte:
+              </p>
+              <a
+                href="mailto:mojputhr@gmail.com"
+                className="inline-flex min-h-11 items-center gap-2 rounded-xl border-2 border-primary/20 bg-primary/5 px-4 py-2.5 font-semibold text-primary transition-all hover:border-primary/40 hover:bg-primary/10 hover:shadow-sm"
+              >
+                <Send className="h-4 w-4 shrink-0" />
+                mojputhr@gmail.com
+              </a>
+            </div>
           </div>
 
-          <div className="rounded-xl border bg-card p-6 shadow-sm">
-            <h2 className="text-xl font-semibold mb-4">Platformu su osmislili</h2>
-            <ul className="space-y-2 text-muted-foreground">
-              <li>
-                <span className="font-semibold text-foreground">Toni Šinković</span> – autor i dizajner
-              </li>
-              <li>
-                <span className="font-semibold text-foreground">Ivano Perišić</span> – developer
-              </li>
-              <li>
-                <span className="font-semibold text-foreground">Josip Šinković</span> – developer i UX dizajn
-              </li>
-            </ul>
+          <div className="rounded-3xl border bg-card p-6 shadow-card md:p-8">
+            <div className="mb-6 flex items-center gap-2">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                <Users className="h-5 w-5" />
+              </div>
+              <h2 className="text-xl font-semibold tracking-tight md:text-2xl">Platformu su osmislili</h2>
+            </div>
+            <p className="mb-5 text-sm text-muted-foreground">
+              Tim koji stoji iza sadržaja i razvoja — isti ljudi kao na stranici O nama.
+            </p>
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+              {creators.map((person) => (
+                <div
+                  key={person.name}
+                  className="rounded-2xl border bg-background/60 p-4 shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-primary/25 hover:shadow-md"
+                >
+                  <div className="flex h-12 w-12 items-center justify-center rounded-xl border bg-gradient-to-br from-primary/20 to-primary/5 text-sm font-bold text-primary">
+                    {person.initials}
+                  </div>
+                  <p className="mt-3 font-semibold leading-snug">{person.name}</p>
+                  <p className="mt-1 text-sm text-primary">{person.role}</p>
+                </div>
+              ))}
+            </div>
           </div>
         </motion.div>
       </section>

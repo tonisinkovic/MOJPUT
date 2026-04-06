@@ -73,25 +73,28 @@ const About = () => {
           </div>
         </article>
 
-        <section>
-          <h2 className="text-2xl md:text-3xl font-bold tracking-tight">Tim</h2>
-          <p className="text-muted-foreground mt-2 max-w-2xl">
+        <section className="rounded-3xl border bg-card p-6 shadow-card md:p-8">
+          <div className="mb-2 flex items-center gap-2">
+            <Users className="h-6 w-6 text-primary" />
+            <h2 className="text-2xl font-bold tracking-tight md:text-3xl">Tim</h2>
+          </div>
+          <p className="mt-2 max-w-2xl text-muted-foreground">
             Mali, fokusiran tim koji spaja dizajn, razvoj i edukacijski kontekst u jednu platformu.
           </p>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mt-6">
+          <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 md:gap-5">
             {teamMembers.map((member) => (
               <article
                 key={member.name}
-                className="rounded-2xl border bg-card p-5 shadow-card transition-all duration-300 hover:shadow-card-hover hover:-translate-y-0.5"
+                className="rounded-2xl border bg-background/60 p-5 shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-primary/25 hover:shadow-card"
               >
                 <img
                   src={member.avatar}
                   alt={member.name}
-                  className="w-16 h-16 rounded-xl object-cover border"
+                  className="h-16 w-16 rounded-xl border object-cover"
                 />
-                <h3 className="font-semibold text-lg mt-4">{member.name}</h3>
-                <p className="text-sm text-primary mt-1">{member.role}</p>
-                <p className="text-sm text-muted-foreground mt-3 leading-relaxed">{member.bio}</p>
+                <h3 className="mt-4 text-lg font-semibold leading-snug">{member.name}</h3>
+                <p className="mt-1 text-sm font-medium text-primary">{member.role}</p>
+                <p className="mt-3 text-sm leading-relaxed text-muted-foreground">{member.bio}</p>
               </article>
             ))}
           </div>

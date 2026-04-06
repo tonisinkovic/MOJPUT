@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Menu, X, Compass, LogOut } from "lucide-react";
+import { Menu, X, Compass, LogOut, BarChart3 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { authLogout, authMe, userFromAuthMe, type AuthUser } from "@/lib/auth";
 
@@ -86,6 +86,14 @@ const Navbar = () => {
         <div className="hidden lg:flex items-center gap-2">
           {user ? (
             <>
+              {user.is_admin && (
+                <Button variant="ghost" size="sm" className="gap-1.5 text-muted-foreground" asChild>
+                  <Link to="/tim" title="Statistika za tim">
+                    <BarChart3 className="h-4 w-4" />
+                    Tim
+                  </Link>
+                </Button>
+              )}
               <span className="text-sm text-muted-foreground max-w-[140px] truncate" title={user.username}>
                 {user.username}
               </span>
@@ -145,6 +153,14 @@ const Navbar = () => {
                     <p className="text-sm text-muted-foreground px-1 truncate" title={user.username}>
                       Prijavljen/a: <span className="font-medium text-foreground">{user.username}</span>
                     </p>
+                    {user.is_admin && (
+                      <Button variant="outline" className="w-full gap-2" asChild>
+                        <Link to="/tim" onClick={() => setOpen(false)}>
+                          <BarChart3 className="h-4 w-4" />
+                          Tim — statistika
+                        </Link>
+                      </Button>
+                    )}
                     <Button variant="outline" className="w-full gap-2" onClick={handleLogout}>
                       <LogOut className="h-4 w-4" />
                       Odjava

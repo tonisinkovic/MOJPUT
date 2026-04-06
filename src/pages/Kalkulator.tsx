@@ -24,6 +24,7 @@ import {
   X,
   Search,
   Building2,
+  Check,
 } from "lucide-react";
 import {
   Card,
@@ -113,6 +114,20 @@ const ADDITIONAL_OPTIONS = [
 ] as const;
 
 const MAX_POINTS = 1000;
+
+const WIZARD_STEPS = [
+  { step: 0, label: "Program", sub: "Smjer i formula" },
+  { step: 1, label: "Ocjene", sub: "Srednja škola" },
+  { step: 2, label: "Matura", sub: "Obavezno + provjere" },
+  { step: 3, label: "Još točno", sub: "Izborni & dodatno" },
+  { step: 4, label: "Rezultat", sub: "Tvoji bodovi" },
+] as const;
+
+const cardShell =
+  "rounded-2xl border border-border/70 bg-card/95 shadow-sm backdrop-blur-[2px] overflow-hidden transition-shadow duration-300 hover:shadow-md";
+
+const softField =
+  "space-y-3 rounded-xl border border-border/45 bg-muted/15 p-3 shadow-sm sm:p-4";
 
 /** Parsira unos ocjene (1–5), podržava „3,45” i „3.45”. */
 function parseGradeString(raw: string): number | null {
@@ -428,24 +443,82 @@ const Kalkulator = () => {
   return (
     <Layout>
       <TooltipProvider delayDuration={300}>
-        <section className="container py-8 md:py-12 max-w-6xl">
+        <section
+          className={cn(
+            "container relative mx-auto max-w-6xl overflow-hidden px-3 py-10 sm:px-4 md:py-14",
+            wizardStep < 4 && "pb-28 sm:pb-14",
+            wizardStep >= 4 && "pb-10 sm:pb-14",
+          )}
+        >
+          <div className="pointer-events-none absolute -left-32 top-20 h-72 w-72 rounded-full bg-primary/[0.06] blur-3xl" aria-hidden />
+          <div className="pointer-events-none absolute -right-40 bottom-40 h-96 w-96 rounded-full bg-accent/[0.05] blur-3xl" aria-hidden />
+
           <motion.div
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
-            className="space-y-8"
+            className="relative space-y-8"
           >
             {/* Header */}
-            <div className="text-center space-y-2">
-              <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl gradient-hero mb-2">
-                <CalcIcon className="w-7 h-7 text-primary-foreground" />
+            <div className="mx-auto max-w-2xl text-center">
+              <div className="mb-3 inline-flex items-center justify-center rounded-2xl gradient-hero p-3 shadow-md">
+                <CalcIcon className="h-7 w-7 text-primary-foreground" />
               </div>
-              <h1 className="text-3xl md:text-4xl font-bold tracking-tight">
-                Kalkulator bodova
-              </h1>
-              <p className="text-muted-foreground text-lg max-w-xl mx-auto">
-                Korak po korak: program, ocjene, državna matura, izborni predmeti i dodatni bodovi – zatim
-                pregled ukupnog rezultata. Formula se prilagođava odabranom smjeru.
+              <h1 className="text-balance text-3xl font-bold tracking-tight md:text-4xl">Kalkulator bodova</h1>
+              <p className="mx-auto mt-2 max-w-lg text-pretty text-base text-muted-foreground md:text-lg">
+                Radiš u svojem ritmu — kratki koraci, bez žurbe. Formula se sama prilagođava smjeru koji odabereš.
               </p>
+            </div>
+
+            {/* Koraci — pregled */}
+            <div className="mx-auto max-w-4xl rounded-2xl border border-border/60 bg-card/85 p-4 shadow-sm backdrop-blur-sm sm:p-5">
+              <div className="mb-3 flex flex-wrap items-end justify-between gap-2">
+                <div>
+                  <p className="text-sm font-semibold text-foreground">Gdje si u tijeku</p>
+                  <p className="text-xs text-muted-foreground">Možeš se uvijek vratiti natrag i prilagoditi unos.</p>
+                </div>
+                <p className="text-xs font-medium tabular-nums text-muted-foreground">
+                  Korak {wizardStep + 1} / 5
+                </p>
+              </div>
+              <div className="mb-4 h-2 overflow-hidden rounded-full bg-muted">
+                <motion.div
+                  className="h-full rounded-full gradient-hero"
+                  initial={false}
+                  animate={{ width: `${((wizardStep + 1) / 5) * 100}%` }}
+                  transition={{ type: "spring", stiffness: 120, damping: 22 }}
+                />
+              </div>
+              <ol className="grid grid-cols-2 gap-2 sm:grid-cols-5 sm:gap-2">
+                {WIZARD_STEPS.map((s) => {
+                  const active = wizardStep === s.step;
+                  const done = wizardStep > s.step;
+                  return (
+                    <li key={s.step}>
+                      <div
+                        className={cn(
+                          "flex flex-col items-center gap-1 rounded-xl border px-2 py-2.5 text-center transition-all sm:py-3",
+                          active && "border-primary/35 bg-primary/8 shadow-sm",
+                          done && !active && "border-primary/15 bg-primary/[0.04]",
+                          !active && !done && "border-border/50 bg-muted/30 opacity-80",
+                        )}
+                      >
+                        <span
+                          className={cn(
+                            "flex h-8 w-8 items-center justify-center rounded-full text-xs font-bold",
+                            done && "bg-primary text-primary-foreground",
+                            active && !done && "gradient-hero text-primary-foreground shadow-sm",
+                            !active && !done && "bg-muted text-muted-foreground",
+                          )}
+                        >
+                          {done ? <Check className="h-4 w-4" strokeWidth={2.5} /> : s.step + 1}
+                        </span>
+                        <span className="text-[11px] font-semibold leading-tight text-foreground sm:text-xs">{s.label}</span>
+                        <span className="line-clamp-2 min-h-0 text-[10px] leading-tight text-muted-foreground">{s.sub}</span>
+                      </div>
+                    </li>
+                  );
+                })}
+              </ol>
             </div>
 
             {/* Main grid: inputs left, result right */}
@@ -457,10 +530,19 @@ const Kalkulator = () => {
                   wizardStep === 4 ? "lg:col-span-3" : "lg:col-span-5",
                 )}
               >
+                <AnimatePresence mode="wait">
+                  <motion.div
+                    key={wizardStep}
+                    initial={{ opacity: 0, y: 12 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -8 }}
+                    transition={{ duration: 0.22, ease: [0.25, 0.46, 0.45, 0.94] }}
+                    className="space-y-6"
+                  >
                 {wizardStep === 0 && (
                 <>
                 {/* 1. Odabir fakulteta i smjera */}
-                <Card className="rounded-2xl border-2 shadow-card overflow-hidden">
+                <Card className={cardShell}>
                   <CardHeader className="pb-3">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
@@ -578,7 +660,7 @@ const Kalkulator = () => {
                           variant="outline"
                           role="combobox"
                           aria-expanded={facultyOpen}
-                          className="w-full justify-between h-12 rounded-xl font-normal"
+                          className="h-12 w-full justify-between rounded-xl border-2 border-input bg-background font-normal shadow-sm transition-all hover:border-primary/30 hover:bg-muted/30"
                         >
                           {selectedProgram ? (
                             <span className="truncate">
@@ -691,7 +773,7 @@ const Kalkulator = () => {
                   <>
                     {/* Ocjene — korak 1 */}
                     {wizardStep === 1 && groupedComponents.ocjene.length > 0 && (
-                    <Card className="rounded-2xl border-2 shadow-card overflow-hidden">
+                    <Card className={cardShell}>
                       <CardHeader className="pb-3">
                         <div className="flex items-center gap-2">
                           <BookOpen className="w-5 h-5 text-primary" />
@@ -778,7 +860,7 @@ const Kalkulator = () => {
                             const raw = getRawAtIndex(idx);
                             const sliderVal = raw >= 1 && raw <= 5 ? raw : 4;
                             return (
-                            <div key={`${comp.id}-${idx}`} className="space-y-2">
+                            <div key={`${comp.id}-${idx}`} className={softField}>
                               <div className="flex justify-between text-sm gap-2">
                                 <Label className="text-xs leading-tight">{comp.label}</Label>
                                 <span className="text-xs text-muted-foreground shrink-0">
@@ -806,7 +888,7 @@ const Kalkulator = () => {
                     )}
 
                     {wizardStep === 1 && groupedComponents.ocjene.length === 0 && (
-                      <Card className="rounded-2xl border-2 border-dashed shadow-card overflow-hidden">
+                      <Card className={cn(cardShell, "border-dashed bg-muted/10")}>
                         <CardContent className="py-8 text-center text-sm text-muted-foreground">
                           Ova formula nema zasebnog unosa ocjena iz srednje škole. Nastavi gumbom „Dalje”.
                         </CardContent>
@@ -815,7 +897,7 @@ const Kalkulator = () => {
 
                     {/* Matura – obavezni predmeti — korak 2 */}
                     {wizardStep === 2 && groupedComponents.maturaObv.length > 0 && (
-                      <Card className="rounded-2xl border-2 shadow-card overflow-hidden">
+                      <Card className={cardShell}>
                         <CardHeader className="pb-3">
                           <div className="flex items-center gap-2">
                             <Award className="w-5 h-5 text-primary" />
@@ -845,7 +927,7 @@ const Kalkulator = () => {
                                 ? pts
                                 : Math.round((pct / 100) * comp.max);
                             return (
-                            <div key={`${comp.id}-${idx}`} className="space-y-2">
+                            <div key={`${comp.id}-${idx}`} className={softField}>
                               <div className="flex flex-wrap justify-between gap-2 text-sm">
                                 <Label className="flex items-center gap-1.5">
                                   {comp.label}
@@ -881,7 +963,7 @@ const Kalkulator = () => {
                     {wizardStep === 2 &&
                       groupedComponents.maturaObv.length === 0 &&
                       groupedComponents.dodatneProvjere.length === 0 && (
-                        <Card className="rounded-2xl border-2 border-dashed shadow-card overflow-hidden">
+                        <Card className={cn(cardShell, "border-dashed bg-muted/10")}>
                           <CardContent className="py-8 text-center text-sm text-muted-foreground">
                             Nema obaveznih predmeta državne mature ni dodatnih provjera u ovoj formuli. Nastavi
                             gumbom „Dalje”.
@@ -891,7 +973,7 @@ const Kalkulator = () => {
 
                     {/* Dodatne provjere (fakultetski testovi) – id komponente u podacima počinje s dod_ */}
                     {wizardStep === 2 && groupedComponents.dodatneProvjere.length > 0 && (
-                      <Card className="rounded-2xl border-2 shadow-card overflow-hidden">
+                      <Card className={cardShell}>
                         <CardHeader className="pb-3">
                           <div className="flex items-center gap-2">
                             <Award className="w-5 h-5 text-primary" />
@@ -914,7 +996,7 @@ const Kalkulator = () => {
                                 ? pts
                                 : Math.round((pct / 100) * comp.max);
                             return (
-                              <div key={`${comp.id}-${idx}`} className="space-y-2">
+                              <div key={`${comp.id}-${idx}`} className={softField}>
                                 <div className="flex flex-wrap justify-between gap-2 text-sm">
                                   <Label className="flex items-center gap-1.5 flex-wrap">
                                     {comp.label}
@@ -949,7 +1031,7 @@ const Kalkulator = () => {
 
                     {/* Matura – izborni predmeti — korak 3 */}
                     {wizardStep === 3 && groupedComponents.maturaIzb.length > 0 && (
-                      <Card className="rounded-2xl border-2 shadow-card overflow-hidden">
+                      <Card className={cardShell}>
                         <CardHeader className="pb-3">
                           <div className="flex items-center gap-2">
                             <Plus className="w-5 h-5 text-primary" />
@@ -971,7 +1053,7 @@ const Kalkulator = () => {
                                 ? pts
                                 : Math.round((pct / 100) * comp.max);
                             return (
-                            <div key={`${comp.id}-${idx}`} className="space-y-2">
+                            <div key={`${comp.id}-${idx}`} className={softField}>
                               <div className="flex flex-wrap justify-between gap-2 text-sm">
                                 <Label className="flex items-center gap-1.5">
                                   {comp.label}
@@ -1009,7 +1091,7 @@ const Kalkulator = () => {
 
                     {/* Prijemni ispit (ponder) – samo ako su u podacima programa zadane težine */}
                     {wizardStep === 3 && selectedFormula && usesWeightedPrijemni(selectedFormula) && (
-                      <Card className="rounded-2xl border-2 shadow-card overflow-hidden">
+                      <Card className={cardShell}>
                         <CardHeader className="pb-3">
                           <div className="flex items-center gap-2">
                             <Award className="w-5 h-5 text-primary" />
@@ -1098,7 +1180,7 @@ const Kalkulator = () => {
 
                     {/* Dodatne komponente (prijemni ispit itd.) */}
                     {wizardStep === 3 && groupedComponents.dodatno.length > 0 && (
-                      <Card className="rounded-2xl border-2 shadow-card overflow-hidden">
+                      <Card className={cardShell}>
                         <CardHeader className="pb-3">
                           <div className="flex items-center gap-2">
                             <Award className="w-5 h-5 text-primary" />
@@ -1112,7 +1194,7 @@ const Kalkulator = () => {
                             const idx = indexOfComponent(comp);
                             const val = getRawAtIndex(idx);
                             return (
-                            <div key={`${comp.id}-${idx}`} className="space-y-2">
+                            <div key={`${comp.id}-${idx}`} className={softField}>
                               <div className="flex justify-between text-sm">
                                 <Label className="flex items-center gap-1.5">
                                   {comp.label}
@@ -1152,7 +1234,7 @@ const Kalkulator = () => {
 
                 {/* Placeholder kad nema odabranog programa */}
                 {wizardStep === 0 && !selectedFormula && (
-                  <Card className="rounded-2xl border-2 border-dashed shadow-card overflow-hidden">
+                  <Card className={cn(cardShell, "border-dashed bg-muted/10")}>
                     <CardContent className="py-12 text-center">
                       <GraduationCap className="w-10 h-10 text-muted-foreground/40 mx-auto mb-3" />
                       <p className="text-muted-foreground">
@@ -1167,7 +1249,7 @@ const Kalkulator = () => {
 
                 {/* Dodatni bodovi — korak 3 */}
                 {wizardStep === 3 && (
-                <Card className="rounded-2xl border-2 shadow-card overflow-hidden">
+                <Card className={cardShell}>
                   <CardHeader className="pb-3">
                     <div className="flex items-center gap-2">
                       <Plus className="w-5 h-5 text-primary" />
@@ -1229,7 +1311,7 @@ const Kalkulator = () => {
                 )}
 
                 {wizardStep === 4 && selectedFormula && (
-                  <Card className="rounded-2xl border-2 border-dashed bg-muted/20 shadow-card overflow-hidden">
+                  <Card className={cn(cardShell, "border-dashed bg-gradient-to-br from-primary/5 to-muted/20")}>
                     <CardContent className="py-8 text-center space-y-2">
                       <Sparkles className="w-10 h-10 text-primary mx-auto" />
                       <p className="font-semibold text-lg">Unos je gotov</p>
@@ -1240,6 +1322,8 @@ const Kalkulator = () => {
                     </CardContent>
                   </Card>
                 )}
+                  </motion.div>
+                </AnimatePresence>
               </div>
 
               {/* ═══ Result column – samo završni korak ═══ */}
@@ -1249,9 +1333,9 @@ const Kalkulator = () => {
                   {/* Main result card */}
                   <Card
                     className={cn(
-                      "rounded-2xl border-2 shadow-card overflow-hidden",
+                      cardShell,
                       config.border,
-                      "bg-gradient-to-b from-card to-card/95"
+                      "bg-gradient-to-b from-card to-card/95 shadow-md",
                     )}
                   >
                     <CardHeader className="pb-2">
@@ -1413,7 +1497,7 @@ const Kalkulator = () => {
 
                   {/* ═══ Breakdown card ═══ */}
                   {admissionResult && !admissionResult.blocked && (
-                    <Card className="rounded-2xl border-2 shadow-card overflow-hidden">
+                    <Card className={cardShell}>
                       <CardHeader className="pb-2">
                         <button
                           onClick={() => setShowBreakdown(!showBreakdown)}
@@ -1502,38 +1586,50 @@ const Kalkulator = () => {
               )}
             </div>
 
-            <div className="max-w-6xl mx-auto px-0">
+            <div className="mx-auto max-w-6xl px-0">
               {wizardStep < 4 && (
-                <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 pt-4 border-t border-border">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    disabled={wizardStep === 0}
-                    onClick={() => setWizardStep((s) => Math.max(0, s - 1))}
-                    className="rounded-xl"
-                  >
-                    Natrag
-                  </Button>
-                  <p className="text-sm text-muted-foreground text-center order-first sm:order-none">
-                    Korak {wizardStep + 1} od 5
-                  </p>
-                  <Button
-                    type="button"
-                    disabled={!canWizardNext}
-                    onClick={() => setWizardStep((s) => Math.min(4, s + 1))}
-                    className="rounded-xl"
-                  >
-                    Dalje
-                  </Button>
+                <div className="fixed bottom-0 left-0 right-0 z-40 border-t border-border/80 bg-background/92 px-3 py-3 shadow-[0_-8px_30px_-12px_rgba(0,0,0,0.12)] backdrop-blur-md sm:static sm:z-0 sm:border-0 sm:bg-transparent sm:px-0 sm:py-0 sm:shadow-none sm:backdrop-blur-none">
+                  <div className="mx-auto flex max-w-6xl flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:border-t sm:border-border sm:pt-6">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      disabled={wizardStep === 0}
+                      onClick={() => setWizardStep((s) => Math.max(0, s - 1))}
+                      className="order-2 min-h-11 rounded-xl sm:order-1 touch-manipulation"
+                    >
+                      Natrag
+                    </Button>
+                    <div className="order-1 text-center sm:order-2">
+                      <p className="text-sm font-medium text-foreground">
+                        {WIZARD_STEPS[wizardStep]?.label}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        {(() => {
+                          const r = 4 - wizardStep;
+                          if (r === 1) return "Još 1 korak do rezultata";
+                          if (r >= 2) return `Još ${r} koraka do rezultata`;
+                          return "";
+                        })()}
+                      </p>
+                    </div>
+                    <Button
+                      type="button"
+                      disabled={!canWizardNext}
+                      onClick={() => setWizardStep((s) => Math.min(4, s + 1))}
+                      className="order-3 min-h-11 rounded-xl border-0 bg-primary font-semibold text-primary-foreground shadow-md transition-all hover:bg-primary/90 hover:shadow-lg disabled:opacity-50 touch-manipulation sm:min-w-[7.5rem]"
+                    >
+                      Dalje
+                    </Button>
+                  </div>
                 </div>
               )}
               {wizardStep === 4 && (
-                <div className="flex justify-center pt-4 border-t border-border">
+                <div className="flex justify-center border-t border-border pt-6">
                   <Button
                     type="button"
                     variant="outline"
                     onClick={() => setWizardStep(3)}
-                    className="rounded-xl"
+                    className="min-h-11 rounded-xl touch-manipulation"
                   >
                     Natrag na unos
                   </Button>

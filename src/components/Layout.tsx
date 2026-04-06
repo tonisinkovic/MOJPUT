@@ -2,6 +2,8 @@ import { ReactNode } from "react";
 import { Link } from "react-router-dom";
 import Navbar from "./Navbar";
 import Footer from "./Footer";
+import SiteFeedback from "./SiteFeedback";
+import MojPutPremiumTeaser from "./MojPutPremiumTeaser";
 import { Button } from "./ui/button";
 import { Bot } from "lucide-react";
 
@@ -15,7 +17,14 @@ const Layout = ({ children, hideFooter }: LayoutProps) => {
     <div className="min-h-screen flex flex-col">
       <Navbar />
       <main className="flex-1 pt-16">{children}</main>
-      {!hideFooter && <Footer />}
+      {!hideFooter && (
+        <>
+          <SiteFeedback />
+          <Footer />
+        </>
+      )}
+
+      <MojPutPremiumTeaser />
 
       {/* Floating Chatbot shortcut (available on all pages, incl. /kalendar) */}
       <div className="fixed bottom-6 right-6 z-50">

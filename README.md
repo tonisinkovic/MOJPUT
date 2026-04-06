@@ -74,14 +74,12 @@ Chatbot odgovara na pitanja o fakultetima i studijima u Hrvatskoj koristeći RAG
 1. Deployaj API na Render (`render.yaml` već postavlja `API_PUBLIC_URL` i `APP_ORIGIN`).
 2. U Render dashboardu dodaj **`JWT_SECRET`** i **SMTP** (`SMTP_*`, `MAIL_FROM`) ili **Resend**.
 3. Build frontenda za Pages mora imati **`VITE_API_URL`** = javni URL API-ja (vidi `.env.production`).
-4. Korisnik se registrira na Pages → API na Renderu šalje mail s linkom  
-   `https://mojput-api.onrender.com/api/auth/verify?token=...&redirect=1`  
-   → potvrda u bazi na Renderu → redirect na  
-   `https://tonisinkovic.github.io/MOJPUT/prijava?...`
+4. Korisnik se registrira na Pages → API na Renderu šalje mail s **6-znamenkastim kodom** → korisnik otvara  
+   `{APP_ORIGIN}/MOJPUT/verify`, upiše email i kod → račun se potvrdi u bazi na Renderu.
 
-**Lokalno:** `npm run dev:full`, baza `data/mojput.db`. Za potvrdu s mobitela (isti Wi‑Fi): `MAIL_USE_LAN_IP=1` u `.env` i u Windows vatrozidu dopusti dolazni **TCP 3000** za privatnu mrežu (inače PC ne prima klik s mobitela). Očisti testne račune: `npm run clear:auth`.
+**Lokalno:** `npm run dev:full`, baza `data/mojput.db`. Očisti testne račune: `npm run clear:auth`.
 
-**Mobitel + klik u mailu:** Ako se prikazuje čudan JSON umjesto stranice, ažuriraj server — preglednik sada uvijek dobije **redirect (303)** na prijavu; JSON samo kad front šalje `Accept: application/json`.
+**Stari linkovi** `.../api/auth/verify?...` više ne potvrđuju račun — vode na stranicu za unos koda.
 
 2. **Kreiraj bazu i tablice**:
    ```sh

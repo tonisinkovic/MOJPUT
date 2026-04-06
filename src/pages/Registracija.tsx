@@ -7,7 +7,6 @@ import { authRegister, authResendVerification } from "@/lib/auth";
 const Registracija = () => {
   const [verifyInfo, setVerifyInfo] = useState<{
     emailPreviewUrl?: string;
-    directVerifyUrl?: string;
   } | null>(null);
   const [formData, setFormData] = useState({
     firstName: "",
@@ -54,7 +53,6 @@ const Registracija = () => {
     const data = res as {
       email?: string;
       user?: { email?: string };
-      dev_verification_url?: string;
       email_preview_url?: string;
     };
     const sentTo = data.email?.trim() || data.user?.email?.trim() || formData.email.trim();
@@ -62,7 +60,6 @@ const Registracija = () => {
     setResendInfo("");
     setVerifyInfo({
       emailPreviewUrl: data.email_preview_url || undefined,
-      directVerifyUrl: data.dev_verification_url || undefined,
     });
     setSubmitted(true);
     setFormData({
@@ -273,54 +270,54 @@ const Registracija = () => {
                 )}
                 <p className="text-slate-600 text-sm">
                   {verifyInfo?.emailPreviewUrl
-                    ? "Poslan je email za potvrdu. U testnom inboxu otvori poruku i klikni link, ili koristi direktan link ispod (samo razvoj)."
-                    : verifyInfo?.directVerifyUrl
-                      ? "Klikni link u mailu (vodi na API za potvrdu, zatim na prijavu). Plavi gumb ispod je isti URL — ako si na lokalnom razvoju, otvori mail na računalu gdje radi server."
-                      : "Otvori primljeni email i klikni link za potvrdu. U Gmailu provjeri i mapu Promocije / Spam ako ne vidiš poruku odmah. Bez potvrde se ne možeš prijaviti."}
+                    ? "Poslan je email s 6-znamenkastim kodom. U testnom inboxu otvori poruku i upiši kod na stranici za potvrdu."
+                    : "Na email ti je stigao 6-znamenkasti kod. Upiši ga na stranici za potvrdu (link je i u mailu). U Gmailu provjeri Promocije / Spam ako ne vidiš poruku odmah. Bez potvrde se ne možeš prijaviti."}
                 </p>
-                {verifyInfo?.emailPreviewUrl && (
-                  <a
-                    href={verifyInfo.emailPreviewUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-block px-4 py-2 bg-slate-700 text-white text-sm font-semibold rounded-lg hover:bg-slate-800 transition"
-                  >
-                    Pregledaj poslani email
-                  </a>
-                )}
-                {verifyInfo?.directVerifyUrl && (
-                  <a
-                    href={verifyInfo.directVerifyUrl}
-                    className="inline-block px-4 py-2 bg-blue-600 text-white text-sm font-semibold rounded-lg hover:bg-blue-700 transition"
-                  >
-                    Otvori link za potvrdu
-                  </a>
-                )}
-                {registeredEmail && !verifyInfo?.emailPreviewUrl && (
-                  <div className="space-y-2 text-left">
-                    <button
-                      type="button"
-                      disabled={resendLoading}
-                      onClick={async () => {
-                        setResendInfo("");
-                        setResendLoading(true);
-                        const r = await authResendVerification(registeredEmail);
-                        setResendLoading(false);
-                        if (r.success) {
-                          setResendInfo("Ako račun postoji i nije potvrđen, poslan je novi link za potvrdu.");
-                        } else {
-                          setResendInfo(r.message);
-                        }
-                      }}
-                      className="w-full py-2.5 border border-slate-300 rounded-lg hover:bg-slate-50 transition text-sm font-semibold text-slate-900 disabled:opacity-60"
+                <div className="flex flex-col gap-3 items-stretch">
+                  {registeredEmail && (
+                    <Link
+                      to={`/verify?email=${encodeURIComponent(registeredEmail)}`}
+                      className="inline-block px-4 py-2 bg-slate-900 text-white text-sm font-semibold rounded-lg hover:bg-slate-800 transition text-center"
                     >
-                      {resendLoading ? "Šaljem…" : "Pošalji ponovno email za potvrdu"}
-                    </button>
-                    {resendInfo && (
-                      <p className="text-xs text-slate-600">{resendInfo}</p>
-                    )}
-                  </div>
-                )}
+                      Upiši kod za potvrdu
+                    </Link>
+                  )}
+                  {verifyInfo?.emailPreviewUrl && (
+                    <a
+                      href={verifyInfo.emailPreviewUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-block px-4 py-2 bg-slate-700 text-white text-sm font-semibold rounded-lg hover:bg-slate-800 transition text-center"
+                    >
+                      Pregledaj poslani email
+                    </a>
+                  )}
+                  {registeredEmail && (
+                    <div className="space-y-2 text-left">
+                      <button
+                        type="button"
+                        disabled={resendLoading}
+                        onClick={async () => {
+                          setResendInfo("");
+                          setResendLoading(true);
+                          const r = await authResendVerification(registeredEmail);
+                          setResendLoading(false);
+                          if (r.success) {
+                            setResendInfo("Ako račun postoji i nije potvrđen, poslan je novi 6-znamenkasti kod.");
+                          } else {
+                            setResendInfo(r.message);
+                          }
+                        }}
+                        className="w-full py-2.5 border border-slate-300 rounded-lg hover:bg-slate-50 transition text-sm font-semibold text-slate-900 disabled:opacity-60"
+                      >
+                        {resendLoading ? "Šaljem…" : "Pošalji ponovno kod"}
+                      </button>
+                      {resendInfo && (
+                        <p className="text-xs text-slate-600">{resendInfo}</p>
+                      )}
+                    </div>
+                  )}
+                </div>
                 <p className="pt-2">
                   <Link
                     to="/prijava"

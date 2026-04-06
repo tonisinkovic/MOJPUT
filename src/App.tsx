@@ -30,6 +30,7 @@ import FacultyProfiles from "./pages/FacultyProfiles";
 import FacultyProfile from "./pages/FacultyProfile";
 import FacultyLogin from "./pages/FacultyLogin";
 import FacultyDashboard from "./pages/FacultyDashboard";
+import TimDashboard from "./pages/TimDashboard";
 import ScrollToTop from "./components/ScrollToTop";
 
 const queryClient = new QueryClient();
@@ -69,6 +70,7 @@ const App = () => (
           <Route path="/fakulteti/:facultyId" element={<FacultyProfile />} />
           <Route path="/fakulteti/prijava" element={<FacultyLogin />} />
           <Route path="/fakulteti/dashboard" element={<FacultyDashboard />} />
+          <Route path="/tim" element={<TimDashboard />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

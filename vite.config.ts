@@ -6,7 +6,7 @@ import path from "path";
 import { componentTagger } from "lovable-tagger";
 
 /**
- * Zapisuje http://127.0.0.1:PORT u korijen projekta — server.cjs čita pri generiranju linka u mailu
+ * Zapisuje http://127.0.0.1:PORT u korijen projekta — server.cjs čita za link na stranicu potvrde u mailu
  * (stvarni port kad su 8080–8082 zauzeti).
  */
 function writeDevFrontendOriginPlugin(): Plugin {

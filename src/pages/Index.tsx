@@ -23,61 +23,61 @@ import {
 
 const features = [
   {
-    icon: <Map className="w-6 h-6 text-primary-foreground" />,
+    icon: <Map className="h-6 w-6 text-primary" />,
     title: "Karta fakulteta",
     description: "Interaktivna karta s detaljnim profilima svih fakulteta u Hrvatskoj.",
     path: "/karta",
   },
   {
-    icon: <GraduationCap className="w-6 h-6 text-primary-foreground" />,
+    icon: <GraduationCap className="h-6 w-6 text-primary" />,
     title: "Koji je fakultet za mene?",
     description: "Kviz interesa i kompetencija (47+47) — RIASEC i preporuke smjerova upisa.",
     path: "/kviz",
   },
   {
-    icon: <Target className="w-6 h-6 text-primary-foreground" />,
+    icon: <Target className="h-6 w-6 text-primary" />,
     title: "Samoprocjena",
     description: "Upoznaj svoje interese, vrijednosti i sposobnosti kroz digitalni alat.",
     path: "/samoprocjena",
   },
   {
-    icon: <Calculator className="w-6 h-6 text-primary-foreground" />,
+    icon: <Calculator className="h-6 w-6 text-primary" />,
     title: "Kalkulator bodova",
     description: "Izračunaj bodove za upis i saznaj koje fakultete možeš upisati.",
     path: "/kalkulator",
   },
   {
-    icon: <Home className="w-6 h-6 text-primary-foreground" />,
+    icon: <Home className="h-6 w-6 text-primary" />,
     title: "Studentski domovi",
     description: "Okvirni bodovi za natječaj; prag u alatu samo za Zagreb, za ostale gradove procjena šanse.",
     path: "/kalkulator-doma",
   },
   {
-    icon: <Video className="w-6 h-6 text-primary-foreground" />,
+    icon: <Video className="h-6 w-6 text-primary" />,
     title: "Video sadržaji",
     description: "Predavanja, iskustva studenata i edukativni video materijali.",
     path: "/video",
   },
   {
-    icon: <MessageSquare className="w-6 h-6 text-primary-foreground" />,
+    icon: <MessageSquare className="h-6 w-6 text-primary" />,
     title: "Forum",
     description: "Razmijeni iskustva s drugim učenicima i studentima.",
     path: "/forum",
   },
   {
-    icon: <Calendar className="w-6 h-6 text-primary-foreground" />,
+    icon: <Calendar className="h-6 w-6 text-primary" />,
     title: "Kalendar datuma",
     description: "Svi važni rokovi za maturu, prijave i upise na jednom mjestu.",
     path: "/kalendar",
   },
   {
-    icon: <Users className="w-6 h-6 text-primary-foreground" />,
+    icon: <Users className="h-6 w-6 text-primary" />,
     title: "Roditeljski kutak",
     description: "Resursi i alati za roditelje koji podržavaju dijete u odabiru.",
     path: "/roditelji",
   },
   {
-    icon: <Bot className="w-6 h-6 text-primary-foreground" />,
+    icon: <Bot className="h-6 w-6 text-primary" />,
     title: "AI ChatBot",
     description: "Razgovaraj s umjetnom inteligencijom o odabiru fakulteta i karijere.",
     path: "/chatbot",
@@ -86,8 +86,8 @@ const features = [
 
 const stats = [
   { value: "120+", label: "Fakulteta", icon: <GraduationCap className="w-5 h-5" /> },
-  { value: "10k+", label: "Korisnika", icon: <Users className="w-5 h-5" /> },
-  { value: "50+", label: "Video lekcija", icon: <Video className="w-5 h-5" /> },
+  { value: "500+", label: "Korisnika", icon: <Users className="w-5 h-5" /> },
+  { value: "5", label: "Video lekcija", icon: <Video className="w-5 h-5" /> },
   { value: "95%", label: "Zadovoljstvo", icon: <Award className="w-5 h-5" /> },
 ];
 
@@ -194,53 +194,6 @@ const Index = () => {
         </motion.div>
       </section>
 
-      {/* Studentski domovi — kalkulator (ispod pregleda fakultetskih profila) */}
-      <section className="container py-8 md:py-12">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          className="relative overflow-hidden rounded-3xl border bg-gradient-to-br from-primary/8 via-card to-accent/10 p-6 md:p-8 shadow-card"
-        >
-          <div className="absolute -top-16 -right-16 w-64 h-64 bg-primary/15 rounded-full blur-3xl" />
-          <div className="absolute bottom-0 left-1/4 w-48 h-48 bg-accent/10 rounded-full blur-3xl" />
-          <div className="relative grid gap-6 lg:grid-cols-[1.35fr_1fr] lg:items-center">
-            <div>
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/15 text-primary text-xs font-semibold">
-                <Home className="w-4 h-4" />
-                Novo na MojPutu
-              </div>
-              <h2 className="text-2xl md:text-3xl font-bold mt-4">
-                Kalkulator bodova za studentske domove
-              </h2>
-              <p className="text-muted-foreground mt-3 max-w-2xl leading-relaxed">
-                Unesi prosjek, prihod, godinu studija i što se tiče tebe — dobiješ okvirni broj bodova. Za Zagreb usporedba
-                s objavljenim pragom; za druge gradove procjena šanse bez točnog praga u aplikaciji.
-              </p>
-              <div className="flex flex-col sm:flex-row gap-3 mt-6">
-                <Button asChild className="gradient-hero border-0 text-primary-foreground shadow-md">
-                  <Link to="/kalkulator-doma">
-                    Otvori kalkulator
-                    <ArrowRight className="w-4 h-4 ml-2" />
-                  </Link>
-                </Button>
-                <Button asChild variant="outline">
-                  <Link to="/kalkulator">Kalkulator za upis</Link>
-                </Button>
-              </div>
-            </div>
-            <div className="rounded-2xl border bg-background/80 backdrop-blur-sm p-5 space-y-3">
-              <p className="text-sm font-semibold text-foreground">Što uključuje</p>
-              <ul className="text-sm text-muted-foreground space-y-2 list-disc list-inside">
-                <li>Prosjek ocjena, prihod po članu kućanstva, godina studija</li>
-                <li>Posebni uvjeti — označi što imaš (uz prijavu ide dokumentacija)</li>
-                <li>Za Zagreb traka do praga; za ostale gradove procjena prema bodovima</li>
-              </ul>
-            </div>
-          </div>
-        </motion.div>
-      </section>
-
       {/* Stats */}
       <section className="border-y bg-muted/30">
         <div className="container py-12">
@@ -266,64 +219,84 @@ const Index = () => {
       </section>
 
       {/* Features */}
-      <section className="container py-24 bg-muted/20">
-        <div className="text-center mb-16">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-          >
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">
-              Sve što trebaš na{" "}
-              <span className="text-gradient">jednom mjestu</span>
-            </h2>
-            <p className="text-muted-foreground text-lg max-w-xl mx-auto">
-              Alati, informacije i zajednica koji te vode kroz najvažniju odluku.
-            </p>
-          </motion.div>
-        </div>
+      <section className="relative overflow-hidden py-16 md:py-20 lg:py-24">
+        <div
+          className="pointer-events-none absolute inset-0 bg-gradient-to-b from-background via-muted/35 to-background"
+          aria-hidden
+        />
+        <div
+          className="pointer-events-none absolute -left-24 top-1/4 h-80 w-80 rounded-full bg-primary/[0.08] blur-3xl"
+          aria-hidden
+        />
+        <div
+          className="pointer-events-none absolute -right-32 bottom-0 h-96 w-96 rounded-full bg-accent/[0.06] blur-3xl"
+          aria-hidden
+        />
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {features.map((feature, i) => (
-            <Link key={feature.path} to={feature.path} className="block">
-              <FeatureCard
-                icon={feature.icon}
-                title={feature.title}
-                description={feature.description}
-                delay={i * 0.08}
-              />
-            </Link>
-          ))}
+        <div className="container relative">
+          <div className="mx-auto mb-10 max-w-2xl text-center md:mb-12">
+            <motion.div
+              initial={{ opacity: 0, y: 16 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-60px" }}
+              transition={{ duration: 0.45 }}
+            >
+              <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-primary/15 bg-primary/5 px-3 py-1.5 text-xs font-semibold text-primary shadow-sm">
+                <Sparkles className="h-3.5 w-3.5" />
+                Alati platforme
+              </div>
+              <h2 className="text-balance text-3xl font-bold tracking-tight md:text-4xl">
+                Sve što trebaš na <span className="text-gradient">jednom mjestu</span>
+              </h2>
+              <p className="mx-auto mt-3 max-w-lg text-pretty text-base text-muted-foreground md:text-lg">
+                Alati, informacije i zajednica koji te vode kroz najvažniju odluku.
+              </p>
+            </motion.div>
+          </div>
+
+          <div className="mx-auto grid max-w-7xl grid-cols-1 gap-5 sm:grid-cols-2 sm:gap-6 lg:grid-cols-4">
+            {features.map((feature, i) => (
+              <Link key={feature.path} to={feature.path} className="block h-full min-h-[11rem] sm:min-h-[12.5rem]">
+                <FeatureCard
+                  icon={feature.icon}
+                  title={feature.title}
+                  description={feature.description}
+                  delay={i * 0.06}
+                />
+              </Link>
+            ))}
+          </div>
         </div>
       </section>
 
       {/* CTA */}
-      <section className="container pb-24 pt-4">
+      <section className="container pb-20 pt-2 md:pb-24">
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 12 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          className="relative overflow-hidden rounded-3xl gradient-hero p-10 md:p-16 text-center shadow-xl shadow-primary/20"
+          className="relative mx-auto max-w-2xl overflow-hidden rounded-2xl border border-primary/15 gradient-hero px-6 py-7 text-center shadow-md shadow-primary/10 md:px-10 md:py-8"
         >
-          <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2" />
-          <div className="absolute bottom-0 left-0 w-48 h-48 bg-white/10 rounded-full translate-y-1/2 -translate-x-1/2" />
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-32 h-32 bg-white/5 rounded-full" />
+          <div
+            className="pointer-events-none absolute -right-16 top-0 h-32 w-32 rounded-full bg-white/10 blur-2xl"
+            aria-hidden
+          />
 
           <div className="relative">
-            <h2 className="text-3xl md:text-4xl font-bold text-primary-foreground mb-4 drop-shadow-sm">
+            <h2 className="text-balance text-xl font-bold text-primary-foreground md:text-2xl">
               Spreman za prvi korak?
             </h2>
-            <p className="text-primary-foreground/90 text-lg max-w-lg mx-auto mb-8">
+            <p className="mx-auto mt-2 max-w-md text-pretty text-sm text-primary-foreground/85 md:text-base">
               Pridruži se tisućama maturanata koji su pronašli svoj put uz MojPut platformu.
             </p>
             <Button
-              size="lg"
-              className="bg-card text-foreground hover:bg-card/95 border-0 px-8 h-12 text-base font-semibold shadow-lg hover:scale-[1.02] transition-all"
+              size="default"
+              className="mt-5 border-0 bg-card font-semibold text-foreground shadow-sm hover:bg-card/95 hover:shadow-md"
               asChild
             >
               <Link to="/registracija">
                 Kreiraj besplatni račun
-                <ArrowRight className="w-4 h-4 ml-2" />
+                <ArrowRight className="ml-2 h-4 w-4" />
               </Link>
             </Button>
           </div>

@@ -2,6 +2,7 @@ import Layout from "@/components/Layout";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   ArrowLeft,
+  Clock,
   LogOut,
   LogIn,
   MessageCircle,
@@ -9,8 +10,9 @@ import {
   Search,
   Send,
   ThumbsUp,
+  TrendingUp,
 } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { apiGet, apiPost } from "@/lib/api";
 import { Link, useLocation } from "react-router-dom";
 import { authLogout, authMe, userFromAuthMe, type AuthUser } from "@/lib/auth";
@@ -37,7 +39,18 @@ type ForumConversation = {
   messages: ForumMessage[];
 };
 
+type SortMode = "recent" | "active";
+
 const FORUM_LOCAL_KEY = "mojput_forum_local_conversations";
+
+function porukeOznaka(n: number): string {
+  const k = n % 100;
+  const m = n % 10;
+  if (k >= 11 && k <= 14) return "poruka";
+  if (m === 1) return "poruka";
+  if (m >= 2 && m <= 4) return "poruke";
+  return "poruka";
+}
 
 const FALLBACK_CONVERSATIONS: ForumConversation[] = [
   {
@@ -176,6 +189,7 @@ const Forum = () => {
 
   const [selectedConversation, setSelectedConversation] = useState<ForumConversation | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
+  const [sortMode, setSortMode] = useState<SortMode>("recent");
   const [showNewConversationModal, setShowNewConversationModal] = useState(false);
   const [newConvTitle, setNewConvTitle] = useState("");
   const [newConvDescription, setNewConvDescription] = useState("");
@@ -508,11 +522,23 @@ const Forum = () => {
     }
   };
 
-  const filteredConversations = conversations.filter(
-    (conv) =>
-      conv.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      conv.description.toLowerCase().includes(searchTerm.toLowerCase()),
-  );
+  const sortedConversations = useMemo(() => {
+    const term = searchTerm.trim().toLowerCase();
+    const filtered = conversations.filter(
+      (conv) =>
+        conv.title.toLowerCase().includes(term) || conv.description.toLowerCase().includes(term),
+    );
+    const copy = [...filtered];
+    if (sortMode === "recent") {
+      copy.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+    } else {
+      copy.sort(
+        (a, b) =>
+          b.messageCount - a.messageCount || b.createdAt.getTime() - a.createdAt.getTime(),
+      );
+    }
+    return copy;
+  }, [conversations, searchTerm, sortMode]);
 
   return (
     <Layout>
@@ -521,13 +547,16 @@ const Forum = () => {
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3 }}
-          className={cn("mb-4 md:mb-6", selectedConversation && "max-md:hidden")}
+          className={cn(
+            "mb-4 rounded-2xl border-2 border-primary/15 bg-gradient-to-br from-primary/[0.08] via-card to-card p-4 shadow-sm md:mb-6 md:p-5",
+            selectedConversation && "max-md:hidden",
+          )}
         >
-          <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-slate-900 dark:text-slate-50 tracking-tight">
+          <h1 className="text-balance text-xl font-bold tracking-tight text-foreground sm:text-2xl md:text-3xl">
             Forum za učenike
           </h1>
-          <p className="text-slate-600 dark:text-slate-400 text-sm md:text-base mt-1 leading-snug">
-            Razmijeni iskustva i postavi pitanja o maturi, fakultetima i studentskom životu.
+          <p className="mt-1.5 text-pretty text-sm leading-relaxed text-muted-foreground md:text-base">
+            Razmijeni iskustva i postavi pitanja o maturi, fakultetima i studentskom životu — sve jasno poredano, brzo za pronalazak.
           </p>
         </motion.div>
 
@@ -535,18 +564,18 @@ const Forum = () => {
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className="mb-4 md:mb-6 rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50/80 dark:bg-slate-900/50 p-4 md:p-5 shadow-sm"
+            className="mb-4 rounded-2xl border-2 border-border bg-muted/40 p-4 shadow-sm md:mb-6 md:p-5"
           >
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div>
-                <p className="text-sm font-semibold text-slate-800 dark:text-slate-200">Samo pregled poruka</p>
-                <p className="text-xs text-slate-600 dark:text-slate-400 mt-0.5 leading-relaxed">
+                <p className="text-sm font-semibold text-foreground">Samo pregled poruka</p>
+                <p className="mt-0.5 text-xs leading-relaxed text-muted-foreground">
                   Možeš čitati razgovore, ali za slanje poruka, lajkanje i kreiranje tema potrebna je prijava.
                 </p>
               </div>
               <Link
                 to="/prijava"
-                className="inline-flex items-center justify-center gap-2 rounded-xl bg-teal-600 hover:bg-teal-700 text-white px-4 py-3 sm:py-2.5 text-sm font-semibold transition-colors shadow-sm touch-manipulation min-h-[44px] sm:min-h-0"
+                className="inline-flex min-h-[44px] items-center justify-center gap-2 rounded-xl bg-primary px-4 py-3 text-sm font-semibold text-primary-foreground shadow-md transition-colors hover:bg-primary/90 sm:min-h-0 sm:py-2.5 touch-manipulation"
               >
                 <LogIn className="h-4 w-4" />
                 Prijavi se
@@ -559,33 +588,29 @@ const Forum = () => {
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3, delay: 0.05 }}
-          className="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 shadow-xl overflow-hidden"
+          className="overflow-hidden rounded-2xl border-2 border-border bg-card shadow-card"
         >
-          <div className="flex flex-col md:flex-row min-h-0 h-[min(calc(100dvh-11rem),720px)] sm:h-[min(78dvh,680px)] md:h-[580px]">
+          <div className="flex h-[min(calc(100dvh-11rem),720px)] min-h-0 flex-col sm:h-[min(78dvh,680px)] md:h-[580px] md:flex-row">
             {/* Sidebar */}
             <div
               className={cn(
-                "md:w-80 border-b md:border-b-0 md:border-r border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-900/50 flex flex-col shrink-0 min-h-0",
+                "flex min-h-0 w-full shrink-0 flex-col border-b border-border bg-muted/25 md:w-[min(100%,20rem)] md:border-b-0 md:border-r",
                 selectedConversation && "max-md:hidden",
               )}
             >
-              <div className="p-3 sm:p-4 border-b border-slate-200 dark:border-slate-700 flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-teal-500 to-cyan-600 flex items-center justify-center text-white font-semibold shadow-md">
+              <div className="flex items-center gap-3 border-b border-border p-3 sm:p-4">
+                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-gradient-hero text-sm font-bold text-primary-foreground shadow-md">
                   {(currentUser?.username?.[0] || "G").toUpperCase()}
                 </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold text-slate-900 dark:text-slate-100 truncate">
-                    {currentUser?.username || "Gost"}
-                  </p>
-                  <p className="text-xs text-slate-500 dark:text-slate-400">
-                    {canUseForum ? "Član foruma" : "Samo pregled"}
-                  </p>
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-sm font-semibold text-foreground">{currentUser?.username || "Gost"}</p>
+                  <p className="text-xs text-muted-foreground">{canUseForum ? "Član foruma" : "Samo pregled"}</p>
                 </div>
                 {canUseForum ? (
                   <button
                     type="button"
                     onClick={handleLogout}
-                    className="p-2.5 sm:p-2 rounded-xl hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-400 transition-colors touch-manipulation min-h-[44px] min-w-[44px] flex items-center justify-center"
+                    className="flex min-h-[44px] min-w-[44px] items-center justify-center rounded-xl p-2 text-muted-foreground transition-colors hover:bg-muted touch-manipulation sm:p-2"
                     title="Odjava"
                   >
                     <LogOut className="h-4 w-4" />
@@ -593,7 +618,7 @@ const Forum = () => {
                 ) : (
                   <Link
                     to="/prijava"
-                    className="p-2.5 sm:p-2 rounded-xl hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-400 transition-colors touch-manipulation min-h-[44px] min-w-[44px] flex items-center justify-center"
+                    className="flex min-h-[44px] min-w-[44px] items-center justify-center rounded-xl p-2 text-muted-foreground transition-colors hover:bg-muted touch-manipulation sm:p-2"
                     title="Prijava"
                   >
                     <LogIn className="h-4 w-4" />
@@ -601,12 +626,12 @@ const Forum = () => {
                 )}
               </div>
 
-              <div className="p-3 border-b border-slate-200 dark:border-slate-700">
+              <div className="border-b border-border p-3">
                 {canUseForum ? (
                   <button
                     type="button"
                     onClick={() => setShowNewConversationModal(true)}
-                    className="w-full inline-flex items-center justify-center gap-2 rounded-xl bg-teal-600 hover:bg-teal-700 text-white px-4 py-3.5 sm:py-2.5 text-sm font-semibold shadow-md transition-all hover:shadow-lg active:scale-[0.98] touch-manipulation min-h-[48px]"
+                    className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-primary px-4 py-3 text-sm font-semibold text-primary-foreground shadow-md transition-all hover:bg-primary/90 hover:shadow-lg active:scale-[0.98] sm:min-h-10 sm:py-2.5 touch-manipulation"
                   >
                     <Plus className="h-4 w-4" />
                     Novi razgovor
@@ -614,7 +639,7 @@ const Forum = () => {
                 ) : (
                   <Link
                     to="/prijava"
-                    className="w-full inline-flex items-center justify-center gap-2 rounded-xl border-2 border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 px-4 py-3.5 sm:py-2.5 text-sm font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors touch-manipulation min-h-[48px]"
+                    className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-xl border-2 border-border bg-background px-4 py-3 text-sm font-semibold text-foreground transition-colors hover:bg-muted sm:min-h-10 sm:py-2.5 touch-manipulation"
                   >
                     <LogIn className="h-4 w-4" />
                     Prijavi se za pisanje
@@ -622,56 +647,95 @@ const Forum = () => {
                 )}
               </div>
 
-              <div className="p-3 border-b border-slate-200 dark:border-slate-700">
+              <div className="border-b border-border p-3">
                 <div className="relative">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                  <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                   <input
                     type="text"
-                    placeholder="Pretraži razgovore..."
+                    placeholder="Pretraži teme…"
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full pl-9 pr-4 py-2.5 sm:py-2 rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 text-base sm:text-sm text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500/50 focus:border-teal-500"
+                    className="h-11 w-full rounded-xl border-2 border-input bg-background py-2.5 pl-9 pr-4 text-base text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-ring sm:h-10 sm:text-sm"
                   />
                 </div>
               </div>
 
-              <div className="flex-1 overflow-y-auto min-h-0">
+              <div className="border-b border-border px-3 py-2">
+                <p className="mb-2 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">Poredaj</p>
+                <div className="flex gap-2 overflow-x-auto pb-0.5 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+                  <button
+                    type="button"
+                    onClick={() => setSortMode("recent")}
+                    className={cn(
+                      "inline-flex shrink-0 items-center gap-1.5 rounded-full border-2 px-3 py-2 text-xs font-semibold transition-all touch-manipulation",
+                      sortMode === "recent"
+                        ? "border-primary bg-primary text-primary-foreground shadow-sm"
+                        : "border-border bg-background text-foreground hover:bg-muted",
+                    )}
+                  >
+                    <Clock className="h-3.5 w-3.5" />
+                    Najnovije
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setSortMode("active")}
+                    className={cn(
+                      "inline-flex shrink-0 items-center gap-1.5 rounded-full border-2 px-3 py-2 text-xs font-semibold transition-all touch-manipulation",
+                      sortMode === "active"
+                        ? "border-primary bg-primary text-primary-foreground shadow-sm"
+                        : "border-border bg-background text-foreground hover:bg-muted",
+                    )}
+                  >
+                    <TrendingUp className="h-3.5 w-3.5" />
+                    Najživlje
+                  </button>
+                </div>
+              </div>
+
+              <div className="min-h-0 flex-1 overflow-y-auto">
                 {loadingConversations ? (
                   <div className="p-8 text-center">
-                    <div className="inline-block w-6 h-6 border-2 border-teal-500 border-t-transparent rounded-full animate-spin" />
-                    <p className="text-xs text-slate-500 mt-3">Učitavam razgovore...</p>
+                    <div className="inline-block h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+                    <p className="mt-3 text-xs text-muted-foreground">Učitavam razgovore…</p>
                   </div>
-                ) : filteredConversations.length === 0 ? (
+                ) : sortedConversations.length === 0 ? (
                   <div className="p-8 text-center">
-                    <MessageCircle className="mx-auto h-12 w-12 text-slate-300 dark:text-slate-600 mb-3" />
-                    <p className="text-sm text-slate-500 dark:text-slate-400">
+                    <MessageCircle className="mx-auto mb-3 h-12 w-12 text-muted-foreground/40" />
+                    <p className="text-sm text-muted-foreground">
                       {canUseForum ? "Nema razgovora. Kreiraj prvi!" : "Trenutno nema razgovora."}
                     </p>
                   </div>
                 ) : (
-                  <div className="p-2">
-                    {filteredConversations.map((conv) => (
+                  <div className="space-y-1.5 p-2">
+                    {sortedConversations.map((conv) => (
                       <button
                         key={conv.id}
+                        type="button"
                         onClick={async () => {
                           setSelectedConversation(conv);
                           if (conv.messages.length === 0) await loadMessages(conv.id);
                         }}
-                        className={`w-full text-left px-4 py-3.5 sm:py-3 rounded-xl mb-1 transition-all duration-200 touch-manipulation min-h-[52px] ${
+                        className={cn(
+                          "w-full rounded-xl border-2 px-3 py-3 text-left transition-all duration-200 touch-manipulation sm:px-4 sm:py-3",
                           selectedConversation?.id === conv.id
-                            ? "bg-teal-500/15 dark:bg-teal-500/20 border-l-4 border-teal-500"
-                            : "hover:bg-slate-100 dark:hover:bg-slate-800/80 active:bg-slate-100"
-                        }`}
+                            ? "border-primary/40 bg-primary/10 shadow-sm"
+                            : "border-transparent hover:border-border hover:bg-muted/60 active:scale-[0.99]",
+                        )}
                       >
-                        <p className="font-semibold text-slate-900 dark:text-slate-100 truncate text-sm">
-                          {conv.title}
-                        </p>
-                        <p className="text-xs text-slate-500 dark:text-slate-400 line-clamp-1 mt-0.5">
-                          {conv.description || "Bez opisa"}
-                        </p>
-                        <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-1.5">
-                          {conv.messageCount} poruka · {conv.creator || "Anonim"}
-                        </p>
+                        <p className="line-clamp-2 text-sm font-semibold leading-snug text-foreground">{conv.title}</p>
+                        <p className="mt-1 line-clamp-1 text-xs text-muted-foreground">{conv.description || "Bez opisa"}</p>
+                        <div className="mt-2 flex flex-wrap items-center gap-x-2 gap-y-1 text-[11px] text-muted-foreground">
+                          <span className="rounded-full bg-primary/15 px-2 py-0.5 font-semibold text-primary">
+                            {conv.messageCount} {porukeOznaka(conv.messageCount)}
+                          </span>
+                          <span>
+                            {conv.createdAt.toLocaleDateString("hr-HR", {
+                              day: "numeric",
+                              month: "short",
+                            })}
+                          </span>
+                          <span className="truncate">· {conv.creator || "Anonim"}</span>
+                        </div>
                       </button>
                     ))}
                   </div>
@@ -682,7 +746,7 @@ const Forum = () => {
             {/* Chat area */}
             <div
               className={cn(
-                "flex-1 flex flex-col min-w-0 min-h-0 bg-white dark:bg-slate-900",
+                "flex min-h-0 min-w-0 flex-1 flex-col bg-background",
                 !selectedConversation && "max-md:hidden",
               )}
             >
@@ -693,38 +757,34 @@ const Forum = () => {
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
-                    className="flex flex-col h-full"
+                    className="flex h-full flex-col"
                   >
-                    <div className="p-3 sm:p-4 border-b border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-900/50 shrink-0">
+                    <div className="shrink-0 border-b border-border bg-muted/20 p-3 sm:p-4">
                       <button
                         type="button"
                         onClick={() => setSelectedConversation(null)}
-                        className="inline-flex md:hidden items-center gap-2 text-sm font-medium text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 mb-2 transition-colors touch-manipulation min-h-[44px] -ml-1 px-2 rounded-lg hover:bg-slate-200/80 dark:hover:bg-slate-800/80"
+                        className="mb-2 inline-flex min-h-[44px] -ml-1 items-center gap-2 rounded-lg px-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground md:hidden touch-manipulation"
                       >
                         <ArrowLeft className="h-5 w-5 shrink-0" />
                         Popis razgovora
                       </button>
-                      <h2 className="text-lg font-bold text-slate-900 dark:text-slate-100">
-                        {selectedConversation.title}
-                      </h2>
-                      <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-                        {selectedConversation.description || "Bez opisa"}
-                      </p>
+                      <h2 className="text-pretty text-lg font-bold text-foreground">{selectedConversation.title}</h2>
+                      <p className="mt-1 text-xs text-muted-foreground">{selectedConversation.description || "Bez opisa"}</p>
                     </div>
 
-                    <div className="flex-1 overflow-y-auto overflow-x-hidden p-3 sm:p-4 space-y-4 [scrollbar-gutter:stable]">
+                    <div className="flex-1 space-y-4 overflow-y-auto overflow-x-hidden p-3 sm:p-4 [scrollbar-gutter:stable]">
                       {loadingMessages ? (
-                        <div className="h-full flex items-center justify-center">
+                        <div className="flex h-full items-center justify-center">
                           <div className="text-center">
-                            <div className="inline-block w-8 h-8 border-2 border-teal-500 border-t-transparent rounded-full animate-spin mb-3" />
-                            <p className="text-sm text-slate-500">Učitavam poruke...</p>
+                            <div className="mb-3 inline-block h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+                            <p className="text-sm text-muted-foreground">Učitavam poruke…</p>
                           </div>
                         </div>
                       ) : selectedConversation.messages.length === 0 ? (
-                        <div className="h-full flex items-center justify-center">
-                          <div className="text-center max-w-xs">
-                            <MessageCircle className="mx-auto h-14 w-14 text-slate-300 dark:text-slate-600 mb-4" />
-                            <p className="text-sm text-slate-500 dark:text-slate-400">
+                        <div className="flex h-full items-center justify-center">
+                          <div className="max-w-xs text-center">
+                            <MessageCircle className="mx-auto mb-4 h-14 w-14 text-muted-foreground/35" />
+                            <p className="text-sm text-muted-foreground">
                               Nema poruka. Budi prvi koji će započeti razgovor!
                             </p>
                           </div>
@@ -738,24 +798,20 @@ const Forum = () => {
                             className={`flex gap-3 ${msg.userId === currentUser?.id ? "flex-row-reverse" : ""}`}
                           >
                             <div
-                              className={`w-9 h-9 rounded-full flex items-center justify-center text-white font-semibold shrink-0 ${
-                                msg.userId === currentUser?.id
-                                  ? "bg-gradient-to-br from-teal-500 to-cyan-600"
-                                  : "bg-gradient-to-br from-slate-400 to-slate-600"
+                              className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-xs font-bold text-primary-foreground ${
+                                msg.userId === currentUser?.id ? "gradient-hero" : "bg-muted text-muted-foreground"
                               }`}
                             >
                               {msg.username?.[0]?.toUpperCase() || "U"}
                             </div>
                             <div
-                              className={`max-w-[min(92%,20rem)] sm:max-w-[85%] md:max-w-sm ${msg.userId === currentUser?.id ? "items-end" : "items-start"} flex flex-col`}
+                              className={`flex max-w-[min(92%,20rem)] flex-col sm:max-w-[85%] md:max-w-sm ${msg.userId === currentUser?.id ? "items-end" : "items-start"}`}
                             >
                               <div
-                                className={`flex items-center gap-2 mb-1 ${msg.userId === currentUser?.id ? "flex-row-reverse" : ""}`}
+                                className={`mb-1 flex items-center gap-2 ${msg.userId === currentUser?.id ? "flex-row-reverse" : ""}`}
                               >
-                                <span className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-                                  {msg.username}
-                                </span>
-                                <span className="text-[11px] text-slate-400 dark:text-slate-500">
+                                <span className="text-xs font-semibold text-foreground">{msg.username}</span>
+                                <span className="text-[11px] text-muted-foreground">
                                   {msg.timestamp.toLocaleTimeString("hr-HR", {
                                     hour: "2-digit",
                                     minute: "2-digit",
@@ -763,27 +819,25 @@ const Forum = () => {
                                 </span>
                               </div>
                               <div
-                                className={`px-4 py-2.5 rounded-2xl text-sm ${
+                                className={`rounded-2xl px-4 py-2.5 text-sm ${
                                   msg.userId === currentUser?.id
-                                    ? "bg-teal-500 text-white rounded-br-md"
-                                    : "bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-slate-100 rounded-bl-md"
+                                    ? "rounded-br-md bg-primary text-primary-foreground"
+                                    : "rounded-bl-md border border-border bg-muted/60 text-foreground"
                                 }`}
                               >
-                                <p className="break-words whitespace-pre-wrap">{msg.text}</p>
+                                <p className="whitespace-pre-wrap break-words">{msg.text}</p>
                               </div>
                               {canUseForum && (
                                 <button
                                   type="button"
                                   onClick={() => handleLikeMessage(msg.id)}
-                                  className={`mt-1.5 inline-flex items-center gap-1.5 text-xs transition-colors touch-manipulation min-h-[36px] px-1 -ml-1 ${
-                                    msg.userLiked
-                                      ? "text-teal-600 dark:text-teal-400"
-                                      : "text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
-                                  } ${msg.userId === currentUser?.id ? "self-end" : ""}`}
+                                  className={cn(
+                                    "mt-1.5 -ml-1 inline-flex min-h-9 items-center gap-1.5 px-1 text-xs transition-colors touch-manipulation",
+                                    msg.userLiked ? "text-primary" : "text-muted-foreground hover:text-foreground",
+                                    msg.userId === currentUser?.id && "self-end",
+                                  )}
                                 >
-                                  <ThumbsUp
-                                    className={`h-3.5 w-3.5 ${msg.userLiked ? "fill-current" : ""}`}
-                                  />
+                                  <ThumbsUp className={`h-3.5 w-3.5 ${msg.userLiked ? "fill-current" : ""}`} />
                                   {msg.likeCount > 0 && <span>{msg.likeCount}</span>}
                                 </button>
                               )}
@@ -797,7 +851,7 @@ const Forum = () => {
                     {canUseForum ? (
                       <form
                         onSubmit={handleSendMessage}
-                        className="p-3 sm:p-4 border-t border-slate-200 dark:border-slate-700 bg-slate-50/80 dark:bg-slate-900/80 shrink-0 pb-[max(0.75rem,env(safe-area-inset-bottom))]"
+                        className="shrink-0 border-t border-border bg-muted/30 p-3 sm:p-4 pb-[max(0.75rem,env(safe-area-inset-bottom))]"
                       >
                         <div className="flex items-end gap-2 sm:gap-3">
                           <label className="sr-only" htmlFor="forum-message-input">
@@ -817,29 +871,27 @@ const Forum = () => {
                               }
                             }}
                             placeholder="Upiši poruku…"
-                            className="flex-1 min-h-[48px] max-h-32 px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500/50 focus:border-teal-500 text-base sm:text-sm resize-y touch-manipulation"
+                            className="min-h-12 max-h-32 flex-1 resize-y rounded-xl border-2 border-input bg-background px-4 py-3 text-base text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-ring sm:min-h-10 sm:text-sm touch-manipulation"
                           />
                           <button
                             type="submit"
                             disabled={!messageInput.trim() || sendingMessage}
-                            className="inline-flex items-center justify-center w-12 h-12 shrink-0 rounded-xl bg-teal-600 hover:bg-teal-700 text-white shadow-md disabled:opacity-50 disabled:cursor-not-allowed transition-all hover:shadow-lg active:scale-95 touch-manipulation"
+                            className="inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-md transition-all hover:bg-primary/90 hover:shadow-lg active:scale-95 disabled:cursor-not-allowed disabled:opacity-50 touch-manipulation"
                             aria-label="Pošalji poruku"
                           >
                             <Send className="h-5 w-5" />
                           </button>
                         </div>
-                        <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-1.5 hidden sm:block">
+                        <p className="mt-1.5 hidden text-[11px] text-muted-foreground sm:block">
                           Enter šalje poruku, Shift+Enter novi red.
                         </p>
                       </form>
                     ) : (
-                      <div className="p-3 sm:p-4 border-t border-slate-200 dark:border-slate-700 bg-slate-50/80 dark:bg-slate-900/80 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
-                        <p className="text-sm text-slate-600 dark:text-slate-400 leading-snug">
-                          Prijavi se za slanje poruka
-                        </p>
+                      <div className="flex shrink-0 flex-col items-stretch justify-between gap-3 border-t border-border bg-muted/30 p-3 sm:flex-row sm:items-center sm:p-4 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
+                        <p className="text-sm leading-snug text-muted-foreground">Prijavi se za slanje poruka</p>
                         <Link
                           to="/prijava"
-                          className="shrink-0 inline-flex items-center justify-center gap-2 rounded-xl bg-teal-600 hover:bg-teal-700 text-white px-4 py-3 sm:py-2.5 text-sm font-semibold transition-colors touch-manipulation min-h-[44px]"
+                          className="inline-flex min-h-[44px] shrink-0 items-center justify-center gap-2 rounded-xl bg-primary px-4 py-3 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90 sm:py-2.5 touch-manipulation"
                         >
                           <LogIn className="h-4 w-4" />
                           Prijavi se
@@ -853,14 +905,12 @@ const Forum = () => {
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
-                    className="flex-1 hidden md:flex items-center justify-center"
+                    className="hidden flex-1 items-center justify-center md:flex"
                   >
                     <div className="text-center">
-                      <MessageCircle className="mx-auto h-16 w-16 text-slate-300 dark:text-slate-600 mb-4" />
-                      <p className="text-base font-medium text-slate-600 dark:text-slate-400">
-                        Odaberi razgovor
-                      </p>
-                      <p className="text-sm text-slate-500 dark:text-slate-500 mt-1">
+                      <MessageCircle className="mx-auto mb-4 h-16 w-16 text-muted-foreground/35" />
+                      <p className="text-base font-medium text-muted-foreground">Odaberi razgovor</p>
+                      <p className="mt-1 text-sm text-muted-foreground/80">
                         {canUseForum ? "ili kreiraj novi za početak." : "kako bi pročitao poruke."}
                       </p>
                     </div>
@@ -886,43 +936,43 @@ const Forum = () => {
                 animate={{ scale: 1, opacity: 1 }}
                 exit={{ scale: 0.95, opacity: 0 }}
                 onClick={(e) => e.stopPropagation()}
-                className="bg-white dark:bg-slate-900 rounded-t-2xl sm:rounded-2xl shadow-2xl max-w-md w-full max-h-[min(92dvh,560px)] overflow-y-auto p-5 sm:p-6 border border-slate-200 dark:border-slate-700 sm:m-0"
+                className="max-h-[min(92dvh,560px)] w-full max-w-md overflow-y-auto rounded-t-2xl border-2 border-border bg-card p-5 shadow-2xl sm:m-0 sm:rounded-2xl sm:p-6"
               >
-                <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100 mb-1">
-                  Novi razgovor
-                </h3>
-                <p className="text-sm text-slate-500 dark:text-slate-400 mb-5">
+                <h3 className="mb-1 text-lg font-bold text-foreground">Novi razgovor</h3>
+                <p className="mb-5 text-sm text-muted-foreground">
                   Postavi pitanje ili otvori temu o maturi, fakultetima ili studentskom životu.
                 </p>
                 <form onSubmit={handleCreateConversation} className="space-y-4">
                   <div>
-                    <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
+                    <label className="mb-1.5 block text-sm font-semibold text-foreground" htmlFor="forum-new-title">
                       Naziv
                     </label>
                     <input
+                      id="forum-new-title"
                       type="text"
                       value={newConvTitle}
                       onChange={(e) => setNewConvTitle(e.target.value)}
                       placeholder="npr. Koji fakultet za IT?"
-                      className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-teal-500/50"
+                      className="w-full rounded-xl border-2 border-input bg-background px-4 py-2.5 text-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-ring"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
+                    <label className="mb-1.5 block text-sm font-semibold text-foreground" htmlFor="forum-new-desc">
                       Opis (opcionalno)
                     </label>
                     <textarea
+                      id="forum-new-desc"
                       value={newConvDescription}
                       onChange={(e) => setNewConvDescription(e.target.value)}
                       placeholder="Ukratko opiši temu..."
                       rows={3}
-                      className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-teal-500/50 resize-none"
+                      className="w-full resize-none rounded-xl border-2 border-input bg-background px-4 py-2.5 text-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-ring"
                     />
                   </div>
                   <div className="flex gap-3 pt-2">
                     <button
                       type="submit"
-                      className="flex-1 py-2.5 rounded-xl bg-teal-600 hover:bg-teal-700 text-white text-sm font-semibold transition-colors"
+                      className="flex-1 rounded-xl bg-primary py-2.5 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
                     >
                       Kreiraj
                     </button>
@@ -933,7 +983,7 @@ const Forum = () => {
                         setNewConvTitle("");
                         setNewConvDescription("");
                       }}
-                      className="flex-1 py-2.5 rounded-xl bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 text-slate-800 dark:text-slate-200 text-sm font-semibold transition-colors"
+                      className="flex-1 rounded-xl border-2 border-border bg-muted py-2.5 text-sm font-semibold text-foreground transition-colors hover:bg-muted/80"
                     >
                       Odustani
                     </button>
