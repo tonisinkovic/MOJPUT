@@ -1,6 +1,6 @@
 import Layout from "@/components/Layout";
 import VideoCard from "@/components/VideoCard";
-import { VIDEOS, CATEGORIES } from "@/data/videos";
+import { VIDEOS, CATEGORIES, featuredYouTubeVideoId } from "@/data/videos";
 import { motion, AnimatePresence } from "framer-motion";
 import { Search, Radio, PlayCircle, TrendingUp, Clock, X } from "lucide-react";
 import { useState, useMemo, useEffect } from "react";
@@ -614,6 +614,7 @@ const VideoPage = () => {
                       views={video.views}
                       isNew={video.isNew}
                       watchedProgress={video.watchedProgress}
+                      youtubeVideoId={i === 0 ? featuredYouTubeVideoId : undefined}
                     />
                   </motion.div>
                 ))}

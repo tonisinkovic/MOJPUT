@@ -1,3 +1,5 @@
+import { parseYouTubeVideoId } from "@/lib/youtube";
+
 export type VideoItem = {
   id: string;
   title: string;
@@ -115,6 +117,14 @@ export const VIDEOS: VideoItem[] = [
     views: 2750,
   },
 ];
+
+/**
+ * Istaknuti YouTube video (tab „Videozapisi”) — uredi ovdje. Prikazuje se ugrađeno u prvoj kartici mreže.
+ * Možeš zalijepiti puni URL (youtu.be, watch?v=…) ili samo 11-znakovni video ID.
+ */
+export const FEATURED_YOUTUBE_URL_OR_ID = "https://youtu.be/AONIq-XrlsY";
+
+export const featuredYouTubeVideoId: string | null = parseYouTubeVideoId(FEATURED_YOUTUBE_URL_OR_ID);
 
 export const LIVE_EVENTS: LiveEvent[] = [
   {

@@ -1,6 +1,6 @@
 import Layout from "@/components/Layout";
 import { motion, AnimatePresence } from "framer-motion";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -60,6 +60,7 @@ import {
   type ProgramScoring,
   type ScoringComponent,
 } from "@/data/scoringFormulas";
+import { componentInputKey } from "@/lib/admissionCalculator";
 
 // ─── Types ───
 
@@ -113,6 +114,15 @@ const ADDITIONAL_OPTIONS = [
 
 const MAX_POINTS = 1000;
 
+/** Parsira unos ocjene (1–5), podržava „3,45” i „3.45”. */
+function parseGradeString(raw: string): number | null {
+  const t = raw.trim().replace(/\s/g, "").replace(",", ".");
+  if (t === "" || t === "." || t === "-") return null;
+  const v = Number.parseFloat(t);
+  if (Number.isNaN(v)) return null;
+  return Math.min(5, Math.max(1, Math.round(v * 100) / 100));
+}
+
 function getChanceLevel(totalPoints: number, cutoff: number | null): ChanceLevel {
   if (!cutoff) return "medium";
   const diff = totalPoints - cutoff;
@@ -147,6 +157,15 @@ const Kalkulator = () => {
 
   // ─── State: UI ───
   const [showBreakdown, setShowBreakdown] = useState(true);
+  /** 0 = fakultet, 1 = ocjene, 2 = matura obavezni (+ dodatne provjere), 3 = izborni + ostalo, 4 = rezultat */
+  const [wizardStep, setWizardStep] = useState(0);
+  /** Za jedan „Prosjek svih ocjena” unos: tekstualno polje da se mogu unijeti decimale tijekom tipkanja */
+  const [gradeYearStr, setGradeYearStr] = useState<[string, string, string, string]>([
+    "4",
+    "4",
+    "4",
+    "4",
+  ]);
 
   // ─── Current formula (always available when program selected) ───
   const selectedFormula = selectedProgram?.formula ?? null;
@@ -155,18 +174,22 @@ const Kalkulator = () => {
   const handleSelectProgram = (opt: ProgramOption) => {
     setSelectedProgram(opt);
     setFacultyOpen(false);
+    setWizardStep(0);
+    setGradeYearStr(["4", "4", "4", "4"]);
 
-    // Initialize inputs with reasonable defaults
     const defaults: Record<string, number> = {};
-    for (const comp of opt.formula.komponente) {
+    for (let i = 0; i < opt.formula.komponente.length; i++) {
+      const comp = opt.formula.komponente[i];
+      const k = componentInputKey(i);
+      const prev = formulaInputs[k] ?? formulaInputs[comp.id];
       if (comp.type === "ocjena") {
-        defaults[comp.id] = formulaInputs[comp.id] ?? 4;
+        defaults[k] = prev ?? 4;
       } else if (comp.type === "matura") {
-        defaults[comp.id] = formulaInputs[comp.id] ?? 70;
+        defaults[k] = prev ?? 70;
       } else if (comp.type === "matura_izborni") {
-        defaults[comp.id] = formulaInputs[comp.id] ?? 0;
+        defaults[k] = prev ?? 0;
       } else {
-        defaults[comp.id] = formulaInputs[comp.id] ?? 0;
+        defaults[k] = prev ?? 0;
       }
     }
     setPrijemniInput(usesWeightedPrijemni(opt.formula) ? null : 0);
@@ -346,13 +369,57 @@ const Kalkulator = () => {
     return { ocjene, maturaObv, dodatneProvjere, maturaIzb, dodatno };
   }, [selectedFormula]);
 
-  // ─── Helper: update formula input ───
-  const updateInput = (id: string, value: number) => {
-    setFormulaInputs((prev) => ({ ...prev, [id]: value }));
+  const updateInputAtIndex = (komponenteIndex: number, value: number) => {
+    const k = componentInputKey(komponenteIndex);
+    setFormulaInputs((prev) => ({ ...prev, [k]: value }));
   };
 
-  const pointsForBreakdownId = (id: string) =>
-    admissionResult?.breakdown.find((b) => b.id === id)?.points;
+  const getRawAtIndex = (komponenteIndex: number) => {
+    if (!selectedFormula) return 0;
+    const comp = selectedFormula.komponente[komponenteIndex];
+    const k = componentInputKey(komponenteIndex);
+    return formulaInputs[k] ?? formulaInputs[comp.id] ?? 0;
+  };
+
+  const pointsForBreakdownIndex = (komponenteIndex: number) =>
+    admissionResult?.breakdown.find((b) => b.id === componentInputKey(komponenteIndex))?.points;
+
+  const indexOfComponent = (comp: ScoringComponent) =>
+    selectedFormula ? selectedFormula.komponente.indexOf(comp) : -1;
+
+  const ocjenaKomponenteIndices = useMemo(() => {
+    if (!selectedFormula) return [];
+    const out: number[] = [];
+    selectedFormula.komponente.forEach((c, i) => {
+      if (c.type === "ocjena") out.push(i);
+    });
+    return out;
+  }, [selectedFormula]);
+
+  /** Jedan red „Prosjek svih ocjena“ u formuli – 4 razreda računaju jedan prosjek */
+  const singleOcjenaProsjekIndex = useMemo(
+    () => (ocjenaKomponenteIndices.length === 1 ? ocjenaKomponenteIndices[0] : null),
+    [ocjenaKomponenteIndices],
+  );
+
+  useEffect(() => {
+    if (singleOcjenaProsjekIndex == null) return;
+    const nums = gradeYearStr.map((s) => parseGradeString(s) ?? 4);
+    const avg = (nums[0] + nums[1] + nums[2] + nums[3]) / 4;
+    const rounded = Math.round(avg * 10) / 10;
+    const k = componentInputKey(singleOcjenaProsjekIndex);
+    setFormulaInputs((prev) => ({ ...prev, [k]: rounded }));
+  }, [gradeYearStr, singleOcjenaProsjekIndex]);
+
+  const prosjekGodina = useMemo(() => {
+    const parsed = gradeYearStr.map((s) => parseGradeString(s));
+    if (!parsed.every((n) => n !== null)) return null;
+    const [a, b, c, d] = parsed as [number, number, number, number];
+    return Math.round(((a + b + c + d) / 4) * 100) / 100;
+  }, [gradeYearStr]);
+
+  const canWizardNext =
+    wizardStep === 0 ? selectedProgram != null : wizardStep < 4;
 
   // ═══════════════════════════════════════════════════════════════
   //  RENDER
@@ -376,15 +443,22 @@ const Kalkulator = () => {
                 Kalkulator bodova
               </h1>
               <p className="text-muted-foreground text-lg max-w-xl mx-auto">
-                Izračunaj bodove za upis na fakultet. Odaberi program i unesi
-                svoje podatke – formula se automatski prilagođava.
+                Korak po korak: program, ocjene, državna matura, izborni predmeti i dodatni bodovi – zatim
+                pregled ukupnog rezultata. Formula se prilagođava odabranom smjeru.
               </p>
             </div>
 
             {/* Main grid: inputs left, result right */}
             <div className="grid lg:grid-cols-5 gap-6 lg:gap-8">
               {/* ═══ Inputs column ═══ */}
-              <div className="lg:col-span-3 space-y-6">
+              <div
+                className={cn(
+                  "space-y-6",
+                  wizardStep === 4 ? "lg:col-span-3" : "lg:col-span-5",
+                )}
+              >
+                {wizardStep === 0 && (
+                <>
                 {/* 1. Odabir fakulteta i smjera */}
                 <Card className="rounded-2xl border-2 shadow-card overflow-hidden">
                   <CardHeader className="pb-3">
@@ -609,11 +683,14 @@ const Kalkulator = () => {
                     )}
                   </CardContent>
                 </Card>
+                </>
+                )}
 
-                {/* ═══ FORMULA-BASED INPUTS ═══ */}
+                {/* ═══ FORMULA-BASED INPUTS (koraci 1–3) ═══ */}
                 {selectedFormula && groupedComponents && (
                   <>
-                    {/* Ocjene */}
+                    {/* Ocjene — korak 1 */}
+                    {wizardStep === 1 && groupedComponents.ocjene.length > 0 && (
                     <Card className="rounded-2xl border-2 shadow-card overflow-hidden">
                       <CardHeader className="pb-3">
                         <div className="flex items-center gap-2">
@@ -626,8 +703,9 @@ const Kalkulator = () => {
                               <HelpCircle className="w-4 h-4 text-muted-foreground cursor-help" />
                             </TooltipTrigger>
                             <TooltipContent className="max-w-xs">
-                              Prosjek ocjena iz svih predmeta za svaki razred (1–5).
-                              Formula: (prosjek / 5) × max bodovi.
+                              {singleOcjenaProsjekIndex != null
+                                ? "Unesi prosjek ocjena za svaki od četiri razreda (1–5). Prikazani prosjek automatski se koristi u formuli."
+                                : "Za svaku stavku formule unesi prosjek ocjena (1–5). Formula: (prosjek / 5) × max bodovi."}
                             </TooltipContent>
                           </Tooltip>
                         </div>
@@ -635,35 +713,108 @@ const Kalkulator = () => {
                           Ukupno do {groupedComponents.ocjene.reduce((s, c) => s + c.max, 0)} bodova iz ocjena
                         </CardDescription>
                       </CardHeader>
-                      <CardContent>
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                          {groupedComponents.ocjene.map((comp) => (
-                            <div key={comp.id} className="space-y-2">
-                              <div className="flex justify-between text-sm">
-                                <Label className="text-xs">{comp.label}</Label>
-                                <span className="text-xs text-muted-foreground">
+                      <CardContent className="space-y-6">
+                        {singleOcjenaProsjekIndex != null ? (
+                          <>
+                            <p className="text-sm text-muted-foreground leading-relaxed">
+                              Unesi prosjek ocjena po razredu (od 1 do 5, možeš unijeti decimale npr. 4,35). Možeš
+                              koristiti zarez ili točku. Ukupni prosjek četiriju godina automatski ulazi u formulu.
+                            </p>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+                              {([0, 1, 2, 3] as const).map((i) => (
+                                <div key={i} className="space-y-2 min-w-0">
+                                  <Label htmlFor={`grade-${i}`} className="text-sm font-medium sm:text-xs">
+                                    {i + 1}. razred
+                                  </Label>
+                                  <Input
+                                    id={`grade-${i}`}
+                                    type="text"
+                                    inputMode="decimal"
+                                    enterKeyHint="done"
+                                    autoComplete="off"
+                                    autoCorrect="off"
+                                    spellCheck={false}
+                                    value={gradeYearStr[i]}
+                                    onChange={(e) => {
+                                      const next = e.target.value;
+                                      setGradeYearStr((prev) => {
+                                        const copy = [...prev] as [string, string, string, string];
+                                        copy[i] = next;
+                                        return copy;
+                                      });
+                                    }}
+                                    onBlur={() => {
+                                      setGradeYearStr((prev) => {
+                                        const copy = [...prev] as [string, string, string, string];
+                                        const p = parseGradeString(copy[i]);
+                                        if (p !== null) {
+                                          copy[i] = String(p).replace(".", ",");
+                                        } else {
+                                          copy[i] = "4";
+                                        }
+                                        return copy;
+                                      });
+                                    }}
+                                    className="min-h-12 h-12 sm:h-11 text-base sm:text-sm rounded-xl px-3.5 touch-manipulation"
+                                    aria-describedby="grade-hint"
+                                  />
+                                </div>
+                              ))}
+                            </div>
+                            <p id="grade-hint" className="text-xs text-muted-foreground">
+                              Primjer: <span className="font-mono">4,25</span> ili <span className="font-mono">5</span>
+                            </p>
+                            <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border bg-muted/40 px-4 py-4 sm:py-3 text-sm">
+                              <span className="font-medium">Prosjek svih razreda</span>
+                              <span className="text-xl sm:text-lg font-semibold tabular-nums min-h-[1.75rem] flex items-center">
+                                {prosjekGodina != null ? prosjekGodina.toFixed(2).replace(".", ",") : "—"}
+                              </span>
+                            </div>
+                          </>
+                        ) : (
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                          {groupedComponents.ocjene.map((comp) => {
+                            const idx = indexOfComponent(comp);
+                            const raw = getRawAtIndex(idx);
+                            const sliderVal = raw >= 1 && raw <= 5 ? raw : 4;
+                            return (
+                            <div key={`${comp.id}-${idx}`} className="space-y-2">
+                              <div className="flex justify-between text-sm gap-2">
+                                <Label className="text-xs leading-tight">{comp.label}</Label>
+                                <span className="text-xs text-muted-foreground shrink-0">
                                   max {comp.max} bod.
                                 </span>
                               </div>
                               <Slider
-                                value={[formulaInputs[comp.id] ?? 4]}
-                                onValueChange={([v]) => updateInput(comp.id, v)}
+                                value={[sliderVal]}
+                                onValueChange={([v]) => updateInputAtIndex(idx, v)}
                                 min={1}
                                 max={5}
                                 step={0.1}
                                 className="py-2"
                               />
                               <p className="text-center text-sm font-medium">
-                                {(formulaInputs[comp.id] ?? 4).toFixed(1)}
+                                {sliderVal.toFixed(1)}
                               </p>
                             </div>
-                          ))}
+                            );
+                          })}
                         </div>
+                        )}
                       </CardContent>
                     </Card>
+                    )}
 
-                    {/* Matura – obavezni predmeti */}
-                    {groupedComponents.maturaObv.length > 0 && (
+                    {wizardStep === 1 && groupedComponents.ocjene.length === 0 && (
+                      <Card className="rounded-2xl border-2 border-dashed shadow-card overflow-hidden">
+                        <CardContent className="py-8 text-center text-sm text-muted-foreground">
+                          Ova formula nema zasebnog unosa ocjena iz srednje škole. Nastavi gumbom „Dalje”.
+                        </CardContent>
+                      </Card>
+                    )}
+
+                    {/* Matura – obavezni predmeti — korak 2 */}
+                    {wizardStep === 2 && groupedComponents.maturaObv.length > 0 && (
                       <Card className="rounded-2xl border-2 shadow-card overflow-hidden">
                         <CardHeader className="pb-3">
                           <div className="flex items-center gap-2">
@@ -686,13 +837,15 @@ const Kalkulator = () => {
                         </CardHeader>
                         <CardContent className="space-y-4">
                           {groupedComponents.maturaObv.map((comp) => {
-                            const pts = pointsForBreakdownId(comp.id);
+                            const idx = indexOfComponent(comp);
+                            const pct = getRawAtIndex(idx);
+                            const pts = pointsForBreakdownIndex(idx);
                             const displayPts =
                               pts !== undefined
                                 ? pts
-                                : Math.round(((formulaInputs[comp.id] ?? 70) / 100) * comp.max);
+                                : Math.round((pct / 100) * comp.max);
                             return (
-                            <div key={comp.id} className="space-y-2">
+                            <div key={`${comp.id}-${idx}`} className="space-y-2">
                               <div className="flex flex-wrap justify-between gap-2 text-sm">
                                 <Label className="flex items-center gap-1.5">
                                   {comp.label}
@@ -708,12 +861,12 @@ const Kalkulator = () => {
                                   )}
                                 </Label>
                                 <span className="text-muted-foreground text-right">
-                                  {formulaInputs[comp.id] ?? 70}% → {displayPts.toFixed(1)} / {comp.max} bod.
+                                  {pct}% → {displayPts.toFixed(1)} / {comp.max} bod.
                                 </span>
                               </div>
                               <Slider
-                                value={[formulaInputs[comp.id] ?? 70]}
-                                onValueChange={([v]) => updateInput(comp.id, v)}
+                                value={[pct]}
+                                onValueChange={([v]) => updateInputAtIndex(idx, v)}
                                 min={0}
                                 max={100}
                                 step={1}
@@ -725,8 +878,19 @@ const Kalkulator = () => {
                       </Card>
                     )}
 
+                    {wizardStep === 2 &&
+                      groupedComponents.maturaObv.length === 0 &&
+                      groupedComponents.dodatneProvjere.length === 0 && (
+                        <Card className="rounded-2xl border-2 border-dashed shadow-card overflow-hidden">
+                          <CardContent className="py-8 text-center text-sm text-muted-foreground">
+                            Nema obaveznih predmeta državne mature ni dodatnih provjera u ovoj formuli. Nastavi
+                            gumbom „Dalje”.
+                          </CardContent>
+                        </Card>
+                      )}
+
                     {/* Dodatne provjere (fakultetski testovi) – id komponente u podacima počinje s dod_ */}
-                    {groupedComponents.dodatneProvjere.length > 0 && (
+                    {wizardStep === 2 && groupedComponents.dodatneProvjere.length > 0 && (
                       <Card className="rounded-2xl border-2 shadow-card overflow-hidden">
                         <CardHeader className="pb-3">
                           <div className="flex items-center gap-2">
@@ -742,13 +906,15 @@ const Kalkulator = () => {
                         </CardHeader>
                         <CardContent className="space-y-4">
                           {groupedComponents.dodatneProvjere.map((comp) => {
-                            const pts = pointsForBreakdownId(comp.id);
+                            const idx = indexOfComponent(comp);
+                            const pct = getRawAtIndex(idx);
+                            const pts = pointsForBreakdownIndex(idx);
                             const displayPts =
                               pts !== undefined
                                 ? pts
-                                : Math.round(((formulaInputs[comp.id] ?? 70) / 100) * comp.max);
+                                : Math.round((pct / 100) * comp.max);
                             return (
-                              <div key={comp.id} className="space-y-2">
+                              <div key={`${comp.id}-${idx}`} className="space-y-2">
                                 <div className="flex flex-wrap justify-between gap-2 text-sm">
                                   <Label className="flex items-center gap-1.5 flex-wrap">
                                     {comp.label}
@@ -762,13 +928,13 @@ const Kalkulator = () => {
                                     )}
                                   </Label>
                                   <span className="text-muted-foreground text-right">
-                                    {formulaInputs[comp.id] ?? 70}% → {displayPts.toFixed(1)} / {comp.max}{" "}
+                                    {pct}% → {displayPts.toFixed(1)} / {comp.max}{" "}
                                     bod.
                                   </span>
                                 </div>
                                 <Slider
-                                  value={[formulaInputs[comp.id] ?? 70]}
-                                  onValueChange={([v]) => updateInput(comp.id, v)}
+                                  value={[pct]}
+                                  onValueChange={([v]) => updateInputAtIndex(idx, v)}
                                   min={0}
                                   max={100}
                                   step={1}
@@ -781,8 +947,8 @@ const Kalkulator = () => {
                       </Card>
                     )}
 
-                    {/* Matura – izborni predmeti */}
-                    {groupedComponents.maturaIzb.length > 0 && (
+                    {/* Matura – izborni predmeti — korak 3 */}
+                    {wizardStep === 3 && groupedComponents.maturaIzb.length > 0 && (
                       <Card className="rounded-2xl border-2 shadow-card overflow-hidden">
                         <CardHeader className="pb-3">
                           <div className="flex items-center gap-2">
@@ -797,13 +963,15 @@ const Kalkulator = () => {
                         </CardHeader>
                         <CardContent className="space-y-4">
                           {groupedComponents.maturaIzb.map((comp) => {
-                            const pts = pointsForBreakdownId(comp.id);
+                            const idx = indexOfComponent(comp);
+                            const pct = getRawAtIndex(idx);
+                            const pts = pointsForBreakdownIndex(idx);
                             const displayPts =
                               pts !== undefined
                                 ? pts
-                                : Math.round(((formulaInputs[comp.id] ?? 0) / 100) * comp.max);
+                                : Math.round((pct / 100) * comp.max);
                             return (
-                            <div key={comp.id} className="space-y-2">
+                            <div key={`${comp.id}-${idx}`} className="space-y-2">
                               <div className="flex flex-wrap justify-between gap-2 text-sm">
                                 <Label className="flex items-center gap-1.5">
                                   {comp.label}
@@ -822,12 +990,12 @@ const Kalkulator = () => {
                                   )}
                                 </Label>
                                 <span className="text-muted-foreground text-right">
-                                  {formulaInputs[comp.id] ?? 0}% → {displayPts.toFixed(1)} / {comp.max} bod.
+                                  {pct}% → {displayPts.toFixed(1)} / {comp.max} bod.
                                 </span>
                               </div>
                               <Slider
-                                value={[formulaInputs[comp.id] ?? 0]}
-                                onValueChange={([v]) => updateInput(comp.id, v)}
+                                value={[pct]}
+                                onValueChange={([v]) => updateInputAtIndex(idx, v)}
                                 min={0}
                                 max={100}
                                 step={1}
@@ -840,7 +1008,7 @@ const Kalkulator = () => {
                     )}
 
                     {/* Prijemni ispit (ponder) – samo ako su u podacima programa zadane težine */}
-                    {selectedFormula && usesWeightedPrijemni(selectedFormula) && (
+                    {wizardStep === 3 && selectedFormula && usesWeightedPrijemni(selectedFormula) && (
                       <Card className="rounded-2xl border-2 shadow-card overflow-hidden">
                         <CardHeader className="pb-3">
                           <div className="flex items-center gap-2">
@@ -929,7 +1097,7 @@ const Kalkulator = () => {
                     )}
 
                     {/* Dodatne komponente (prijemni ispit itd.) */}
-                    {groupedComponents.dodatno.length > 0 && (
+                    {wizardStep === 3 && groupedComponents.dodatno.length > 0 && (
                       <Card className="rounded-2xl border-2 shadow-card overflow-hidden">
                         <CardHeader className="pb-3">
                           <div className="flex items-center gap-2">
@@ -940,8 +1108,11 @@ const Kalkulator = () => {
                           </div>
                         </CardHeader>
                         <CardContent className="space-y-4">
-                          {groupedComponents.dodatno.map((comp) => (
-                            <div key={comp.id} className="space-y-2">
+                          {groupedComponents.dodatno.map((comp) => {
+                            const idx = indexOfComponent(comp);
+                            const val = getRawAtIndex(idx);
+                            return (
+                            <div key={`${comp.id}-${idx}`} className="space-y-2">
                               <div className="flex justify-between text-sm">
                                 <Label className="flex items-center gap-1.5">
                                   {comp.label}
@@ -962,16 +1133,17 @@ const Kalkulator = () => {
                                 type="number"
                                 min={0}
                                 max={comp.max}
-                                value={formulaInputs[comp.id] ?? 0}
+                                value={val}
                                 onChange={(e) => {
                                   const v = parseFloat(e.target.value);
                                   if (!Number.isNaN(v))
-                                    updateInput(comp.id, Math.min(comp.max, Math.max(0, v)));
+                                    updateInputAtIndex(idx, Math.min(comp.max, Math.max(0, v)));
                                 }}
                                 className="h-10 rounded-lg"
                               />
                             </div>
-                          ))}
+                            );
+                          })}
                         </CardContent>
                       </Card>
                     )}
@@ -979,7 +1151,7 @@ const Kalkulator = () => {
                 )}
 
                 {/* Placeholder kad nema odabranog programa */}
-                {!selectedFormula && (
+                {wizardStep === 0 && !selectedFormula && (
                   <Card className="rounded-2xl border-2 border-dashed shadow-card overflow-hidden">
                     <CardContent className="py-12 text-center">
                       <GraduationCap className="w-10 h-10 text-muted-foreground/40 mx-auto mb-3" />
@@ -993,7 +1165,8 @@ const Kalkulator = () => {
                   </Card>
                 )}
 
-                {/* Dodatni bodovi – uvijek vidljivi */}
+                {/* Dodatni bodovi — korak 3 */}
+                {wizardStep === 3 && (
                 <Card className="rounded-2xl border-2 shadow-card overflow-hidden">
                   <CardHeader className="pb-3">
                     <div className="flex items-center gap-2">
@@ -1053,9 +1226,24 @@ const Kalkulator = () => {
                     )}
                   </CardContent>
                 </Card>
+                )}
+
+                {wizardStep === 4 && selectedFormula && (
+                  <Card className="rounded-2xl border-2 border-dashed bg-muted/20 shadow-card overflow-hidden">
+                    <CardContent className="py-8 text-center space-y-2">
+                      <Sparkles className="w-10 h-10 text-primary mx-auto" />
+                      <p className="font-semibold text-lg">Unos je gotov</p>
+                      <p className="text-sm text-muted-foreground max-w-md mx-auto">
+                        Pregledaj ukupne bodove i raspodjelu desno. Možeš se vratiti natrag gumbom „Natrag” ili
+                        promijeniti program u prvom koraku.
+                      </p>
+                    </CardContent>
+                  </Card>
+                )}
               </div>
 
-              {/* ═══ Result column – sticky on desktop ═══ */}
+              {/* ═══ Result column – samo završni korak ═══ */}
+              {wizardStep === 4 && (
               <div className="lg:col-span-2">
                 <div className="lg:sticky lg:top-24 space-y-4">
                   {/* Main result card */}
@@ -1311,6 +1499,46 @@ const Kalkulator = () => {
                   )}
                 </div>
               </div>
+              )}
+            </div>
+
+            <div className="max-w-6xl mx-auto px-0">
+              {wizardStep < 4 && (
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 pt-4 border-t border-border">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    disabled={wizardStep === 0}
+                    onClick={() => setWizardStep((s) => Math.max(0, s - 1))}
+                    className="rounded-xl"
+                  >
+                    Natrag
+                  </Button>
+                  <p className="text-sm text-muted-foreground text-center order-first sm:order-none">
+                    Korak {wizardStep + 1} od 5
+                  </p>
+                  <Button
+                    type="button"
+                    disabled={!canWizardNext}
+                    onClick={() => setWizardStep((s) => Math.min(4, s + 1))}
+                    className="rounded-xl"
+                  >
+                    Dalje
+                  </Button>
+                </div>
+              )}
+              {wizardStep === 4 && (
+                <div className="flex justify-center pt-4 border-t border-border">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setWizardStep(3)}
+                    className="rounded-xl"
+                  >
+                    Natrag na unos
+                  </Button>
+                </div>
+              )}
             </div>
           </motion.div>
         </section>

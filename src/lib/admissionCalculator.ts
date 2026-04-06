@@ -9,6 +9,22 @@ function round1(n: number): number {
   return Math.round(n * 10) / 10;
 }
 
+/** Jedinstveni ključ po poziciji u formuli (rješava duplikatne comp.id u JSON-u, npr. više „ocjena_1”). */
+export function componentInputKey(komponenteIndex: number): string {
+  return `__k_${komponenteIndex}`;
+}
+
+function rawForComponent(
+  formula: ProgramScoring,
+  komponenteIndex: number,
+  inputs: Record<string, number>,
+): number {
+  const comp = formula.komponente[komponenteIndex];
+  const byIdx = inputs[componentInputKey(komponenteIndex)];
+  if (byIdx !== undefined) return byIdx;
+  return inputs[comp.id] ?? 0;
+}
+
 /** Studij traži prijemni ponder ako su obje težine zadane i pozitivne. */
 export function usesWeightedPrijemni(formula: ProgramScoring): boolean {
   const wM = formula.weightMatura;
@@ -53,12 +69,13 @@ export function calculateMaturaPoints(
   let total = 0;
   let maxSum = 0;
 
-  for (const comp of formula.komponente) {
+  for (let i = 0; i < formula.komponente.length; i++) {
+    const comp = formula.komponente[i];
     if (comp.type !== "matura" && comp.type !== "matura_izborni") continue;
     maxSum += comp.max;
-    const raw = inputs[comp.id] ?? 0;
+    const raw = rawForComponent(formula, i, inputs);
     const points = pointsForComponent(comp, raw);
-    breakdown.push({ id: comp.id, label: comp.label, points, max: comp.max });
+    breakdown.push({ id: componentInputKey(i), label: comp.label, points, max: comp.max });
     total += points;
   }
 
@@ -105,12 +122,13 @@ function sumBucket(
   const lines: ComponentBreakdownLine[] = [];
   let total = 0;
   let maxSum = 0;
-  for (const comp of formula.komponente) {
+  for (let i = 0; i < formula.komponente.length; i++) {
+    const comp = formula.komponente[i];
     if (!predicate(comp)) continue;
     maxSum += comp.max;
-    const raw = inputs[comp.id] ?? 0;
+    const raw = rawForComponent(formula, i, inputs);
     const points = pointsForComponent(comp, raw);
-    lines.push({ id: comp.id, label: comp.label, points, max: comp.max });
+    lines.push({ id: componentInputKey(i), label: comp.label, points, max: comp.max });
     total += points;
   }
   return { total: round1(total), maxSum, lines };
