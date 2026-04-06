@@ -274,7 +274,9 @@ const Registracija = () => {
                 <p className="text-slate-600 text-sm">
                   {verifyInfo?.emailPreviewUrl
                     ? "Poslan je email za potvrdu. U testnom inboxu otvori poruku i klikni link, ili koristi direktan link ispod (samo razvoj)."
-                    : "Otvori primljeni email i klikni link za potvrdu. U Gmailu provjeri i mapu Promocije / Spam ako ne vidiš poruku odmah. Bez potvrde se ne možeš prijaviti."}
+                    : verifyInfo?.directVerifyUrl
+                      ? "Klikni link u mailu (vodi na API za potvrdu, zatim na prijavu). Plavi gumb ispod je isti URL — ako si na lokalnom razvoju, otvori mail na računalu gdje radi server."
+                      : "Otvori primljeni email i klikni link za potvrdu. U Gmailu provjeri i mapu Promocije / Spam ako ne vidiš poruku odmah. Bez potvrde se ne možeš prijaviti."}
                 </p>
                 {verifyInfo?.emailPreviewUrl && (
                   <a

@@ -17,6 +17,9 @@ dist-ssr
 !.env.local.example
 !.env.production
 
+# Vite dev — stvarni http://127.0.0.1:PORT za link u mailu (lokalni API)
+.dev-frontend-origin
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

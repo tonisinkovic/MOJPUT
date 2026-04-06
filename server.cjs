@@ -14,6 +14,7 @@ process.on("unhandledRejection", (err) => {
 });
 
 const fs = require("fs");
+const os = require("os");
 const path = require("path");
 const express = require("express");
 const cors = require("cors");
@@ -113,16 +114,93 @@ function isHostedEnvironment() {
 }
 
 /**
- * Zadnja linija obrane: u stvarnom emailu nikad ne smije biti localhost (korisnik ne može otvoriti).
- * Lokalni test s pravim SMTP-om: postavi ALLOW_LOCALHOST_IN_MAIL=1 u .env
+ * Stvarni deploy (Render, …) — bez NODE_ENV: lokalno često ima NODE_ENV=production u .env pa ne smije
+ * gasiti link u mailu na 127.0.0.1 (.dev-frontend-origin).
+ */
+function isDeployedOnPaaS() {
+  const r = String(process.env.RENDER || "").toLowerCase();
+  if (r === "true" || r === "1") return true;
+  if (String(process.env.RENDER_SERVICE_ID || "").trim().length > 0) return true;
+  if (String(process.env.RENDER_EXTERNAL_URL || "").includes("onrender.com")) return true;
+  if (String(process.env.RAILWAY_ENVIRONMENT || "").length > 0) return true;
+  if (String(process.env.FLY_APP_NAME || "").length > 0) return true;
+  return false;
+}
+
+/** Jednolinijski zapis od Vite dev servera (vite.config — writeDevFrontendOriginPlugin). */
+function readDevFrontendOriginFile() {
+  try {
+    const fp = path.join(__dirname, ".dev-frontend-origin");
+    if (!fs.existsSync(fp)) return null;
+    const raw = fs
+      .readFileSync(fp, "utf8")
+      .trim()
+      .replace(/\/$/, "")
+      .replace(/\/MOJPUT$/i, "");
+    if (!raw || !/^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/i.test(raw)) return null;
+    return raw;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Kad API radi lokalno, a APP_ORIGIN još pokazuje na GitHub Pages, link u mailu ne smije ići na Pages —
+ * tamo bi /api/auth/verify zvao javni API (Render), a token postoji samo u lokalnoj bazi.
+ * Stvarni port uzima se iz .dev-frontend-origin (Vite ga zapisuje pri startu). Ručno: DEV_MAIL_APP_ORIGIN.
+ */
+function localDevMailFrontendOrigin() {
+  if (isDeployedOnPaaS()) return null;
+
+  const explicit = String(process.env.DEV_MAIL_APP_ORIGIN || "")
+    .trim()
+    .replace(/\/$/, "")
+    .replace(/\/MOJPUT$/i, "");
+  if (explicit) return explicit;
+
+  const wouldBe = appOriginForLinks();
+  const w = String(wouldBe || "")
+    .trim()
+    .replace(/\/$/, "")
+    .replace(/\/MOJPUT$/i, "");
+  if (!w || !/^https:\/\//i.test(w)) return null;
+  if (/^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/i.test(w)) return null;
+  if (!/^https:\/\/[^/]+\.github\.io$/i.test(w)) return null;
+
+  const auto = readDevFrontendOriginFile();
+  if (auto) return auto;
+
+  const port = String(process.env.FRONTEND_DEV_PORT || "8080").trim() || "8080";
+  const fallback = `http://127.0.0.1:${port}`;
+  console.warn(
+    "[mail] Lokalni API + APP_ORIGIN (GitHub Pages): nema .dev-frontend-origin (pokreni Vite prije slanja maila?) — koristim",
+    fallback,
+    "ili FRONTEND_DEV_PORT iz .env.",
+  );
+  return fallback;
+}
+
+/**
+ * Na pravom deployu (PaaS) u mailu nikad localhost — korisnik otvara s mobitela.
+ * Lokalno (!isDeployedOnPaaS): ne zamjenjuj localhost s GitHub Pages — inače token ostane u lokalnoj bazi,
+ * a link vodi na Pages/Render. Koristi .dev-frontend-origin (stvarni Vite port) ili APP_ORIGIN.
  */
 function originNeverLocalhostForMail() {
+  const fromLocalDev = localDevMailFrontendOrigin();
+  if (fromLocalDev) return fromLocalDev;
+
   const allowLocal =
     String(process.env.ALLOW_LOCALHOST_IN_MAIL || "").toLowerCase() === "1" ||
     String(process.env.ALLOW_LOCALHOST_IN_MAIL || "").toLowerCase() === "true";
   let origin = appOriginForLinks();
   if (allowLocal) return origin;
+
   if (origin && /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/i.test(origin)) {
+    if (!isDeployedOnPaaS()) {
+      const vite = readDevFrontendOriginFile();
+      if (vite) return vite;
+      return origin;
+    }
     const fb = publicAppOriginFallback();
     console.warn("[mail] ZAMJENA localhost → javni origin za link u pismu:", fb);
     return fb;
@@ -165,20 +243,104 @@ function appOriginForLinks() {
   return publicAppOriginFallback();
 }
 
+/** Prvi IPv4 na LAN-u (nije loopback) — da link u mailu radi s mobitela na istom Wi‑Fi-u; 127.0.0.1 na mobitelu je sam mobitel. */
+function getPreferredLanIPv4() {
+  const candidates = [];
+  const ifs = os.networkInterfaces();
+  for (const name of Object.keys(ifs)) {
+    for (const net of ifs[name] || []) {
+      const fam = net.family;
+      if ((fam !== "IPv4" && fam !== 4) || net.internal) continue;
+      candidates.push(net.address);
+    }
+  }
+  const rank = (a) => {
+    if (/^192\.168\./.test(a)) return 300;
+    if (/^10\./.test(a)) return 200;
+    if (/^172\.(1[6-9]|2\d|3[0-1])\./.test(a)) return 200;
+    return 100;
+  };
+  candidates.sort((a, b) => rank(b) - rank(a));
+  return candidates[0] || null;
+}
+
+function localApiVerifyBaseUrl() {
+  const p = Number(process.env.PORT || 3000);
+  const raw = String(process.env.MAIL_API_HOST || "").trim();
+  const hostOverride = raw
+    ? raw
+        .replace(/^https?:\/\//, "")
+        .split("/")[0]
+        .split(":")[0]
+        .trim()
+    : "";
+  if (hostOverride) return `http://${hostOverride}:${p}`;
+  if (String(process.env.MAIL_USE_LAN_IP || "0").trim() === "1") {
+    const lan = getPreferredLanIPv4();
+    if (lan) return `http://${lan}:${p}`;
+  }
+  return `http://127.0.0.1:${p}`;
+}
+
+/** Isti zadani kao u frontendu (src/config/apiBase.ts) — mora biti javni URL ovog Node servisa. */
+const DEFAULT_PUBLIC_API_BASE = "https://mojput-api.onrender.com";
+
 /**
- * Točno: ${APP_ORIGIN}/MOJPUT/verify?token=...
+ * Javni URL Node API-ja za link u mailu (mora biti isti servis gdje je token u bazi).
+ * Produkcija: API_PUBLIC_URL (Render) ili zadani host. Lokalno: 127.0.0.1:PORT (MAIL_USE_LAN_IP=1 za LAN).
+ * Override: MAIL_VERIFY_API_BASE (npr. ngrok).
+ */
+function resolvePublicApiBaseForMail() {
+  const mailOnly = String(process.env.MAIL_VERIFY_API_BASE || "")
+    .trim()
+    .replace(/\/$/, "");
+  if (mailOnly) return mailOnly;
+
+  if (isDeployedOnPaaS()) {
+    const fromEnv = String(process.env.API_PUBLIC_URL || "")
+      .trim()
+      .replace(/\/$/, "");
+    const fromDisk = String(readApiPublicUrlFromDisk() || "")
+      .trim()
+      .replace(/\/$/, "");
+    return fromEnv || fromDisk || DEFAULT_PUBLIC_API_BASE;
+  }
+
+  return localApiVerifyBaseUrl();
+}
+
+/**
+ * Uvijek: GET /api/auth/verify?token=…&redirect=1 — potvrda na istom serveru gdje je token, zatim redirect na /prijavu.
  */
 function mailVerifyUrlFromToken(verifyToken) {
-  const origin = originNeverLocalhostForMail();
   const token = encodeURIComponent(String(verifyToken || ""));
-  const url = `${origin}/MOJPUT/verify?token=${token}`;
-  console.log("[mail] process.env.APP_ORIGIN:", process.env.APP_ORIGIN);
-  console.log("[mail] verification link (stvarni u mailu):", url);
+  const base = resolvePublicApiBaseForMail().replace(/\/$/, "");
+  const url = `${base}/api/auth/verify?token=${token}&redirect=1`;
+  console.log("[mail] verification link (API → redirect na prijavu):", url);
   return url;
 }
 
+/** Nakon potvrde na Renderu: uvijek HTTPS GitHub Pages (APP_ORIGIN), bez lokalne Vite logike. */
+function getFrontendOriginForRedirect() {
+  if (isDeployedOnPaaS()) {
+    const forced = String(process.env.FORCE_MAIL_APP_ORIGIN || "")
+      .trim()
+      .replace(/\/$/, "")
+      .replace(/\/MOJPUT$/i, "");
+    if (forced && /^https:\/\//i.test(forced)) return forced;
+    const o = normalizeAppOrigin();
+    const base = String(o || "")
+      .trim()
+      .replace(/\/$/, "")
+      .replace(/\/MOJPUT$/i, "");
+    if (base && /^https:\/\//i.test(base)) return base;
+    return publicAppOriginFallback();
+  }
+  return originNeverLocalhostForMail();
+}
+
 function frontendPrijavaUrl(querySuffix) {
-  const origin = originNeverLocalhostForMail();
+  const origin = getFrontendOriginForRedirect();
   const q = querySuffix ? `?${querySuffix}` : "";
   return `${origin}/MOJPUT/prijava${q}`;
 }
@@ -198,26 +360,12 @@ console.log(
 if (hasSmtp && process.env.SMTP_USER) {
   console.log("[config] SMTP pošiljatelj:", String(process.env.SMTP_USER).trim());
 }
-console.log("[config] process.env.APP_ORIGIN:", String(process.env.APP_ORIGIN || "").trim() || "(nije postavljen)");
-console.log(
-  "[config] hostano (Render/…):",
-  isHostedEnvironment(),
-  "| NODE_ENV:",
-  process.env.NODE_ENV || "(nema)",
-  "| RENDER:",
-  process.env.RENDER || "(nema)",
-);
-console.log("[config] Origin u mailu (nikad localhost osim ALLOW_LOCALHOST_IN_MAIL):", originNeverLocalhostForMail());
-{
-  const fromDisk = readApiPublicUrlFromDisk();
-  const fromEnv = String(process.env.API_PUBLIC_URL || "").trim();
-  const shown = fromDisk || fromEnv || "(nema)";
-  console.log("[config] API_PUBLIC_URL (za VITE build / direktan API poziv):", shown);
-  if (!fromDisk && !fromEnv) {
-    console.warn(
-      "[config] Nema API_PUBLIC_URL — link u mailu i dalje vodi na GitHub Pages; za potvrdu s mobitela treba VITE_API_URL u buildu = javni API (Render/tunel).",
-    );
-  }
+console.log("[config] APP_ORIGIN:", String(process.env.APP_ORIGIN || "").trim() || "(nije postavljen)");
+console.log("[config] Render/PaaS:", isDeployedOnPaaS(), "| NODE_ENV:", process.env.NODE_ENV || "(nema)");
+console.log("[config] Link u mailu (potvrda) →", resolvePublicApiBaseForMail());
+console.log("[config] Redirect nakon potvrde →", getFrontendOriginForRedirect(), "/MOJPUT/prijava");
+if (isDeployedOnPaaS() && !String(process.env.API_PUBLIC_URL || "").trim() && !readApiPublicUrlFromDisk()) {
+  console.warn("[config] API_PUBLIC_URL nije u env — koristi se zadani:", DEFAULT_PUBLIC_API_BASE);
 }
 
 function ensureDir(dirPath) {
@@ -504,10 +652,9 @@ function getMailTransportSync() {
 }
 
 let etherealAccountPromise = null;
-async function getMailTransport() {
-  const sync = getMailTransportSync();
-  if (sync) return { transport: sync, isEthereal: false };
 
+/** Testni SMTP (Ethereal) — koristi se kad nema SMTP_* ili kao pad kad Gmail ne radi (DNS/mreža). */
+async function getEtherealMailTransport() {
   try {
     if (!etherealAccountPromise) {
       etherealAccountPromise = nodemailer.createTestAccount();
@@ -519,12 +666,33 @@ async function getMailTransport() {
       secure: false,
       auth: { user: account.user, pass: account.pass },
     });
-    return { transport, isEthereal: true };
+    return { transport, isEthereal: true, etherealUser: account.user };
   } catch (err) {
     console.error("[mail] Ethereal testni račun nije dostupan:", err?.message || err);
     etherealAccountPromise = null;
     throw err;
   }
+}
+
+async function getMailTransport() {
+  const sync = getMailTransportSync();
+  if (sync) return { transport: sync, isEthereal: false };
+  return getEtherealMailTransport();
+}
+
+function smtpConnectionLikelyFailed(err) {
+  const msg = String(err?.message || err || "").toLowerCase();
+  return /enotfound|econnrefused|etimedout|getaddrinfo|eai_again|ehostunreach|enetunreach|certificate/i.test(
+    msg,
+  );
+}
+
+/** Lokalni dev / eksplicitno: SMTP_FALLBACK_ETHEREAL=1 — ako Gmail ne radi, šalji preko Ethereal. */
+function allowSmtpFallbackToEthereal() {
+  if (String(process.env.SMTP_FALLBACK_ETHEREAL || "").trim() === "1") return true;
+  if (onRender) return false;
+  if (process.env.NODE_ENV === "production") return false;
+  return true;
 }
 
 function isValidEmail(email) {
@@ -666,6 +834,32 @@ async function sendVerificationEmail({ to, username, verifyToken }) {
     return { sent: true, previewUrl: previewUrl || undefined };
   } catch (err) {
     console.error("[mail] failed to send verification email:", err?.message || err);
+    if (
+      !isEthereal &&
+      smtpConnectionLikelyFailed(err) &&
+      allowSmtpFallbackToEthereal()
+    ) {
+      try {
+        console.warn(
+          "[mail] SMTP (npr. smtp.gmail.com) nedostupan — šaljem preko Ethereal testnog inboxa. Otvori URL u konzoli za pregled «maila».",
+        );
+        const eth = await getEtherealMailTransport();
+        const info = await eth.transport.sendMail({
+          from: `MojPut <${eth.etherealUser}>`,
+          to,
+          subject,
+          text: textBody,
+          html: htmlBody,
+        });
+        const previewUrl = nodemailer.getTestMessageUrl ? nodemailer.getTestMessageUrl(info) : null;
+        if (previewUrl) {
+          console.log("[mail] Ethereal preview (stvarni inbox korisnika nije korišten):", previewUrl);
+        }
+        return { sent: true, previewUrl: previewUrl || undefined };
+      } catch (err2) {
+        console.error("[mail] Ethereal fallback failed:", err2?.message || err2);
+      }
+    }
     return { sent: false, error: smtpErrorForClient(err) };
   }
 }
@@ -771,7 +965,7 @@ async function main() {
 
       const payload = { success: true, email: cleanEmail, verification_required: true };
       if (mail.previewUrl) payload.email_preview_url = mail.previewUrl;
-      if (mail.previewUrl) payload.dev_verification_url = verifyUrlForUi;
+      if (mail.previewUrl || !isDeployedOnPaaS()) payload.dev_verification_url = verifyUrlForUi;
       return res.json(payload);
     } catch (err) {
       console.error("[auth/register]", err?.message || err);
@@ -870,7 +1064,7 @@ async function main() {
       }
       const payload = { success: true };
       if (mail.previewUrl) payload.email_preview_url = mail.previewUrl;
-      if (mail.previewUrl) payload.dev_verification_url = verifyUrlForUi;
+      if (mail.previewUrl || !isDeployedOnPaaS()) payload.dev_verification_url = verifyUrlForUi;
       return res.json(payload);
     } catch {
       return res.status(500).json({ success: false, message: "Ne mogu poslati email. Pokušaj kasnije." });

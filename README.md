@@ -69,13 +69,17 @@ Chatbot odgovara na pitanja o fakultetima i studijima u Hrvatskoj koristeći RAG
 
 ### Registracija i potvrda emaila
 
-Za registraciju korisnika potreban je SMTP za slanje emaila s linkom za potvrdu:
+**Produkcija (Render + GitHub Pages)** — glavni tok:
 
-- `APP_ORIGIN` — URL aplikacije (npr. `https://tonisinkovic.github.io/MOJPUT` u produkciji)
-- `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS` — SMTP postavke
-- `MAIL_FROM` — adresa pošiljatelja (opcionalno)
+1. Deployaj API na Render (`render.yaml` već postavlja `API_PUBLIC_URL` i `APP_ORIGIN`).
+2. U Render dashboardu dodaj **`JWT_SECRET`** i **SMTP** (`SMTP_*`, `MAIL_FROM`) ili **Resend**.
+3. Build frontenda za Pages mora imati **`VITE_API_URL`** = javni URL API-ja (vidi `.env.production`).
+4. Korisnik se registrira na Pages → API na Renderu šalje mail s linkom  
+   `https://mojput-api.onrender.com/api/auth/verify?token=...&redirect=1`  
+   → potvrda u bazi na Renderu → redirect na  
+   `https://tonisinkovic.github.io/MOJPUT/prijava?...`
 
-Korisnik prima email s linkom `APP_ORIGIN/#/prijava?verify=TOKEN`. Klik na link potvrđuje račun i omogućuje prijavu.
+**Lokalno:** `npm run dev:full`, baza `data/mojput.db`, link u mailu na `http://127.0.0.1:3000/...` (potvrda samo na tom PC-u). Za potvrdu s mobitela na istom Wi‑Fi-u postavi `MAIL_USE_LAN_IP=1`. Očisti testne račune: `npm run clear:auth` (zaustavi server prije).
 
 2. **Kreiraj bazu i tablice**:
    ```sh

@@ -13,9 +13,11 @@ services:
         value: production
       - key: PORT
         value: "3000"
-      # Postavi u Render dashboardu (Sync / Environment):
-      # JWT_SECRET, APP_ORIGIN = https://<user>.github.io (javni frontend — link u mailu; NE localhost)
-      # RESEND_API_KEY (+ RESEND_FROM) — preporučeno za mail; bez Gmail SMTP
-      # opcija: PUBLIC_APP_ORIGIN ako fork nije tonisinkovic.github.io
-      # API_PUBLIC_URL (isti kao javni URL ovog servisa, bez /)
-      # SMTP_*, MAIL_FROM — samo ako ne koristiš Resend
+      # Javni URL ovog API-ja — isti kao VITE_API_URL u buildu za GitHub Pages. Link u mailu: …/api/auth/verify?…
+      - key: API_PUBLIC_URL
+        value: https://mojput-api.onrender.com
+      # Frontend (GitHub Pages) — redirect nakon klika na potvrdu u mailu
+      - key: APP_ORIGIN
+        value: https://tonisinkovic.github.io
+      # U dashboardu još: JWT_SECRET + SMTP_* ili RESEND_API_KEY
+      # Ako mijenjaš URL servisa, prilagodi API_PUBLIC_URL i VITE_API_URL u buildu.
