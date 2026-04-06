@@ -345,6 +345,32 @@ function frontendPrijavaUrl(querySuffix) {
   return `${origin}/MOJPUT/prijava${q}`;
 }
 
+/** Klik iz maila u pregledniku: redirect na Pages. fetch() iz SPA šalje samo Accept: application/json → JSON. */
+function shouldUseVerifyRedirect(req) {
+  if (String(req.query.format || "").toLowerCase() === "json") return false;
+  if (String(req.query.redirect || "") === "0") return false;
+  const accept = String(req.get("Accept") || "");
+  if (/application\/json/i.test(accept) && !/text\/html/i.test(accept)) return false;
+  return true;
+}
+
+/** Ako Express/query proxy skrati token, probaj iz raw URL-a. */
+function extractVerifyToken(req) {
+  let t = String(req.query.token || "").trim();
+  if (t) return t;
+  try {
+    const raw = String(req.url || "");
+    const qIdx = raw.indexOf("?");
+    if (qIdx === -1) return "";
+    const q = raw.slice(qIdx + 1).split("#")[0];
+    const m = q.match(/(?:^|&)token=([^&]*)/);
+    if (m) return decodeURIComponent(m[1].replace(/\+/g, "%20")).trim();
+  } catch {
+    /* ignore */
+  }
+  return "";
+}
+
 const hasResend = Boolean(String(process.env.RESEND_API_KEY || "").trim());
 const hasSmtp = Boolean(
   process.env.SMTP_HOST && process.env.SMTP_PORT && process.env.SMTP_USER && process.env.SMTP_PASS
@@ -975,14 +1001,16 @@ async function main() {
 
   app.get("/api/auth/verify", (req, res) => {
     reloadAllEnv();
-    const token = String(req.query.token || "").trim();
-    const wantRedirect = String(req.query.redirect || "") === "1";
+    const token = extractVerifyToken(req);
+    let wantRedirect = String(req.query.redirect || "") === "1" || shouldUseVerifyRedirect(req);
+    if (String(req.query.redirect || "") === "0") wantRedirect = false;
 
     function redirectPrijava(qs) {
-      res.redirect(302, frontendPrijavaUrl(qs));
+      res.redirect(303, frontendPrijavaUrl(qs));
     }
 
     if (!token) {
+      console.warn("[auth/verify] missing token | Accept:", req.get("Accept") || "(nema)", "| url:", req.url?.slice(0, 120));
       if (wantRedirect) return redirectPrijava("verify_error=missing");
       return res.status(400).json({ success: false, message: "Nedostaje token." });
     }
@@ -994,6 +1022,7 @@ async function main() {
       .get(token);
 
     if (!pending) {
+      console.warn("[auth/verify] no pending row | tokenLen:", token.length, "| Accept:", req.get("Accept") || "");
       if (wantRedirect) return redirectPrijava("verify_error=invalid");
       return res.status(400).json({ success: false, message: "Link nije važeći ili je već iskorišten." });
     }

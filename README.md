@@ -79,7 +79,9 @@ Chatbot odgovara na pitanja o fakultetima i studijima u Hrvatskoj koristeći RAG
    → potvrda u bazi na Renderu → redirect na  
    `https://tonisinkovic.github.io/MOJPUT/prijava?...`
 
-**Lokalno:** `npm run dev:full`, baza `data/mojput.db`, link u mailu na `http://127.0.0.1:3000/...` (potvrda samo na tom PC-u). Za potvrdu s mobitela na istom Wi‑Fi-u postavi `MAIL_USE_LAN_IP=1`. Očisti testne račune: `npm run clear:auth` (zaustavi server prije).
+**Lokalno:** `npm run dev:full`, baza `data/mojput.db`. Za potvrdu s mobitela (isti Wi‑Fi): `MAIL_USE_LAN_IP=1` u `.env` i u Windows vatrozidu dopusti dolazni **TCP 3000** za privatnu mrežu (inače PC ne prima klik s mobitela). Očisti testne račune: `npm run clear:auth`.
+
+**Mobitel + klik u mailu:** Ako se prikazuje čudan JSON umjesto stranice, ažuriraj server — preglednik sada uvijek dobije **redirect (303)** na prijavu; JSON samo kad front šalje `Accept: application/json`.
 
 2. **Kreiraj bazu i tablice**:
    ```sh
