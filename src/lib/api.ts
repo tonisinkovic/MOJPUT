@@ -69,3 +69,33 @@ export async function apiPost<T>(
   }
 }
 
+export async function apiPatch<T>(url: string, body: unknown): Promise<ApiResponse<T>> {
+  try {
+    const res = await fetch(`${API_BASE_URL}${url}`, {
+      method: "PATCH",
+      credentials: "include",
+      headers: {
+        "Content-Type": "application/json",
+        "Accept": "application/json",
+      },
+      body: JSON.stringify(body),
+    });
+    return parseJson<T>(res);
+  } catch {
+    return { success: false, message: "Server nije dostupan. Provjeri je li pokrenut." };
+  }
+}
+
+export async function apiDelete<T>(url: string): Promise<ApiResponse<T>> {
+  try {
+    const res = await fetch(`${API_BASE_URL}${url}`, {
+      method: "DELETE",
+      credentials: "include",
+      headers: { Accept: "application/json" },
+    });
+    return parseJson<T>(res);
+  } catch {
+    return { success: false, message: "Server nije dostupan. Provjeri je li pokrenut." };
+  }
+}
+

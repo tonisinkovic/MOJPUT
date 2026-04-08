@@ -505,6 +505,46 @@ function migrate(db) {
     db.exec(`CREATE TABLE app_meta (key TEXT PRIMARY KEY, value TEXT NOT NULL)`);
   }
 
+  try {
+    db.prepare("SELECT 1 FROM career_quiz_results LIMIT 1").get();
+  } catch {
+    db.exec(`
+      CREATE TABLE career_quiz_results (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER NOT NULL,
+        created_at TEXT NOT NULL DEFAULT (datetime('now')),
+        payload TEXT NOT NULL,
+        FOREIGN KEY (user_id) REFERENCES users(id)
+      )
+    `);
+  }
+
+  const userCols = db.prepare("PRAGMA table_info(users)").all().map((c) => c.name);
+  if (!userCols.includes("user_type")) {
+    db.exec("ALTER TABLE users ADD COLUMN user_type TEXT DEFAULT 'srednjoskolac'");
+  }
+  if (!userCols.includes("last_login_at")) {
+    db.exec("ALTER TABLE users ADD COLUMN last_login_at TEXT");
+  }
+
+  try {
+    db.prepare("SELECT 1 FROM user_saved_faculties LIMIT 1").get();
+  } catch {
+    db.exec(`
+      CREATE TABLE user_saved_faculties (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER NOT NULL,
+        faculty_id TEXT NOT NULL,
+        label TEXT NOT NULL,
+        city TEXT,
+        excerpt TEXT,
+        created_at TEXT NOT NULL DEFAULT (datetime('now')),
+        FOREIGN KEY (user_id) REFERENCES users(id),
+        UNIQUE(user_id, faculty_id)
+      )
+    `);
+  }
+
   const migrated = db.prepare("SELECT 1 FROM app_meta WHERE key = 'pending_registration_flow_v1'").get();
   if (!migrated) {
     db.exec("PRAGMA foreign_keys = OFF");
@@ -664,7 +704,9 @@ function authMiddleware(db) {
     try {
       const decoded = jwt.verify(token, JWT_SECRET);
       const user = db
-        .prepare("SELECT id, username, email, created_at, email_verified FROM users WHERE id = ?")
+        .prepare(
+          "SELECT id, username, email, created_at, email_verified, user_type, last_login_at FROM users WHERE id = ?",
+        )
         .get(decoded.sub);
       if (!user) return res.status(401).json({ success: false, message: "Sesija nije važeća." });
       if (!user.email_verified) {
@@ -690,7 +732,9 @@ function optionalAuthMiddleware(db) {
     try {
       const decoded = jwt.verify(token, JWT_SECRET);
       const user = db
-        .prepare("SELECT id, username, email, created_at, email_verified FROM users WHERE id = ?")
+        .prepare(
+          "SELECT id, username, email, created_at, email_verified, user_type, last_login_at FROM users WHERE id = ?",
+        )
         .get(decoded.sub);
       if (user && user.email_verified) req.user = user;
     } catch {
@@ -717,9 +761,13 @@ function userPayloadWithAdminFlag(userRow) {
     email: userRow.email,
     created_at: userRow.created_at,
     email_verified: userRow.email_verified,
+    user_type: userRow.user_type ?? "srednjoskolac",
+    last_login_at: userRow.last_login_at ?? null,
     is_admin: isAdminEmail(userRow.email),
   };
 }
+
+const ALLOWED_USER_TYPES = new Set(["srednjoskolac", "student", "profesor", "roditelj"]);
 
 /** Nakon uspješne prijave: samo ako je email u ADMIN_EMAILS. */
 function adminMiddleware(db) {
@@ -1323,7 +1371,9 @@ async function main() {
       }
 
       const row = db
-        .prepare("SELECT id, username, email, password_hash, created_at, email_verified FROM users WHERE email = ?")
+        .prepare(
+          "SELECT id, username, email, password_hash, created_at, email_verified, user_type, last_login_at FROM users WHERE email = ?",
+        )
         .get(cleanEmail);
       if (!row) {
         const pend = db
@@ -1355,7 +1405,13 @@ async function main() {
       const ok = bcrypt.compareSync(cleanPassword, row.password_hash);
       if (!ok) return res.status(401).json({ success: false, message: "Neispravan email ili lozinka." });
 
-      const user = userPayloadWithAdminFlag(row);
+      db.prepare("UPDATE users SET last_login_at = datetime('now') WHERE id = ?").run(row.id);
+      const fresh = db
+        .prepare(
+          "SELECT id, username, email, created_at, email_verified, user_type, last_login_at FROM users WHERE id = ?",
+        )
+        .get(row.id);
+      const user = userPayloadWithAdminFlag(fresh);
       const token = signToken({ sub: user.id });
       setAuthCookie(res, token, req);
       return res.json({ success: true, user });
@@ -1372,6 +1428,195 @@ async function main() {
 
   app.get("/api/auth/me", authMiddleware(db), (req, res) => {
     return res.json({ success: true, user: userPayloadWithAdminFlag(req.user) });
+  });
+
+  /** Rezultat karijernog kviza (2×50) — samo vlasnik računa. */
+  app.post("/api/career-quiz/save", authMiddleware(db), (req, res) => {
+    try {
+      const payload = req.body?.payload;
+      if (payload === undefined || payload === null || typeof payload !== "object") {
+        return res.status(400).json({ success: false, message: "Nedostaje payload." });
+      }
+      const str = JSON.stringify(payload);
+      if (str.length > 600000) {
+        return res.status(400).json({ success: false, message: "Podaci su predugački." });
+      }
+      const info = db.prepare("INSERT INTO career_quiz_results (user_id, payload) VALUES (?, ?)").run(req.user.id, str);
+      return res.json({ success: true, id: Number(info.lastInsertRowid) });
+    } catch (err) {
+      console.error("[career-quiz/save]", err?.message || err);
+      return res.status(500).json({ success: false, message: "Nije moguće spremiti rezultat." });
+    }
+  });
+
+  app.get("/api/career-quiz/latest", authMiddleware(db), (req, res) => {
+    try {
+      const row = db
+        .prepare(
+          "SELECT id, created_at, payload FROM career_quiz_results WHERE user_id = ? ORDER BY id DESC LIMIT 1",
+        )
+        .get(req.user.id);
+      if (!row) return res.json({ success: true, data: null });
+      let parsed;
+      try {
+        parsed = JSON.parse(row.payload);
+      } catch {
+        return res.status(500).json({ success: false, message: "Oštećeni podaci." });
+      }
+      return res.json({
+        success: true,
+        data: { id: row.id, created_at: row.created_at, payload: parsed },
+      });
+    } catch (err) {
+      console.error("[career-quiz/latest]", err?.message || err);
+      return res.status(500).json({ success: false, message: "Ne mogu učitati rezultat." });
+    }
+  });
+
+  app.get("/api/career-quiz/history", authMiddleware(db), (req, res) => {
+    try {
+      const rows = db
+        .prepare(
+          "SELECT id, created_at, payload FROM career_quiz_results WHERE user_id = ? ORDER BY id DESC LIMIT 50",
+        )
+        .all(req.user.id);
+      const data = rows.map((r) => ({
+        id: r.id,
+        created_at: r.created_at,
+        payload: JSON.parse(r.payload),
+      }));
+      return res.json({ success: true, data });
+    } catch (err) {
+      console.error("[career-quiz/history]", err?.message || err);
+      return res.status(500).json({ success: false, message: "Ne mogu učitati povijest." });
+    }
+  });
+
+  app.get("/api/me/dashboard", authMiddleware(db), (req, res) => {
+    try {
+      const uid = req.user.id;
+      const forumThreads = Number(
+        db.prepare("SELECT COUNT(*) as c FROM forum_conversations WHERE creator_user_id = ?").get(uid).c,
+      );
+      const forumMessages = Number(db.prepare("SELECT COUNT(*) as c FROM forum_messages WHERE user_id = ?").get(uid).c);
+      const savedRows = db
+        .prepare(
+          "SELECT id, faculty_id, label, city, excerpt, created_at FROM user_saved_faculties WHERE user_id = ? ORDER BY id DESC LIMIT 50",
+        )
+        .all(uid);
+      const quizRows = db
+        .prepare(
+          "SELECT id, created_at, payload FROM career_quiz_results WHERE user_id = ? ORDER BY id DESC LIMIT 30",
+        )
+        .all(uid);
+      const quizHistory = quizRows.map((r) => ({
+        id: r.id,
+        created_at: r.created_at,
+        payload: JSON.parse(r.payload),
+      }));
+      const u = db
+        .prepare("SELECT id, username, email, created_at, email_verified, user_type, last_login_at FROM users WHERE id = ?")
+        .get(uid);
+      let profilePercent = 25;
+      if (u.user_type && ALLOWED_USER_TYPES.has(u.user_type)) profilePercent += 25;
+      if (quizHistory.length > 0) profilePercent += 25;
+      if (savedRows.length > 0) profilePercent += 25;
+      return res.json({
+        success: true,
+        data: {
+          user: userPayloadWithAdminFlag(u),
+          activity: {
+            forum_threads: forumThreads,
+            forum_messages: forumMessages,
+            saved_faculties_count: savedRows.length,
+            profile_completion_percent: Math.min(100, profilePercent),
+          },
+          saved_faculties: savedRows,
+          quiz_history: quizHistory,
+        },
+      });
+    } catch (err) {
+      console.error("[me/dashboard]", err?.message || err);
+      return res.status(500).json({ success: false, message: "Ne mogu učitati profil." });
+    }
+  });
+
+  app.patch("/api/me/profile", authMiddleware(db), (req, res) => {
+    try {
+      const uid = req.user.id;
+      const { username, user_type, current_password, new_password } = req.body || {};
+      const row = db.prepare("SELECT id, password_hash FROM users WHERE id = ?").get(uid);
+      if (!row) return res.status(404).json({ success: false, message: "Korisnik nije pronađen." });
+
+      if (typeof new_password === "string" && new_password.length > 0) {
+        const cur = String(current_password || "");
+        if (!bcrypt.compareSync(cur, row.password_hash)) {
+          return res.status(400).json({ success: false, message: "Trenutna lozinka nije ispravna." });
+        }
+        if (new_password.length < 8) {
+          return res.status(400).json({ success: false, message: "Nova lozinka mora imati barem 8 znakova." });
+        }
+        const hash = bcrypt.hashSync(new_password, 10);
+        db.prepare("UPDATE users SET password_hash = ? WHERE id = ?").run(hash, uid);
+      }
+
+      if (typeof username === "string" && username.trim().length >= 2) {
+        db.prepare("UPDATE users SET username = ? WHERE id = ?").run(username.trim().slice(0, 120), uid);
+      }
+      if (typeof user_type === "string" && ALLOWED_USER_TYPES.has(user_type)) {
+        db.prepare("UPDATE users SET user_type = ? WHERE id = ?").run(user_type, uid);
+      }
+
+      const u = db
+        .prepare("SELECT id, username, email, created_at, email_verified, user_type, last_login_at FROM users WHERE id = ?")
+        .get(uid);
+      return res.json({ success: true, user: userPayloadWithAdminFlag(u) });
+    } catch (err) {
+      console.error("[me/profile]", err?.message || err);
+      return res.status(500).json({ success: false, message: "Ažuriranje nije uspjelo." });
+    }
+  });
+
+  app.post("/api/me/saved-faculties", authMiddleware(db), (req, res) => {
+    try {
+      const { faculty_id, label, city, excerpt } = req.body || {};
+      const fid = String(faculty_id || "").trim().slice(0, 200);
+      const lab = String(label || "").trim().slice(0, 300);
+      if (!fid || !lab) return res.status(400).json({ success: false, message: "Nedostaje fakultet." });
+      const info = db
+        .prepare(
+          "INSERT INTO user_saved_faculties (user_id, faculty_id, label, city, excerpt) VALUES (?, ?, ?, ?, ?)",
+        )
+        .run(
+          req.user.id,
+          fid,
+          lab,
+          String(city || "").trim().slice(0, 120) || null,
+          String(excerpt || "").trim().slice(0, 500) || null,
+        );
+      const row = db
+        .prepare("SELECT id, faculty_id, label, city, excerpt, created_at FROM user_saved_faculties WHERE id = ?")
+        .get(info.lastInsertRowid);
+      return res.json({ success: true, data: row });
+    } catch (err) {
+      if (String(err?.message || "").includes("UNIQUE")) {
+        return res.status(409).json({ success: false, message: "Ovaj fakultet je već spremljen." });
+      }
+      console.error("[saved-faculties]", err?.message || err);
+      return res.status(500).json({ success: false, message: "Ne mogu spremiti." });
+    }
+  });
+
+  app.delete("/api/me/saved-faculties/:id", authMiddleware(db), (req, res) => {
+    try {
+      const id = Number(req.params.id);
+      const r = db.prepare("DELETE FROM user_saved_faculties WHERE id = ? AND user_id = ?").run(id, req.user.id);
+      if (r.changes === 0) return res.status(404).json({ success: false, message: "Nije pronađeno." });
+      return res.json({ success: true });
+    } catch (err) {
+      console.error("[saved-faculties del]", err?.message || err);
+      return res.status(500).json({ success: false, message: "Brisanje nije uspjelo." });
+    }
   });
 
   /** Sažetak za tim održavanja (samo ADMIN_EMAILS). */

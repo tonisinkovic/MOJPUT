@@ -1,7 +1,9 @@
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import Layout from "@/components/Layout";
+import { authMe, userFromAuthMe, type AuthUser } from "@/lib/auth";
 import FeatureCard from "@/components/FeatureCard";
 import {
   Map,
@@ -19,6 +21,7 @@ import {
   ShieldCheck,
   Home,
   Lock,
+  User,
 } from "lucide-react";
 
 const features = [
@@ -31,7 +34,7 @@ const features = [
   {
     icon: <GraduationCap className="h-6 w-6 text-primary" />,
     title: "Koji je fakultet za mene?",
-    description: "Kviz interesa i kompetencija (47+47) — RIASEC i preporuke smjerova upisa.",
+    description: "Karijerni upitnik (50+50): interesi i kompetencije, profil osobina i preporuke smjerova upisa.",
     path: "/kviz",
   },
   {
@@ -92,6 +95,24 @@ const stats = [
 ];
 
 const Index = () => {
+  const [user, setUser] = useState<AuthUser | null>(null);
+
+  useEffect(() => {
+    let alive = true;
+    authMe().then((res) => {
+      if (!alive) return;
+      setUser(userFromAuthMe(res));
+    });
+    const sync = () => {
+      authMe().then((res) => setUser(userFromAuthMe(res)));
+    };
+    window.addEventListener("mojput-auth-changed", sync);
+    return () => {
+      alive = false;
+      window.removeEventListener("mojput-auth-changed", sync);
+    };
+  }, []);
+
   return (
     <Layout>
       {/* Hero */}
@@ -283,22 +304,56 @@ const Index = () => {
           />
 
           <div className="relative">
-            <h2 className="text-balance text-xl font-bold text-primary-foreground md:text-2xl">
-              Spreman za prvi korak?
-            </h2>
-            <p className="mx-auto mt-2 max-w-md text-pretty text-sm text-primary-foreground/85 md:text-base">
-              Pridruži se tisućama maturanata koji su pronašli svoj put uz MojPut platformu.
-            </p>
-            <Button
-              size="default"
-              className="mt-5 border-0 bg-card font-semibold text-foreground shadow-sm hover:bg-card/95 hover:shadow-md"
-              asChild
-            >
-              <Link to="/registracija">
-                Kreiraj besplatni račun
-                <ArrowRight className="ml-2 h-4 w-4" />
-              </Link>
-            </Button>
+            {user ? (
+              <>
+                <div className="mb-4 flex justify-center">
+                  <Link
+                    to="/profil"
+                    className="group flex h-16 w-16 items-center justify-center rounded-full border-2 border-primary-foreground/30 bg-primary-foreground/15 text-primary-foreground shadow-md ring-2 ring-primary-foreground/10 transition hover:bg-primary-foreground/25 hover:shadow-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-foreground"
+                    title="Moj profil"
+                    aria-label="Otvori svoj profil i pregled aktivnosti"
+                  >
+                    <User className="h-8 w-8 transition group-hover:scale-105" strokeWidth={2} />
+                  </Link>
+                </div>
+                <h2 className="text-balance text-xl font-bold text-primary-foreground md:text-2xl">
+                  Bok, {user.username}!
+                </h2>
+                <p className="mx-auto mt-2 max-w-md text-pretty text-sm text-primary-foreground/85 md:text-base">
+                  Ovdje možeš otvoriti svoj profil — aktivnost, kviz i spremljeni fakulteti.
+                </p>
+                <Button
+                  size="default"
+                  className="mt-5 border-0 bg-card font-semibold text-foreground shadow-sm hover:bg-card/95 hover:shadow-md"
+                  asChild
+                >
+                  <Link to="/profil">
+                    <User className="mr-2 h-4 w-4" />
+                    Pregledaj profil
+                    <ArrowRight className="ml-2 h-4 w-4" />
+                  </Link>
+                </Button>
+              </>
+            ) : (
+              <>
+                <h2 className="text-balance text-xl font-bold text-primary-foreground md:text-2xl">
+                  Spreman za prvi korak?
+                </h2>
+                <p className="mx-auto mt-2 max-w-md text-pretty text-sm text-primary-foreground/85 md:text-base">
+                  Pridruži se tisućama maturanata koji su pronašli svoj put uz MojPut platformu.
+                </p>
+                <Button
+                  size="default"
+                  className="mt-5 border-0 bg-card font-semibold text-foreground shadow-sm hover:bg-card/95 hover:shadow-md"
+                  asChild
+                >
+                  <Link to="/registracija">
+                    Kreiraj besplatni račun
+                    <ArrowRight className="ml-2 h-4 w-4" />
+                  </Link>
+                </Button>
+              </>
+            )}
           </div>
         </motion.div>
       </section>

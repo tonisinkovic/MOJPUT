@@ -281,6 +281,24 @@
       "question": "Želiš li administraciju, logistiku ili brojke u uredu?",
       "category": "conventional",
       "description": "Ekonomija, logistika"
+    },
+    {
+      "id": 48,
+      "question": "Radije bih analizirao podatke, tablice ili uzorke nego cijeli dan raditi s ljudima uživo na terenu.",
+      "category": "investigative",
+      "description": "Podaci vs izravni rad s ljudima"
+    },
+    {
+      "id": 49,
+      "question": "U slobodno vrijeme radije izrađujem nešto konkretno (predmet, popravak, digitalni uradak) nego samo razvijam ideje u glavi.",
+      "category": "realistic",
+      "description": "Praksa vs apstrakcija"
+    },
+    {
+      "id": 50,
+      "question": "U timu često preuzimam raspored zadataka i podsjećam ljude na rokove — to mi je prirodnije nego samo izvršavati svoj dio.",
+      "category": "enterprising",
+      "description": "Organizacija u timu"
     }
   ],
   "categories": {

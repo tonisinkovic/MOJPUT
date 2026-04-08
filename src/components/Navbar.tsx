@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Menu, X, Compass, LogOut, BarChart3 } from "lucide-react";
+import { Menu, X, Compass, LogOut, BarChart3, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { authLogout, authMe, userFromAuthMe, type AuthUser } from "@/lib/auth";
 
@@ -130,7 +130,7 @@ const Navbar = () => {
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
-            className="lg:hidden border-t bg-card overflow-hidden"
+            className="lg:hidden border-t bg-card overflow-hidden max-h-[calc(100vh-4rem)] overflow-y-auto overscroll-contain"
           >
             <nav className="container py-4 flex flex-col gap-1">
               {navItems.map((item) => (
@@ -153,6 +153,12 @@ const Navbar = () => {
                     <p className="text-sm text-muted-foreground px-1 truncate" title={user.username}>
                       Prijavljen/a: <span className="font-medium text-foreground">{user.username}</span>
                     </p>
+                    <Button variant="outline" className="w-full gap-2" asChild>
+                      <Link to="/profil" onClick={() => setOpen(false)}>
+                        <User className="h-4 w-4" />
+                        Moj profil
+                      </Link>
+                    </Button>
                     {user.is_admin && (
                       <Button variant="outline" className="w-full gap-2" asChild>
                         <Link to="/tim" onClick={() => setOpen(false)}>

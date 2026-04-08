@@ -9,6 +9,8 @@ export function notifyAuthChanged(): void {
   }
 }
 
+export type UserTypeId = "srednjoskolac" | "student" | "profesor" | "roditelj";
+
 export type AuthUser = {
   id: number;
   username: string;
@@ -17,6 +19,8 @@ export type AuthUser = {
   email_verified?: number;
   /** Samo za račune navedene u ADMIN_EMAILS na serveru. */
   is_admin?: boolean;
+  user_type?: UserTypeId | string;
+  last_login_at?: string | null;
 };
 
 export type AdminStats = {

@@ -160,9 +160,9 @@ const Registracija = () => {
                   <div className="grid grid-cols-2 gap-2">
                     {[
                       { value: "srednjoskolac", label: "Srednjoškolac" },
-                      { value: "maturant", label: "Maturant" },
                       { value: "student", label: "Student" },
                       { value: "profesor", label: "Profesor" },
+                      { value: "roditelj", label: "Roditelj" },
                     ].map((option) => (
                       <label
                         key={option.value}

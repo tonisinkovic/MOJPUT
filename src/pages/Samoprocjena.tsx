@@ -1,9 +1,10 @@
 import Layout from "@/components/Layout";
 import { motion } from "framer-motion";
-import { Target, ArrowRight, CheckCircle2, ExternalLink, Sparkles, MessageCircle } from "lucide-react";
+import { Target, ArrowRight, CheckCircle2, ExternalLink, Sparkles, MessageCircle, Clock, HelpCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { forwardRef, useMemo, useRef, useState } from "react";
+import { cn } from "@/lib/utils";
 
 const SERENITY_INTAKE_PDF = "https://www.serene.me.uk/intake.pdf";
 
@@ -263,26 +264,40 @@ const ResultsSidebar = forwardRef<
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.25 }}
-      className="scroll-mt-24 rounded-2xl border bg-card p-5 shadow-card md:p-6 lg:sticky lg:top-24"
+      className="scroll-mt-24 rounded-2xl border border-border/70 bg-card p-5 shadow-card md:p-6 lg:sticky lg:top-24"
     >
-      <h3 className="text-lg font-semibold">{title}</h3>
-      <p className="mt-1 text-sm text-muted-foreground">{subtitle}</p>
+      {/* Header */}
+      <div className="mb-5 flex items-start justify-between gap-2">
+        <div>
+          <h3 className="text-base font-semibold text-foreground">{title}</h3>
+          <p className="mt-0.5 text-xs text-muted-foreground">{subtitle}</p>
+        </div>
+        <span className="shrink-0 rounded-full border border-border/60 bg-muted/50 px-2.5 py-0.5 text-xs font-medium tabular-nums text-muted-foreground">
+          {answeredCount}/{totalQuestions}
+        </span>
+      </div>
 
-      <div className="mt-5 space-y-4">
+      {/* Score bars */}
+      <div className="space-y-4">
         {items.map((item) => (
           <div key={item.label}>
-            <div className="mb-1.5 flex justify-between">
-              <span className="text-sm font-medium">{item.label}</span>
-              <span className="text-sm text-muted-foreground">
+            <div className="mb-1.5 flex items-center justify-between gap-2">
+              <div className="flex items-center gap-2">
+                <span
+                  className={cn("h-2.5 w-2.5 shrink-0 rounded-full", item.color ?? "bg-primary")}
+                />
+                <span className="text-xs font-medium text-foreground">{item.label}</span>
+              </div>
+              <span className="text-xs tabular-nums text-muted-foreground">
                 {item.displayValue ?? `${item.value}%`}
               </span>
             </div>
-            <div className="h-2.5 overflow-hidden rounded-full bg-muted">
+            <div className="h-2 overflow-hidden rounded-full bg-muted">
               <motion.div
                 initial={{ width: 0 }}
                 animate={{ width: `${Math.min(100, item.value)}%` }}
-                transition={{ duration: 0.45 }}
-                className={`h-full rounded-full ${item.color ?? "bg-primary"}`}
+                transition={{ type: "spring", stiffness: 100, damping: 20 }}
+                className={cn("h-full rounded-full", item.color ?? "bg-primary")}
               />
             </div>
           </div>
@@ -290,24 +305,23 @@ const ResultsSidebar = forwardRef<
       </div>
 
       {showComparison && (
-        <div className="mt-5 rounded-xl border border-primary/30 bg-primary/5 p-3 text-sm">
-          <h4 className="mb-2 font-semibold text-foreground">Promjena u odnosu na početak kviza</h4>
-          <ul className="space-y-1.5 text-muted-foreground">
+        <div className="mt-5 rounded-xl border border-primary/25 bg-primary/[0.05] p-3.5">
+          <h4 className="mb-2.5 text-xs font-semibold uppercase tracking-wider text-primary">
+            Promjena
+          </h4>
+          <ul className="space-y-2 text-xs text-muted-foreground">
             {comparison.map((c) => (
-              <li key={c.label} className="flex justify-between gap-2">
-                <span>{c.label}:</span>
-                <span className="shrink-0 text-right font-medium text-foreground">
-                  {c.before} → {c.after} ({c.delta})
+              <li key={c.label} className="flex items-center justify-between gap-2">
+                <span>{c.label}</span>
+                <span className="shrink-0 font-medium text-foreground">
+                  {c.before} → {c.after}{" "}
+                  <span className="text-primary">({c.delta})</span>
                 </span>
               </li>
             ))}
           </ul>
         </div>
       )}
-
-      <div className="mt-5 rounded-xl border bg-background p-3 text-sm text-muted-foreground">
-        Riješeno: <span className="font-semibold text-foreground">{answeredCount}</span> / {totalQuestions}
-      </div>
     </motion.aside>
   );
 });
@@ -389,34 +403,37 @@ function SerenityIntakeQuiz() {
         transition={{ delay: 0.05 }}
         className="rounded-2xl border bg-card p-5 shadow-card md:p-7"
       >
-        <p className="mb-4 text-sm text-muted-foreground">
-          U posljednja dva tjedna, koliko vas je uznemiravalo sljedeće? (Upitnik temeljen na{" "}
-          <a
-            href={SERENITY_INTAKE_PDF}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="font-medium text-primary underline-offset-4 hover:underline"
-          >
-            obrascu Serenity Programme
-            <ExternalLink className="ml-1 inline h-3.5 w-3.5 align-text-bottom opacity-70" />
-          </a>
-          .)
-        </p>
+        {/* Context banner */}
+        <div className="mb-5 flex items-start gap-2 rounded-xl border border-border/50 bg-muted/30 px-3.5 py-2.5">
+          <span className="mt-0.5 text-base">🧘</span>
+          <p className="text-xs leading-relaxed text-muted-foreground">
+            U posljednja dva tjedna, koliko vas je uznemiravalo sljedeće?{" "}
+            <a
+              href={SERENITY_INTAKE_PDF}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-medium text-primary underline-offset-4 hover:underline"
+            >
+              Serenity Programme
+              <ExternalLink className="ml-0.5 inline h-3 w-3 align-text-bottom opacity-70" />
+            </a>
+          </p>
+        </div>
 
-        <div className="mb-5">
-          <div className="mb-2 flex items-center justify-between text-sm">
-            <span className="font-medium">
-              Pitanje {currentQuestion + 1}/{serenityItems.length}
+        {/* Progress */}
+        <div className="mb-6">
+          <div className="mb-2 flex items-center justify-between gap-3">
+            <span className="text-xs font-medium tabular-nums text-muted-foreground">
+              {currentQuestion + 1} od {serenityItems.length}
             </span>
-            <span className="text-muted-foreground">{Math.round(progress)}%</span>
+            <span className="text-xs font-semibold tabular-nums text-primary">{Math.round(progress)}%</span>
           </div>
-          <div className="h-2.5 overflow-hidden rounded-full bg-muted">
+          <div className="h-2 overflow-hidden rounded-full bg-muted">
             <motion.div
-              key={currentQuestion}
-              initial={{ width: 0 }}
+              initial={false}
               animate={{ width: `${progress}%` }}
-              transition={{ duration: 0.4 }}
-              className="h-full bg-primary"
+              transition={{ type: "spring", stiffness: 120, damping: 22 }}
+              className="h-full rounded-full gradient-hero"
             />
           </div>
         </div>
@@ -425,37 +442,48 @@ function SerenityIntakeQuiz() {
           key={currentQuestion}
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.25 }}
+          transition={{ duration: 0.22 }}
           className="space-y-5"
         >
           <div>
-            <h2 className="text-xl font-semibold md:text-2xl">{item.text}</h2>
+            <div className="mb-2 inline-flex items-center rounded-full bg-primary/[0.08] px-3 py-1 text-xs font-semibold text-primary">
+              Pitanje {currentQuestion + 1}
+            </div>
+            <h2 className="mt-1 text-xl font-semibold leading-snug md:text-2xl">{item.text}</h2>
             {item.scale === "frequency" && (
-              <p className="mt-1 text-sm text-muted-foreground">Odnosi se na zadnja dva tjedna.</p>
+              <p className="mt-1.5 text-sm text-muted-foreground">Odnosi se na zadnja dva tjedna.</p>
             )}
           </div>
 
-          <div className="grid gap-3">
-            {options.map((option) => {
+          <div className="grid gap-2.5">
+            {options.map((option, optIdx) => {
               const selected = answers[currentQuestion] === option.score;
+              const letters = ["A", "B", "C", "D"];
               return (
                 <button
                   key={option.label}
                   type="button"
                   onClick={() => onSelectAnswer(option.score)}
-                  className={`w-full rounded-xl border p-4 text-left transition-all ${
+                  className={cn(
+                    "group w-full rounded-xl border p-3.5 text-left transition-all duration-200",
                     selected
-                      ? "border-primary bg-primary/10 shadow-card"
-                      : "border-border bg-background hover:border-primary/40 hover:bg-muted/40"
-                  }`}
+                      ? "border-primary/50 bg-primary/[0.07] shadow-sm ring-1 ring-primary/20"
+                      : "border-border/70 bg-background hover:border-primary/30 hover:bg-muted/30",
+                  )}
                 >
-                  <div className="flex items-center justify-between gap-4">
-                    <span className="font-medium">{option.label}</span>
-                    {selected ? (
-                      <CheckCircle2 className="h-5 w-5 shrink-0 text-primary" />
-                    ) : (
-                      <span className="h-5 w-5 shrink-0 rounded-full border border-border" />
-                    )}
+                  <div className="flex items-center gap-3">
+                    <span
+                      className={cn(
+                        "flex h-7 w-7 shrink-0 items-center justify-center rounded-lg text-xs font-bold transition-colors",
+                        selected
+                          ? "bg-primary text-primary-foreground"
+                          : "bg-muted text-muted-foreground group-hover:bg-primary/10 group-hover:text-primary",
+                      )}
+                    >
+                      {letters[optIdx]}
+                    </span>
+                    <span className="flex-1 text-sm font-medium leading-snug">{option.label}</span>
+                    {selected && <CheckCircle2 className="h-4 w-4 shrink-0 text-primary" />}
                   </div>
                 </button>
               );
@@ -624,20 +652,20 @@ function ConfidenceQuiz() {
         transition={{ delay: 0.2 }}
         className="rounded-2xl border bg-card p-5 shadow-card md:p-7"
       >
-        <div className="mb-5">
-          <div className="mb-2 flex items-center justify-between text-sm">
-            <span className="font-medium">
-              Pitanje {currentQuestion + 1}/{questions.length}
+        {/* Progress */}
+        <div className="mb-6">
+          <div className="mb-2 flex items-center justify-between gap-3">
+            <span className="text-xs font-medium tabular-nums text-muted-foreground">
+              {currentQuestion + 1} od {questions.length}
             </span>
-            <span className="text-muted-foreground">{Math.round(progress)}%</span>
+            <span className="text-xs font-semibold tabular-nums text-primary">{Math.round(progress)}%</span>
           </div>
-          <div className="h-2.5 overflow-hidden rounded-full bg-muted">
+          <div className="h-2 overflow-hidden rounded-full bg-muted">
             <motion.div
-              key={currentQuestion}
-              initial={{ width: 0 }}
+              initial={false}
               animate={{ width: `${progress}%` }}
-              transition={{ duration: 0.4 }}
-              className="h-full bg-primary"
+              transition={{ type: "spring", stiffness: 120, damping: 22 }}
+              className="h-full rounded-full gradient-hero"
             />
           </div>
         </div>
@@ -646,35 +674,46 @@ function ConfidenceQuiz() {
           key={currentQuestion}
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.25 }}
+          transition={{ duration: 0.22 }}
           className="space-y-5"
         >
           <div>
-            <h2 className="text-xl font-semibold md:text-2xl">{question.title}</h2>
-            <p className="mt-1 text-sm text-muted-foreground">{question.description}</p>
+            <div className="mb-2 inline-flex items-center rounded-full bg-primary/[0.08] px-3 py-1 text-xs font-semibold text-primary">
+              Pitanje {currentQuestion + 1}
+            </div>
+            <h2 className="mt-1 text-xl font-semibold leading-snug md:text-2xl">{question.title}</h2>
+            <p className="mt-1.5 text-sm text-muted-foreground">{question.description}</p>
           </div>
 
-          <div className="grid gap-3">
-            {question.options.map((option) => {
+          <div className="grid gap-2.5">
+            {question.options.map((option, optIdx) => {
               const selected = answers[currentQuestion] === option.score;
+              const letters = ["A", "B", "C", "D"];
               return (
                 <button
                   key={option.label}
                   type="button"
                   onClick={() => onSelectAnswer(option.score)}
-                  className={`w-full rounded-xl border p-4 text-left transition-all ${
+                  className={cn(
+                    "group w-full rounded-xl border p-3.5 text-left transition-all duration-200",
                     selected
-                      ? "border-primary bg-primary/10 shadow-card"
-                      : "border-border bg-background hover:border-primary/40 hover:bg-muted/40"
-                  }`}
+                      ? "border-primary/50 bg-primary/[0.07] shadow-sm ring-1 ring-primary/20"
+                      : "border-border/70 bg-background hover:border-primary/30 hover:bg-muted/30",
+                  )}
                 >
-                  <div className="flex items-center justify-between gap-4">
-                    <span className="font-medium">{option.label}</span>
-                    {selected ? (
-                      <CheckCircle2 className="h-5 w-5 text-primary" />
-                    ) : (
-                      <span className="h-5 w-5 rounded-full border border-border" />
-                    )}
+                  <div className="flex items-center gap-3">
+                    <span
+                      className={cn(
+                        "flex h-7 w-7 shrink-0 items-center justify-center rounded-lg text-xs font-bold transition-colors",
+                        selected
+                          ? "bg-primary text-primary-foreground"
+                          : "bg-muted text-muted-foreground group-hover:bg-primary/10 group-hover:text-primary",
+                      )}
+                    >
+                      {letters[optIdx]}
+                    </span>
+                    <span className="flex-1 text-sm font-medium leading-snug">{option.label}</span>
+                    {selected && <CheckCircle2 className="h-4 w-4 shrink-0 text-primary" />}
                   </div>
                 </button>
               );
@@ -761,18 +800,22 @@ const QUIZ_TITLES: Record<QuizId, string> = {
   serenity: "Test Anksioznosti",
 };
 
-const QUIZ_CARDS: { id: QuizId; icon: string; title: string; description: string }[] = [
+const QUIZ_CARDS: { id: QuizId; icon: string; title: string; description: string; questionCount: number; minutes: string }[] = [
   {
     id: "confidence",
     icon: "💪",
     title: "Samopouzdanje",
-    description: "Brza procjena razine samopouzdanja u manje od 2 minute.",
+    description: "Brza procjena razine samopouzdanja — kako komuniciraš, odlučuješ i reagiraš na kritiku.",
+    questionCount: 5,
+    minutes: "~2 min",
   },
   {
     id: "serenity",
-    icon: "📋",
-    title: "Test Anksioznosti",
-    description: "PHQ-9 i GAD-7 upitnik iz Serenity Programme obrasca.",
+    icon: "🧘",
+    title: "Test anksioznosti",
+    description: "PHQ-9 i GAD-7 upitnik temeljen na Serenity Programme obrascu — potpuno privatno.",
+    questionCount: 17,
+    minutes: "~5 min",
   },
 ];
 
@@ -822,23 +865,34 @@ const Samoprocjena = () => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.3, delay: i * 0.06 }}
               whileHover={{ y: -3, scale: 1.01 }}
-              className="flex cursor-default flex-col rounded-2xl border border-slate-200 bg-white p-4 shadow-sm transition-all hover:shadow-lg dark:border-slate-700 dark:bg-slate-900 md:p-5"
+              className="group flex cursor-default flex-col rounded-2xl border border-border/70 bg-card p-5 shadow-sm transition-all hover:border-primary/30 hover:shadow-md md:p-6"
             >
-              <div className="mb-3 flex h-24 items-center justify-center rounded-xl bg-slate-100 text-4xl dark:bg-slate-800">
-                {card.icon}
+              {/* Icon + meta row */}
+              <div className="mb-4 flex items-start justify-between gap-3">
+                <div className="flex h-14 w-14 items-center justify-center rounded-2xl gradient-hero text-3xl shadow-sm">
+                  {card.icon}
+                </div>
+                <div className="flex flex-col items-end gap-1.5 pt-0.5">
+                  <span className="inline-flex items-center gap-1 rounded-full bg-muted px-2.5 py-0.5 text-[11px] font-medium text-muted-foreground">
+                    <HelpCircle className="h-3 w-3" />
+                    {card.questionCount} pitanja
+                  </span>
+                  <span className="inline-flex items-center gap-1 rounded-full bg-muted px-2.5 py-0.5 text-[11px] font-medium text-muted-foreground">
+                    <Clock className="h-3 w-3" />
+                    {card.minutes}
+                  </span>
+                </div>
               </div>
-              <h4 className="font-bold text-slate-900 dark:text-slate-100 text-sm md:text-base mb-1">
-                {card.title}
-              </h4>
-              <p className="mb-4 flex-1 text-xs text-slate-600 dark:text-slate-400 md:text-sm">
-                {card.description}
-              </p>
+
+              <h4 className="mb-1.5 text-base font-bold text-foreground md:text-lg">{card.title}</h4>
+              <p className="mb-5 flex-1 text-sm leading-relaxed text-muted-foreground">{card.description}</p>
+
               <button
                 type="button"
                 onClick={() => openQuiz(card.id)}
-                className="w-full rounded-xl bg-primary px-3 py-2 text-sm font-semibold text-primary-foreground transition-colors hover:opacity-90"
+                className="w-full rounded-xl gradient-hero px-3 py-2.5 text-sm font-semibold text-primary-foreground shadow-sm transition-all hover:opacity-90 hover:shadow-md"
               >
-                Riješi kviz
+                Riješi kviz →
               </button>
             </motion.article>
           ))}
@@ -853,9 +907,18 @@ const Samoprocjena = () => {
           >
             <div className={quizFrameClass}>
               <div className="flex items-center justify-between border-b border-border/60 bg-muted/30 px-5 py-3 md:px-6">
-                <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
-                  Kviz · {QUIZ_TITLES[selectedQuiz]}
-                </h2>
+                <div className="flex items-center gap-2.5">
+                  <span className="text-lg leading-none">
+                    {QUIZ_CARDS.find((c) => c.id === selectedQuiz)?.icon}
+                  </span>
+                  <div>
+                    <h2 className="text-sm font-semibold text-foreground">{QUIZ_TITLES[selectedQuiz]}</h2>
+                    <p className="text-[11px] text-muted-foreground">
+                      {QUIZ_CARDS.find((c) => c.id === selectedQuiz)?.questionCount} pitanja ·{" "}
+                      {QUIZ_CARDS.find((c) => c.id === selectedQuiz)?.minutes}
+                    </p>
+                  </div>
+                </div>
                 <Button
                   type="button"
                   variant="ghost"
@@ -863,7 +926,7 @@ const Samoprocjena = () => {
                   onClick={() => setSelectedQuiz(null)}
                   className="text-muted-foreground hover:text-foreground"
                 >
-                  Zatvori
+                  Zatvori ×
                 </Button>
               </div>
               <div className="p-5 md:p-7">

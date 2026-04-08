@@ -1,14 +1,58 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowRight, Briefcase, GraduationCap, Map, RotateCcw, Sparkles } from "lucide-react";
+import {
+  ArrowRight,
+  Briefcase,
+  GraduationCap,
+  Lightbulb,
+  Map,
+  RotateCcw,
+  Sparkles,
+  AlertTriangle,
+  BookmarkCheck,
+} from "lucide-react";
+import {
+  Radar,
+  RadarChart,
+  PolarGrid,
+  PolarAngleAxis,
+  PolarRadiusAxis,
+  ResponsiveContainer,
+} from "recharts";
+import {
+  buildAlternatives,
+  buildStudyPicks,
+  buildWarnings,
+  computeHolisticTraits,
+  computeTraitBalances,
+  fieldGroupLabel,
+  inferCareerFieldGroup,
+  radarRowsFromTraits,
+  topTraits,
+} from "@/lib/careerAdvisor";
+import { INTEREST_SECTIONS, COMPETENCY_SECTIONS } from "@/lib/careerQuizThemes";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { authMe, userFromAuthMe } from "@/lib/auth";
+import {
+  buildCareerQuizPayload,
+  PENDING_CAREER_QUIZ_STORAGE_KEY,
+  QUIZ_RESTORE_STORAGE_KEY,
+  saveCareerQuizResult,
+} from "@/lib/careerQuizApi";
+import {
   analyzeHzzMojIzborV2,
   analyzeInterestsPhaseOnly,
-  HZZ_CAREER_MATCH_THRESHOLD_PERCENT,
   QUIZ_TOP_CAREERS,
   type CareerRow,
   type FacultyPathRecommendation,
@@ -56,6 +100,13 @@ function careerNamesPreview(names: string[], max = 2): string {
   return `${names.slice(0, max).join(", ")} +${names.length - max}`;
 }
 
+function sectionIntroAt<T extends { startIndex: number; title: string; blurb: string }>(
+  sections: T[],
+  index: number,
+): T | undefined {
+  return sections.find((s) => s.startIndex === index);
+}
+
 function FacultyDirectionRow({
   rec,
   index,
@@ -82,15 +133,6 @@ function FacultyDirectionRow({
             </p>
           )
         )}
-      </div>
-      <div
-        className="grid shrink-0 grid-cols-[auto_1fr] gap-x-2 gap-y-0.5 self-center text-right text-[10px] leading-tight sm:text-[11px]"
-        aria-label={`Podudaranje ${rec.avgMatchPercent} posto, udio u listi ${rec.sharePercent} posto`}
-      >
-        <span className="text-muted-foreground">Podudaranje</span>
-        <span className="font-semibold tabular-nums text-primary">{rec.avgMatchPercent}%</span>
-        <span className="text-muted-foreground">Udio</span>
-        <span className="tabular-nums text-muted-foreground">{rec.sharePercent}%</span>
       </div>
     </li>
   );
@@ -140,6 +182,45 @@ export default function CareerQuizFlow({
   const [competencyAnswers, setCompetencyAnswers] = useState(() => emptyAnswers(competencies.length));
   const [iIdx, setIIdx] = useState(0);
   const [cIdx, setCIdx] = useState(0);
+  const [guestSaveDialogOpen, setGuestSaveDialogOpen] = useState(false);
+  const [saveStatus, setSaveStatus] = useState<"idle" | "saved" | "error">("idle");
+
+  const restoredRef = useRef(false);
+  const postedResultHashRef = useRef<string | null>(null);
+  const guestPromptedHashRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    if (restoredRef.current) return;
+    restoredRef.current = true;
+    try {
+      const raw = sessionStorage.getItem(QUIZ_RESTORE_STORAGE_KEY);
+      if (!raw) return;
+      const s = JSON.parse(raw) as {
+        phase?: string;
+        interestAnswers?: number[];
+        competencyAnswers?: number[];
+      };
+      if (s.phase !== "results" || !Array.isArray(s.interestAnswers) || !Array.isArray(s.competencyAnswers)) return;
+      if (s.interestAnswers.length !== interests.length || s.competencyAnswers.length !== competencies.length) return;
+      setInterestAnswers(s.interestAnswers);
+      setCompetencyAnswers(s.competencyAnswers);
+      setPhase("results");
+    } catch {
+      /* ignore */
+    }
+  }, []);
+
+  useEffect(() => {
+    if (phase !== "results") return;
+    try {
+      sessionStorage.setItem(
+        QUIZ_RESTORE_STORAGE_KEY,
+        JSON.stringify({ phase: "results", interestAnswers, competencyAnswers }),
+      );
+    } catch {
+      /* ignore */
+    }
+  }, [phase, interestAnswers, competencyAnswers]);
 
   useEffect(() => {
     onPhaseChange?.(phase);
@@ -149,6 +230,97 @@ export default function CareerQuizFlow({
     if (phase !== "results") return null;
     return analyzeHzzMojIzborV2(interests, competencies, interestAnswers, competencyAnswers, careers, QUIZ_TOP_CAREERS);
   }, [phase, interestAnswers, competencyAnswers]);
+
+  const advisor = useMemo(() => {
+    if (!analysis) return null;
+    const traits = computeHolisticTraits(analysis.interestScoresNormalized, analysis.competencyScoresNormalized);
+    const top5 = topTraits(traits, 5);
+    const balances = computeTraitBalances(traits);
+    const radarData = radarRowsFromTraits(traits);
+    const pool =
+      analysis.matchesAboveThreshold.length > 0
+        ? analysis.matchesAboveThreshold
+        : analysis.allRanked.filter((m) => m.matchPercentage >= 10);
+    const picks = buildStudyPicks(pool, top5, 5);
+    const alternatives = buildAlternatives(pool, top5, 5, 3);
+    const warnings = buildWarnings(pool, analysis.competencyScoresNormalized);
+    return { traits, top5, balances, radarData, picks, alternatives, warnings };
+  }, [analysis]);
+
+  useEffect(() => {
+    if (phase !== "results" || !analysis) return;
+    const hash = `${interestAnswers.join(",")}|${competencyAnswers.join(",")}`;
+    const traits = computeHolisticTraits(analysis.interestScoresNormalized, analysis.competencyScoresNormalized);
+    const top5 = topTraits(traits, 5);
+    const payload = buildCareerQuizPayload(interestAnswers, competencyAnswers, analysis, top5);
+    try {
+      sessionStorage.setItem(PENDING_CAREER_QUIZ_STORAGE_KEY, JSON.stringify(payload));
+    } catch {
+      /* quota */
+    }
+
+    authMe().then(async (res) => {
+      const u = userFromAuthMe(res);
+      if (u) {
+        if (postedResultHashRef.current === hash) return;
+        try {
+          const dedupe = `mojput_quiz_saved_flag_${hash}`;
+          if (sessionStorage.getItem(dedupe)) {
+            postedResultHashRef.current = hash;
+            setSaveStatus("saved");
+            return;
+          }
+        } catch {
+          /* ignore */
+        }
+        const r = await saveCareerQuizResult(payload);
+        if (r.success) {
+          postedResultHashRef.current = hash;
+          try {
+            sessionStorage.setItem(`mojput_quiz_saved_flag_${hash}`, "1");
+          } catch {
+            /* ignore */
+          }
+          setSaveStatus("saved");
+          try {
+            sessionStorage.removeItem(PENDING_CAREER_QUIZ_STORAGE_KEY);
+          } catch {
+            /* ignore */
+          }
+        } else {
+          setSaveStatus("error");
+        }
+        return;
+      }
+      if (guestPromptedHashRef.current === hash) return;
+      guestPromptedHashRef.current = hash;
+      setGuestSaveDialogOpen(true);
+    });
+  }, [phase, analysis, interestAnswers, competencyAnswers]);
+
+  useEffect(() => {
+    const uploadPendingAfterLogin = () => {
+      const raw = sessionStorage.getItem(PENDING_CAREER_QUIZ_STORAGE_KEY);
+      if (!raw) return;
+      authMe().then(async (res) => {
+        const u = userFromAuthMe(res);
+        if (!u) return;
+        try {
+          const payload = JSON.parse(raw);
+          const r = await saveCareerQuizResult(payload);
+          if (r.success) {
+            sessionStorage.removeItem(PENDING_CAREER_QUIZ_STORAGE_KEY);
+            setSaveStatus("saved");
+            setGuestSaveDialogOpen(false);
+          }
+        } catch {
+          /* ignore */
+        }
+      });
+    };
+    window.addEventListener("mojput-auth-changed", uploadPendingAfterLogin);
+    return () => window.removeEventListener("mojput-auth-changed", uploadPendingAfterLogin);
+  }, []);
 
   const interestPhaseAnalysis = useMemo(() => {
     if (phase !== "interestResults") return null;
@@ -161,6 +333,20 @@ export default function CareerQuizFlow({
     setCompetencyAnswers(emptyAnswers(competencies.length));
     setIIdx(0);
     setCIdx(0);
+    setGuestSaveDialogOpen(false);
+    setSaveStatus("idle");
+    postedResultHashRef.current = null;
+    guestPromptedHashRef.current = null;
+    try {
+      sessionStorage.removeItem(QUIZ_RESTORE_STORAGE_KEY);
+      sessionStorage.removeItem(PENDING_CAREER_QUIZ_STORAGE_KEY);
+      for (let i = sessionStorage.length - 1; i >= 0; i--) {
+        const k = sessionStorage.key(i);
+        if (k?.startsWith("mojput_quiz_saved_flag_")) sessionStorage.removeItem(k);
+      }
+    } catch {
+      /* ignore */
+    }
   }, []);
 
   const interestProgress = ((iIdx + 1) / interests.length) * 100;
@@ -391,14 +577,14 @@ export default function CareerQuizFlow({
                           1. Zanimanja koja ti najviše odgovaraju
                         </h4>
                         <p className="mt-0.5 text-[11px] leading-snug text-muted-foreground sm:text-xs">
-                          Rangirano po podudaranju s tvojim odgovorima o interesima (viši postotak = bolje). Prikazano{" "}
-                          {interestPhaseAnalysis.recommendedByInterest.length} (od ukupno {interestPhaseAnalysis.totalInterestMatches}{" "}
-                          kandidata u bazi za ovu fazu).
+                          Rangirano po podudaranju s tvojim odgovorima o interesima — bolji rang znači veće podudaranje.
+                          Prikazano {interestPhaseAnalysis.recommendedByInterest.length} (od ukupno{" "}
+                          {interestPhaseAnalysis.totalInterestMatches} kandidata u bazi za ovu fazu).
                         </p>
                       </div>
                     </div>
                     <ul className="grid gap-3 sm:grid-cols-2">
-                      {interestPhaseAnalysis.recommendedByInterest.map(({ career, interestMatch }, i) => (
+                      {interestPhaseAnalysis.recommendedByInterest.map(({ career }, i) => (
                         <li
                           key={career.id}
                           className="flex gap-3 rounded-xl border border-border/80 bg-card/80 p-4 shadow-sm transition-shadow hover:shadow-md"
@@ -412,9 +598,6 @@ export default function CareerQuizFlow({
                           <div className="min-w-0 flex-1">
                             <div className="mb-1 flex flex-wrap items-start justify-between gap-2">
                               <span className="text-sm font-semibold leading-snug text-foreground">{career.name}</span>
-                              <Badge variant="secondary" className="shrink-0 font-mono text-xs" title="Podudaranje interesa">
-                                {interestMatch}% interesi
-                              </Badge>
                             </div>
                             <p className="mb-2 line-clamp-2 text-xs text-muted-foreground">{career.description}</p>
                             {career.facultyPaths && career.facultyPaths.length > 0 && (
@@ -443,9 +626,7 @@ export default function CareerQuizFlow({
                         2. Smjerovi studija (okvirno)
                       </h4>
                       <p className="mt-0.5 text-[11px] leading-snug text-muted-foreground sm:text-xs">
-                        Povezano s gornjim zanimanjima: <span className="font-medium text-foreground/90">Podudaranje</span> je
-                        prosjek postotaka tih zanimanja; <span className="font-medium text-foreground/90">Udio</span> pokazuje
-                        koliko je taj smjer zastupljen u ovoj desetorici (udjeli zajedno = 100%). Više na{" "}
+                        Povezano s gornjim zanimanjima — rang pomaže usporediti smjerove. Više na{" "}
                         <Link to="/karta" className="font-medium text-primary underline-offset-2 hover:underline">
                           Karti fakulteta
                         </Link>
@@ -591,6 +772,16 @@ export default function CareerQuizFlow({
                 {interestLabel(interests[iIdx].category)}
               </span>
             </div>
+            {(() => {
+              const sec = sectionIntroAt(INTEREST_SECTIONS, iIdx);
+              if (!sec) return null;
+              return (
+                <div className="rounded-xl border border-primary/25 bg-gradient-to-br from-primary/[0.07] to-transparent p-3 sm:p-4">
+                  <p className="text-sm font-semibold text-foreground">{sec.title}</p>
+                  <p className="mt-1 text-xs leading-relaxed text-muted-foreground">{sec.blurb}</p>
+                </div>
+              );
+            })()}
             <p className="text-xs font-semibold text-muted-foreground sm:text-sm">Koliko ti odgovara ovaj tip studija?</p>
             {interests[iIdx].description && (
               <p className="text-xs leading-snug text-muted-foreground/90">{interests[iIdx].description}</p>
@@ -660,6 +851,16 @@ export default function CareerQuizFlow({
                 {competencyLabel(competencies[cIdx].category)}
               </span>
             </div>
+            {(() => {
+              const sec = sectionIntroAt(COMPETENCY_SECTIONS, cIdx);
+              if (!sec) return null;
+              return (
+                <div className="rounded-xl border border-violet-500/25 bg-gradient-to-br from-violet-500/[0.07] to-transparent p-3 sm:p-4">
+                  <p className="text-sm font-semibold text-foreground">{sec.title}</p>
+                  <p className="mt-1 text-xs leading-relaxed text-muted-foreground">{sec.blurb}</p>
+                </div>
+              );
+            })()}
             <p className="text-xs font-semibold text-muted-foreground sm:text-sm">Koliko ti ovo odgovara za studij?</p>
             {competencies[cIdx].description && (
               <p className="text-xs leading-snug text-muted-foreground/90">{competencies[cIdx].description}</p>
@@ -723,24 +924,222 @@ export default function CareerQuizFlow({
                 Što ti najviše odgovara — zanimanja i smjerovi studija
               </h3>
               <p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted-foreground">
-                Prvo vidiš <span className="font-medium text-foreground">rangiranu listu zanimanja</span> (interesi + vještine
-                za faks). Ispod su <span className="font-medium text-foreground">smjerovi studija</span> povezani s tim
-                preporukama. Profil interesa (Holland) je u sklopu za dodatni kontekst.
+                Ispod je <span className="font-medium text-foreground">profil osobina</span> (iz interesa i kompetencija),{" "}
+                <span className="font-medium text-foreground">glavne preporuke s objašnjenjem</span>, zatim smjerovi
+                studija i detalji RIASEC profila.
               </p>
             </div>
 
-            {analysis.recommended[0] && (
+            {saveStatus === "saved" && (
+              <div className="flex items-start gap-2 rounded-xl border border-emerald-500/30 bg-emerald-500/[0.07] px-3 py-2.5 text-sm text-emerald-950 dark:text-emerald-100">
+                <BookmarkCheck className="mt-0.5 h-4 w-4 shrink-0" aria-hidden />
+                <p>Rezultat kviza je spremljen na tvoj račun (zadnje rješavanje u bazi).</p>
+              </div>
+            )}
+            {saveStatus === "error" && (
+              <p className="text-sm text-destructive">
+                Spremanje na server nije uspjelo — provjeri vezu ili pokušaj kasnije. Rezultat je i dalje u pregledniku.
+              </p>
+            )}
+
+            {advisor && advisor.picks[0] && (
               <div className="rounded-2xl border-2 border-primary/25 bg-gradient-to-br from-primary/[0.09] to-transparent p-4 sm:p-5">
-                <p className="text-[11px] font-semibold uppercase tracking-wide text-primary">Najjači rezultat</p>
+                <p className="text-[11px] font-semibold uppercase tracking-wide text-primary">Najjače podudaranje</p>
                 <p className="mt-1 text-lg font-bold tracking-tight text-foreground sm:text-xl">
-                  {analysis.recommended[0].career.name}
+                  {advisor.picks[0].career.name}
                 </p>
                 <p className="mt-2 text-sm text-muted-foreground">
-                  <span className="font-semibold text-primary">{analysis.recommended[0].matchPercentage}%</span> ukupno
-                  podudaranje s tvojim odgovorima · interesi {analysis.recommended[0].interestMatch}% · kompetencije{" "}
-                  {analysis.recommended[0].competencyMatch}%
+                  Okvirno podudaranje:{" "}
+                  <span className="font-mono font-medium text-foreground">{advisor.picks[0].matchPercentage}%</span>{" "}
+                  (interesi {advisor.picks[0].interestMatch}% · kompetencije {advisor.picks[0].competencyMatch}%).
                 </p>
               </div>
+            )}
+
+            {advisor && (
+              <>
+                <section className="rounded-2xl border border-border/70 bg-card/80 p-4 shadow-sm sm:p-6" aria-label="Profil osobina">
+                  <div className="mb-4 flex flex-wrap items-center gap-2">
+                    <Sparkles className="h-4 w-4 text-primary" aria-hidden />
+                    <h4 className="text-base font-semibold text-foreground">Tvoj profil — dominantne osobine</h4>
+                  </div>
+                  <p className="mb-3 text-xs text-muted-foreground sm:text-sm">
+                    Pet holističkih dimenzija (0–100) spaja RIASEC interese s procijenjenim kompetencijama za studij.
+                  </p>
+                  <div className="mb-4 flex flex-wrap gap-2">
+                    {advisor.top5.map((t) => (
+                      <Badge key={t.id} variant="secondary" className="font-normal">
+                        {t.label}: {t.score}
+                      </Badge>
+                    ))}
+                  </div>
+                  <div className="mb-4 grid gap-3 sm:grid-cols-2">
+                    {advisor.balances.map((b) => (
+                      <div key={b.left + b.right} className="rounded-lg border border-border/60 bg-muted/20 px-3 py-2">
+                        <p className="text-[11px] font-medium text-muted-foreground">
+                          {b.left} ↔ {b.right}
+                        </p>
+                        <div className="mt-1.5 flex h-2 overflow-hidden rounded-full bg-muted">
+                          <div
+                            className="bg-primary/80 transition-all"
+                            style={{
+                              width: `${b.leftScore + b.rightScore > 0 ? (100 * b.leftScore) / (b.leftScore + b.rightScore) : 50}%`,
+                            }}
+                          />
+                        </div>
+                        <p className="mt-1 text-[11px] text-muted-foreground">
+                          {b.lean === "balanced"
+                            ? "Uravnoteženo"
+                            : b.lean === "left"
+                              ? `Jači naglasak: ${b.left.toLowerCase()}`
+                              : `Jači naglasak: ${b.right.toLowerCase()}`}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="h-[260px] w-full min-w-0 sm:h-[300px]">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <RadarChart data={advisor.radarData} margin={{ top: 8, right: 16, bottom: 8, left: 16 }}>
+                        <PolarGrid stroke="hsl(var(--border))" />
+                        <PolarAngleAxis dataKey="subject" tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} />
+                        <PolarRadiusAxis angle={90} domain={[0, 100]} tick={{ fontSize: 10 }} />
+                        <Radar
+                          name="Profil"
+                          dataKey="value"
+                          stroke="hsl(var(--primary))"
+                          fill="hsl(var(--primary))"
+                          fillOpacity={0.35}
+                        />
+                      </RadarChart>
+                    </ResponsiveContainer>
+                  </div>
+                </section>
+
+                {advisor.warnings.length > 0 && (
+                  <section
+                    className="rounded-2xl border border-amber-500/35 bg-amber-500/[0.06] p-4 sm:p-5"
+                    aria-label="Upozorenja"
+                  >
+                    <div className="mb-2 flex items-center gap-2 text-amber-900 dark:text-amber-100">
+                      <AlertTriangle className="h-4 w-4 shrink-0" aria-hidden />
+                      <h4 className="text-sm font-semibold">Na što obratiti pažnju</h4>
+                    </div>
+                    <ul className="list-disc space-y-2 pl-5 text-sm text-muted-foreground">
+                      {advisor.warnings.map((w, i) => (
+                        <li key={i}>{w}</li>
+                      ))}
+                    </ul>
+                  </section>
+                )}
+
+                <section aria-labelledby="smart-picks-heading">
+                  <div className="mb-3 flex items-start gap-2.5">
+                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/12 text-primary">
+                      <Lightbulb className="h-4 w-4" aria-hidden />
+                    </div>
+                    <div className="min-w-0">
+                      <h4 id="smart-picks-heading" className="text-base font-semibold text-foreground md:text-lg">
+                        Glavne preporuke (zašto ti odgovaraju)
+                      </h4>
+                      <p className="mt-0.5 text-xs leading-relaxed text-muted-foreground sm:text-sm">
+                        Za svaku stavku: razlog, ključne osobine i smjer diplome / perspektiva. Podudaranje u bazi
+                        zanimanja: interesi 70% + kompetencije 30% (s balansom).
+                      </p>
+                    </div>
+                  </div>
+                  {advisor.picks.length === 0 && (
+                    <p className="mb-3 text-sm text-muted-foreground">
+                      Za detaljne kartice s objašnjenjem nema dovoljno jakog podudaranja u odsječku koji koristimo — osloni se
+                      na rangiranu listu ispod ili ponovi kviz s drugačijim odgovorima.
+                    </p>
+                  )}
+                  <ol className="list-none space-y-4">
+                    {advisor.picks.map((pick) => (
+                      <li
+                        key={pick.career.id}
+                        className="rounded-2xl border border-border/80 bg-card p-4 shadow-sm sm:p-5"
+                      >
+                        <div className="mb-2 flex flex-wrap items-baseline justify-between gap-2">
+                          <span className="text-base font-semibold text-foreground">{pick.career.name}</span>
+                          <span className="text-xs text-muted-foreground">
+                            Podudaranje:{" "}
+                            <span className="font-mono font-medium text-foreground">{pick.matchPercentage}%</span> ·{" "}
+                            {fieldGroupLabel(pick.fieldGroup)}
+                          </span>
+                        </div>
+                        <p className="text-sm leading-relaxed text-muted-foreground">{pick.why}</p>
+                        {pick.keyTraits.length > 0 && (
+                          <div className="mt-2 flex flex-wrap gap-1.5">
+                            {pick.keyTraits.map((kt) => (
+                              <Badge key={kt} variant="outline" className="text-[10px] font-normal">
+                                {kt}
+                              </Badge>
+                            ))}
+                          </div>
+                        )}
+                        <p className="mt-3 text-xs leading-relaxed text-foreground/90">
+                          <span className="font-medium text-foreground">Smjer i posao: </span>
+                          {pick.jobOutlook}
+                        </p>
+                        {pick.career.facultyPaths && pick.career.facultyPaths.length > 0 && (
+                          <p className="mt-2 text-xs text-muted-foreground">
+                            <span className="font-medium text-foreground">Put upisa: </span>
+                            {pick.career.facultyPaths.join(" · ")}
+                          </p>
+                        )}
+                      </li>
+                    ))}
+                  </ol>
+                </section>
+
+                {advisor.alternatives.length > 0 && (
+                  <section aria-labelledby="alt-picks-heading">
+                    <h4 id="alt-picks-heading" className="mb-2 text-sm font-semibold text-foreground">
+                      Ako se predomisliš — slične alternative
+                    </h4>
+                    <ul className="grid gap-2 sm:grid-cols-2">
+                      {advisor.alternatives.map((pick) => (
+                        <li
+                          key={pick.career.id}
+                          className="rounded-xl border border-border/60 bg-muted/15 px-3 py-2.5 text-sm"
+                        >
+                          <span className="font-medium text-foreground">{pick.career.name}</span>
+                          <span className="ml-2 font-mono text-xs text-muted-foreground">{pick.matchPercentage}%</span>
+                          <p className="mt-1 line-clamp-2 text-xs text-muted-foreground">{pick.career.description}</p>
+                        </li>
+                      ))}
+                    </ul>
+                  </section>
+                )}
+
+                <section aria-labelledby="ranked-preview-heading">
+                  <h4 id="ranked-preview-heading" className="mb-2 text-sm font-semibold text-foreground">
+                    Kompletan pregled — globalni rang (top 40)
+                  </h4>
+                  <p className="mb-3 text-xs leading-relaxed text-muted-foreground sm:text-sm">
+                    Isti redoslijed kao u izračunu: sva zanimanja iz baze mogu se pojaviti. Oznaka područja (npr. poljoprivreda,
+                    kineziologija) samo pomaže orijentaciji — ne mijenja podudaranje.
+                  </p>
+                  <ul className="space-y-2 rounded-xl border border-border/60 bg-muted/10 p-3 sm:p-4">
+                    {analysis.allRanked.slice(0, 40).map((m, i) => {
+                      const fg = inferCareerFieldGroup(m.career);
+                      return (
+                        <li
+                          key={m.career.id}
+                          className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1 border-b border-border/40 pb-2 text-sm last:border-0 last:pb-0"
+                        >
+                          <span className="tabular-nums text-muted-foreground">{i + 1}.</span>
+                          <span className="min-w-0 flex-1 font-medium text-foreground">{m.career.name}</span>
+                          <Badge variant="outline" className="shrink-0 text-[10px] font-normal">
+                            {fieldGroupLabel(fg)}
+                          </Badge>
+                          <span className="font-mono text-xs text-muted-foreground">{m.matchPercentage}%</span>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                </section>
+              </>
             )}
 
             <section aria-labelledby="final-careers-heading">
@@ -750,17 +1149,16 @@ export default function CareerQuizFlow({
                 </div>
                 <div className="min-w-0">
                   <h4 id="final-careers-heading" className="text-base font-semibold text-foreground md:text-lg">
-                    1. Zanimanja koja ti najviše odgovaraju
+                    Duga lista zanimanja (rang u bazi)
                   </h4>
                   <p className="mt-0.5 text-xs leading-relaxed text-muted-foreground sm:text-sm">
-                    Rangirano od najboljeg prema slabijem. Ukupni postotak spaja interese (oko 70%) i kompetencije (oko 30%),
-                    uz naglasak na slabiju stranu da rezultat ostane realan. Prikazano {analysis.recommended.length} od
-                    najviše {QUIZ_TOP_CAREERS} (prag iznad {HZZ_CAREER_MATCH_THRESHOLD_PERCENT}% ili najbliži u bazi).
+                    Prikazano {analysis.recommended.length} od najviše {QUIZ_TOP_CAREERS} — za brzi pregled svih kandidata iz
+                    istog izračuna.
                   </p>
                 </div>
               </div>
               <ol className="list-none space-y-4">
-                {analysis.recommended.map(({ career, matchPercentage, interestMatch, competencyMatch }, rank) => (
+                {analysis.recommended.map(({ career }, rank) => (
                   <li
                     key={career.id}
                     className="flex gap-3 rounded-2xl border border-border/80 bg-card p-3.5 shadow-sm sm:gap-4 sm:p-4 md:p-5"
@@ -774,49 +1172,42 @@ export default function CareerQuizFlow({
                     <div className="min-w-0 flex-1">
                       <div className="mb-2 flex flex-wrap items-start justify-between gap-2">
                         <span className="text-base font-semibold leading-snug text-foreground">{career.name}</span>
-                        <span className="shrink-0 rounded-lg bg-primary/10 px-2.5 py-1 text-sm font-bold tabular-nums text-primary">
-                          {matchPercentage}% ukupno
-                        </span>
                       </div>
-                      <p className="mb-2 text-xs text-muted-foreground">
-                        <span className="font-medium text-foreground">Interesi:</span> {interestMatch}% ·{" "}
-                        <span className="font-medium text-foreground">Kompetencije:</span> {competencyMatch}%
-                      </p>
                       <p className="text-sm text-muted-foreground">{career.description}</p>
-                    {career.facultyPaths && career.facultyPaths.length > 0 && (
-                      <div className="mt-2 rounded-lg border border-border/60 bg-muted/30 px-3 py-2 text-xs text-foreground">
-                        <span className="font-medium text-muted-foreground">Put upisa: </span>
-                        {career.facultyPaths.join(" · ")}
-                      </div>
-                    )}
-                    <p className="mt-2 text-xs text-muted-foreground">
-                      <span className="font-medium text-foreground">Smjer diplome:</span> {career.education}
-                    </p>
-                    {(career.salary || career.employmentPerspective) && (
-                      <p className="mt-1 text-xs text-muted-foreground">
-                        {career.salary && (
-                          <>
-                            <span className="font-medium text-foreground">Plaća (indikativno):</span> {career.salary}
-                          </>
-                        )}
-                        {career.salary && career.employmentPerspective && " · "}
-                        {career.employmentPerspective && (
-                          <>
-                            <span className="font-medium text-foreground">Perspektiva:</span>{" "}
-                            {career.employmentPerspective}
-                          </>
-                        )}
+                      {career.facultyPaths && career.facultyPaths.length > 0 && (
+                        <div className="mt-2 rounded-lg border border-border/60 bg-muted/30 px-3 py-2 text-xs text-foreground">
+                          <span className="font-medium text-muted-foreground">Put upisa: </span>
+                          {career.facultyPaths.join(" · ")}
+                        </div>
+                      )}
+                      <p className="mt-2 text-xs text-muted-foreground">
+                        <span className="font-medium text-foreground">Smjer diplome:</span> {career.education}
                       </p>
-                    )}
-                    {career.keywords && career.keywords.length > 0 && (
-                      <div className="mt-3 flex flex-wrap gap-1.5">
-                        {career.keywords.map((kw) => (
-                          <Badge key={kw} variant="outline" className="text-[10px] font-normal">
-                            {kw}
-                          </Badge>
-                        ))}
-                      </div>
-                    )}
+                      {(career.salary || career.employmentPerspective) && (
+                        <p className="mt-1 text-xs text-muted-foreground">
+                          {career.salary && (
+                            <>
+                              <span className="font-medium text-foreground">Plaća (indikativno):</span> {career.salary}
+                            </>
+                          )}
+                          {career.salary && career.employmentPerspective && " · "}
+                          {career.employmentPerspective && (
+                            <>
+                              <span className="font-medium text-foreground">Perspektiva:</span>{" "}
+                              {career.employmentPerspective}
+                            </>
+                          )}
+                        </p>
+                      )}
+                      {career.keywords && career.keywords.length > 0 && (
+                        <div className="mt-3 flex flex-wrap gap-1.5">
+                          {career.keywords.map((kw) => (
+                            <Badge key={kw} variant="outline" className="text-[10px] font-normal">
+                              {kw}
+                            </Badge>
+                          ))}
+                        </div>
+                      )}
                     </div>
                   </li>
                 ))}
@@ -833,12 +1224,10 @@ export default function CareerQuizFlow({
                 </div>
                 <div className="min-w-0">
                   <h4 id="final-faculty-heading" className="text-base font-semibold text-foreground md:text-lg">
-                    2. Smjerovi studija povezani s tim preporukama
+                    Smjerovi studija povezani s preporukama
                   </h4>
                   <p className="mt-0.5 text-[11px] leading-snug text-muted-foreground sm:text-xs">
-                    <span className="font-medium text-foreground/90">Podudaranje</span> — prosjek postotaka zanimanja koja su
-                    predložila ovaj smjer. <span className="font-medium text-foreground/90">Udio</span> — koliko je smjer
-                    zastupljen u ovoj desetorici; udjeli zajedno iznose 100%. Više o programima:{" "}
+                    Smjerovi povezani s tvojim preporukama — rangirani od jačeg prema slabijem podudaranju. Više o programima:{" "}
                     <Link to="/karta" className="font-medium text-primary underline-offset-2 hover:underline">
                       Karta fakulteta
                     </Link>
@@ -922,6 +1311,26 @@ export default function CareerQuizFlow({
                 Ponovi kviz
               </Button>
             </div>
+
+            <Dialog open={guestSaveDialogOpen} onOpenChange={setGuestSaveDialogOpen}>
+              <DialogContent className="sm:max-w-md">
+                <DialogHeader>
+                  <DialogTitle>Spremi rezultat kviza</DialogTitle>
+                  <DialogDescription>
+                    Prijavom ili registracijom možeš spremiti ovaj rezultat na račun i vratiti mu se kasnije. Nakon prijave
+                    automatski te vraćamo na kviz — rezultati ostaju vidljivi.
+                  </DialogDescription>
+                </DialogHeader>
+                <DialogFooter className="flex-col gap-2 sm:flex-row sm:justify-end">
+                  <Button variant="outline" asChild className="w-full sm:w-auto">
+                    <Link to={`/registracija?next=${encodeURIComponent("/kviz")}`}>Registracija</Link>
+                  </Button>
+                  <Button asChild className="w-full sm:w-auto">
+                    <Link to={`/prijava?next=${encodeURIComponent("/kviz")}`}>Prijava</Link>
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
           </motion.div>
         )}
       </AnimatePresence>

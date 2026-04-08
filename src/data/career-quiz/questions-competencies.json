@@ -281,6 +281,24 @@
       "question": "Možeš li u grupi mirno riješiti neslaganje?",
       "category": "conflict_resolution",
       "description": "Suglasje"
+    },
+    {
+      "id": 48,
+      "question": "Kad zapne projekt, često pronađem novi pristup ili alat umjesto da odustanem na prvoj prepreki.",
+      "category": "adaptability",
+      "description": "Učenje i prilagodba"
+    },
+    {
+      "id": 49,
+      "question": "Radije radim detaljan plan i raspored prije nego što krenem u izvedbu — čak i kod manjih zadataka.",
+      "category": "organization",
+      "description": "Organizacija i disciplina"
+    },
+    {
+      "id": 50,
+      "question": "Mogu li ti dobro ići predmeti s puno matematike ili formalne logike ako znaš da ti donose željeni smjer?",
+      "category": "numerical",
+      "description": "Formalna matematika / logika"
     }
   ],
   "categories": {

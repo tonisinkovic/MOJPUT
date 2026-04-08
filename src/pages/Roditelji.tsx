@@ -8,11 +8,43 @@ import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 
 const mainSections = [
-  { id: "vodic", emoji: "📘", title: "Vodič za roditelje", description: "Savjeti, checkliste i video sadržaj.", href: "/roditeljski-kutak/vodic-za-roditelje", icon: BookOpen },
-  { id: "mentalno", emoji: "💚", title: "Mentalno zdravlje", description: "Teme stresa, anksioznosti i podrške.", href: "/roditeljski-kutak/mentalno-zdravlje", icon: Heart },
-  { id: "forum", emoji: "💬", title: "Forum za roditelje", description: "Pitanja, iskustva i odgovori drugih roditelja.", href: "/roditeljski-kutak/forum", icon: MessageSquare },
-  { id: "procjena", emoji: "📊", title: "Zajednička procjena", description: "Interaktivni alat roditelj + dijete.", href: "/roditeljski-kutak/zajednicka-procjena", icon: BarChart3 },
-];
+  {
+    id: "vodic",
+    emoji: "📘",
+    title: "Vodič za roditelje",
+    description: "Strukturirani savjeti, checkliste i praktični koraci za razgovor o studiju bez konflikta i panike.",
+    advice: "Krenite od jednog kratkog tjednog razgovora, jedne teme i jednog dogovorenog sljedećeg koraka.",
+    href: "/roditeljski-kutak/vodic-za-roditelje",
+    icon: BookOpen,
+  },
+  {
+    id: "mentalno",
+    emoji: "💚",
+    title: "Mentalno zdravlje",
+    description: "Teme stresa, anksioznosti i svakodnevne podrške uz jasne znakove kada treba usporiti i reagirati.",
+    advice: "Prvo primijetite promjenu u ponašanju, zatim otvorite miran razgovor i tek onda nudite rješenja.",
+    href: "/roditeljski-kutak/mentalno-zdravlje",
+    icon: Heart,
+  },
+  {
+    id: "forum",
+    emoji: "💬",
+    title: "Forum za roditelje",
+    description: "Pitanja, iskustva i primjeri drugih roditelja koji prolaze slične odluke i dileme.",
+    advice: "Koristite forum za ideje i iskustva, ali završne odluke uvijek prilagodite svom djetetu i njegovim potrebama.",
+    href: "/roditeljski-kutak/forum",
+    icon: MessageSquare,
+  },
+  {
+    id: "procjena",
+    emoji: "📊",
+    title: "Zajednička procjena",
+    description: "Kratak alat koji pomaže roditelju i djetetu uskladiti očekivanja, interese i sljedeće korake.",
+    advice: "Najkorisnije je kada roditelj i dijete najprije razmisle odvojeno, a zatim usporede odgovore bez rasprave tko je u pravu.",
+    href: "/roditeljski-kutak/zajednicka-procjena",
+    icon: BarChart3,
+  },
+] as const;
 
 const recommended = parentArticles.slice(0, 3);
 
@@ -26,6 +58,24 @@ const categoryEmoji: Record<ParentArticle["category"], string> = {
   vodic: "📘",
   mentalno: "🧠",
   procjena: "📊",
+};
+
+const recommendedInsights: Record<string, { label: string; advice: string }> = {
+  "kako-razgovarati-s-djetetom-o-karijeri": {
+    label: "Profesionalni fokus",
+    advice:
+      "Najviše pomaže razgovor u kojem roditelj ne nudi odmah rješenje, nego prvo pomaže djetetu da razjasni vlastite motive, interese i brige.",
+  },
+  "prepoznajte-znakove-stresa-kod-maturanata": {
+    label: "Što prvo učiniti",
+    advice:
+      "Obratite pažnju na promjene sna, razdražljivost, povlačenje i pad koncentracije. Reagirajte rano, smireno i bez umanjivanja problema.",
+  },
+  "zajednicka-procjena-prvi-korak": {
+    label: "Kako koristiti",
+    advice:
+      "Procjena je najkorisnija kada otvara razgovor o prioritetima i razlikama, a ne kada služi kao brz način da se donese konačna odluka.",
+  },
 };
 
 const filterChips: { id: "sve" | "vodic" | "mentalno" | "procjena"; emoji: string; label: string; labelMd: string }[] = [
@@ -164,7 +214,7 @@ const Roditelji = () => {
                 <span className="mr-1" aria-hidden>
                   ⚡
                 </span>
-                Kratki članci za brzi pregled
+                Odabrane teme s konkretnim savjetima koje možete odmah primijeniti
               </p>
             </div>
           </div>
@@ -179,11 +229,14 @@ const Roditelji = () => {
                 <Link
                   to={`/roditeljski-kutak/preporuceni-clanak/${item.slug}`}
                   onClick={() => setLastVisited(`/roditeljski-kutak/preporuceni-clanak/${item.slug}`)}
-                  className="group relative flex h-full flex-col rounded-2xl border-2 bg-background p-4 shadow-card transition-all active:scale-[0.99] sm:p-5 sm:hover:-translate-y-0.5 sm:hover:shadow-card-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  className="group relative flex h-full flex-col rounded-2xl border-2 border-border/70 bg-background p-4 shadow-card transition-all active:scale-[0.99] sm:p-5 sm:hover:-translate-y-0.5 sm:hover:border-primary/30 sm:hover:shadow-card-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 >
-                  <div className="absolute left-0 top-4 h-[calc(100%-2rem)] w-1 rounded-full bg-primary/40 sm:top-5 sm:h-[calc(100%-2.5rem)]" aria-hidden />
-                  <div className="flex items-start justify-between gap-2 pl-2.5 sm:pl-3">
-                    <h3 className="text-balance font-semibold leading-snug group-hover:text-primary sm:min-h-[2.75rem]">{item.title}</h3>
+                  <div className="absolute inset-x-0 top-0 h-1 rounded-t-2xl gradient-hero opacity-80" aria-hidden />
+                  <div className="flex items-start justify-between gap-2">
+                    <span className="inline-flex w-fit items-center gap-1 rounded-full bg-muted px-2.5 py-0.5 text-[11px] font-medium text-muted-foreground sm:text-xs">
+                      <span aria-hidden>{categoryEmoji[item.category]}</span>
+                      {categoryLabels[item.category]}
+                    </span>
                     <button
                       type="button"
                       aria-label="Spremi u favorite"
@@ -197,26 +250,40 @@ const Roditelji = () => {
                       <Star className={`h-5 w-5 sm:h-4 sm:w-4 ${state.favorites.includes(item.slug) ? "fill-primary text-primary" : ""}`} />
                     </button>
                   </div>
-                  <span className="mt-2 inline-flex w-fit items-center gap-1 rounded-full bg-muted px-2.5 py-0.5 text-[11px] font-medium text-muted-foreground sm:text-xs">
-                    <span aria-hidden>{categoryEmoji[item.category]}</span>
-                    {categoryLabels[item.category]}
-                  </span>
-                  <p className="mt-2 flex-1 text-pretty text-sm leading-relaxed text-muted-foreground line-clamp-3 sm:line-clamp-2">{item.excerpt}</p>
+                  <h3 className="mt-3 text-balance text-base font-semibold leading-snug group-hover:text-primary sm:min-h-[3.25rem]">
+                    {item.title}
+                  </h3>
+                  <p className="mt-2 text-pretty text-sm leading-relaxed text-muted-foreground line-clamp-3">
+                    {item.excerpt}
+                  </p>
+                  <div className="mt-4 rounded-xl border border-primary/15 bg-primary/[0.04] p-3">
+                    <p className="text-[11px] font-semibold uppercase tracking-wide text-primary">
+                      {recommendedInsights[item.slug]?.label ?? "Savjet"}
+                    </p>
+                    <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
+                      {recommendedInsights[item.slug]?.advice ?? item.description}
+                    </p>
+                  </div>
                   <div className="mt-4 flex flex-wrap items-center justify-between gap-2 border-t border-border/50 pt-3 text-xs text-muted-foreground">
-                    <span className="tabular-nums">
-                      <span className="mr-0.5" aria-hidden>
-                        👀
-                      </span>
-                      {getTotalViews(item.slug, item.views)} pregleda
-                    </span>
-                    {item.isNew && (
-                      <span className="rounded-full bg-primary/15 px-2 py-0.5 font-medium text-primary">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="tabular-nums">
                         <span className="mr-0.5" aria-hidden>
-                          🆕
+                          👀
                         </span>
-                        Novo
+                        {getTotalViews(item.slug, item.views)} pregleda
                       </span>
-                    )}
+                      {item.isNew && (
+                        <span className="rounded-full bg-primary/15 px-2 py-0.5 font-medium text-primary">
+                          <span className="mr-0.5" aria-hidden>
+                            🆕
+                          </span>
+                          Novo
+                        </span>
+                      )}
+                    </div>
+                    <span className="font-medium text-primary">
+                      Otvori članak <span aria-hidden>→</span>
+                    </span>
                   </div>
                 </Link>
               </motion.div>
@@ -245,22 +312,35 @@ const Roditelji = () => {
                   <Link
                     to={section.href}
                     onClick={() => setLastVisited(section.href)}
-                    className="flex min-h-[4.5rem] items-center gap-4 rounded-2xl border-2 bg-card p-4 shadow-card transition-colors active:bg-muted/30 sm:min-h-0 sm:p-6 sm:hover:border-primary/30 sm:hover:shadow-card-hover"
+                    className="flex h-full flex-col rounded-2xl border-2 border-border/70 bg-card p-4 shadow-card transition-all active:bg-muted/30 sm:p-6 sm:hover:-translate-y-0.5 sm:hover:border-primary/30 sm:hover:shadow-card-hover"
                   >
-                    <div className="flex h-12 w-12 shrink-0 flex-col items-center justify-center gap-0.5 rounded-2xl bg-primary/10 text-primary shadow-sm sm:h-[3.25rem] sm:w-[3.25rem]">
-                      <span className="text-[1.35rem] leading-none" aria-hidden>
-                        {section.emoji}
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex h-12 w-12 shrink-0 flex-col items-center justify-center gap-0.5 rounded-2xl bg-primary/10 text-primary shadow-sm sm:h-[3.25rem] sm:w-[3.25rem]">
+                        <span className="text-[1.35rem] leading-none" aria-hidden>
+                          {section.emoji}
+                        </span>
+                        <Icon className="h-3.5 w-3.5 opacity-70" />
+                      </div>
+                      <span className="rounded-full border border-border/60 bg-muted/40 px-2.5 py-1 text-[11px] font-medium text-muted-foreground">
+                        Sekcija
                       </span>
-                      <Icon className="h-3.5 w-3.5 opacity-70" />
                     </div>
-                    <div className="min-w-0 flex-1">
+                    <div className="mt-4 min-w-0 flex-1">
                       <h3 className="font-semibold leading-snug sm:text-lg">{section.title}</h3>
-                      <p className="mt-0.5 text-pretty text-xs leading-relaxed text-muted-foreground sm:mt-1 sm:text-sm">{section.description}</p>
-                      <span className="mt-1.5 inline-flex items-center gap-0.5 text-xs font-medium text-primary sm:mt-2 sm:text-sm">
-                        Saznaj više <span aria-hidden>👉</span>
-                      </span>
+                      <p className="mt-1.5 text-pretty text-sm leading-relaxed text-muted-foreground">{section.description}</p>
+                      <div className="mt-4 rounded-xl border border-border/60 bg-background/80 p-3">
+                        <p className="text-[11px] font-semibold uppercase tracking-wide text-primary">
+                          Profesionalna preporuka
+                        </p>
+                        <p className="mt-1 text-sm leading-relaxed text-muted-foreground">{section.advice}</p>
+                      </div>
                     </div>
-                    <ChevronRight className="h-5 w-5 shrink-0 text-muted-foreground/45" aria-hidden />
+                    <div className="mt-4 flex items-center justify-between border-t border-border/50 pt-3">
+                      <span className="text-sm font-medium text-primary">
+                        Saznaj više <span aria-hidden>→</span>
+                      </span>
+                      <ChevronRight className="h-5 w-5 shrink-0 text-muted-foreground/45" aria-hidden />
+                    </div>
                   </Link>
                 </motion.div>
               );

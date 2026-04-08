@@ -450,8 +450,11 @@ const Kalkulator = () => {
             wizardStep >= 4 && "pb-10 sm:pb-14",
           )}
         >
-          <div className="pointer-events-none absolute -left-32 top-20 h-72 w-72 rounded-full bg-primary/[0.06] blur-3xl" aria-hidden />
-          <div className="pointer-events-none absolute -right-40 bottom-40 h-96 w-96 rounded-full bg-accent/[0.05] blur-3xl" aria-hidden />
+          {/* Subtle dot-grid texture */}
+          <div className="pointer-events-none absolute inset-0 bg-grid-pattern opacity-[0.018]" aria-hidden />
+          {/* Ambient glow orbs */}
+          <div className="pointer-events-none absolute -left-32 top-20 h-80 w-80 rounded-full bg-primary/[0.07] blur-3xl" aria-hidden />
+          <div className="pointer-events-none absolute -right-40 bottom-40 h-96 w-96 rounded-full bg-accent/[0.06] blur-3xl" aria-hidden />
 
           <motion.div
             initial={{ opacity: 0, y: 16 }}
@@ -459,66 +462,85 @@ const Kalkulator = () => {
             className="relative space-y-8"
           >
             {/* Header */}
-            <div className="mx-auto max-w-2xl text-center">
-              <div className="mb-3 inline-flex items-center justify-center rounded-2xl gradient-hero p-3 shadow-md">
-                <CalcIcon className="h-7 w-7 text-primary-foreground" />
+            <div className="mx-auto max-w-2xl space-y-4 text-center">
+              <div className="inline-flex items-center gap-2 rounded-full border border-primary/25 bg-primary/[0.07] px-4 py-1.5 text-sm font-medium text-primary shadow-sm">
+                <CalcIcon className="h-3.5 w-3.5 shrink-0" />
+                <span>{PROGRAM_OPTIONS.length} programa · bodovne formule 2025.</span>
               </div>
-              <h1 className="text-balance text-3xl font-bold tracking-tight md:text-4xl">Kalkulator bodova</h1>
-              <p className="mx-auto mt-2 max-w-lg text-pretty text-base text-muted-foreground md:text-lg">
-                Radiš u svojem ritmu — kratki koraci, bez žurbe. Formula se sama prilagođava smjeru koji odabereš.
+              <h1 className="text-balance text-4xl font-extrabold tracking-tight md:text-5xl">
+                Kalkulator <span className="text-gradient">bodova</span>
+              </h1>
+              <p className="mx-auto max-w-md text-pretty text-base text-muted-foreground">
+                Unesi ocjene i rezultate mature — formula se prilagođava odabranom smjeru, korak po korak.
               </p>
             </div>
 
             {/* Koraci — pregled */}
-            <div className="mx-auto max-w-4xl rounded-2xl border border-border/60 bg-card/85 p-4 shadow-sm backdrop-blur-sm sm:p-5">
-              <div className="mb-3 flex flex-wrap items-end justify-between gap-2">
-                <div>
-                  <p className="text-sm font-semibold text-foreground">Gdje si u tijeku</p>
-                  <p className="text-xs text-muted-foreground">Možeš se uvijek vratiti natrag i prilagoditi unos.</p>
+            <div className="mx-auto max-w-3xl rounded-2xl border border-border/60 bg-card/90 px-5 py-5 shadow-sm backdrop-blur-sm sm:px-8 sm:py-6">
+              {/* Meta row */}
+              <div className="mb-6 flex items-center justify-between gap-3">
+                <div className="min-w-0">
+                  <p className="truncate text-sm font-semibold text-foreground">
+                    {WIZARD_STEPS[wizardStep]?.label}
+                    <span className="ml-1.5 font-normal text-muted-foreground">
+                      — {WIZARD_STEPS[wizardStep]?.sub}
+                    </span>
+                  </p>
+                  <p className="mt-0.5 text-xs text-muted-foreground">Možeš se uvijek vratiti i prilagoditi unos.</p>
                 </div>
-                <p className="text-xs font-medium tabular-nums text-muted-foreground">
+                <span className="shrink-0 rounded-full border border-border/60 bg-muted/50 px-3 py-1 text-xs font-medium tabular-nums text-muted-foreground">
                   Korak {wizardStep + 1} / 5
-                </p>
+                </span>
               </div>
-              <div className="mb-4 h-2 overflow-hidden rounded-full bg-muted">
-                <motion.div
-                  className="h-full rounded-full gradient-hero"
-                  initial={false}
-                  animate={{ width: `${((wizardStep + 1) / 5) * 100}%` }}
-                  transition={{ type: "spring", stiffness: 120, damping: 22 }}
-                />
-              </div>
-              <ol className="grid grid-cols-2 gap-2 sm:grid-cols-5 sm:gap-2">
-                {WIZARD_STEPS.map((s) => {
-                  const active = wizardStep === s.step;
-                  const done = wizardStep > s.step;
-                  return (
-                    <li key={s.step}>
-                      <div
-                        className={cn(
-                          "flex flex-col items-center gap-1 rounded-xl border px-2 py-2.5 text-center transition-all sm:py-3",
-                          active && "border-primary/35 bg-primary/8 shadow-sm",
-                          done && !active && "border-primary/15 bg-primary/[0.04]",
-                          !active && !done && "border-border/50 bg-muted/30 opacity-80",
-                        )}
-                      >
+
+              {/* Connected-dot stepper */}
+              <div className="relative">
+                {/* Track line — sits at vertical center of the circles (h-8 → top-4) */}
+                <div
+                  className="pointer-events-none absolute left-[10%] right-[10%] top-4 h-0.5 -translate-y-1/2 overflow-hidden rounded-full bg-border/50"
+                  aria-hidden
+                >
+                  <motion.div
+                    className="h-full rounded-full gradient-hero"
+                    initial={false}
+                    animate={{ width: `${(wizardStep / 4) * 100}%` }}
+                    transition={{ type: "spring", stiffness: 120, damping: 22 }}
+                  />
+                </div>
+
+                <ol className="relative grid grid-cols-5">
+                  {WIZARD_STEPS.map((s) => {
+                    const active = wizardStep === s.step;
+                    const done = wizardStep > s.step;
+                    return (
+                      <li key={s.step} className="flex flex-col items-center gap-2">
                         <span
                           className={cn(
-                            "flex h-8 w-8 items-center justify-center rounded-full text-xs font-bold",
-                            done && "bg-primary text-primary-foreground",
-                            active && !done && "gradient-hero text-primary-foreground shadow-sm",
-                            !active && !done && "bg-muted text-muted-foreground",
+                            "relative z-10 flex h-8 w-8 items-center justify-center rounded-full text-xs font-bold transition-all duration-300",
+                            done && "bg-primary text-primary-foreground shadow-sm",
+                            active &&
+                              "border-2 border-primary bg-background text-primary shadow-md ring-4 ring-primary/20",
+                            !active && !done && "border border-border/70 bg-muted/70 text-muted-foreground",
                           )}
                         >
-                          {done ? <Check className="h-4 w-4" strokeWidth={2.5} /> : s.step + 1}
+                          {done ? <Check className="h-3.5 w-3.5" strokeWidth={3} /> : s.step + 1}
                         </span>
-                        <span className="text-[11px] font-semibold leading-tight text-foreground sm:text-xs">{s.label}</span>
-                        <span className="line-clamp-2 min-h-0 text-[10px] leading-tight text-muted-foreground">{s.sub}</span>
-                      </div>
-                    </li>
-                  );
-                })}
-              </ol>
+                        <span
+                          className={cn(
+                            "text-center text-[10px] font-semibold leading-tight sm:text-[11px]",
+                            active ? "text-foreground" : done ? "text-primary" : "text-muted-foreground",
+                          )}
+                        >
+                          {s.label}
+                        </span>
+                        <span className="hidden text-center text-[9px] leading-snug text-muted-foreground sm:block">
+                          {s.sub}
+                        </span>
+                      </li>
+                    );
+                  })}
+                </ol>
+              </div>
             </div>
 
             {/* Main grid: inputs left, result right */}
@@ -1324,6 +1346,58 @@ const Kalkulator = () => {
                 )}
                   </motion.div>
                 </AnimatePresence>
+
+                {wizardStep < 4 && (
+                  <nav
+                    className="mt-4 rounded-2xl border border-border/80 bg-card/95 px-3 py-3 shadow-sm backdrop-blur-[2px]"
+                    aria-label="Koraci kalkulatora bodova"
+                  >
+                    <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        disabled={wizardStep === 0}
+                        onClick={() => setWizardStep((s) => Math.max(0, s - 1))}
+                        className="order-2 min-h-11 rounded-xl sm:order-1 touch-manipulation"
+                      >
+                        Natrag
+                      </Button>
+                      <div className="order-1 text-center sm:order-2">
+                        <p className="text-sm font-medium text-foreground">
+                          {WIZARD_STEPS[wizardStep]?.label}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          {(() => {
+                            const r = 4 - wizardStep;
+                            if (r === 1) return "Još 1 korak do rezultata";
+                            if (r >= 2) return `Još ${r} koraka do rezultata`;
+                            return "";
+                          })()}
+                        </p>
+                      </div>
+                      <Button
+                        type="button"
+                        disabled={!canWizardNext}
+                        onClick={() => setWizardStep((s) => Math.min(4, s + 1))}
+                        className="order-3 min-h-11 rounded-xl border-0 bg-primary font-semibold text-primary-foreground shadow-md transition-all hover:bg-primary/90 hover:shadow-lg disabled:opacity-50 touch-manipulation sm:min-w-[7.5rem]"
+                      >
+                        Dalje
+                      </Button>
+                    </div>
+                  </nav>
+                )}
+                {wizardStep === 4 && (
+                  <div className="mt-4 flex justify-center border-t border-border pt-6">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => setWizardStep(3)}
+                      className="min-h-11 rounded-xl touch-manipulation"
+                    >
+                      Natrag na unos
+                    </Button>
+                  </div>
+                )}
               </div>
 
               {/* ═══ Result column – samo završni korak ═══ */}
@@ -1420,8 +1494,11 @@ const Kalkulator = () => {
                           />
                         </div>
                         {cutoff != null && (
-                          <p className="text-xs text-muted-foreground text-center">
-                            Prag: {Math.round(cutoff)} bodova (crtica na traci)
+                          <p className="text-xs text-muted-foreground text-center leading-snug">
+                            Crtica: okvirno{" "}
+                            <span className="font-medium text-foreground/90">{Math.round(cutoff)} bodova</span> prema{" "}
+                            <span className="font-medium text-foreground/90">prošlogodišnjem upisu</span> — to{" "}
+                            <span className="font-medium">nije</span> službeni prag koji fakultet propisuje za ovu godinu.
                           </p>
                         )}
                       </div>
@@ -1583,57 +1660,6 @@ const Kalkulator = () => {
                   )}
                 </div>
               </div>
-              )}
-            </div>
-
-            <div className="mx-auto max-w-6xl px-0">
-              {wizardStep < 4 && (
-                <div className="fixed bottom-0 left-0 right-0 z-40 border-t border-border/80 bg-background/92 px-3 py-3 shadow-[0_-8px_30px_-12px_rgba(0,0,0,0.12)] backdrop-blur-md sm:static sm:z-0 sm:border-0 sm:bg-transparent sm:px-0 sm:py-0 sm:shadow-none sm:backdrop-blur-none">
-                  <div className="mx-auto flex max-w-6xl flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:border-t sm:border-border sm:pt-6">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      disabled={wizardStep === 0}
-                      onClick={() => setWizardStep((s) => Math.max(0, s - 1))}
-                      className="order-2 min-h-11 rounded-xl sm:order-1 touch-manipulation"
-                    >
-                      Natrag
-                    </Button>
-                    <div className="order-1 text-center sm:order-2">
-                      <p className="text-sm font-medium text-foreground">
-                        {WIZARD_STEPS[wizardStep]?.label}
-                      </p>
-                      <p className="text-xs text-muted-foreground">
-                        {(() => {
-                          const r = 4 - wizardStep;
-                          if (r === 1) return "Još 1 korak do rezultata";
-                          if (r >= 2) return `Još ${r} koraka do rezultata`;
-                          return "";
-                        })()}
-                      </p>
-                    </div>
-                    <Button
-                      type="button"
-                      disabled={!canWizardNext}
-                      onClick={() => setWizardStep((s) => Math.min(4, s + 1))}
-                      className="order-3 min-h-11 rounded-xl border-0 bg-primary font-semibold text-primary-foreground shadow-md transition-all hover:bg-primary/90 hover:shadow-lg disabled:opacity-50 touch-manipulation sm:min-w-[7.5rem]"
-                    >
-                      Dalje
-                    </Button>
-                  </div>
-                </div>
-              )}
-              {wizardStep === 4 && (
-                <div className="flex justify-center border-t border-border pt-6">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => setWizardStep(3)}
-                    className="min-h-11 rounded-xl touch-manipulation"
-                  >
-                    Natrag na unos
-                  </Button>
-                </div>
               )}
             </div>
           </motion.div>

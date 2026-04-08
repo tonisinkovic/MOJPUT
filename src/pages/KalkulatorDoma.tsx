@@ -254,7 +254,7 @@ export default function KalkulatorDoma() {
 
   return (
     <Layout>
-      <div className="max-w-lg mx-auto px-4 pb-32 pt-6 md:pt-10 md:max-w-3xl">
+      <div className="max-w-lg mx-auto px-4 pb-10 pt-6 md:pt-10 md:max-w-3xl">
         {/* Header — mobile first */}
         <header className="text-center mb-6">
           <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl gradient-hero mb-3 min-h-[44px] min-w-[44px]">
@@ -564,6 +564,56 @@ export default function KalkulatorDoma() {
           </CardContent>
         </Card>
 
+        {/* Navigacija kroz korake — u tijeku stranice ispod kartice koraka, ne „lijepi“ se za donji rub ekrana */}
+        <nav
+          className="mb-8 rounded-2xl border border-border/80 bg-card/95 px-3 py-3 shadow-sm backdrop-blur-[2px] supports-[padding:max(0px)]:pb-[max(12px,env(safe-area-inset-bottom))]"
+          role="navigation"
+          aria-label="Koraci kalkulatora"
+        >
+          <div className="max-w-lg mx-auto flex gap-2 md:max-w-3xl">
+            <Button
+              type="button"
+              variant="outline"
+              className="h-14 min-w-[44px] px-4 rounded-xl text-base shrink-0"
+              onClick={back}
+              disabled={step === 0 || loading}
+              aria-label="Natrag"
+            >
+              <ChevronLeft className="w-6 h-6" />
+            </Button>
+            {step < STEPS.length - 1 ? (
+              <Button
+                type="button"
+                className="h-14 flex-1 rounded-xl text-base font-semibold"
+                onClick={next}
+                disabled={!stepValid(step, input) || loading}
+              >
+                Dalje
+                <ChevronRight className="w-5 h-5 ml-2" />
+              </Button>
+            ) : (
+              <Button
+                type="button"
+                className="h-14 flex-1 rounded-xl text-base font-semibold gap-2"
+                onClick={runCalculate}
+                disabled={loading || !stepValid(4, input)}
+              >
+                {loading ? (
+                  <>
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                    Računam…
+                  </>
+                ) : (
+                  <>
+                    <Calculator className="w-5 h-5" />
+                    Izračunaj bodove
+                  </>
+                )}
+              </Button>
+            )}
+          </div>
+        </nav>
+
         {/* Result */}
         <AnimatePresence>
           {result && (
@@ -865,56 +915,6 @@ export default function KalkulatorDoma() {
           Spremljeno u pregledniku: {stats.count}
           {stats.lastTotal != null && ` · zadnji: ${stats.lastTotal.toLocaleString("hr-HR")}`}
         </p>
-      </div>
-
-      {/* Sticky footer — navigation + primary CTA */}
-      <div
-        className="fixed bottom-0 left-0 right-0 z-40 border-t bg-background/95 backdrop-blur-md supports-[padding:max(0px)]:pb-[max(12px,env(safe-area-inset-bottom))] pb-3 pt-3 px-4 shadow-[0_-4px_20px_rgba(0,0,0,0.06)]"
-        role="navigation"
-        aria-label="Koraci kalkulatora"
-      >
-        <div className="max-w-lg mx-auto flex gap-2 md:max-w-3xl">
-          <Button
-            type="button"
-            variant="outline"
-            className="h-14 min-w-[44px] px-4 rounded-xl text-base shrink-0"
-            onClick={back}
-            disabled={step === 0 || loading}
-            aria-label="Natrag"
-          >
-            <ChevronLeft className="w-6 h-6" />
-          </Button>
-          {step < STEPS.length - 1 ? (
-            <Button
-              type="button"
-              className="h-14 flex-1 rounded-xl text-base font-semibold"
-              onClick={next}
-              disabled={!stepValid(step, input) || loading}
-            >
-              Dalje
-              <ChevronRight className="w-5 h-5 ml-2" />
-            </Button>
-          ) : (
-            <Button
-              type="button"
-              className="h-14 flex-1 rounded-xl text-base font-semibold gap-2"
-              onClick={runCalculate}
-              disabled={loading || !stepValid(4, input)}
-            >
-              {loading ? (
-                <>
-                  <Loader2 className="w-5 h-5 animate-spin" />
-                  Računam…
-                </>
-              ) : (
-                <>
-                  <Calculator className="w-5 h-5" />
-                  Izračunaj bodove
-                </>
-              )}
-            </Button>
-          )}
-        </div>
       </div>
     </Layout>
   );

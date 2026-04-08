@@ -31,6 +31,7 @@ import FacultyProfile from "./pages/FacultyProfile";
 import FacultyLogin from "./pages/FacultyLogin";
 import FacultyDashboard from "./pages/FacultyDashboard";
 import TimDashboard from "./pages/TimDashboard";
+import ProfilDashboard from "./pages/ProfilDashboard";
 import ScrollToTop from "./components/ScrollToTop";
 
 const queryClient = new QueryClient();
@@ -64,6 +65,7 @@ const App = () => (
           <Route path="/uvjeti" element={<UvjetiKoristenja />} />
           <Route path="/chatbot" element={<Chatbot />} />
           <Route path="/prijava" element={<Prijava />} />
+          <Route path="/profil" element={<ProfilDashboard />} />
           <Route path="/verify" element={<Verify />} />
           <Route path="/registracija" element={<Registracija />} />
           <Route path="/fakulteti" element={<FacultyProfiles />} />

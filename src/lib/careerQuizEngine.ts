@@ -1,10 +1,10 @@
 /**
- * HZZ „Moj izbor” kompatibilna logika v2.0 (isti principi kao server-v2.js):
+ * HZZ „Moj izbor” kompatibilna logika v2.0 (prilagođeno upitniku 2×50):
  * - zbroj bodova po kategoriji (Likert 1–5)
- * - normalizacija svake kategorije s djeliteljem 47×5 = 235
- * - profil: top 3 interesna tipa
+ * - normalizacija po kategoriji: (zbroj / (broj pitanja u kategoriji × 5)) × 100
+ * - profil: top 3 interesna tipa (RIASEC)
  * - zanimanje: prosjek relevantnih normaliziranih interesa/kompetencija,
- *   završni rezultat = 0,7×interesi + 0,3×kompetencije, prag podudaranja vidi HZZ_CAREER_MATCH_THRESHOLD_PERCENT
+ *   završni rezultat = 0,7×interesi + 0,3×kompetencije (+ balans), prag vidi HZZ_CAREER_MATCH_THRESHOLD_PERCENT
  */
 
 export type InterestQuestion = { id: number; question: string; category: string; description?: string };
@@ -24,7 +24,16 @@ export type CareerRow = {
   keywords?: string[];
 };
 
-export const HZZ_MAX_SCALE = 47 * 5;
+/** Likert gornja granica po pitanju. */
+export const QUIZ_LIKERT_MAX = 5;
+
+/** Očekivani broj pitanja po bloku (interesi / kompetencije) — mora odgovarati JSON-u. */
+export const QUIZ_QUESTIONS_PER_BLOCK = 50;
+
+/**
+ * @deprecated Stari HZZ djelitelj po kategoriji (47×5). Koristi {@link normalizeScoresByCategory}.
+ */
+export const HZZ_MAX_SCALE = QUIZ_QUESTIONS_PER_BLOCK * QUIZ_LIKERT_MAX;
 
 /**
  * Prag za „podudaranje” zanimanja u punoj analizi (interesi + kompetencije).
@@ -56,7 +65,33 @@ export function calculateCategoryScores(
   return scores;
 }
 
-/** Normalizacija 0–100 prema v2: svaka kategorija / 235 × 100 */
+/** Broj pitanja po svakoj kategoriji (za ispravnu normalizaciju kad kategorije nemaju isti broj pitanja). */
+export function countQuestionsPerCategory<T extends { category: string }>(questions: T[]): Record<string, number> {
+  const counts: Record<string, number> = {};
+  for (const q of questions) {
+    counts[q.category] = (counts[q.category] ?? 0) + 1;
+  }
+  return counts;
+}
+
+/**
+ * Normalizacija 0–100 po kategoriji: zbroj / (broj pitanja u kategoriji × max Likert) × 100.
+ */
+export function normalizeScoresByCategory(
+  scores: Record<string, number>,
+  questionsPerCategory: Record<string, number>,
+  likertMax = QUIZ_LIKERT_MAX,
+): Record<string, number> {
+  const normalized: Record<string, number> = {};
+  for (const [category, score] of Object.entries(scores)) {
+    const n = questionsPerCategory[category] ?? 0;
+    const denom = n * likertMax;
+    normalized[category] = denom > 0 ? Math.round((score / denom) * 100) : 0;
+  }
+  return normalized;
+}
+
+/** @deprecated Koristi {@link normalizeScoresByCategory} s brojem pitanja po kategoriji. */
 export function normalizeScores(scores: Record<string, number>, maxPerCategory = HZZ_MAX_SCALE): Record<string, number> {
   const normalized: Record<string, number> = {};
   for (const [category, score] of Object.entries(scores)) {
@@ -316,6 +351,12 @@ export type HzzV2Analysis = {
   totalMatches: number;
   /** Preporuke za studij — izračun iz svih podudaranja iznad praga, ne samo iz top N zanimanja. */
   facultyRecommendations: FacultyPathRecommendation[];
+  /** Sva zanimanja u bazi rangirana (puna lista za naprednu analizu / grupiranje). */
+  allRanked: CareerMatchResult[];
+  /** Zanimanja iznad praga podudaranja (prazno ako nitko ne prelazi — UI tada koristi allRanked kao fallback). */
+  matchesAboveThreshold: CareerMatchResult[];
+  /** Prag korišten za matchesAboveThreshold. */
+  matchThresholdPercent: number;
 };
 
 export type InterestsPhaseOnlyAnalysis = {
@@ -327,7 +368,7 @@ export type InterestsPhaseOnlyAnalysis = {
   facultyRecommendations: FacultyPathRecommendation[];
 };
 
-/** Nakon 47 pitanja o interesima: profil RIASEC + gruba ljestvica zanimanja samo po interesima (bez kompetencija). */
+/** Nakon pitanja o interesima (blok 1): profil RIASEC + gruba ljestvica zanimanja samo po interesima (bez kompetencija). */
 export function analyzeInterestsPhaseOnly(
   interestQs: InterestQuestion[],
   interestAnswers: number[],
@@ -335,7 +376,8 @@ export function analyzeInterestsPhaseOnly(
   topN = QUIZ_TOP_CAREERS,
 ): InterestsPhaseOnlyAnalysis {
   const interestRaw = calculateCategoryScores(interestAnswers, interestQs);
-  const interestScoresNormalized = normalizeScores(interestRaw);
+  const interestPerCat = countQuestionsPerCategory(interestQs);
+  const interestScoresNormalized = normalizeScoresByCategory(interestRaw, interestPerCat);
   const personalityProfile = getPersonalityProfile(interestScoresNormalized);
 
   const allByInterest = careers
@@ -389,10 +431,17 @@ export function analyzeHzzMojIzborV2(
 ): HzzV2Analysis {
   const interestRaw = calculateCategoryScores(interestAnswers, interestQs);
   const competencyRaw = calculateCategoryScores(competencyAnswers, competencyQs);
-  const interestScoresNormalized = normalizeScores(interestRaw);
-  const competencyScoresNormalized = normalizeScores(competencyRaw);
+  const interestPerCat = countQuestionsPerCategory(interestQs);
+  const competencyPerCat = countQuestionsPerCategory(competencyQs);
+  const interestScoresNormalized = normalizeScoresByCategory(interestRaw, interestPerCat);
+  const competencyScoresNormalized = normalizeScoresByCategory(competencyRaw, competencyPerCat);
   const personalityProfile = getPersonalityProfile(interestScoresNormalized);
-  const matched = findMatchingCareersHzzV2(interestScoresNormalized, competencyScoresNormalized, careers);
+  const matched = findMatchingCareersHzzV2(
+    interestScoresNormalized,
+    competencyScoresNormalized,
+    careers,
+    HZZ_CAREER_MATCH_THRESHOLD_PERCENT,
+  );
   const allRanked = rankAllCareersHzzV2(interestScoresNormalized, competencyScoresNormalized, careers);
 
   /** Uvijek barem top zanimanja iz baze — nitko ne ostaje s praznom listom. */
@@ -426,5 +475,8 @@ export function analyzeHzzMojIzborV2(
     recommended: recommendedPool.slice(0, topN),
     totalMatches: matched.length > 0 ? matched.length : allRanked.length,
     facultyRecommendations,
+    allRanked,
+    matchesAboveThreshold: matched,
+    matchThresholdPercent: HZZ_CAREER_MATCH_THRESHOLD_PERCENT,
   };
 }

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Link, useSearchParams } from "react-router-dom";
+import { Link, useSearchParams, useNavigate } from "react-router-dom";
 import Layout from "@/components/Layout";
 import { Mail, Lock, LogIn, Loader2, CheckCircle2, AlertCircle } from "lucide-react";
 import { authLogin, authLogout, authMe, authResendVerification, type AuthUser } from "@/lib/auth";
@@ -21,6 +21,7 @@ type EmailVerifyUi =
   | { kind: "error"; message: string };
 
 const Prijava = () => {
+  const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const [loginData, setLoginData] = useState({
     email: "",
@@ -115,6 +116,12 @@ const Prijava = () => {
     }
     setLoggedUser(user);
     setLoginData({ email: "", password: "" });
+    const nextPath = searchParams.get("next");
+    if (nextPath && nextPath.startsWith("/") && !nextPath.startsWith("//")) {
+      navigate(nextPath);
+    } else {
+      navigate("/profil");
+    }
   };
 
   const handleResend = async () => {
