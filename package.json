@@ -24,6 +24,8 @@
     "db:studio": "prisma studio",
     "import:prag-2025": "node scripts/import-bodovni-prag-2025.cjs",
     "git:push": "node scripts/git-push.cjs",
+    "pull:github": "git fetch origin main && git merge --ff-only origin/main",
+    "sync:github": "python scripts/sync_github_commit.py",
     "clear:auth": "node scripts/clear-auth-users.cjs"
   },
   "dependencies": {

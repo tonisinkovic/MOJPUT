@@ -17,7 +17,7 @@
         "analytical"
       ],
       "education": "Preddiplomski/diplomski — informatika ili računarstvo",
-      "salary": "50000–80000 HRK",
+      "salary": "1800–4200 EUR bruto/mj. (okvirno, hrvatsko tržište; IT jako varira s iskustvom)",
       "employmentPerspective": "Odličan",
       "keywords": [
         "programiranje",
@@ -42,8 +42,11 @@
         "stress_management"
       ],
       "education": "Viša škola / sveučilišni prijediplomski — zdravstvo",
-      "salary": "30000–45000 HRK",
+      "salary": "1100–1900 EUR bruto/mj. (okvirno, javni sektor + noćni/dodaci)",
       "employmentPerspective": "Odličan",
+      "requiresInterestSignals": {
+        "medicine_health_interest": 2
+      },
       "keywords": [
         "zdravstvo",
         "medicina",
@@ -67,7 +70,7 @@
         "creativity"
       ],
       "education": "Integrirani/diplomski studij arhitekture",
-      "salary": "40000–70000 HRK",
+      "salary": "1300–2200 EUR bruto/mj. (okvirno, projektantski uredi i praksa)",
       "employmentPerspective": "Dobar",
       "keywords": [
         "gradnja",
@@ -92,8 +95,11 @@
         "interpersonal"
       ],
       "education": "Sveučilišni učiteljski studij",
-      "salary": "25000–40000 HRK",
+      "salary": "1000–1700 EUR bruto/mj. (okvirno, učiteljska plaća u državnoj školi)",
       "employmentPerspective": "Dobar",
+      "requiresInterestSignals": {
+        "teaching_mentoring_interest": 2
+      },
       "keywords": [
         "edukacija",
         "škola",
@@ -117,7 +123,7 @@
         "time_management"
       ],
       "education": "Fakultet — ekonomija, menadžment ili inženjerstvo",
-      "salary": "45000–80000 HRK",
+      "salary": "1400–3200 EUR bruto/mj. (okvirno, industrija i IT projekti)",
       "employmentPerspective": "Odličan",
       "keywords": [
         "vodstvo",
@@ -142,7 +148,7 @@
         "technical"
       ],
       "education": "Viša škola / sveučilišni — dizajn",
-      "salary": "25000–45000 HRK",
+      "salary": "900–1600 EUR bruto/mj. (okvirno, agencije i freelancing)",
       "employmentPerspective": "Dobar",
       "keywords": [
         "dizajn",
@@ -167,7 +173,7 @@
         "interpersonal"
       ],
       "education": "Diplomski psihologija + specijalizacija",
-      "salary": "35000–60000 HRK",
+      "salary": "1200–2200 EUR bruto/mj. (okvirno, zdravstvo i privatna praksa)",
       "employmentPerspective": "Dobar",
       "keywords": [
         "psihologija",
@@ -192,8 +198,9 @@
         "attention_to_detail"
       ],
       "education": "Stručni studij / elektrotehnika",
-      "salary": "30000–50000 HRK",
+      "salary": "1000–1700 EUR bruto/mj. (okvirno, obrt i industrija — često bez fakulteta)",
       "employmentPerspective": "Dobar",
+      "typicalEntryRequiresUniversity": false,
       "keywords": [
         "elektrika",
         "instalacija",
@@ -217,8 +224,9 @@
         "customer_service"
       ],
       "education": "Ekonomija / marketing / srodno",
-      "salary": "25000–60000 HRK",
+      "salary": "900–2000 EUR bruto/mj. (okvirno, provizije jako mijenjaju ukupno)",
       "employmentPerspective": "Dobar",
+      "typicalEntryRequiresUniversity": false,
       "keywords": [
         "prodaja",
         "komercijala",
@@ -228,9 +236,9 @@
     {
       "id": 10,
       "name": "Poljoprivrednik / agronom",
-      "description": "Put: Agronomski fakultet, biotehnologija, prehrambena tehnologija.",
+      "description": "Put: agronomija biljaka, tlo, zaštita bilja; srodno biotehnologija bilja i prehrana biljnog podrijetla (ne veterina).",
       "facultyPaths": [
-        "Agronomski fakulteti — agronomija, stočarstvo, biotehnologija"
+        "Agronomski fakulteti — agronomija, hortikultura, biljne znanosti; prehrambena tehnologija (biljni lanac)"
       ],
       "interestCategories": [
         "realistic",
@@ -242,8 +250,11 @@
         "work_ethic"
       ],
       "education": "Sveučilišni studij agronomije ili srodnog",
-      "salary": "20000–40000 HRK",
+      "salary": "900–1600 EUR bruto/mj. (okvirno, javna i privatna poljoprivreda)",
       "employmentPerspective": "Dobar",
+      "requiresInterestSignals": {
+        "plant_crop_interest": 2
+      },
       "keywords": [
         "poljoprivreda",
         "uzgoj",
@@ -267,8 +278,11 @@
         "critical_thinking"
       ],
       "education": "Pravni fakultet",
-      "salary": "40000–100000+ HRK",
+      "salary": "2200–5500+ EUR bruto/mj. (okvirno, jako ovisi o stažu i klijenturi)",
       "employmentPerspective": "Dobar",
+      "requiresInterestSignals": {
+        "law_judiciary_interest": 2
+      },
       "keywords": [
         "pravo",
         "odvjetnik",
@@ -292,8 +306,11 @@
         "communication"
       ],
       "education": "Sveučilišni studij novinarstva ili medija",
-      "salary": "25000–50000 HRK",
+      "salary": "900–1800 EUR bruto/mj. (okvirno, mediji i freelancing)",
       "employmentPerspective": "Dobar",
+      "requiresInterestSignals": {
+        "media_stage_interest": 2
+      },
       "keywords": [
         "novinarstvo",
         "pisanje",
@@ -317,7 +334,7 @@
         "analytical"
       ],
       "education": "Integrirani prijediplomski/diplomski — strojarstvo",
-      "salary": "35000–60000 HRK",
+      "salary": "1300–2400 EUR bruto/mj. (okvirno, industrija i inženjering)",
       "employmentPerspective": "Odličan",
       "keywords": [
         "strojarstvo",
@@ -342,8 +359,11 @@
         "stress_management"
       ],
       "education": "Medicinski fakultet",
-      "salary": "40000–80000 HRK",
+      "salary": "2200–4500 EUR bruto/mj. (okvirno, specijalizacija i ustanova)",
       "employmentPerspective": "Odličan",
+      "requiresInterestSignals": {
+        "medicine_health_interest": 2
+      },
       "keywords": [
         "medicina",
         "zdravstvo",
@@ -367,7 +387,7 @@
         "creativity"
       ],
       "education": "Viša škola ili sveučilišni — web/multimedija",
-      "salary": "30000–50000 HRK",
+      "salary": "1000–1900 EUR bruto/mj. (okvirno, digitalne agencije)",
       "employmentPerspective": "Odličan",
       "keywords": [
         "web",
@@ -392,8 +412,9 @@
         "attention_to_detail"
       ],
       "education": "Srednja / stručni studij ugostiteljstva",
-      "salary": "25000–45000 HRK",
+      "salary": "800–1400 EUR bruto/mj. (okvirno, ugostiteljstvo — često bez fakulteta)",
       "employmentPerspective": "Dobar",
+      "typicalEntryRequiresUniversity": false,
       "keywords": [
         "kuhinja",
         "hrana",
@@ -417,8 +438,11 @@
         "analytical"
       ],
       "education": "Fakultet — marketing ili poslovna ekonomija",
-      "salary": "35000–60000 HRK",
+      "salary": "1200–2200 EUR bruto/mj. (okvirno, korporacije i agencije)",
       "employmentPerspective": "Odličan",
+      "requiresInterestSignals": {
+        "sales_persuasion_interest": 2
+      },
       "keywords": [
         "marketing",
         "reklama",
@@ -442,7 +466,7 @@
         "patience"
       ],
       "education": "Sveučilišni studij fizioterapije ili kineziologije",
-      "salary": "25000–45000 HRK",
+      "salary": "1000–1700 EUR bruto/mj. (okvirno, klinike i ustanove)",
       "employmentPerspective": "Dobar",
       "keywords": [
         "fizioterapija",
@@ -468,8 +492,9 @@
         "independence"
       ],
       "education": "Stručni studij logistike / stručna srednja",
-      "salary": "30000–50000 HRK",
+      "salary": "900–1500 EUR bruto/mj. (okvirno, transport — često stručni/srednja)",
       "employmentPerspective": "Dobar",
+      "typicalEntryRequiresUniversity": false,
       "keywords": [
         "transport",
         "vožnja",
@@ -493,8 +518,11 @@
         "attention_to_detail"
       ],
       "education": "Ekonomski fakultet — financije / računovodstvo",
-      "salary": "30000–50000 HRK",
+      "salary": "1000–1800 EUR bruto/mj. (okvirno, tvrtke i revizija)",
       "employmentPerspective": "Dobar",
+      "requiresInterestSignals": {
+        "office_administration_interest": 2
+      },
       "keywords": [
         "financije",
         "brojevi",
@@ -518,8 +546,11 @@
         "patience"
       ],
       "education": "Muzička akademija",
-      "salary": "20000–50000 HRK",
+      "salary": "700–2200 EUR bruto/mj. (okvirno, izvođaštvo i poduka — jako raspon)",
       "employmentPerspective": "Dobar",
+      "requiresInterestSignals": {
+        "music_interest": 2
+      },
       "keywords": [
         "glazba",
         "izvedba"
@@ -542,7 +573,7 @@
         "safety"
       ],
       "education": "Građevinski fakultet",
-      "salary": "30000–50000 HRK",
+      "salary": "1200–2200 EUR bruto/mj. (okvirno, građevina i državne investicije)",
       "employmentPerspective": "Dobar",
       "keywords": [
         "gradnja",
@@ -566,8 +597,11 @@
         "critical_thinking"
       ],
       "education": "Fakultet — kemija ili kemijsko inženjerstvo",
-      "salary": "35000–60000 HRK",
+      "salary": "1200–2300 EUR bruto/mj. (okvirno, industrija i znanost)",
       "employmentPerspective": "Dobar",
+      "requiresInterestSignals": {
+        "science_lab_interest": 2
+      },
       "keywords": [
         "kemija",
         "znanost",
@@ -591,8 +625,9 @@
         "technical"
       ],
       "education": "Umjetnička akademija / viša škola",
-      "salary": "20000–40000 HRK",
+      "salary": "700–1500 EUR bruto/mj. (okvirno, slobodno i mediji — često bez fakulteta)",
       "employmentPerspective": "Dobar",
+      "typicalEntryRequiresUniversity": false,
       "keywords": [
         "fotografija",
         "slike"
@@ -615,7 +650,7 @@
         "organization"
       ],
       "education": "Ekonomija / psihologija / menadžment",
-      "salary": "30000–50000 HRK",
+      "salary": "1100–1900 EUR bruto/mj. (okvirno, korporacije)",
       "employmentPerspective": "Dobar",
       "keywords": [
         "HR",
@@ -639,8 +674,11 @@
         "research"
       ],
       "education": "PMF ili srodni prirodoslovni studij",
-      "salary": "35000–60000 HRK",
+      "salary": "1200–2300 EUR bruto/mj. (okvirno, znanost i nastava)",
       "employmentPerspective": "Dobar",
+      "requiresInterestSignals": {
+        "science_lab_interest": 2
+      },
       "keywords": [
         "fizika",
         "znanost"
@@ -663,8 +701,11 @@
         "emotional_intelligence"
       ],
       "education": "Akademija dramske umjetnosti",
-      "salary": "20000–50000 HRK",
+      "salary": "600–2200 EUR bruto/mj. (okvirno, angažmani jako variraju)",
       "employmentPerspective": "Dobar",
+      "requiresInterestSignals": {
+        "acting_interest": 2
+      },
       "keywords": [
         "gluma",
         "kazalište",
@@ -688,8 +729,9 @@
         "research"
       ],
       "education": "Sveučilišni studij informacijskih znanosti",
-      "salary": "25000–40000 HRK",
+      "salary": "900–1400 EUR bruto/mj. (okvirno, javne knjižnice — često i bez fakulteta)",
       "employmentPerspective": "Dobar",
+      "typicalEntryRequiresUniversity": false,
       "keywords": [
         "knjižnica",
         "informacije"
@@ -712,8 +754,11 @@
         "stress_management"
       ],
       "education": "Veterinarski fakultet",
-      "salary": "35000–60000 HRK",
+      "salary": "1300–2400 EUR bruto/mj. (okvirno, ambulante i industrija)",
       "employmentPerspective": "Dobar",
+      "requiresInterestSignals": {
+        "animal_vet_interest": 2
+      },
       "keywords": [
         "veterina",
         "životinje"
@@ -736,8 +781,11 @@
         "critical_thinking"
       ],
       "education": "Ekonomski fakultet",
-      "salary": "35000–70000 HRK",
+      "salary": "1300–2800 EUR bruto/mj. (okvirno, banke i analiza)",
       "employmentPerspective": "Dobar",
+      "requiresInterestSignals": {
+        "office_administration_interest": 2
+      },
       "keywords": [
         "ekonomija",
         "analiza",

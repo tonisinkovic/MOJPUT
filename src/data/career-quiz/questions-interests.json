@@ -82,7 +82,8 @@
       "id": 14,
       "question": "Želiš li kemiju, biologiju ili fiziku kao glavni fokus studija?",
       "category": "investigative",
-      "description": "PMF, kemija, biologija"
+      "description": "PMF, kemija, biologija",
+      "signalKey": "science_lab_interest"
     },
     {
       "id": 15,
@@ -100,7 +101,8 @@
       "id": 17,
       "question": "Želiš li prezentacije, prodaju ili poslovnu komunikaciju?",
       "category": "enterprising",
-      "description": "Marketing, menadžment"
+      "description": "Marketing, menadžment",
+      "signalKey": "sales_persuasion_interest"
     },
     {
       "id": 18,
@@ -122,15 +124,17 @@
     },
     {
       "id": 21,
-      "question": "Želiš li glazbu ili likovnu umjetnost kao glavni predmet?",
+      "question": "Želiš li glazbu, sviranje, pjevanje ili glazbenu pedagogiju kao glavni predmet?",
       "category": "artistic",
-      "description": "Muzička i likovna akademija"
+      "description": "Muzička akademija",
+      "signalKey": "music_interest"
     },
     {
       "id": 22,
       "question": "Želiš li postati učitelj ili mentor?",
       "category": "social",
-      "description": "Pedagoški fakulteti"
+      "description": "Pedagoški fakulteti",
+      "signalKey": "teaching_mentoring_interest"
     },
     {
       "id": 23,
@@ -160,7 +164,8 @@
       "id": 27,
       "question": "Želiš li glumu, scenu ili režiju?",
       "category": "artistic",
-      "description": "Dramska akademija"
+      "description": "Dramska akademija",
+      "signalKey": "acting_interest"
     },
     {
       "id": 28,
@@ -202,25 +207,29 @@
       "id": 34,
       "question": "Želiš li medicinu, njegu ili zdravstvenu zaštitu?",
       "category": "social",
-      "description": "Medicinski i zdravstveni studiji"
+      "description": "Medicinski i zdravstveni studiji",
+      "signalKey": "medicine_health_interest"
     },
     {
       "id": 35,
       "question": "Želiš li prodaju, javni nastup ili uvjeravanje?",
       "category": "enterprising",
-      "description": "Marketing, komunikacija"
+      "description": "Marketing, komunikacija",
+      "signalKey": "sales_persuasion_interest"
     },
     {
       "id": 36,
       "question": "Želiš li rad s podacima u uredu i na računalu?",
       "category": "conventional",
-      "description": "Poslovna informatika"
+      "description": "Poslovna informatika",
+      "signalKey": "office_administration_interest"
     },
     {
       "id": 37,
-      "question": "Želiš li životinje, poljoprivredu ili prirodu?",
+      "question": "Želiš li rad s životinjama, stočarstvom ili veterinarskom medicinom?",
       "category": "realistic",
-      "description": "Veterina, agronomija"
+      "description": "Veterina, stočarstvo",
+      "signalKey": "animal_vet_interest"
     },
     {
       "id": 38,
@@ -238,7 +247,8 @@
       "id": 40,
       "question": "Želiš li medicinu, farmaciju ili laboratorij?",
       "category": "social",
-      "description": "Medicinski fakulteti"
+      "description": "Medicinski fakulteti",
+      "signalKey": "medicine_health_interest"
     },
     {
       "id": 41,
@@ -268,25 +278,29 @@
       "id": 45,
       "question": "Želiš li kameru, pozornicu ili novinarstvo?",
       "category": "artistic",
-      "description": "Mediji, ADU"
+      "description": "Mediji, ADU",
+      "signalKey": "media_stage_interest"
     },
     {
       "id": 46,
       "question": "Želiš li pravo i sudstvo?",
       "category": "social",
-      "description": "Pravni fakultet"
+      "description": "Pravni fakultet",
+      "signalKey": "law_judiciary_interest"
     },
     {
       "id": 47,
       "question": "Želiš li administraciju, logistiku ili brojke u uredu?",
       "category": "conventional",
-      "description": "Ekonomija, logistika"
+      "description": "Ekonomija, logistika",
+      "signalKey": "office_administration_interest"
     },
     {
       "id": 48,
-      "question": "Radije bih analizirao podatke, tablice ili uzorke nego cijeli dan raditi s ljudima uživo na terenu.",
-      "category": "investigative",
-      "description": "Podaci vs izravni rad s ljudima"
+      "question": "Zanima te rad s biljkama, usjevima, tlom ili zaštitom bilja (agronomija biljaka, hortikultura)?",
+      "category": "realistic",
+      "description": "Biljna proizvodnja, agronomija biljaka",
+      "signalKey": "plant_crop_interest"
     },
     {
       "id": 49,

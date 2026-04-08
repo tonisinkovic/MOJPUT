@@ -19,5 +19,5 @@ services:
       # Frontend (GitHub Pages) — redirect nakon klika na potvrdu u mailu
       - key: APP_ORIGIN
         value: https://tonisinkovic.github.io
-      # U dashboardu još: JWT_SECRET + SMTP_* ili RESEND_API_KEY
+      # U dashboardu još: JWT_SECRET + RESEND_API_KEY (+ opcionalno RESEND_FROM; prazno = onboarding@resend.dev) ili SMTP_*
       # Ako mijenjaš URL servisa, prilagodi API_PUBLIC_URL i VITE_API_URL u buildu.

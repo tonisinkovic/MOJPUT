@@ -35,6 +35,7 @@ import { INTEREST_SECTIONS, COMPETENCY_SECTIONS } from "@/lib/careerQuizThemes";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import {
   Dialog,
   DialogContent,
@@ -92,6 +93,47 @@ function interestLabel(key: string) {
 
 function competencyLabel(key: string) {
   return competencyCategoryLabels[key] || key;
+}
+
+const HOLLAND_EXPLANATIONS: Record<string, { summary: string; guidance: string }> = {
+  realistic: {
+    summary: "Privlače te konkretni zadaci, praksa, teren i vidljiv rezultat rada.",
+    guidance: "Takvi profili češće biraju studije i poslove gdje se nešto gradi, održava, ispituje ili radi u stvarnom okruženju.",
+  },
+  investigative: {
+    summary: "Privlači te analiza, logika, istraživanje i razumijevanje kako stvari rade.",
+    guidance: "Takvi profili češće vole studije s više znanosti, podataka, laboratorija, matematike ili dubljeg objašnjavanja.",
+  },
+  artistic: {
+    summary: "Važni su ti izražavanje, originalnost, ideje i stvaranje nečeg vlastitog.",
+    guidance: "Takvi profili češće traže studije gdje imaju prostor za dizajn, jezik, izvedbu, medije ili autorski rad.",
+  },
+  social: {
+    summary: "Prirodno te vuče rad s ljudima, pomoć, podrška i komunikacija.",
+    guidance: "Takvi profili češće biraju studije gdje je bitno razumjeti ljude, voditi ih, educirati ili brinuti o njima.",
+  },
+  enterprising: {
+    summary: "Privlače te inicijativa, utjecaj, vođenje i pokretanje stvari.",
+    guidance: "Takvi profili češće vole studije povezane s organizacijom, poslovanjem, javnim nastupom i odgovornošću.",
+  },
+  conventional: {
+    summary: "Odgovaraju ti struktura, jasnoća, red i rad po pravilima.",
+    guidance: "Takvi profili češće biraju studije gdje su važni točnost, sustavnost, planiranje i rad s informacijama ili brojkama.",
+  },
+};
+
+function topInterestReasonsForType(
+  category: string,
+  questions: { question: string; category: string }[],
+  answers: number[],
+  limit = 3,
+): { question: string; score: number }[] {
+  return questions
+    .map((q, idx) => ({ question: q.question, score: answers[idx] || 0, category: q.category }))
+    .filter((row) => row.category === category && row.score >= 4)
+    .sort((a, b) => b.score - a.score || a.question.localeCompare(b.question, "hr"))
+    .slice(0, limit)
+    .map(({ question, score }) => ({ question, score }));
 }
 
 function careerNamesPreview(names: string[], max = 2): string {
@@ -510,7 +552,10 @@ export default function CareerQuizFlow({
                   <span className="font-semibold text-foreground">2. korak (preporučeno):</span> još {competencies.length}{" "}
                   pitanja o vještinama za faks — na kraju dobiješ{" "}
                   <span className="font-medium text-foreground">precizniju sliku</span> (interesi 70% + kompetencije 30%).
-                  Skala je uvijek 1–5.
+                  Skala je uvijek 1–5. Na pitanjima o konkretnim područjima (npr. pravo, medicina, glazba, gluma,
+                  biljke, životinje) oznaka{" "}
+                  <span className="font-medium text-foreground">1 — Uopće ne</span> može ukloniti usko povezana zanimanja,
+                  a niži odgovori poput 2 i 3 ih osjetno spuštaju, da rezultat bude povezaniji s onim što stvarno želiš.
                 </p>
               </div>
               <p className="rounded-lg border border-dashed border-border/80 bg-muted/20 px-3 py-2.5 text-xs leading-snug text-muted-foreground">
@@ -666,6 +711,37 @@ export default function CareerQuizFlow({
                         </p>
                         <p className="mt-1 font-semibold text-foreground">{interestLabel(slot.type)}</p>
                         <p className="mt-0.5 text-2xl font-bold tabular-nums text-primary">{slot.score}%</p>
+                        {slot.type && (
+                          <Accordion type="single" collapsible className="mt-3">
+                            <AccordionItem value={`${key}-${slot.type}`} className="border-b-0">
+                              <AccordionTrigger className="py-2 text-left text-xs font-medium text-foreground hover:no-underline">
+                                Zašto ti je ispao ovaj tip?
+                              </AccordionTrigger>
+                              <AccordionContent className="pb-0">
+                                <p className="text-xs leading-relaxed text-muted-foreground">
+                                  {HOLLAND_EXPLANATIONS[slot.type]?.summary ?? "Ovaj tip opisuje područje koje ti je među jačim interesima."}
+                                </p>
+                                <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
+                                  {HOLLAND_EXPLANATIONS[slot.type]?.guidance ?? ""}
+                                </p>
+                                <div className="mt-3 rounded-lg border border-border/60 bg-background/70 px-3 py-2 text-xs">
+                                  <p className="font-medium text-foreground">Najviše su pridonijeli odgovori:</p>
+                                  <ul className="mt-2 space-y-1.5 text-muted-foreground">
+                                    {topInterestReasonsForType(slot.type, interests, interestAnswers).length > 0 ? (
+                                      topInterestReasonsForType(slot.type, interests, interestAnswers).map((reason) => (
+                                        <li key={reason.question}>
+                                          <span className="font-medium text-foreground">{reason.score}/5</span> — {reason.question}
+                                        </li>
+                                      ))
+                                    ) : (
+                                      <li>Nema više izrazito visokih pojedinačnih odgovora; tip je ispao iz ukupnog obrasca interesa.</li>
+                                    )}
+                                  </ul>
+                                </div>
+                              </AccordionContent>
+                            </AccordionItem>
+                          </Accordion>
+                        )}
                       </div>
                     ))}
                   </div>

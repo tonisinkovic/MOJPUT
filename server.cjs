@@ -77,6 +77,37 @@ function readApiPublicUrlFromDisk() {
   return "";
 }
 
+const DEFAULT_RESEND_FROM = "MojPut <onboarding@resend.dev>";
+
+/**
+ * Jedinstveni «from» za Resend: uklanja navodnike iz env-a, dopunjava `MojPut <email>` ako je samo adresa,
+ * te pada na onboarding@resend.dev ako vrijednost nije valjana (često krivo zalijepljeno u Render dashboardu).
+ */
+function normalizeResendFrom(raw) {
+  let s = String(raw ?? "").trim();
+  if ((s.startsWith('"') && s.endsWith('"')) || (s.startsWith("'") && s.endsWith("'"))) {
+    s = s.slice(1, -1).trim();
+  }
+  if (!s) return DEFAULT_RESEND_FROM;
+
+  const emailInBrackets = /^(.+?)\s*<([^>\s]+@[^>\s]+)>\s*$/;
+  const bracketed = s.match(emailInBrackets);
+  if (bracketed) {
+    const email = bracketed[2].trim();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) {
+      console.warn("[mail] RESEND_FROM sadrži nevaljan email — koristim zadano onboarding@resend.dev.");
+      return DEFAULT_RESEND_FROM;
+    }
+    return `${bracketed[1].trim()} <${email}>`;
+  }
+  if (/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(s)) {
+    return `MojPut <${s.toLowerCase()}>`;
+  }
+
+  console.warn("[mail] RESEND_FROM nije valjan («" + s + "») — koristim zadano onboarding@resend.dev.");
+  return DEFAULT_RESEND_FROM;
+}
+
 /** GitHub Pages origin (bez /MOJPUT) — CORS u produkciji. */
 const GITHUB_PAGES_ORIGIN = "https://tonisinkovic.github.io";
 
@@ -362,6 +393,15 @@ console.log(
       ? "SMTP"
       : "(Ethereal testni inbox ako nema SMTP)",
 );
+if (hasResend) {
+  const fromEffective = normalizeResendFrom(process.env.RESEND_FROM);
+  const masked = fromEffective.replace(/<([^>]+)>/, (_, addr) => {
+    const [u, d] = String(addr).split("@");
+    if (!d) return "<***>";
+    return `<${(u || "").slice(0, 2)}***@${d}>`;
+  });
+  console.log("[config] Resend FROM (efektivno):", masked);
+}
 if (hasSmtp && process.env.SMTP_USER) {
   console.log("[config] SMTP pošiljatelj:", String(process.env.SMTP_USER).trim());
 }
@@ -902,11 +942,22 @@ function smtpErrorForClient(err) {
 function resendErrorForClient(json, status) {
   const msg = typeof json?.message === "string" ? json.message.trim() : "";
   const lower = msg.toLowerCase();
-  if (/domain|not valid|verify/i.test(lower)) {
+  if (status === 401 || status === 403) {
+    return (
+      "Resend je odbio API ključ (HTTP " +
+      status +
+      "). Na Renderu u Environment provjeri RESEND_API_KEY (mora biti aktivan ključ s resend.com → API Keys, obično počinje s re_)."
+    );
+  }
+  if (/domain|not valid|verify|not authorized to send|only send testing emails to your own email/i.test(lower)) {
     return (
       "Resend: adresa «from» mora biti dozvoljena u Resend konzoli (npr. onboarding@resend.dev ili tvoj verificirani domen). " +
-      "Postavi RESEND_FROM u Environment."
+      "Ukloni RESEND_FROM s Rendera za zadano MojPut <onboarding@resend.dev>, ili postavi verificiranu adresu. " +
+      "Za test domenu Resend često dopušta slanje samo na tvoj vlastiti email — za sve korisnike verificiraj vlastiti domen na resend.com/domains."
     );
+  }
+  if (/api.key|invalid key|unauthori|forbidden/i.test(lower)) {
+    return "Resend: nevažeći ili odbijen API ključ. Provjeri RESEND_API_KEY u Render Environment.";
   }
   if (msg) return `Resend: ${msg}`;
   return `Ne mogu poslati email (Resend, HTTP ${status}).`;
@@ -944,7 +995,7 @@ async function sendVerificationEmail({ to, username, code }) {
   /** Produkcija (Render): Resend ne koristi Gmail SMTP — samo API ključ. https://resend.com */
   const resendKey = String(process.env.RESEND_API_KEY || "").trim();
   if (resendKey) {
-    const from = String(process.env.RESEND_FROM || "").trim() || "MojPut <onboarding@resend.dev>";
+    const from = normalizeResendFrom(process.env.RESEND_FROM);
     try {
       const r = await fetch("https://api.resend.com/emails", {
         method: "POST",
@@ -959,6 +1010,7 @@ async function sendVerificationEmail({ to, username, code }) {
           text: textBody,
           html: htmlBody,
         }),
+        signal: AbortSignal.timeout(25000),
       });
       const json = await r.json().catch(() => ({}));
       if (!r.ok) {
@@ -968,10 +1020,17 @@ async function sendVerificationEmail({ to, username, code }) {
       console.log("[mail] Resend OK — potvrda poslana na:", to, "| from:", from);
       return { sent: true };
     } catch (err) {
-      console.error("[mail] Resend fetch:", err?.message || err);
+      const name = err?.name || "";
+      console.error("[mail] Resend fetch:", name, err?.message || err);
+      if (name === "AbortError" || /timeout/i.test(String(err?.message))) {
+        return {
+          sent: false,
+          error: "Slanje maila preko Resenda je isteklo. Pokušaj ponovno; ako se ponavlja, provjeri status Render servisa i resend.com.",
+        };
+      }
       return {
         sent: false,
-        error: "Ne mogu poslati email (Resend). Provjeri RESEND_API_KEY i mrežu.",
+        error: "Ne mogu poslati email (Resend). Provjeri RESEND_API_KEY, Render logove i mrežu API-ja do api.resend.com.",
       };
     }
   }
@@ -1071,7 +1130,7 @@ async function sendFeedbackNotifyEmail({ feedbackId, userEmail, username, messag
 
   const resendKey = String(process.env.RESEND_API_KEY || "").trim();
   if (resendKey) {
-    const from = String(process.env.RESEND_FROM || "").trim() || "MojPut <onboarding@resend.dev>";
+    const from = normalizeResendFrom(process.env.RESEND_FROM);
     try {
       const r = await fetch("https://api.resend.com/emails", {
         method: "POST",
@@ -1087,6 +1146,7 @@ async function sendFeedbackNotifyEmail({ feedbackId, userEmail, username, messag
           text: textBody,
           html: htmlBody,
         }),
+        signal: AbortSignal.timeout(25000),
       });
       const json = await r.json().catch(() => ({}));
       if (!r.ok) {
@@ -1096,8 +1156,16 @@ async function sendFeedbackNotifyEmail({ feedbackId, userEmail, username, messag
       console.log("[feedback-mail] Resend OK →", to);
       return { sent: true };
     } catch (err) {
-      console.error("[feedback-mail] Resend:", err?.message || err);
-      return { sent: false, error: String(err?.message || err) };
+      const name = err?.name || "";
+      console.error("[feedback-mail] Resend:", name, err?.message || err);
+      if (name === "AbortError" || /timeout/i.test(String(err?.message))) {
+        return {
+          sent: false,
+          error:
+            "Slanje maila preko Resenda je isteklo. Pokušaj ponovno; ako se ponavlja, provjeri Render i resend.com.",
+        };
+      }
+      return { sent: false, error: "Ne mogu poslati email (Resend). Provjeri RESEND_API_KEY i mrežu." };
     }
   }
 
