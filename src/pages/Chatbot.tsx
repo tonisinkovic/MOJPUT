@@ -2,7 +2,22 @@ import { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import { Link } from "react-router-dom";
 import Layout from "@/components/Layout";
 import { motion } from "framer-motion";
-import { Bot, Send, Sparkles, ChevronRight, RotateCcw, LogIn, Crown, Timer, Loader2 } from "lucide-react";
+import {
+  Bot,
+  Send,
+  Sparkles,
+  ChevronRight,
+  RotateCcw,
+  LogIn,
+  Crown,
+  Timer,
+  Loader2,
+  Plus,
+  X,
+  Image as ImageIcon,
+  FileText,
+} from "lucide-react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -15,6 +30,7 @@ import { facultyInstitutions } from "@/data/faculties";
 import { API_BASE_URL } from "@/config/apiBase";
 import { apiGet } from "@/lib/api";
 import { authMe, userFromAuthMe, type AuthUser } from "@/lib/auth";
+import { cn } from "@/lib/utils";
 
 const API_BASE = API_BASE_URL;
 
@@ -25,13 +41,209 @@ const SUGGESTIONS = [
   "Kako bih odabrao između FER-a i TVZ-a za karijeru u IT-u?",
 ];
 
+type ChatAttachment = {
+  id: string;
+  name: string;
+  mime: string;
+  dataUrl?: string;
+  textContent?: string;
+  /** Učitavanje s diska u tijeku — ime je već vidljivo u text baru */
+  loading?: boolean;
+};
+
 interface Message {
   role: "user" | "assistant";
   content: string;
+  attachments?: ChatAttachment[];
+}
+
+const MAX_ATTACH_BYTES = 4 * 1024 * 1024;
+const MAX_ATTACHMENTS = 5;
+
+function formatFileSize(bytes: number): string {
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} kB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+}
+
+/** Windows / neki preglednici često vrate prazan MIME za slike — koristi i ekstenziju. */
+const IMAGE_FILE_RE = /\.(jpe?g|png|gif|webp|bmp|svg|heic|heif|avif|ico)$/i;
+
+/** Tekstualni prilozi — širok skup ekstenzija. */
+const TEXT_FILE_RE = /\.(txt|csv|md|json|xml|html?|css|s?css|js|m?js|ts|tsx|jsx|vue|log|ini|yaml|yml|env|sh|bat|cmd|ps1|rtf|tex|gitignore|editorconfig)$/i;
+
+function isImageAttachment(a: Pick<ChatAttachment, "mime" | "dataUrl" | "name">): boolean {
+  if (a.dataUrl && /^data:image\//i.test(a.dataUrl)) return true;
+  if (a.mime && a.mime.startsWith("image/")) return true;
+  return IMAGE_FILE_RE.test(a.name || "");
+}
+
+function fileDisplayLabel(file: File): string {
+  const rel = (file as File & { webkitRelativePath?: string }).webkitRelativePath;
+  return (rel || file.name || "datoteka").replace(/\\/g, "/");
+}
+
+/** Samo ime datoteke (za prikaz u retku), put ostaje u title. */
+function fileBasename(path: string): string {
+  const parts = path.replace(/\\/g, "/").split("/").filter((p) => p.length > 0);
+  const base = parts.length > 0 ? parts[parts.length - 1]! : path.trim();
+  return base.trim() || "datoteka";
+}
+
+async function readFileAsAttachment(file: File, presetId?: string): Promise<ChatAttachment> {
+  if (file.size > MAX_ATTACH_BYTES) {
+    throw new Error("Datoteka je prevelika (najviše 4 MB po prilogu).");
+  }
+  const id = presetId ?? crypto.randomUUID();
+  const name = fileDisplayLabel(file);
+
+  const looksLikeImage = file.type.startsWith("image/") || IMAGE_FILE_RE.test(name);
+
+  if (looksLikeImage) {
+    return new Promise((resolve, reject) => {
+      const r = new FileReader();
+      r.onload = () => {
+        const dataUrl = r.result as string;
+        const fromData = dataUrl.match(/^data:([^;]+);/)?.[1]?.trim();
+        const mime = fromData || file.type || "image/jpeg";
+        resolve({ id, name, mime, dataUrl });
+      };
+      r.onerror = () => reject(new Error("Čitanje slike nije uspjelo."));
+      r.readAsDataURL(file);
+    });
+  }
+
+  if (file.type === "application/pdf" || /\.pdf$/i.test(name)) {
+    return {
+      id,
+      name,
+      mime: file.type || "application/pdf",
+      textContent:
+        `[PDF: ${name} · ${formatFileSize(file.size)}] — automatsko čitanje PDF-a nije uključeno; opiši što trebaš ili priloži sliku.`,
+    };
+  }
+
+  /** Word .docx — tekst iz Open XML (mammoth, dinamički import) */
+  if (
+    file.type === "application/vnd.openxmlformats-officedocument.wordprocessingml.document" ||
+    /\.docx$/i.test(name)
+  ) {
+    try {
+      const buffer = await file.arrayBuffer();
+      const { default: mammoth } = await import("mammoth");
+      const { value } = await mammoth.extractRawText({ arrayBuffer: buffer });
+      const text = (value || "").replace(/\s+/g, " ").trim().slice(0, 32000);
+      return {
+        id,
+        name,
+        mime:
+          file.type || "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        textContent:
+          text ||
+          `[Word (.docx): ${name}] — Nema izvučenog teksta (npr. samo slike ili prazan dokument).`,
+      };
+    } catch {
+      throw new Error("Ne mogu pročitati ovaj Word (.docx) dokument. Pokušaj ponovo ili kopiraj tekst ručno.");
+    }
+  }
+
+  /** Stari Word .doc — binarni format, nema pouzdanog čitanja u pregledniku */
+  if (file.type === "application/msword" || /\.doc$/i.test(name)) {
+    return {
+      id,
+      name,
+      mime: file.type || "application/msword",
+      textContent: `[Word (.doc): ${name} · ${formatFileSize(file.size)}] — stari .doc format nije podržan u pregledniku. U Wordu ga spremi kao „.docx“ ili zalijepi tekst u poruku.`,
+    };
+  }
+
+  const looksLikeText =
+    file.type.startsWith("text/") ||
+    file.type === "application/json" ||
+    file.type === "application/xml" ||
+    file.type === "application/javascript" ||
+    file.type === "application/x-javascript" ||
+    TEXT_FILE_RE.test(name);
+
+  if (looksLikeText) {
+    return new Promise((resolve, reject) => {
+      const r = new FileReader();
+      r.onload = () => {
+        const text = String(r.result ?? "");
+        resolve({ id, name, mime: file.type || "text/plain", textContent: text.slice(0, 32000) });
+      };
+      r.onerror = () => reject(new Error("Čitanje teksta nije uspjelo."));
+      r.readAsText(file);
+    });
+  }
+
+  return {
+    id,
+    name,
+    mime: file.type || "application/octet-stream",
+    textContent: `[Datoteka: ${name} · ${formatFileSize(file.size)}] — sadržaj nije učitan kao tekst; opiši što trebaš ili priloži sliku/tekst ako želiš analizu.`,
+  };
+}
+
+function buildApiUserContent(
+  text: string,
+  attachments: ChatAttachment[],
+): string | Array<{ type: string; text?: string; image_url?: { url: string; detail?: "low" | "auto" } }> {
+  const imgs = attachments.filter((a) => !a.loading && a.dataUrl && isImageAttachment(a));
+  const textFromFiles = attachments
+    .filter((a) => !a.loading && a.textContent != null && a.textContent.length > 0)
+    .map((a) => `📎 ${a.name}:\n${a.textContent}`)
+    .join("\n\n");
+
+  const userText = text.trim();
+  let textParts = [userText, textFromFiles].filter(Boolean).join("\n\n");
+
+  /** Samo prilog (npr. Word) bez teksta u polju — modelu jasno reci da koristi sadržaj priloga. */
+  if (textFromFiles && !userText) {
+    textParts = `Korisnik je priložio dokument(e). Odgovori na temelju teksta ispod (to je sadržaj datoteka).\n\n${textParts}`;
+  }
+
+  let fallback = textParts || (imgs.length ? "Molim pogledaj prilog." : "");
+  if (!fallback.trim() && attachments.some((a) => !a.loading)) {
+    fallback = "Prilog je dodan — obradi ga ako je moguće.";
+  }
+
+  if (imgs.length === 0) {
+    return fallback;
+  }
+
+  const parts: Array<{
+    type: string;
+    text?: string;
+    image_url?: { url: string; detail?: "low" | "auto" };
+  }> = [];
+  parts.push({ type: "text", text: fallback || "Molim pogledaj prilog." });
+  for (const img of imgs) {
+    parts.push({
+      type: "image_url",
+      image_url: { url: img.dataUrl!, detail: "low" },
+    });
+  }
+  return parts;
+}
+
+function buildUserSearchQuery(text: string, attachments: ChatAttachment[] | undefined): string {
+  const textFromFiles = (attachments ?? [])
+    .filter((a) => a.textContent != null && a.textContent.length > 0)
+    .map((a) => `📎 ${a.name}:\n${a.textContent}`)
+    .join("\n\n");
+  const hasImg = attachments?.some((a) => !a.loading && a.dataUrl && isImageAttachment(a));
+  const imgNote = hasImg && !text.trim() && !textFromFiles ? "(Korisnik je priložio sliku.)" : "";
+  const docOnly = textFromFiles && !text.trim() && !imgNote;
+  const prefix = docOnly ? "Dokument priložen u poruci. " : "";
+  return (
+    [prefix + text.trim(), textFromFiles, imgNote].filter(Boolean).join("\n\n") || "prilog"
+  );
 }
 
 const AI_NAME = "Dražen";
-const AI_WELCOME = `Bok, ja sam ${AI_NAME}. Odgovaram na sva pitanja koja te zanimaju o fakultetima u Hrvatskoj. Što te zanima?`;
+const AI_WELCOME = `Bok! Ja sam ${AI_NAME} 👋
+Pomažem ti sa svim pitanjima o fakultetima u Hrvatskoj. Što te zanima?`;
 
 function buildLocalChatReply(question: string): string {
   const q = question.toLowerCase();
@@ -65,79 +277,6 @@ function buildLocalChatReply(question: string): string {
   return `Trenutno radim u lokalnom modu (bez backenda), ali i dalje mogu pomoći kroz podatke iz baze.\n\nPrimjeri koje mogu odmah odgovoriti:\n- Fakulteti u određenom gradu (npr. Zagreb, Split, Rijeka)\n- Studiji računarstva/informatike\n- Osnovni popis fakulteta po području\n\nPrimjer ustanova iz baze:\n- ${sample.map((f) => `${f.name} (${f.city})`).join("\n- ")}`;
 }
 
-const RobotAIWindow = () => {
-  // Mali robot s hrvatskim bojama (plavo-crveno-bijelo + šahovnica) koji drži "AI prozor".
-  return (
-    <svg viewBox="0 0 120 120" width="76" height="76" aria-hidden="true">
-      <defs>
-        <linearGradient id="aiWindow" x1="38" y1="56" x2="86" y2="88" gradientUnits="userSpaceOnUse">
-          <stop offset="0%" stopColor="#93c5fd" stopOpacity="0.95" />
-          <stop offset="100%" stopColor="#dbeafe" stopOpacity="0.95" />
-        </linearGradient>
-      </defs>
-
-      {/* Robot arms */}
-      <path
-        d="M36 66 C30 74, 30 85, 39 90 C47 94, 52 90, 54 84"
-        fill="none"
-        stroke="#1d4ed8"
-        strokeWidth="6"
-        strokeLinecap="round"
-      />
-      <path
-        d="M84 66 C90 74, 90 85, 81 90 C73 94, 68 90, 66 84"
-        fill="none"
-        stroke="#1d4ed8"
-        strokeWidth="6"
-        strokeLinecap="round"
-      />
-
-      {/* Head */}
-      <circle cx="60" cy="38" r="18" fill="#ffffff" stroke="#1d4ed8" strokeWidth="4" />
-      {/* Antenna */}
-      <path d="M60 20 C58 15, 56 13, 53 11" fill="none" stroke="#1d4ed8" strokeWidth="3" strokeLinecap="round" />
-      <circle cx="52" cy="10.5" r="4" fill="#dc2626" stroke="#1d4ed8" strokeWidth="2" />
-
-      {/* Eyes */}
-      <circle cx="53" cy="38" r="3.2" fill="#0f172a" />
-      <circle cx="67" cy="38" r="3.2" fill="#0f172a" />
-      <path d="M54 47 C58 51, 62 51, 66 47" fill="none" stroke="#dc2626" strokeWidth="3" strokeLinecap="round" />
-
-      {/* Body */}
-      <rect x="38" y="54" width="44" height="50" rx="14" fill="#ffffff" stroke="#1d4ed8" strokeWidth="4" />
-
-      {/* Chessboard (4x4) */}
-      {Array.from({ length: 4 }).map((_, row) =>
-        Array.from({ length: 4 }).map((__, col) => {
-          const isRed = (row + col) % 2 === 0;
-          const x = 46 + col * 7;
-          const y = 66 + row * 6;
-          return (
-            <rect
-              key={`${row}-${col}`}
-              x={x}
-              y={y}
-              width="7"
-              height="6"
-              fill={isRed ? "#dc2626" : "#ffffff"}
-              stroke={isRed ? "#dc2626" : "#1d4ed8"}
-              strokeWidth="0.5"
-            />
-          );
-        })
-      )}
-
-      {/* AI window (the "held window") */}
-      <rect x="42" y="62" width="36" height="24" rx="6" fill="url(#aiWindow)" stroke="#1d4ed8" strokeWidth="3" />
-      <path d="M49 68 H71" stroke="#1d4ed8" strokeWidth="2" strokeLinecap="round" opacity="0.5" />
-      <path d="M49 74 H67" stroke="#1d4ed8" strokeWidth="2" strokeLinecap="round" opacity="0.35" />
-      <text x="60" y="79" textAnchor="middle" fontSize="10" fontWeight="700" fill="#1d4ed8">
-        AI
-      </text>
-    </svg>
-  );
-};
-
 type ChatQuotaState = {
   authenticated: boolean;
   limit: number;
@@ -168,6 +307,8 @@ const Chatbot = () => {
   /** Samo ovaj element skrola — ne koristimo scrollIntoView jer pomiče cijelu stranicu. */
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [pendingAttachments, setPendingAttachments] = useState<ChatAttachment[]>([]);
 
   const scrollChatToBottom = () => {
     const el = messagesContainerRef.current;
@@ -285,6 +426,9 @@ const Chatbot = () => {
   const canSendChat =
     !isLoading && (STATIC_NO_API || (Boolean(user) && !authLoading && !atDailyLimit));
 
+  /** Prilog se može odabrati i bez prijave (prikaz u traci); slanje i dalje zahtijeva prijavu. */
+  const canPickAttachments = !isLoading;
+
   const autoResize = (el: HTMLTextAreaElement) => {
     el.style.height = "24px";
     el.style.height = `${Math.min(el.scrollHeight, 120)}px`;
@@ -299,10 +443,13 @@ const Chatbot = () => {
   };
 
   const sendMessage = async (text?: string) => {
-    const content = (text ?? input).trim();
-    if (!content || isLoading) return;
+    if (pendingAttachments.some((a) => a.loading)) return;
+    const content = (text !== undefined ? text : input).trim();
+    const attachments = [...pendingAttachments];
+    if ((!content && attachments.length === 0) || isLoading) return;
 
     if (!user && !STATIC_NO_API) {
+      toast.error("Za slanje poruka i priloga (slike, dokumenti) moraš biti prijavljen.", { duration: 6000 });
       return;
     }
     if (atDailyLimit) {
@@ -311,16 +458,26 @@ const Chatbot = () => {
     }
 
     setInput("");
+    setPendingAttachments([]);
     if (textareaRef.current) textareaRef.current.style.height = "24px";
 
-    const userMsg: Message = { role: "user", content };
+    const userMsg: Message = {
+      role: "user",
+      content,
+      attachments: attachments.length ? attachments : undefined,
+    };
     setMessages((m) => [...m, userMsg]);
     setIsLoading(true);
 
-    const conversationHistory = [...messages, userMsg].map((m) => ({
-      role: m.role,
-      content: m.content,
-    }));
+    const conversationHistory = [...messages, userMsg].map((m) => {
+      if (m.role === "user") {
+        return {
+          role: "user" as const,
+          content: buildApiUserContent(m.content, m.attachments ?? []),
+        };
+      }
+      return { role: "assistant" as const, content: m.content };
+    });
 
     setMessages((m) => [...m, { role: "assistant", content: "" }]);
     const assistantIdx = conversationHistory.length;
@@ -328,7 +485,7 @@ const Chatbot = () => {
     // Static hosting fallback: when backend is unavailable, answer from local dataset.
     const shouldUseLocalFallback = !API_BASE && !import.meta.env.DEV;
     if (shouldUseLocalFallback) {
-      const localReply = buildLocalChatReply(content);
+      const localReply = buildLocalChatReply(buildUserSearchQuery(content, userMsg.attachments));
       setMessages((m) => {
         const next = [...m];
         next[assistantIdx] = { role: "assistant", content: localReply };
@@ -443,7 +600,7 @@ const Chatbot = () => {
     } catch (err) {
       let msg = err instanceof Error ? err.message : "Došlo je do greške. Pokušajte ponovo.";
       if (msg.includes("404") || msg.includes("502") || msg.includes("Failed to fetch")) {
-        msg = buildLocalChatReply(content);
+        msg = buildLocalChatReply(buildUserSearchQuery(content, userMsg.attachments));
       } else if (msg.includes("429") || msg.includes("quota") || msg.includes("OpenAI")) {
         msg = "OpenAI trenutno nije dostupan (kvota ili limit). Pokušaj za chvili ili provjeri račun na platform.openai.com.";
       }
@@ -460,9 +617,62 @@ const Chatbot = () => {
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
-      sendMessage();
+      void sendMessage();
     }
   };
+
+  const processPickedFiles = async (files: File[] | null | undefined) => {
+    if (!files?.length) return;
+    for (const file of files) {
+      if (file.size > MAX_ATTACH_BYTES) {
+        toast.error("Datoteka je prevelika (najviše 4 MB po prilogu).");
+        continue;
+      }
+
+      const id = crypto.randomUUID();
+      const label = fileDisplayLabel(file);
+      let added = false;
+      setPendingAttachments((p) => {
+        if (p.length >= MAX_ATTACHMENTS) return p;
+        added = true;
+        return [...p, { id, name: label, mime: file.type || "", loading: true }];
+      });
+      if (!added) {
+        toast.error("Najviše 5 priloga odjednom.");
+        break;
+      }
+
+      try {
+        const att = await readFileAsAttachment(file, id);
+        setPendingAttachments((p) => p.map((x) => (x.id === id ? { ...att, loading: false } : x)));
+      } catch (err) {
+        setPendingAttachments((p) => p.filter((x) => x.id !== id));
+        toast.error(err instanceof Error ? err.message : "Datoteka nije učitana.");
+      }
+    }
+  };
+
+  const handleFilesSelected = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    /** Odmah kopiraj u polje — brisanje value može isprazniti FileList u nekim preglednicima. */
+    const picked = e.target.files ? Array.from(e.target.files) : [];
+    e.target.value = "";
+    await processPickedFiles(picked);
+  };
+
+  const removePendingAttachment = (id: string) => {
+    setPendingAttachments((p) => p.filter((a) => a.id !== id));
+  };
+
+  const attachmentsStillLoading = pendingAttachments.some((a) => a.loading);
+  const hasOutgoingContent = Boolean(input.trim() || pendingAttachments.length > 0);
+
+  /** Pošalji bez blokiranja prijavom prikaza (toast ako nije prijavljen); blok samo limit / učitavanje. */
+  const canClickSend =
+    !isLoading &&
+    !authLoading &&
+    hasOutgoingContent &&
+    !attachmentsStillLoading &&
+    !(Boolean(user) && atDailyLimit);
 
   const showLoginGate = !authLoading && !user && !STATIC_NO_API;
 
@@ -521,19 +731,6 @@ const Chatbot = () => {
 
       <section className="container py-6">
         <div className="flex flex-col lg:flex-row gap-6 max-w-6xl mx-auto">
-          {/* Samo robot (drži AI prozor) */}
-          <motion.div
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            className="w-full lg:w-72 shrink-0"
-          >
-            <div className="h-fit lg:sticky lg:top-24">
-              <div className="flex items-center justify-center">
-                <RobotAIWindow />
-              </div>
-            </div>
-          </motion.div>
-
           {/* Chat */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -630,6 +827,7 @@ const Chatbot = () => {
                     className="text-xs"
                     onClick={() => {
                       setMessages([{ role: "assistant", content: AI_WELCOME }]);
+                      setPendingAttachments([]);
                       void refreshQuota();
                     }}
                     title={
@@ -704,7 +902,32 @@ const Chatbot = () => {
                           )}
                         </>
                       ) : (
-                        msg.content
+                        <>
+                          {msg.attachments?.map((a) =>
+                            a.dataUrl && isImageAttachment(a) ? (
+                              <img
+                                key={a.id}
+                                src={a.dataUrl}
+                                alt={a.name}
+                                className="chat-attachment-img mb-2 max-h-48 w-auto rounded-md border border-border object-contain"
+                              />
+                            ) : a.textContent ? (
+                              <div
+                                key={a.id}
+                                className="mb-2 rounded-md border border-border bg-muted/50 px-2 py-1.5 text-xs text-muted-foreground"
+                              >
+                                📎 {a.name}
+                              </div>
+                            ) : null,
+                          )}
+                          {msg.content ? (
+                            <span className="whitespace-pre-wrap">{msg.content}</span>
+                          ) : msg.attachments?.some((a) => a.textContent) ? (
+                            <span className="text-xs text-muted-foreground">
+                              Tekst dokumenta poslan je u poruci chatbotu.
+                            </span>
+                          ) : null}
+                        </>
                       )}
                     </div>
                   </div>
@@ -715,47 +938,128 @@ const Chatbot = () => {
                     <div className="chat-msg-avatar">
                       <Bot className="w-4 h-4 text-primary-foreground" />
                     </div>
-                    <div className="chat-typing-dots">
-                      <span /><span /><span />
+                    <div className="chat-typing-dots" aria-live="polite" aria-label="Piše odgovor">
+                      <span className="chat-typing-label">Piše</span>
+                      <span className="chat-typing-dot" />
+                      <span className="chat-typing-dot" />
+                      <span className="chat-typing-dot" />
                     </div>
                   </div>
                 )}
               </div>
 
-              <div className="chat-input-area">
+              <div className="chat-input-area shrink-0">
                 <div className="chat-input-row">
-                  <textarea
-                    ref={textareaRef}
-                    value={input}
-                    onChange={(e) => {
-                      setInput(e.target.value);
-                      autoResize(e.target);
-                    }}
-                    onKeyDown={handleKeyDown}
-                    placeholder={
-                      showLoginGate
-                        ? "Prijavi se za slanje poruka…"
-                        : authLoading
-                          ? "Učitavanje…"
-                          : atDailyLimit
-                            ? "Dnevni limit poruka (12) iscrpljen…"
-                            : "Npr. FER ili FOI za računarstvo?"
-                    }
-                    rows={1}
-                    className="chat-textarea"
-                    disabled={isLoading || !canSendChat}
-                  />
-                  <Button
-                    size="icon"
-                    className="chat-send-btn shrink-0"
-                    onClick={() => sendMessage()}
-                    disabled={isLoading || !canSendChat}
-                    title="Pošalji"
-                  >
-                    <Send className="w-4 h-4" />
-                  </Button>
+                  {pendingAttachments.length > 0 && (
+                    <div
+                      className={cn(
+                        "chat-pending-strip flex w-full min-h-10 flex-wrap items-center gap-2 border-b-2 border-primary/40",
+                        "bg-primary/15 px-2 py-2 text-foreground dark:bg-primary/25",
+                      )}
+                      aria-live="polite"
+                      aria-label="Prilozi prije slanja"
+                    >
+                      {pendingAttachments.map((a) => {
+                        const isImg = isImageAttachment(a);
+                        const shortName = fileBasename(a.name) || "Prilog";
+                        return (
+                          <div
+                            key={a.id}
+                            className="chat-pending-chip-compact inline-flex max-w-[min(100%,20rem)] min-h-7 min-w-0 items-center gap-1 rounded-full border-2 border-primary/50 bg-background px-2 py-1 text-xs font-semibold text-foreground shadow-sm"
+                            title={a.name || shortName}
+                          >
+                            <span className="select-none text-sm leading-none" aria-hidden>
+                              📎
+                            </span>
+                            <span className="chat-pending-icon shrink-0" aria-hidden>
+                              {isImg ? (
+                                <ImageIcon className="h-3.5 w-3.5 text-primary" strokeWidth={2.25} />
+                              ) : (
+                                <FileText className="h-3.5 w-3.5 text-muted-foreground" strokeWidth={2.25} />
+                              )}
+                            </span>
+                            <span className="shrink-0 text-[10px] font-bold uppercase tracking-wide text-primary">
+                              {isImg ? "Slika" : "Datoteka"}
+                            </span>
+                            <span className="text-muted-foreground" aria-hidden>
+                              ·
+                            </span>
+                            <span className="min-w-0 max-w-[11rem] truncate font-medium">{shortName}</span>
+                            {a.loading ? (
+                              <Loader2 className="h-3.5 w-3.5 shrink-0 animate-spin text-primary" aria-hidden />
+                            ) : null}
+                            <button
+                              type="button"
+                              className="chat-pending-chip-remove shrink-0"
+                              onClick={() => removePendingAttachment(a.id)}
+                              aria-label={`Ukloni ${a.name}`}
+                            >
+                              <X className="h-3.5 w-3.5" />
+                            </button>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                  <div className="chat-input-row-main">
+                    <textarea
+                      ref={textareaRef}
+                      value={input}
+                      onChange={(e) => {
+                        setInput(e.target.value);
+                        autoResize(e.target);
+                      }}
+                      onKeyDown={handleKeyDown}
+                      placeholder={
+                        showLoginGate
+                          ? "Prijavi se za slanje poruka…"
+                          : authLoading
+                            ? "Učitavanje…"
+                            : atDailyLimit
+                              ? "Dnevni limit poruka (12) iscrpljen…"
+                              : pendingAttachments.length > 0
+                                ? "Napiši poruku uz prilog (opcionalno)…"
+                                : "Npr. FER ili FOI za računarstvo?"
+                      }
+                      rows={1}
+                      className="chat-textarea"
+                      disabled={isLoading || authLoading || (Boolean(user) && atDailyLimit)}
+                    />
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      className="sr-only"
+                      multiple
+                      onChange={(e) => void handleFilesSelected(e)}
+                      aria-hidden
+                      tabIndex={-1}
+                    />
+                    <Button
+                      type="button"
+                      size="icon"
+                      variant="secondary"
+                      className="chat-attach-btn shrink-0"
+                      onClick={() => fileInputRef.current?.click()}
+                      disabled={!canPickAttachments}
+                      title="Priloži datoteke (više odjednom)"
+                    >
+                      <Plus className="h-7 w-7" strokeWidth={2.75} aria-hidden />
+                    </Button>
+                    <Button
+                      size="icon"
+                      className="chat-send-btn shrink-0"
+                      onClick={() => void sendMessage()}
+                      disabled={!canClickSend}
+                      title="Pošalji"
+                    >
+                      <Send className="w-4 h-4" />
+                    </Button>
+                  </div>
                 </div>
-                <p className="chat-footer-hint">Enter za slanje · Shift+Enter novi red · razgovorni odgovori, podaci iz baze kad odgovaraju</p>
+                <p className="chat-footer-hint">
+                  Enter za slanje · Shift+Enter novi red · + za prilog datoteka · razgovorni odgovori, podaci iz baze kad
+                  odgovaraju
+                </p>
               </div>
             </div>
           </motion.div>
@@ -997,16 +1301,23 @@ const Chatbot = () => {
           padding: 0.875rem 1.125rem;
           display: flex;
           align-items: center;
-          gap: 5px;
+          gap: 0.5rem;
         }
-        .chat-typing-dots span {
+        .chat-typing-label {
+          font-size: 0.8125rem;
+          font-weight: 500;
+          color: hsl(var(--muted-foreground));
+          margin-right: 0.125rem;
+        }
+        .chat-typing-dot {
           width: 6px; height: 6px;
           border-radius: 50%;
           background: hsl(var(--primary));
           animation: chatBounce 1.2s ease-in-out infinite;
         }
-        .chat-typing-dots span:nth-child(2) { animation-delay: 0.2s; }
-        .chat-typing-dots span:nth-child(3) { animation-delay: 0.4s; }
+        .chat-typing-dots > span.chat-typing-dot:nth-child(2) { animation-delay: 0s; }
+        .chat-typing-dots > span.chat-typing-dot:nth-child(3) { animation-delay: 0.2s; }
+        .chat-typing-dots > span.chat-typing-dot:nth-child(4) { animation-delay: 0.4s; }
         .chat-input-area {
           padding: 1rem 1.25rem;
           border-top: 1px solid hsl(var(--border));
@@ -1015,17 +1326,31 @@ const Chatbot = () => {
         }
         .chat-input-row {
           display: flex;
-          gap: 0.625rem;
-          align-items: flex-end;
+          flex-direction: column;
+          align-items: stretch;
+          gap: 0.5rem;
           background: hsl(var(--background));
           border: 1px solid hsl(var(--border));
           border-radius: 0.875rem;
           padding: 0.625rem 0.875rem;
           transition: border-color 0.2s;
         }
+        .chat-input-row-main {
+          display: flex;
+          flex-wrap: wrap;
+          align-items: flex-end;
+          gap: 0.5rem;
+          width: 100%;
+          min-width: 0;
+        }
         .chat-input-row:focus-within {
           border-color: hsl(var(--primary) / 0.5);
           outline: none;
+        }
+        .chat-pending-icon {
+          display: flex;
+          align-items: center;
+          justify-content: center;
         }
         .chat-textarea {
           flex: 1;
@@ -1053,6 +1378,33 @@ const Chatbot = () => {
         .chat-send-btn:hover:not(:disabled) {
           transform: scale(1.05);
           filter: brightness(1.05);
+        }
+        .chat-attach-btn {
+          width: 36px;
+          height: 36px;
+          border-radius: 0.625rem;
+          background: hsl(var(--muted)) !important;
+          border: 1px solid hsl(var(--border)) !important;
+          color: hsl(var(--muted-foreground)) !important;
+        }
+        .chat-attach-btn:hover:not(:disabled) {
+          background: hsl(var(--muted) / 0.85) !important;
+          color: hsl(var(--foreground)) !important;
+        }
+        .chat-pending-chip-remove {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          padding: 0.125rem;
+          border-radius: 0.25rem;
+          color: hsl(var(--muted-foreground));
+          background: transparent;
+          border: none;
+          cursor: pointer;
+        }
+        .chat-pending-chip-remove:hover {
+          color: hsl(var(--foreground));
+          background: hsl(var(--muted) / 0.5);
         }
         .chat-footer-hint {
           font-size: 0.625rem;

@@ -1331,7 +1331,7 @@ async function main() {
       ? cors({ origin: productionCorsOrigin, credentials: true })
       : cors({ origin: true, credentials: true }),
   );
-  app.use(express.json());
+  app.use(express.json({ limit: "2mb" }));
   app.use(cookieParser());
 
   // Auth

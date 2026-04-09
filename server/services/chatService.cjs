@@ -599,10 +599,19 @@ async function chatOpenAI(messages, databaseContextSnippet) {
 
   const history = messages
     .filter((m) => m.role === "user" || m.role === "assistant")
-    .map((m) => ({
-      role: m.role,
-      content: String(m.content ?? ""),
-    }))
+    .map((m) => {
+      const c = m.content;
+      if (m.role === "assistant") {
+        return { role: "assistant", content: String(c ?? "") };
+      }
+      if (typeof c === "string") {
+        return { role: "user", content: c };
+      }
+      if (Array.isArray(c)) {
+        return { role: "user", content: c };
+      }
+      return { role: "user", content: String(c ?? "") };
+    })
     .slice(-historyMax);
 
   const openaiMessages = [{ role: "system", content: system }, ...history];
@@ -635,9 +644,21 @@ async function chatOpenAI(messages, databaseContextSnippet) {
   return text;
 }
 
+function getMessageTextForRag(m) {
+  const c = m?.content;
+  if (typeof c === "string") return c;
+  if (Array.isArray(c)) {
+    return c
+      .filter((p) => p && p.type === "text" && p.text)
+      .map((p) => p.text)
+      .join("\n");
+  }
+  return "";
+}
+
 async function chatLocal(messages) {
   const lastUserMsg = [...messages].reverse().find((m) => m.role === "user");
-  const query = lastUserMsg?.content || "";
+  const query = getMessageTextForRag(lastUserMsg) || "";
 
   const useOpenAI = Boolean(String(process.env.OPENAI_API_KEY || "").trim());
   if (useOpenAI) {
