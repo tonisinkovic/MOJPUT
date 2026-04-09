@@ -6248,6 +6248,15 @@
     "maxBodovi": 1000,
     "komponente": [
       {
+        "id": "dod_psihomotorika_fdmz",
+        "label": "Test psihomotorike (provodi Fakultet za dentalnu medicinu i zdravstvo Osijek)",
+        "max": 100.0,
+        "type": "matura",
+        "obavezno": true,
+        "postotak": 10.0,
+        "opis": "Udio u ukupnom bodovanju 10 %."
+      },
+      {
         "id": "ocjena_1",
         "label": "Prosjek svih ocjena",
         "max": 250.0,
@@ -21630,6 +21639,15 @@
     "maxBodovi": 1000,
     "komponente": [
       {
+        "id": "dod_predispozicija_arh_split",
+        "label": "Dodatna provjera: opća predispozicija za studij arhitekture, likovni izraz, prostorna percepcija",
+        "max": 600.0,
+        "type": "matura",
+        "obavezno": true,
+        "postotak": 60.0,
+        "opis": "Prag 30 %. Vrijednovanje 60 % ukupnog broja bodova."
+      },
+      {
         "id": "ocjena_1",
         "label": "Prosjek svih ocjena",
         "max": 100.0,
@@ -24624,43 +24642,60 @@
       {
         "id": "ocjena_1",
         "label": "Prosjek svih ocjena",
-        "max": 999.9,
+        "max": 350.0,
         "type": "ocjena",
         "obavezno": true,
-        "postotak": 99.99
+        "postotak": 35.0
       },
       {
         "id": "mat_hrvatski_jez",
         "label": "Hrvatski jezik",
-        "max": 0.0,
+        "max": 300.0,
         "type": "matura",
-        "razina": "B",
+        "razina": "A",
         "obavezno": true,
-        "postotak": 0.0
-      },
-      {
-        "id": "mat_matematika",
-        "label": "Matematika",
-        "max": 0.0,
-        "type": "matura",
-        "razina": "B",
-        "obavezno": true,
-        "postotak": 0.0
+        "postotak": 30.0
       },
       {
         "id": "mat_strani_jezik",
         "label": "Strani jezik",
-        "max": 0.0,
+        "max": 150.0,
         "type": "matura",
         "razina": "B",
         "obavezno": true,
-        "postotak": 0.0
+        "postotak": 15.0
+      },
+      {
+        "id": "mat_matematika",
+        "label": "Matematika",
+        "max": 50.0,
+        "type": "matura",
+        "razina": "B",
+        "obavezno": true,
+        "postotak": 5.0
+      },
+      {
+        "id": "mat_izborni_split_pravo",
+        "label": "Izborni predmet mature (npr. Povijest, Filozofija, Logika, Politika i gospodarstvo, Sociologija, Psihologija)",
+        "max": 100.0,
+        "type": "matura_izborni",
+        "razina": "B",
+        "obavezno": false,
+        "postotak": 10.0
+      },
+      {
+        "id": "dodatno_natjecanja",
+        "label": "Natjecanja i posebna postignuća (do 5 %)",
+        "max": 50.0,
+        "type": "dodatno",
+        "obavezno": false,
+        "postotak": 5.0
       }
     ],
     "pragovi": {
       "2025": 269.8
     },
-    "izvor": "postani-student.hr",
+    "izvor": "pravst.unist.hr / postani-student.hr",
     "natjecanja": [
       {
         "kategorija": "Državno natjecanje",
@@ -32307,7 +32342,35 @@
     "program": "Arhitektura i urbanizam",
     "grad": "Zagreb",
     "maxBodovi": 1000,
+    "napomena": "Položen ispit hrvatskog jezika na B2 razini za strane državljane obvezan je gdje vrijedi, ali se ne boduje.",
     "komponente": [
+      {
+        "id": "dod_test_likovni_graf",
+        "label": "Dodatna provjera: test likovnih i grafičkih sposobnosti",
+        "max": 200.0,
+        "type": "matura",
+        "obavezno": true,
+        "postotak": 20.0,
+        "opis": "Udio 20 % u bloku dodatnih provjera (ukupno 60 %). Ukupni prag na sve tri testa 41,67 %."
+      },
+      {
+        "id": "dod_test_percepcija_prostora",
+        "label": "Dodatna provjera: test sposobnosti percepcije prostora",
+        "max": 200.0,
+        "type": "matura",
+        "obavezno": true,
+        "postotak": 20.0,
+        "opis": "Udio 20 % u bloku dodatnih provjera (ukupno 60 %). Ukupni prag na sve tri testa 41,67 %."
+      },
+      {
+        "id": "dod_opca_kultura_arh",
+        "label": "Dodatna provjera: opća kultura",
+        "max": 200.0,
+        "type": "matura",
+        "obavezno": true,
+        "postotak": 20.0,
+        "opis": "Udio 20 % u bloku dodatnih provjera (ukupno 60 %). Ukupni prag na sve tri testa 41,67 %."
+      },
       {
         "id": "ocjena_1",
         "label": "Prosjek svih ocjena",
@@ -43500,6 +43563,7 @@
     "program": "Medicina",
     "grad": "Zagreb",
     "maxBodovi": 1000,
+    "napomena": "Položen ispit hrvatskog jezika na B2 razini za strane državljane obvezan je gdje vrijedi, ali se ne boduje.",
     "komponente": [
       {
         "id": "ocjena_1",
@@ -43535,12 +43599,21 @@
         "razina": "A",
         "obavezno": true,
         "postotak": 8.0
+      },
+      {
+        "id": "dod_test_bfk_mfz",
+        "label": "Dodatna provjera: test znanja iz biologije, fizike i kemije (bitno za studij)",
+        "max": 600.0,
+        "type": "matura",
+        "obavezno": true,
+        "postotak": 60.0,
+        "opis": "Vrijednovanje 60 % ukupnog broja bodova. Prag na cijelom testu 50,83 %; prag po svakom predmetu na testu 40 %."
       }
     ],
     "pragovi": {
       "2025": 654.3
     },
-    "izvor": "postani-student.hr",
+    "izvor": "postani-student.hr / MFZG natječaj",
     "preduvjeti": [
       "Tijekom četverogodišnjeg obrazovanja kandidat mora odslušati i položiti najmanje dvije godine nastave iz predmeta Biologija, Fizika i Kemija",
       "Potvrda nadležnog školskog liječnika o zdravstvenim i psihofizičkim sposobnostima za studij medicine",
