@@ -21,6 +21,7 @@ import {
 import { useTheme } from "next-themes";
 import { toast } from "sonner";
 import Layout from "@/components/Layout";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -38,7 +39,11 @@ import {
   type QuizHistoryEntry,
   type SavedFacultyRow,
 } from "@/lib/profileApi";
-import { buildCareerQuizPayload, saveCareerQuizResult } from "@/lib/careerQuizApi";
+import {
+  buildCareerQuizPayload,
+  isCareerQuizPayload,
+  saveCareerQuizResult,
+} from "@/lib/careerQuizApi";
 import { analyzeHzzMojIzborV2, QUIZ_TOP_CAREERS } from "@/lib/careerQuizEngine";
 import { computeHolisticTraits, topTraits } from "@/lib/careerAdvisor";
 import interestsJson from "@/data/career-quiz/questions-interests.json";
@@ -92,14 +97,14 @@ function formatHrDate(iso: string | undefined | null) {
 
 function DashboardSkeleton() {
   return (
-    <div className="space-y-6 animate-pulse">
-      <div className="h-36 rounded-2xl bg-muted" />
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+    <div className="space-y-8 animate-pulse">
+      <div className="h-40 rounded-3xl bg-muted/80" />
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         {[1, 2, 3, 4].map((i) => (
-          <div key={i} className="h-24 rounded-xl bg-muted" />
+          <div key={i} className="h-28 rounded-2xl bg-muted/80" />
         ))}
       </div>
-      <div className="h-48 rounded-2xl bg-muted" />
+      <div className="h-56 rounded-3xl bg-muted/80" />
     </div>
   );
 }
@@ -157,11 +162,19 @@ export default function ProfilDashboard() {
   }, [authUser, loadDashboard]);
 
   const lastQuiz: QuizHistoryEntry | undefined = dash?.quiz_history?.[0];
-  const topNames = lastQuiz?.payload?.summary?.topCareerNames ?? [];
-  const topMatchHint = useMemo(() => {
+  const topNames =
+    lastQuiz && isCareerQuizPayload(lastQuiz.payload) ? lastQuiz.payload.summary.topCareerNames : [];
+  const lastQuizSummaryLine = useMemo(() => {
     if (!lastQuiz) return null;
-    const names = lastQuiz.payload.summary.topCareerNames;
-    return names?.length ? `Najjače: ${names.slice(0, 3).join(", ")}` : null;
+    const p = lastQuiz.payload;
+    if (isCareerQuizPayload(p)) {
+      const n = p.summary.topCareerNames;
+      return n?.length ? `Kviz za fakultet · ${n.slice(0, 3).join(", ")}` : "Kviz za fakultet";
+    }
+    if (p.kind === "confidence") {
+      return `Samopouzdanje · ${p.confidence?.confidenceLevel ?? "—"} (prosjek ${p.confidence?.averageScore?.toFixed(2) ?? "—"})`;
+    }
+    return `PHQ-9 / GAD-7 · ${p.serenity?.phq9Severity ?? "—"} / ${p.serenity?.gad7Severity ?? "—"}`;
   }, [lastQuiz]);
 
   const handleLogout = async () => {
@@ -196,8 +209,8 @@ export default function ProfilDashboard() {
   };
 
   const handleRepeatQuizSnapshot = async () => {
-    if (!lastQuiz?.payload) {
-      toast.message("Nema spremljenog kviza za ponovni izračun.");
+    if (!lastQuiz?.payload || !isCareerQuizPayload(lastQuiz.payload)) {
+      toast.message("Za zadnji zapis nije karijerni kviz — otvori /kviz za novi pokušaj.");
       return;
     }
     const { interestAnswers, competencyAnswers } = lastQuiz.payload;
@@ -265,71 +278,147 @@ export default function ProfilDashboard() {
 
   return (
     <Layout>
-      <section className="container relative max-w-7xl py-8 md:py-12">
-        <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="mb-8 md:mb-10">
-          <h1 className="text-3xl font-bold tracking-tight text-balance md:text-4xl">Moj profil</h1>
-          <p className="mt-2 max-w-2xl text-muted-foreground">
-            Pregled aktivnosti, rezultata kviza i spremljenih fakulteta — sve na jednom mjestu.
-          </p>
-        </motion.div>
+      <section className="relative overflow-hidden border-b border-border/40 bg-gradient-to-b from-primary/[0.04] via-background to-background">
+        <div
+          className="pointer-events-none absolute -right-24 -top-24 h-72 w-72 rounded-full bg-primary/[0.09] blur-3xl md:h-96 md:w-96"
+          aria-hidden
+        />
+        <div
+          className="pointer-events-none absolute -bottom-20 left-1/4 h-56 w-56 rounded-full bg-violet-500/[0.06] blur-3xl"
+          aria-hidden
+        />
 
-        <div className="flex flex-col gap-8 lg:flex-row lg:gap-10">
-          {/* Sidebar — desktop */}
-          <aside className="hidden w-56 shrink-0 lg:block">
-            <nav className="sticky top-24 space-y-1 rounded-2xl border border-border/60 bg-card/80 p-4 shadow-sm backdrop-blur-sm">
+        <div className="container relative max-w-7xl px-3 pb-10 pt-8 sm:px-4 md:pb-14 md:pt-12">
+          <motion.div
+            initial={{ opacity: 0, y: 14 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.35 }}
+            className="mb-8 md:mb-10"
+          >
+            <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
+              <div className="max-w-2xl">
+                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary/80">Moj račun</p>
+                <h1 className="mt-2 text-balance bg-gradient-to-br from-foreground via-foreground to-foreground/70 bg-clip-text text-3xl font-bold tracking-tight md:text-4xl lg:text-[2.5rem] lg:leading-tight">
+                  Moj profil
+                </h1>
+                <p className="mt-3 text-base leading-relaxed text-muted-foreground md:text-lg">
+                  Aktivnost, kvizovi i spremljeni fakulteti na jednom preglednom mjestu — brzo za čitanje, jednostavno za
+                  korištenje.
+                </p>
+              </div>
+              {dash && !dashLoading && (
+                <div className="flex shrink-0 items-center gap-3 rounded-2xl border border-border/60 bg-card/90 px-4 py-3 shadow-sm backdrop-blur-sm">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-primary/80 text-sm font-bold text-primary-foreground shadow-inner">
+                    {(dash.user.username || "?").slice(0, 2).toUpperCase()}
+                  </div>
+                  <div className="min-w-0">
+                    <p className="truncate font-semibold text-foreground">{dash.user.username}</p>
+                    <p className="truncate text-xs text-muted-foreground">{dash.user.email}</p>
+                  </div>
+                </div>
+              )}
+            </div>
+          </motion.div>
+
+          <div className="flex flex-col gap-8 lg:flex-row lg:gap-10">
+            {/* Sidebar — desktop */}
+            <aside className="hidden w-[17rem] shrink-0 lg:block">
+              <nav className="sticky top-24 space-y-5 rounded-3xl border border-border/50 bg-card/95 p-3 shadow-lg shadow-black/[0.04] ring-1 ring-black/[0.03] backdrop-blur-md dark:ring-white/[0.06]">
+                <p className="px-3 pt-1 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                  Navigacija
+                </p>
+                <div className="space-y-1">
+                  {navItems.map(({ id, label, icon: Icon }) => (
+                    <button
+                      key={id}
+                      type="button"
+                      onClick={() => setTab(id)}
+                      className={cn(
+                        "group relative flex w-full items-center gap-3 rounded-2xl px-3 py-3 text-left text-sm font-medium transition-all duration-200",
+                        tab === id
+                          ? "bg-primary text-primary-foreground shadow-md shadow-primary/25"
+                          : "text-muted-foreground hover:bg-muted/90 hover:text-foreground",
+                      )}
+                    >
+                      {tab === id && (
+                        <span
+                          className="absolute inset-y-2 left-1 w-1 rounded-full bg-primary-foreground/40"
+                          aria-hidden
+                        />
+                      )}
+                      <span
+                        className={cn(
+                          "flex h-9 w-9 shrink-0 items-center justify-center rounded-xl transition-colors",
+                          tab === id ? "bg-primary-foreground/15" : "bg-muted/80 group-hover:bg-muted",
+                        )}
+                      >
+                        <Icon className="h-4 w-4" />
+                      </span>
+                      <span className="min-w-0">{label}</span>
+                    </button>
+                  ))}
+                </div>
+                <Separator className="bg-border/60" />
+                <div className="space-y-1 px-0.5 pb-1">
+                  <Button
+                    variant="ghost"
+                    className="h-auto w-full justify-start gap-3 rounded-2xl py-2.5 text-muted-foreground hover:text-foreground"
+                    asChild
+                  >
+                    <Link to="/kviz">
+                      <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-amber-500/10 text-amber-700 dark:text-amber-400">
+                        <Sparkles className="h-4 w-4" />
+                      </span>
+                      Otvori kviz
+                    </Link>
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    className="h-auto w-full justify-start gap-3 rounded-2xl py-2.5 text-muted-foreground hover:text-foreground"
+                    asChild
+                  >
+                    <Link to="/karta">
+                      <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-sky-500/10 text-sky-700 dark:text-sky-400">
+                        <GraduationCap className="h-4 w-4" />
+                      </span>
+                      Karta fakulteta
+                    </Link>
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    className="h-auto w-full justify-start gap-3 rounded-2xl py-2.5 text-destructive hover:bg-destructive/10 hover:text-destructive"
+                    onClick={handleLogout}
+                  >
+                    <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-destructive/10">
+                      <LogOut className="h-4 w-4" />
+                    </span>
+                    Odjava
+                  </Button>
+                </div>
+              </nav>
+            </aside>
+
+            {/* Mobile tabs */}
+            <div className="flex snap-x snap-mandatory gap-2 overflow-x-auto pb-2 [-ms-overflow-style:none] [scrollbar-width:none] lg:hidden [&::-webkit-scrollbar]:hidden">
               {navItems.map(({ id, label, icon: Icon }) => (
                 <button
                   key={id}
                   type="button"
                   onClick={() => setTab(id)}
                   className={cn(
-                    "flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all",
+                    "flex min-h-[44px] shrink-0 snap-start items-center gap-2 rounded-2xl border-2 px-4 py-2.5 text-sm font-semibold transition-all touch-manipulation",
                     tab === id
-                      ? "bg-primary/12 text-primary shadow-sm"
-                      : "text-muted-foreground hover:bg-muted/80 hover:text-foreground",
+                      ? "border-primary bg-primary text-primary-foreground shadow-md"
+                      : "border-border/80 bg-card text-muted-foreground hover:border-primary/30 hover:bg-muted/50",
                   )}
                 >
-                  <Icon className="h-4 w-4 shrink-0" />
+                  <Icon className="h-4 w-4 shrink-0 opacity-90" />
                   {label}
                 </button>
               ))}
-              <Separator className="my-3" />
-              <Button variant="ghost" className="w-full justify-start gap-2 text-muted-foreground" asChild>
-                <Link to="/kviz">
-                  <Sparkles className="h-4 w-4" />
-                  Otvori kviz
-                </Link>
-              </Button>
-              <Button variant="ghost" className="w-full justify-start gap-2 text-muted-foreground" asChild>
-                <Link to="/karta">
-                  <GraduationCap className="h-4 w-4" />
-                  Karta fakulteta
-                </Link>
-              </Button>
-              <Button variant="ghost" className="w-full justify-start gap-2 text-destructive" onClick={handleLogout}>
-                <LogOut className="h-4 w-4" />
-                Odjava
-              </Button>
-            </nav>
-          </aside>
+            </div>
 
-          {/* Mobile tabs */}
-          <div className="flex gap-2 overflow-x-auto pb-1 lg:hidden">
-            {navItems.map(({ id, label }) => (
-              <Button
-                key={id}
-                type="button"
-                variant={tab === id ? "default" : "outline"}
-                size="sm"
-                className="shrink-0 rounded-full"
-                onClick={() => setTab(id)}
-              >
-                {label}
-              </Button>
-            ))}
-          </div>
-
-          <div className="min-w-0 flex-1 space-y-8">
+            <div className="min-w-0 flex-1 space-y-8">
             {dashLoading && <DashboardSkeleton />}
             {!dashLoading && dashError && (
               <Card className="border-destructive/40 bg-destructive/5">
@@ -349,25 +438,50 @@ export default function ProfilDashboard() {
                 >
                   {tab === "pregled" && (
                     <>
-                      <Card className="overflow-hidden border border-primary/15 bg-gradient-to-br from-primary/[0.07] via-card to-violet-500/[0.04] shadow-md shadow-primary/5">
-                        <CardHeader className="pb-2">
-                          <div className="flex flex-wrap items-start justify-between gap-4">
-                            <div className="flex items-center gap-4">
-                              <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/15 text-primary shadow-inner">
-                                <User className="h-8 w-8" />
+                      <Card className="overflow-hidden border-0 bg-gradient-to-br from-card via-card to-primary/[0.04] shadow-xl shadow-primary/[0.07] ring-1 ring-border/50">
+                        <CardHeader className="space-y-6 pb-4">
+                          <div className="flex flex-col gap-6 sm:flex-row sm:items-start sm:justify-between">
+                            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:gap-5">
+                              <div className="relative mx-auto sm:mx-0">
+                                <div className="absolute -inset-1 rounded-3xl bg-gradient-to-br from-primary via-primary/70 to-violet-500/60 opacity-90 blur-sm" aria-hidden />
+                                <div className="relative flex h-20 w-20 items-center justify-center rounded-2xl bg-gradient-to-br from-primary to-primary/85 text-2xl font-bold text-primary-foreground shadow-lg">
+                                  {(dash.user.username || "?").slice(0, 2).toUpperCase()}
+                                </div>
                               </div>
-                              <div>
-                                <CardTitle className="text-2xl">{dash.user.username}</CardTitle>
-                                <CardDescription className="text-base">{dash.user.email}</CardDescription>
-                                <p className="mt-1 text-sm text-muted-foreground">
-                                  {labelForUserType(dash.user.user_type)} · registriran/a {formatHrDate(dash.user.created_at)}
-                                </p>
-                                <p className="text-sm text-muted-foreground">
-                                  Zadnja prijava: {formatHrDate(dash.user.last_login_at)}
-                                </p>
+                              <div className="min-w-0 flex-1 text-center sm:text-left">
+                                <div className="flex flex-col items-center gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:gap-3">
+                                  <CardTitle className="text-2xl font-bold tracking-tight md:text-3xl">
+                                    {dash.user.username}
+                                  </CardTitle>
+                                  <Badge variant="secondary" className="rounded-full px-3 py-0.5 font-normal">
+                                    {labelForUserType(dash.user.user_type)}
+                                  </Badge>
+                                </div>
+                                <CardDescription className="mt-3 text-base text-muted-foreground">
+                                  {dash.user.email}
+                                </CardDescription>
+                                <div className="mt-4 grid gap-2 text-sm text-muted-foreground sm:grid-cols-2">
+                                  <p className="rounded-xl border border-border/50 bg-muted/30 px-3 py-2">
+                                    <span className="block text-[11px] font-medium uppercase tracking-wide text-muted-foreground/90">
+                                      Registracija
+                                    </span>
+                                    {formatHrDate(dash.user.created_at)}
+                                  </p>
+                                  <p className="rounded-xl border border-border/50 bg-muted/30 px-3 py-2">
+                                    <span className="block text-[11px] font-medium uppercase tracking-wide text-muted-foreground/90">
+                                      Zadnja prijava
+                                    </span>
+                                    {formatHrDate(dash.user.last_login_at)}
+                                  </p>
+                                </div>
                               </div>
                             </div>
-                            <Button variant="outline" size="sm" className="gap-1 rounded-xl" asChild>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="shrink-0 gap-2 rounded-2xl border-primary/20 bg-background/80 shadow-sm hover:bg-primary/10"
+                              asChild
+                            >
                               <Link to="/forum">
                                 <MessageSquare className="h-4 w-4" />
                                 Forum
@@ -375,16 +489,16 @@ export default function ProfilDashboard() {
                             </Button>
                           </div>
                         </CardHeader>
-                        <CardContent className="space-y-4">
+                        <CardContent className="space-y-4 border-t border-border/40 bg-muted/20 px-6 py-6">
                           <div>
-                            <div className="mb-1 flex justify-between text-sm">
-                              <span className="font-medium text-foreground">Napredak profila</span>
-                              <span className="tabular-nums text-muted-foreground">
+                            <div className="mb-2 flex items-center justify-between gap-3">
+                              <span className="text-sm font-semibold text-foreground">Napredak profila</span>
+                              <span className="tabular-nums text-sm font-bold text-primary">
                                 {dash.activity.profile_completion_percent}%
                               </span>
                             </div>
-                            <Progress value={dash.activity.profile_completion_percent} className="h-2.5" />
-                            <p className="mt-1 text-xs text-muted-foreground">
+                            <Progress value={dash.activity.profile_completion_percent} className="h-3 rounded-full" />
+                            <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
                               Popuni tip korisnika, riješi kviz i spremi fakultete za više bodova.
                             </p>
                           </div>
@@ -396,56 +510,69 @@ export default function ProfilDashboard() {
                           icon={MessageSquare}
                           label="Teme na forumu"
                           value={dash.activity.forum_threads}
-                          accent="from-sky-500/15 to-transparent"
+                          accent="sky"
                         />
                         <StatCard
                           icon={Users}
                           label="Poruke na forumu"
                           value={dash.activity.forum_messages}
-                          accent="from-emerald-500/15 to-transparent"
+                          accent="emerald"
                         />
                         <StatCard
                           icon={Bookmark}
                           label="Spremljeni fakulteti"
                           value={dash.activity.saved_faculties_count}
-                          accent="from-violet-500/15 to-transparent"
+                          accent="violet"
                         />
                         <StatCard
                           icon={Calendar}
                           label="Pokušaja kviza"
                           value={dash.quiz_history.length}
-                          accent="from-amber-500/15 to-transparent"
+                          accent="amber"
                         />
                       </div>
 
-                      <Card className="border-border/80 shadow-sm transition-shadow hover:shadow-md">
-                        <CardHeader>
-                          <CardTitle className="flex items-center gap-2 text-lg">
-                            <Sparkles className="h-5 w-5 text-primary" />
-                            Brzi pregled kviza
-                          </CardTitle>
-                          <CardDescription>Zadnji rezultat i preporuke</CardDescription>
+                      <Card className="border-border/60 shadow-lg shadow-black/[0.03] ring-1 ring-border/40 transition-shadow hover:shadow-xl">
+                        <CardHeader className="pb-3">
+                          <div className="flex items-center gap-3">
+                            <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                              <Sparkles className="h-5 w-5" />
+                            </span>
+                            <div>
+                              <CardTitle className="text-lg md:text-xl">Brzi pregled kviza</CardTitle>
+                              <CardDescription className="mt-0.5">Zadnji rezultat i preporuke</CardDescription>
+                            </div>
+                          </div>
                         </CardHeader>
-                        <CardContent className="space-y-3">
+                        <CardContent className="space-y-4">
                           {lastQuiz ? (
                             <>
                               <p className="text-sm text-muted-foreground">
                                 <span className="font-medium text-foreground">{formatHrDate(lastQuiz.created_at)}</span>
-                                {topMatchHint && ` · ${topMatchHint}`}
+                                {lastQuizSummaryLine && (
+                                  <>
+                                    <br />
+                                    <span className="text-foreground/90">{lastQuizSummaryLine}</span>
+                                  </>
+                                )}
                               </p>
-                              <ul className="grid gap-2 sm:grid-cols-2">
-                                {topNames.slice(0, 6).map((name) => (
-                                  <li
-                                    key={name}
-                                    className="rounded-xl border border-border/60 bg-muted/30 px-3 py-2 text-sm font-medium"
-                                  >
-                                    {name}
-                                  </li>
-                                ))}
-                              </ul>
+                              {topNames.length > 0 && (
+                                <ul className="grid gap-2 sm:grid-cols-2">
+                                  {topNames.slice(0, 6).map((name) => (
+                                    <li
+                                      key={name}
+                                      className="rounded-xl border border-border/60 bg-muted/30 px-3 py-2 text-sm font-medium"
+                                    >
+                                      {name}
+                                    </li>
+                                  ))}
+                                </ul>
+                              )}
                               <div className="flex flex-wrap gap-2 pt-2">
                                 <Button size="sm" className="rounded-xl" asChild>
-                                  <Link to="/kviz">Ponovi kviz</Link>
+                                  <Link to={isCareerQuizPayload(lastQuiz.payload) ? "/kviz" : "/samoprocjena"}>
+                                    {isCareerQuizPayload(lastQuiz.payload) ? "Ponovi kviz" : "Ponovi samoprocjenu"}
+                                  </Link>
                                 </Button>
                                 <Button size="sm" variant="outline" className="rounded-xl" onClick={() => handleSaveQuizFromHistory(lastQuiz)}>
                                   Spremi ovaj zapis ponovo
@@ -477,22 +604,31 @@ export default function ProfilDashboard() {
                             <div className="rounded-2xl border border-primary/20 bg-primary/[0.04] p-4">
                               <p className="text-sm font-medium text-foreground">Zadnji pokušaj</p>
                               <p className="text-xs text-muted-foreground">{formatHrDate(lastQuiz.created_at)}</p>
-                              <ul className="mt-3 space-y-2">
-                                {topNames.slice(0, 8).map((n, i) => (
-                                  <li key={n} className="flex items-center justify-between text-sm">
-                                    <span>
-                                      {i + 1}. {n}
-                                    </span>
-                                  </li>
-                                ))}
-                              </ul>
+                              {lastQuizSummaryLine && (
+                                <p className="mt-2 text-sm text-foreground/90">{lastQuizSummaryLine}</p>
+                              )}
+                              {topNames.length > 0 && (
+                                <ul className="mt-3 space-y-2">
+                                  {topNames.slice(0, 8).map((n, i) => (
+                                    <li key={n} className="flex items-center justify-between text-sm">
+                                      <span>
+                                        {i + 1}. {n}
+                                      </span>
+                                    </li>
+                                  ))}
+                                </ul>
+                              )}
                               <div className="mt-4 flex flex-wrap gap-2">
                                 <Button className="rounded-xl" asChild>
-                                  <Link to="/kviz">Ponovi kviz</Link>
+                                  <Link to={isCareerQuizPayload(lastQuiz.payload) ? "/kviz" : "/samoprocjena"}>
+                                    {isCareerQuizPayload(lastQuiz.payload) ? "Ponovi kviz" : "Ponovi samoprocjenu"}
+                                  </Link>
                                 </Button>
-                                <Button variant="outline" className="rounded-xl" onClick={handleRepeatQuizSnapshot}>
-                                  Spremi novi zapis (iz zadnjeg)
-                                </Button>
+                                {isCareerQuizPayload(lastQuiz.payload) && (
+                                  <Button variant="outline" className="rounded-xl" onClick={handleRepeatQuizSnapshot}>
+                                    Spremi novi zapis (iz zadnjeg)
+                                  </Button>
+                                )}
                                 <Button variant="secondary" className="rounded-xl" onClick={() => handleSaveQuizFromHistory(lastQuiz)}>
                                   Spremi rezultate
                                 </Button>
@@ -509,7 +645,11 @@ export default function ProfilDashboard() {
                                 <li key={q.id} className="flex flex-wrap items-center justify-between gap-2 px-3 py-3 text-sm">
                                   <span className="text-muted-foreground">{formatHrDate(q.created_at)}</span>
                                   <span className="text-xs text-muted-foreground truncate max-w-[200px]">
-                                    {q.payload.summary.topCareerNames.slice(0, 2).join(", ")}
+                                    {isCareerQuizPayload(q.payload)
+                                      ? q.payload.summary.topCareerNames.slice(0, 2).join(", ")
+                                      : q.payload.kind === "confidence"
+                                        ? `Samopouzdanje · ${q.payload.confidence?.confidenceLevel ?? ""}`
+                                        : `PHQ/GAD · ${q.payload.serenity?.phq9Severity ?? ""}`}
                                   </span>
                                   <Button
                                     variant="ghost"
@@ -724,10 +864,34 @@ export default function ProfilDashboard() {
             </AnimatePresence>
           </div>
         </div>
+        </div>
       </section>
     </Layout>
   );
 }
+
+const STAT_ACCENT: Record<string, { ring: string; icon: string; glow: string }> = {
+  sky: {
+    ring: "hover:border-sky-500/40",
+    icon: "bg-sky-500/12 text-sky-700 dark:text-sky-300",
+    glow: "from-sky-500/[0.08] to-transparent",
+  },
+  emerald: {
+    ring: "hover:border-emerald-500/40",
+    icon: "bg-emerald-500/12 text-emerald-700 dark:text-emerald-300",
+    glow: "from-emerald-500/[0.08] to-transparent",
+  },
+  violet: {
+    ring: "hover:border-violet-500/40",
+    icon: "bg-violet-500/12 text-violet-700 dark:text-violet-300",
+    glow: "from-violet-500/[0.08] to-transparent",
+  },
+  amber: {
+    ring: "hover:border-amber-500/40",
+    icon: "bg-amber-500/12 text-amber-800 dark:text-amber-200",
+    glow: "from-amber-500/[0.08] to-transparent",
+  },
+};
 
 function StatCard({
   icon: Icon,
@@ -738,21 +902,33 @@ function StatCard({
   icon: React.ElementType;
   label: string;
   value: number;
-  accent: string;
+  accent: keyof typeof STAT_ACCENT;
 }) {
+  const a = STAT_ACCENT[accent] ?? STAT_ACCENT.sky;
   return (
     <motion.div
-      whileHover={{ y: -2 }}
+      whileHover={{ y: -3 }}
+      transition={{ type: "spring", stiffness: 400, damping: 28 }}
       className={cn(
-        "rounded-2xl border border-border/60 bg-gradient-to-br p-4 shadow-sm transition-shadow hover:shadow-md",
-        accent,
+        "group relative overflow-hidden rounded-2xl border border-border/50 bg-gradient-to-br p-5 shadow-md transition-all hover:shadow-lg",
+        a.ring,
+        a.glow,
       )}
     >
-      <div className="flex items-center gap-2 text-muted-foreground">
-        <Icon className="h-4 w-4" />
-        <span className="text-xs font-medium uppercase tracking-wide">{label}</span>
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0 flex-1">
+          <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">{label}</p>
+          <p className="mt-2 text-3xl font-bold tabular-nums tracking-tight text-foreground">{value}</p>
+        </div>
+        <span
+          className={cn(
+            "flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl transition-transform group-hover:scale-105",
+            a.icon,
+          )}
+        >
+          <Icon className="h-5 w-5" />
+        </span>
       </div>
-      <p className="mt-2 text-3xl font-bold tabular-nums text-foreground">{value}</p>
     </motion.div>
   );
 }

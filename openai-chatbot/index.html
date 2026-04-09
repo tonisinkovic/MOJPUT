@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="hr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Chatbot — FER, FOI, PMF, TVZ</title>
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        font-family: system-ui, sans-serif;
+        max-width: 640px;
+        margin: 2rem auto;
+        padding: 0 1rem;
+        background: #f4f4f5;
+      }
+      h1 {
+        font-size: 1.25rem;
+      }
+      #chat {
+        border: 1px solid #ccc;
+        border-radius: 8px;
+        min-height: 280px;
+        max-height: 420px;
+        overflow-y: auto;
+        padding: 1rem;
+        background: #fff;
+        margin-bottom: 1rem;
+      }
+      .msg {
+        margin-bottom: 0.75rem;
+        line-height: 1.45;
+      }
+      .msg.user {
+        text-align: right;
+      }
+      .msg.user .bubble {
+        background: #2563eb;
+        color: #fff;
+        display: inline-block;
+        padding: 0.5rem 0.75rem;
+        border-radius: 12px 12px 4px 12px;
+        max-width: 90%;
+        text-align: left;
+      }
+      .msg.bot .bubble {
+        background: #e4e4e7;
+        color: #18181b;
+        display: inline-block;
+        padding: 0.5rem 0.75rem;
+        border-radius: 12px 12px 12px 4px;
+        max-width: 90%;
+      }
+      .msg .label {
+        font-size: 0.7rem;
+        color: #71717a;
+        margin-bottom: 0.25rem;
+      }
+      #row {
+        display: flex;
+        gap: 0.5rem;
+      }
+      #message {
+        flex: 1;
+        padding: 0.5rem 0.75rem;
+        border: 1px solid #ccc;
+        border-radius: 8px;
+        font-size: 1rem;
+      }
+      button {
+        padding: 0.5rem 1rem;
+        border: none;
+        border-radius: 8px;
+        background: #18181b;
+        color: #fff;
+        cursor: pointer;
+        font-size: 1rem;
+      }
+      button:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+      .hint {
+        font-size: 0.85rem;
+        color: #71717a;
+        margin-top: 0.75rem;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Student savjetnik (FER · FOI · PMF · TVZ)</h1>
+    <p class="hint">Piši pitanje i pošalji. Server mora raditi na <code>http://localhost:3000</code>.</p>
+
+    <div id="chat" aria-live="polite"></div>
+
+    <div id="row">
+      <input type="text" id="message" placeholder="Npr. FER ili FOI za računarstvo?" autocomplete="off" />
+      <button type="button" id="send">Pošalji</button>
+    </div>
+
+    <script>
+      // URL backenda — mora odgovarati serveru (port 3000)
+      const API_URL = "http://localhost:3000/chat";
+
+      const chatEl = document.getElementById("chat");
+      const inputEl = document.getElementById("message");
+      const sendBtn = document.getElementById("send");
+
+      function addBubble(role, text) {
+        const wrap = document.createElement("div");
+        wrap.className = "msg " + (role === "user" ? "user" : "bot");
+        const label = document.createElement("div");
+        label.className = "label";
+        label.textContent = role === "user" ? "Ti" : "Bot";
+        const bubble = document.createElement("div");
+        bubble.className = "bubble";
+        bubble.textContent = text;
+        wrap.appendChild(label);
+        wrap.appendChild(bubble);
+        chatEl.appendChild(wrap);
+        chatEl.scrollTop = chatEl.scrollHeight;
+      }
+
+      async function sendMessage() {
+        const message = inputEl.value.trim();
+        if (!message) return;
+
+        addBubble("user", message);
+        inputEl.value = "";
+        sendBtn.disabled = true;
+
+        try {
+          // POST s JSON tijelom kako backend očekuje
+          const res = await fetch(API_URL, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ message }),
+          });
+
+          const data = await res.json();
+          const reply = data.reply || "Nema odgovora.";
+          addBubble("bot", reply);
+        } catch (e) {
+          addBubble("bot", "Greška mreže — je li server pokrenut (npm start)?");
+        } finally {
+          sendBtn.disabled = false;
+          inputEl.focus();
+        }
+      }
+
+      sendBtn.addEventListener("click", sendMessage);
+      inputEl.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") sendMessage();
+      });
+    </script>
+  </body>
+</html>

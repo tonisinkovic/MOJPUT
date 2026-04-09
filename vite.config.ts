@@ -76,6 +76,16 @@ export default defineConfig(({ mode }) => ({
       },
     },
   },
+  /** Isto kao dev — `vite preview` inače vraća HTML 404 za /api/* umjesto JSON-a s node servera. */
+  preview: {
+    port: 4173,
+    proxy: {
+      "/api": {
+        target: "http://127.0.0.1:3000",
+        changeOrigin: true,
+      },
+    },
+  },
   plugins: [
     react(),
     injectDeployMetaPlugin(),

@@ -24,6 +24,8 @@ const bcrypt = require("bcryptjs");
 const crypto = require("crypto");
 const nodemailer = require("nodemailer");
 const Database = require("better-sqlite3");
+const { fromZonedTime, toZonedTime } = require("date-fns-tz");
+const { addDays, startOfDay } = require("date-fns");
 
 const PORT = Number(process.env.PORT || 3000);
 const JWT_SECRET = process.env.JWT_SECRET || "dev-secret-change-me";
@@ -424,7 +426,30 @@ function openDb() {
   const dbPath = path.join(dataDir, "mojput.db");
   const db = new Database(dbPath);
   db.pragma("journal_mode = WAL");
+  db.pragma("foreign_keys = ON");
   return db;
+}
+
+/** Jedan limit po kalendarskom danu u Europe/Zagreb (isti ključ za sve upite). */
+function getChatDayKey() {
+  const parts = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Europe/Zagreb",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).formatToParts(new Date());
+  const y = parts.find((p) => p.type === "year")?.value;
+  const m = parts.find((p) => p.type === "month")?.value;
+  const d = parts.find((p) => p.type === "day")?.value;
+  return `${y}-${m}-${d}`;
+}
+
+/** ISO trenutak sljedeće ponoći u Europe/Zagreb (reset dnevnog limita poruka). */
+function getNextZagrebMidnightIso() {
+  const now = new Date();
+  const z = toZonedTime(now, "Europe/Zagreb");
+  const next = addDays(startOfDay(z), 1);
+  return fromZonedTime(next, "Europe/Zagreb").toISOString();
 }
 
 function migrate(db) {
@@ -567,6 +592,14 @@ function migrate(db) {
     db.exec("ALTER TABLE users ADD COLUMN last_login_at TEXT");
   }
 
+  const forumMsgCols = db.prepare("PRAGMA table_info(forum_messages)").all().map((c) => c.name);
+  if (!forumMsgCols.includes("reply_to_id")) {
+    db.exec("ALTER TABLE forum_messages ADD COLUMN reply_to_id INTEGER REFERENCES forum_messages(id)");
+  }
+  if (!forumMsgCols.includes("deleted_by_user_at")) {
+    db.exec("ALTER TABLE forum_messages ADD COLUMN deleted_by_user_at TEXT");
+  }
+
   try {
     db.prepare("SELECT 1 FROM user_saved_faculties LIMIT 1").get();
   } catch {
@@ -581,6 +614,20 @@ function migrate(db) {
         created_at TEXT NOT NULL DEFAULT (datetime('now')),
         FOREIGN KEY (user_id) REFERENCES users(id),
         UNIQUE(user_id, faculty_id)
+      )
+    `);
+  }
+
+  try {
+    db.prepare("SELECT 1 FROM chatbot_daily_usage LIMIT 1").get();
+  } catch {
+    db.exec(`
+      CREATE TABLE chatbot_daily_usage (
+        user_id INTEGER NOT NULL,
+        day TEXT NOT NULL,
+        message_count INTEGER NOT NULL DEFAULT 0,
+        PRIMARY KEY (user_id, day),
+        FOREIGN KEY (user_id) REFERENCES users(id)
       )
     `);
   }
@@ -1237,13 +1284,45 @@ async function main() {
   app.get("/", (_req, res) => res.status(200).type("text/plain").send("ok"));
   app.get("/api/health", (_req, res) => res.status(200).json({ success: true }));
 
-  app.listen(PORT, "0.0.0.0", () => {
-    console.log(`[server] API sluša port ${PORT} — health: / i /api/health`);
-  });
-
   const db = openDb();
   migrate(db);
   await loadUniversitiesData(); // ensures file exists on first run
+
+  /** Besplatne poruke chata po korisniku i danu (Europe/Zagreb). */
+  const CHAT_FREE_DAILY_LIMIT = Math.min(500, Math.max(1, Number(process.env.CHAT_FREE_DAILY_LIMIT || 12) || 12));
+
+  function getChatUsageToday(userId) {
+    const day = getChatDayKey();
+    const row = db.prepare("SELECT message_count FROM chatbot_daily_usage WHERE user_id = ? AND day = ?").get(userId, day);
+    return row ? row.message_count : 0;
+  }
+
+  /**
+   * Atomski: u jednoj transakciji provjeri limit i povećaj brojač (sprječava paralelne zahtjeve koji zaobiđu 12).
+   * Vraća false ako je limit već iscrpljen.
+   */
+  function reserveChatSlot(userId) {
+    const day = getChatDayKey();
+    const run = db.transaction(() => {
+      const row = db.prepare("SELECT message_count FROM chatbot_daily_usage WHERE user_id = ? AND day = ?").get(userId, day);
+      const used = row ? row.message_count : 0;
+      if (used >= CHAT_FREE_DAILY_LIMIT) return false;
+      db.prepare(
+        `INSERT INTO chatbot_daily_usage (user_id, day, message_count) VALUES (?, ?, 1)
+         ON CONFLICT(user_id, day) DO UPDATE SET message_count = message_count + 1`,
+      ).run(userId, day);
+      return true;
+    });
+    return run();
+  }
+
+  /** Ako AI poziv padne nakon rezervacije, vrati jedno mjesto (ne naplaćuj neuspjeli pokušaj). */
+  function refundChatSlot(userId) {
+    const day = getChatDayKey();
+    db.prepare(
+      "UPDATE chatbot_daily_usage SET message_count = message_count - 1 WHERE user_id = ? AND day = ? AND message_count > 0",
+    ).run(userId, day);
+  }
 
   /** Isti origin kao APP_ORIGIN / linkovi u mailu — inače fork ili drugi GH Pages URL ne može slati cookie na API. */
   const productionCorsOrigin = appOriginForLinks();
@@ -1796,10 +1875,25 @@ async function main() {
     const rows = db
       .prepare(
         `
-        SELECT m.id, m.text, m.created_at, u.id as user_id, u.username,
-               (SELECT COUNT(*) FROM forum_likes l WHERE l.message_id = m.id) as like_count
+        SELECT
+          m.id,
+          CASE WHEN m.deleted_by_user_at IS NOT NULL THEN '' ELSE m.text END as text,
+          m.created_at,
+          m.reply_to_id,
+          m.deleted_by_user_at,
+          u.id as user_id,
+          u.username,
+          (SELECT COUNT(*) FROM forum_likes l WHERE l.message_id = m.id) as like_count,
+          pu.username as reply_to_username,
+          CASE
+            WHEN m.reply_to_id IS NULL THEN NULL
+            WHEN parent.deleted_by_user_at IS NOT NULL THEN '(poruka uklonjena od autora)'
+            ELSE SUBSTR(COALESCE(parent.text, ''), 1, 120)
+          END as reply_to_snippet
         FROM forum_messages m
         JOIN users u ON u.id = m.user_id
+        LEFT JOIN forum_messages parent ON parent.id = m.reply_to_id
+        LEFT JOIN users pu ON pu.id = parent.user_id
         WHERE m.conversation_id = ?
         ORDER BY m.created_at ASC, m.id ASC
       `,
@@ -1813,7 +1907,12 @@ async function main() {
         const like = db.prepare("SELECT 1 FROM forum_likes WHERE user_id = ? AND message_id = ?").get(userId, r.id);
         userLiked = !!like;
       }
-      return { ...r, user_liked: userLiked };
+      return {
+        ...r,
+        user_liked: userLiked,
+        reply_to_username: r.reply_to_username || null,
+        reply_to_snippet: r.reply_to_snippet || null,
+      };
     });
 
     return res.json({ success: true, data: withLiked });
@@ -1821,31 +1920,89 @@ async function main() {
 
   app.post("/api/forum/conversations/:id/messages", authMiddleware(db), (req, res) => {
     const convId = Number(req.params.id);
-    const { text } = req.body || {};
+    const { text, reply_to_id: replyToRaw } = req.body || {};
     const cleanText = String(text || "").trim();
+    const replyToId =
+      replyToRaw === undefined || replyToRaw === null || replyToRaw === ""
+        ? null
+        : Number(replyToRaw);
     if (!Number.isFinite(convId)) return res.status(400).json({ success: false, message: "Neispravan ID." });
     if (!cleanText) return res.status(400).json({ success: false, message: "Poruka ne može biti prazna." });
 
     const conv = db.prepare("SELECT id FROM forum_conversations WHERE id = ?").get(convId);
     if (!conv) return res.status(404).json({ success: false, message: "Razgovor ne postoji." });
 
+    if (replyToId != null && Number.isFinite(replyToId)) {
+      const parent = db
+        .prepare("SELECT id, conversation_id FROM forum_messages WHERE id = ?")
+        .get(Math.floor(replyToId));
+      if (!parent || parent.conversation_id !== convId) {
+        return res.status(400).json({ success: false, message: "Odgovor mora biti u istom razgovoru." });
+      }
+    } else if (replyToId != null && !Number.isFinite(replyToId)) {
+      return res.status(400).json({ success: false, message: "Neispravan ID poruke za odgovor." });
+    }
+
     const info = db
-      .prepare("INSERT INTO forum_messages (conversation_id, user_id, text) VALUES (?, ?, ?)")
-      .run(convId, req.user.id, cleanText);
+      .prepare(
+        "INSERT INTO forum_messages (conversation_id, user_id, text, reply_to_id) VALUES (?, ?, ?, ?)",
+      )
+      .run(convId, req.user.id, cleanText, replyToId != null && Number.isFinite(replyToId) ? Math.floor(replyToId) : null);
 
     const msg = db
       .prepare(
         `
-        SELECT m.id, m.text, m.created_at, u.id as user_id, u.username,
-               0 as like_count
+        SELECT
+          m.id,
+          m.text,
+          m.created_at,
+          m.reply_to_id,
+          m.deleted_by_user_at,
+          u.id as user_id,
+          u.username,
+          0 as like_count,
+          pu.username as reply_to_username,
+          CASE
+            WHEN m.reply_to_id IS NULL THEN NULL
+            WHEN parent.deleted_by_user_at IS NOT NULL THEN '(poruka uklonjena od autora)'
+            ELSE SUBSTR(COALESCE(parent.text, ''), 1, 120)
+          END as reply_to_snippet
         FROM forum_messages m
         JOIN users u ON u.id = m.user_id
+        LEFT JOIN forum_messages parent ON parent.id = m.reply_to_id
+        LEFT JOIN users pu ON pu.id = parent.user_id
         WHERE m.id = ?
       `,
       )
       .get(info.lastInsertRowid);
 
-    return res.json({ success: true, data: { ...msg, user_liked: false } });
+    return res.json({
+      success: true,
+      data: {
+        ...msg,
+        user_liked: false,
+        reply_to_username: msg.reply_to_username || null,
+        reply_to_snippet: msg.reply_to_snippet || null,
+      },
+    });
+  });
+
+  /** Autor može ukloniti poruku s javnog prikaza; red ostaje u bazi (soft delete). */
+  app.post("/api/forum/messages/:id/soft-delete", authMiddleware(db), (req, res) => {
+    const msgId = Number(req.params.id);
+    if (!Number.isFinite(msgId)) return res.status(400).json({ success: false, message: "Neispravan ID." });
+
+    const row = db.prepare("SELECT id, user_id, deleted_by_user_at FROM forum_messages WHERE id = ?").get(msgId);
+    if (!row) return res.status(404).json({ success: false, message: "Poruka ne postoji." });
+    if (row.user_id !== req.user.id) {
+      return res.status(403).json({ success: false, message: "Možeš ukloniti samo vlastite poruke." });
+    }
+    if (row.deleted_by_user_at) {
+      return res.json({ success: true, already: true });
+    }
+
+    db.prepare("UPDATE forum_messages SET deleted_by_user_at = datetime('now') WHERE id = ?").run(msgId);
+    return res.json({ success: true });
   });
 
   app.post("/api/forum/messages/:id/like", authMiddleware(db), (req, res) => {
@@ -1864,6 +2021,34 @@ async function main() {
     db.prepare("INSERT INTO forum_likes (user_id, message_id) VALUES (?, ?)").run(req.user.id, msgId);
     const count = db.prepare("SELECT COUNT(*) as c FROM forum_likes WHERE message_id = ?").get(msgId).c;
     return res.json({ success: true, liked: true, like_count: count });
+  });
+
+  app.get("/api/chat/quota", optionalAuthMiddleware(db), (req, res) => {
+    const limit = CHAT_FREE_DAILY_LIMIT;
+    if (!req.user) {
+      return res.json({
+        success: true,
+        authenticated: false,
+        limit,
+        used: 0,
+        remaining: 0,
+      });
+    }
+    const used = getChatUsageToday(req.user.id);
+    let resetsAt = null;
+    try {
+      resetsAt = getNextZagrebMidnightIso();
+    } catch (e) {
+      console.error("[api/chat/quota] getNextZagrebMidnightIso:", e?.message || e);
+    }
+    return res.json({
+      success: true,
+      authenticated: true,
+      limit,
+      used,
+      remaining: Math.max(0, limit - used),
+      ...(resetsAt ? { resetsAt } : {}),
+    });
   });
 
   // AI Chatbot - Fakulteti, Studiji, Gradovi (PostgreSQL + Prisma)
@@ -1917,24 +2102,29 @@ async function main() {
       }
     });
 
-    app.post("/api/chat", async (req, res) => {
+    app.post("/api/chat", authMiddleware(db), async (req, res) => {
       const { messages } = req.body || {};
       if (!Array.isArray(messages) || messages.length === 0) {
         return res.status(400).json({ success: false, message: "Potrebna je poruka." });
       }
 
+      if (!reserveChatSlot(req.user.id)) {
+        const used = getChatUsageToday(req.user.id);
+        return res.status(403).json({
+          success: false,
+          code: "CHAT_DAILY_LIMIT",
+          message:
+            "Iskoristio si dnevni besplatni limit poruka. Za znatno više korištenja chatbota uskoro uvodimo premium plan — prati obavijesti na MojPutu.",
+          limit: CHAT_FREE_DAILY_LIMIT,
+          used,
+        });
+      }
+
       try {
         const response = await chatService.chatLocal(messages);
-
-        res.setHeader("Content-Type", "text/event-stream");
-        res.setHeader("Cache-Control", "no-cache");
-        res.setHeader("Connection", "keep-alive");
-        res.flushHeaders();
-
-        res.write(`data: ${JSON.stringify({ content: response })}\n\n`);
-        res.write("data: [DONE]\n\n");
-        res.end();
+        res.json({ success: true, content: response });
       } catch (err) {
+        refundChatSlot(req.user.id);
         console.error("[api/chat]", err);
         res.status(500).json({
           success: false,
@@ -1969,6 +2159,11 @@ async function main() {
       });
     }
     next(err);
+  });
+
+  /** Slušaj tek kad su sve rute registrirane (inače rani zahtjevi na /api/* mogu dobiti 404). */
+  app.listen(PORT, "0.0.0.0", () => {
+    console.log(`[server] API sluša port ${PORT} — spreman (/api/health, /api/chat/quota, …)`);
   });
 }
 

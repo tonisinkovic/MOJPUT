@@ -15,6 +15,13 @@ try {
   console.warn("[chatService] Prisma init:", e?.message);
 }
 
+if (String(process.env.OPENAI_API_KEY || "").trim()) {
+  const m = String(process.env.OPENAI_CHAT_MODEL || "gpt-4o-mini").trim();
+  const out = String(process.env.OPENAI_MAX_OUTPUT_TOKENS || "1200");
+  const h = String(process.env.OPENAI_CHAT_HISTORY_MAX || "14");
+  console.log("[chatService] Chat: OpenAI + RAG | model:", m, "| max_out:", out, "| history msgs:", h);
+}
+
 function loadFromJson() {
   const jsonPath = path.join(__dirname, "..", "..", "universities_data.json");
   if (!fs.existsSync(jsonPath)) return { gradovi: [], fakulteti: [], studiji: [] };
@@ -232,7 +239,19 @@ function parseQuestion(query, gradoviFromDb = []) {
 
   // Vrsta pitanja
   parsed.pitanjeFakulteti = /koji\s*fakultet|koje\s*fakultet|fakultet\s*u\s+|pravni\s*fakultet|ekonomski\s*fakultet|u\s+hrvatskoj/i.test(q) || (qNorm.includes("fakultet") && (qNorm.includes("koji") || qNorm.includes("koje") || qNorm.includes("imaju") || qNorm.includes("ima")));
-  parsed.pitanjeStudiji = /koje\s*studij|koji\s*studij|studij\s*ima|studije\s*ima|ima\s+fer|ima\s+fsb|ima\s+algebra|ima\s+vern|ima\s+rit/i.test(q) || (qNorm.includes("studij") && (qNorm.includes("koji") || qNorm.includes("koje"))) || (qNorm.includes("fer") && qNorm.includes("ima")) || (qNorm.includes("fsb") && qNorm.includes("ima")) || (qNorm.includes("algebra") && qNorm.includes("ima")) || (qNorm.includes("vern") && qNorm.includes("ima"));
+  const pitanjeSmjerovaIliPrograma =
+    /koje\s+smjer|koji\s+smjer|smjerov|smjerove|smjerovi|studijsk|studijske\s+programe|koje\s+studij|koji\s+studij|studij\s*ima|studije\s*ima|što\s+nudi|sto\s+nudi|koje\s+nudi|koji\s+nudi|koje\s+to\s+nudi|koji\s+to\s+nudi/i.test(
+      q,
+    ) ||
+    /programi?\s+(ima|nudi|postoje)|koji\s+programi|koje\s+programi/i.test(q);
+  parsed.pitanjeStudiji =
+    pitanjeSmjerovaIliPrograma ||
+    /koje\s*studij|koji\s*studij|ima\s+fer|ima\s+fsb|ima\s+algebra|ima\s+vern|ima\s+rit/i.test(q) ||
+    (qNorm.includes("studij") && (qNorm.includes("koji") || qNorm.includes("koje"))) ||
+    (qNorm.includes("fer") && qNorm.includes("ima")) ||
+    (qNorm.includes("fsb") && qNorm.includes("ima")) ||
+    (qNorm.includes("algebra") && qNorm.includes("ima")) ||
+    (qNorm.includes("vern") && qNorm.includes("ima"));
   parsed.pitanjeBodovniPrag = /bodovn[iy]\s*prag|prag\s*bodov|bodovn[iy]\s*pragov/i.test(q) || (qNorm.includes("bod") && qNorm.includes("prag"));
 
   return parsed;
@@ -349,9 +368,32 @@ async function searchRelevantData(query) {
     fakulteti = allFakulteti.filter((f) => normalizeForMatch(f.naziv).includes(tipNorm));
     studiji = [];
   }
-  // 7. Opće pitanje bez jasnih kriterija - NE vraćamo sve, vraćamo prazno
+  // 7. Opće pitanje — široki kontekst za AI (ključne riječi + uzorak cijele baze)
   else {
-    return { fakulteti: [], studiji: [], gradovi, parsed };
+    const kws = extractKeywords(query).filter((k) => k.length >= 2);
+    const kNorm = kws.map((k) => normalizeForMatch(k));
+
+    let fMatch = allFakulteti;
+    let sMatch = allStudiji;
+    if (kNorm.length) {
+      fMatch = allFakulteti.filter((f) => {
+        const blob = normalizeForMatch(`${f.naziv} ${f.grad}`);
+        return kNorm.some((k) => blob.includes(k) || k.length >= 4 && blob.includes(k.slice(0, 4)));
+      });
+      sMatch = allStudiji.filter((s) => {
+        const fac = s.fakultet || {};
+        const blob = normalizeForMatch(`${s.naziv_studija} ${fac.naziv || ""} ${fac.grad || ""}`);
+        return kNorm.some((k) => blob.includes(k) || k.length >= 4 && blob.includes(k.slice(0, 4)));
+      });
+    }
+    if (fMatch.length === 0 && sMatch.length === 0) {
+      fMatch = allFakulteti.slice(0, 100);
+      sMatch = allStudiji.slice(0, 150);
+    } else {
+      fMatch = fMatch.slice(0, 80);
+      sMatch = sMatch.slice(0, 120);
+    }
+    return { fakulteti: fMatch, studiji: sMatch, gradovi, parsed };
   }
 
   return { fakulteti, studiji, gradovi, parsed };
@@ -403,11 +445,13 @@ function formatOdgovor(parsed, fakulteti, studiji) {
     }
   }
 
-  // Koje studije ima X (specifični fakultet)
+  // Koje studije / smjerove ima X (specifični fakultet ili tip + grad, npr. ekonomski u Splitu)
   if (parsed.pitanjeStudiji && fakulteti.length > 0) {
     const dijelovi = fakulteti.map((f) => {
-      const svi = (f.studiji || []).map((s) => s.naziv_studija);
-      if (svi.length === 0) return `**${f.naziv}** (${f.grad}): nema podataka o studijima`;
+      const fromRel = (f.studiji || []).map((s) => s.naziv_studija);
+      const fromFlat = studiji.filter((s) => s.fakultet_id === f.id).map((s) => s.naziv_studija);
+      const svi = [...new Set([...fromRel, ...fromFlat])];
+      if (svi.length === 0) return `**${f.naziv}** (${f.grad}): nema podataka o studijima u bazi`;
       return `**${f.naziv}** (${f.grad}):\n\n` + svi.map((s, i) => `${i + 1}. ${s}`).join("\n");
     });
     return dijelovi.join("\n\n");
@@ -453,7 +497,7 @@ function formatOdgovor(parsed, fakulteti, studiji) {
     return naslov + fakulteti.map((f, i) => `${i + 1}. ${f.naziv} (${f.grad})`).join("\n");
   }
 
-  // Samo grad
+  // Samo grad — popis ustanova (ne smjerova); ako ima studija u kontekstu, ne bi smjelo doći prije grane pitanjeStudiji
   if (parsed.grad && fakulteti.length > 0) {
     const gradIme = fakulteti[0]?.grad || (parsed.grad.charAt(0).toUpperCase() + parsed.grad.slice(1));
     return `Fakulteti u ${gradIme}:\n\n` + fakulteti.map((f, i) => `${i + 1}. ${f.naziv} (${f.grad})`).join("\n");
@@ -477,11 +521,163 @@ function generateResponse(query, data) {
   return formatOdgovor(parsed, fakulteti, studiji);
 }
 
+/** Tekst za RAG — namjerno kraći rezovi da ulaz u API bude jeftiniji (manje tokena). */
+function buildDatabaseContextSnippet(data) {
+  const { fakulteti = [], studiji = [] } = data || {};
+  const lines = [];
+  if (fakulteti.length) {
+    lines.push("=== Fakulteti (iz baze) ===");
+    for (const f of fakulteti.slice(0, 55)) {
+      const n = f.naziv || f.name || "";
+      const g = f.grad || f.city || "";
+      if (n) lines.push(`- ${n} (${g})`);
+    }
+  }
+  if (studiji.length) {
+    lines.push("=== Studiji i bodovni prag 2025. (ako je u bazi) ===");
+    for (const s of studiji.slice(0, 70)) {
+      const ns = s.naziv_studija || s.name || "";
+      const fac = s.fakultet || {};
+      const fn = fac.naziv || "";
+      const fg = fac.grad || "";
+      const prag = s.bodovni_prag_2025;
+      const p = prag != null && prag !== undefined ? ` | prag 2025: ${prag} bod.` : "";
+      if (ns) lines.push(`- ${ns} — ${fn} (${fg})${p}`);
+    }
+  }
+  const out = lines.join("\n");
+  if (!out.trim()) {
+    return "";
+  }
+  return out.length > 12000 ? `${out.slice(0, 12000)}\n…(skraćeno)` : out;
+}
+
+/** Kratki opći kontekst (manje tokena nego duga lista). */
+const OPENAI_FACULTY_CONTEXT =
+  "FER: zahtjevan, jak za IT karijeru. FOI: praktičniji, više projekata, često lakši za neke. PMF: matematika/teorija. TVZ: praksa, manje teorije.";
+
+const OPENAI_SYSTEM_PROMPT = `
+Ti si Dražen — asistent u aplikaciji MojPut. Piši kao ChatGPT u dobrom razgovoru: prirodno, toplo, u odlomcima i povezanim rečenicama.
+Na hrvatskom jeziku. Izbjegavaj „robotski” nabrajalice i suhe popise kao glavni oblik odgovora — radije objasni, usporedi, daj primjere.
+Kratke liste ili točke koristi samo kad korisnik traži pregled ili kad stvarno pomaže čitljivosti; inače pričaj kao čovjek.
+
+Kad ispod imaš PODACI IZ BAZE, to su činjenice o fakultetima i studijima iz naše baze — ugradi ih u odgovor (nazivi gradova, pragovi ako postoje), ne kopiraj ih kao suhi katalog bez komentara.
+Za pitanja tipa „koje smjerove/studije/program nudi fakultet X” ili „što nudi ekonomski u Splitu”: popis studija i točnih naziva mora biti isključivo iz PODACI IZ BAZE ispod — ne izmišljaj programe ni predmete. Ako u bloku nema dovoljno redaka, reci da u bazi nema cijelog popisa i predloži provjeru službene stranice fakulteta.
+Ako u bazi nema konkretnog retka za pitanje, reci to kratko i svejedno pomogni savjetom; za službene datume i uvjete preporuči provjeru na stranicama fakulteta ili NISMO-a.
+
+Za IT / matematiku / srodne smjerove često su relevantni FER, FOI, PMF, TVZ — koristi i opći kontekst ispod kad pomaže usporedbi (prednosti i mane u rečenicama, ne samo bulleti).
+
+Budi dovoljno kratak: jasno i konkretno, bez dugog ponavljanja — štedi token korisnika.
+`.trim();
+
+/**
+ * OpenAI + RAG: odgovor u razgovornom tonu, uz kontekst iz baze.
+ */
+async function chatOpenAI(messages, databaseContextSnippet) {
+  const apiKey = String(process.env.OPENAI_API_KEY || "").trim();
+  if (!apiKey) {
+    throw new Error("OPENAI_API_KEY nije postavljen");
+  }
+
+  // Zadano jeftiniji model; za jače modele postavi OPENAI_CHAT_MODEL u .env
+  const model = String(process.env.OPENAI_CHAT_MODEL || "gpt-4o-mini").trim();
+
+  // Štednja: ograniči duljinu odgovora (izlazni tokeni) — povećaj u .env ako treba duže odgovore
+  const maxOut = Number(process.env.OPENAI_MAX_OUTPUT_TOKENS || 1200);
+  const maxTokens = Number.isFinite(maxOut) ? Math.min(4096, Math.max(200, maxOut)) : 1200;
+
+  // Štednja: šalji samo zadnjih N poruka (ulazni tokeni)
+  const histN = Number(process.env.OPENAI_CHAT_HISTORY_MAX || 14);
+  const historyMax = Number.isFinite(histN) ? Math.min(32, Math.max(4, histN)) : 14;
+
+  const dbBlock =
+    databaseContextSnippet && databaseContextSnippet.trim()
+      ? `--- PODACI IZ BAZE (MojPut) — koristi za točne nazive i brojke ---\n${databaseContextSnippet}\n--- kraj podataka iz baze ---`
+      : `--- PODACI IZ BAZE: za ovo pitanje nema dovoljno redaka u bazi — odgovori svejedno prijateljski i predloži što dodatno pitati. ---`;
+
+  const system = `${OPENAI_SYSTEM_PROMPT}\n\n${dbBlock}\n\n--- Opći kontekst (FER, FOI, PMF, TVZ) ---\n${OPENAI_FACULTY_CONTEXT}`;
+
+  const history = messages
+    .filter((m) => m.role === "user" || m.role === "assistant")
+    .map((m) => ({
+      role: m.role,
+      content: String(m.content ?? ""),
+    }))
+    .slice(-historyMax);
+
+  const openaiMessages = [{ role: "system", content: system }, ...history];
+
+  const res = await fetch("https://api.openai.com/v1/chat/completions", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${apiKey}`,
+    },
+    body: JSON.stringify({
+      model,
+      messages: openaiMessages,
+      temperature: 0.65,
+      max_tokens: maxTokens,
+    }),
+  });
+
+  if (!res.ok) {
+    const errText = await res.text();
+    console.error("[chatOpenAI]", res.status, errText.slice(0, 400));
+    throw new Error(`OpenAI API (${res.status}). Provjeri OPENAI_API_KEY i model.`);
+  }
+
+  const json = await res.json();
+  const text = json.choices?.[0]?.message?.content?.trim();
+  if (!text) {
+    throw new Error("Prazan odgovor od OpenAI");
+  }
+  return text;
+}
+
 async function chatLocal(messages) {
+  const lastUserMsg = [...messages].reverse().find((m) => m.role === "user");
+  const query = lastUserMsg?.content || "";
+
+  const useOpenAI = Boolean(String(process.env.OPENAI_API_KEY || "").trim());
+  if (useOpenAI) {
+    let relevantData;
+    try {
+      relevantData = await searchRelevantData(query);
+    } catch (e0) {
+      console.warn("[chatLocal] searchRelevantData (OpenAI put):", e0?.message || e0);
+      relevantData = { fakulteti: [], studiji: [], gradovi: [], parsed: {} };
+    }
+    const dbSnippet = buildDatabaseContextSnippet(relevantData);
+    try {
+      return await chatOpenAI(messages, dbSnippet);
+    } catch (err) {
+      console.warn("[chatLocal] OpenAI neuspjeh, padam na odgovor iz lokalne baze:", err?.message || err);
+      let relevantData;
+      try {
+        relevantData = await searchRelevantData(query);
+      } catch (e2) {
+        console.error("[chatLocal] searchRelevantData", e2);
+        throw new Error(err?.message || "Greška pri generiranju odgovora.");
+      }
+      try {
+        return generateResponse(query, relevantData);
+      } catch (e2) {
+        console.error("[chatLocal]", e2);
+        throw new Error(err?.message || "Greška pri generiranju odgovora.");
+      }
+    }
+  }
+
+  let relevantData;
   try {
-    const lastUserMsg = [...messages].reverse().find((m) => m.role === "user");
-    const query = lastUserMsg?.content || "";
-    const relevantData = await searchRelevantData(query);
+    relevantData = await searchRelevantData(query);
+  } catch (err) {
+    console.error("[chatLocal] searchRelevantData", err);
+    throw new Error("Greška pri pretraživanju baze. Provjeri je li baza postavljena (npm run db:seed).");
+  }
+
+  try {
     return generateResponse(query, relevantData);
   } catch (err) {
     console.error("[chatLocal]", err);

@@ -1,6 +1,6 @@
 import { apiDelete, apiGet, apiPatch, apiPost, type ApiResponse } from "@/lib/api";
 import type { AuthUser } from "@/lib/auth";
-import type { CareerQuizResultPayloadV1 } from "@/lib/careerQuizApi";
+import type { ProfileQuizPayload } from "@/lib/careerQuizApi";
 
 export type DashboardActivity = {
   forum_threads: number;
@@ -21,7 +21,7 @@ export type SavedFacultyRow = {
 export type QuizHistoryEntry = {
   id: number;
   created_at: string;
-  payload: CareerQuizResultPayloadV1;
+  payload: ProfileQuizPayload;
 };
 
 export type DashboardPayload = {

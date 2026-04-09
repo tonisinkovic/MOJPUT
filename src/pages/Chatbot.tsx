@@ -1,18 +1,28 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback, useMemo } from "react";
+import { Link } from "react-router-dom";
 import Layout from "@/components/Layout";
 import { motion } from "framer-motion";
-import { Bot, Send, Sparkles, ChevronRight, RotateCcw } from "lucide-react";
+import { Bot, Send, Sparkles, ChevronRight, RotateCcw, LogIn, Crown, Timer, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { facultyInstitutions } from "@/data/faculties";
 import { API_BASE_URL } from "@/config/apiBase";
+import { apiGet } from "@/lib/api";
+import { authMe, userFromAuthMe, type AuthUser } from "@/lib/auth";
 
 const API_BASE = API_BASE_URL;
 
 const SUGGESTIONS = [
-  "Koje fakultete mogu upisati u Zagrebu?",
-  "Koji fakulteti imaju studij računarstva?",
-  "Koji su uvjeti za upis na medicinski fakultet?",
-  "Koji studiji postoje na Ekonomskom fakultetu?",
+  "Usporedi FER i FOI za računarstvo — prednosti i mane",
+  "Je li TVZ ili FOI bolji izbor ako želim brzo raditi praktične projekte?",
+  "Što znači ići na PMF ako volim matematiku, a i programiranje?",
+  "Kako bih odabrao između FER-a i TVZ-a za karijeru u IT-u?",
 ];
 
 interface Message {
@@ -20,8 +30,8 @@ interface Message {
   content: string;
 }
 
-const AI_NAME = "Marko";
-const AI_WELCOME = `Pozdrav ja se zovem ${AI_NAME} kako ti mogu pomoći:`;
+const AI_NAME = "Dražen";
+const AI_WELCOME = `Bok, ja sam ${AI_NAME}. Odgovaram na sva pitanja koja te zanimaju o fakultetima u Hrvatskoj. Što te zanima?`;
 
 function buildLocalChatReply(question: string): string {
   const q = question.toLowerCase();
@@ -128,6 +138,18 @@ const RobotAIWindow = () => {
   );
 };
 
+type ChatQuotaState = {
+  authenticated: boolean;
+  limit: number;
+  used: number;
+  remaining: number;
+  /** ISO — sljedeća ponoć u Europe/Zagreb (reset limita) */
+  resetsAt?: string | null;
+};
+
+/** Produkcijski statički build bez API URL-a — lokalni odgovori, nema prijave. */
+const STATIC_NO_API = !API_BASE && !import.meta.env.DEV;
+
 const Chatbot = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   useEffect(() => {
@@ -135,11 +157,133 @@ const Chatbot = () => {
   }, []);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const [authLoading, setAuthLoading] = useState(true);
+  const [user, setUser] = useState<AuthUser | null>(null);
+  const [quota, setQuota] = useState<ChatQuotaState | null>(null);
+  const [quotaLoading, setQuotaLoading] = useState(false);
+  const [quotaError, setQuotaError] = useState(false);
+  const [quotaErrorMessage, setQuotaErrorMessage] = useState<string | null>(null);
+  const [premiumOpen, setPremiumOpen] = useState(false);
+  const [limitCountdown, setLimitCountdown] = useState("");
+  /** Samo ovaj element skrola — ne koristimo scrollIntoView jer pomiče cijelu stranicu. */
+  const messagesContainerRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  const scrollToBottom = () => messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  useEffect(() => scrollToBottom(), [messages, isLoading]);
+  const scrollChatToBottom = () => {
+    const el = messagesContainerRef.current;
+    if (el) el.scrollTop = el.scrollHeight;
+  };
+  useEffect(() => {
+    scrollChatToBottom();
+  }, [messages, isLoading]);
+
+  const refreshQuota = useCallback(async () => {
+    if (STATIC_NO_API) return;
+    setQuotaLoading(true);
+    setQuotaError(false);
+    setQuotaErrorMessage(null);
+    try {
+      const res = await apiGet<{
+        authenticated?: boolean;
+        limit?: number;
+        used?: number;
+        remaining?: number;
+        resetsAt?: string | null;
+      }>("/api/chat/quota");
+      if (!res.success) {
+        setQuotaError(true);
+        setQuotaErrorMessage(
+          "message" in res && typeof res.message === "string" ? res.message : "Kvota se nije učitala.",
+        );
+        return;
+      }
+      const data = res as {
+        success: true;
+        authenticated?: boolean;
+        limit?: number;
+        used?: number;
+        remaining?: number;
+        resetsAt?: string | null;
+      };
+      setQuota({
+        authenticated: Boolean(data.authenticated),
+        limit: Number(data.limit) || 12,
+        used: Number(data.used) || 0,
+        remaining: Math.max(0, Number(data.remaining) || 0),
+        resetsAt: typeof data.resetsAt === "string" ? data.resetsAt : null,
+      });
+    } catch {
+      setQuotaError(true);
+      setQuotaErrorMessage("Neočekivana greška pri učitavanju kvote.");
+    } finally {
+      setQuotaLoading(false);
+    }
+  }, []);
+
+  const loadAuth = useCallback(async () => {
+    setAuthLoading(true);
+    try {
+      const res = await authMe();
+      const u = userFromAuthMe(res);
+      setUser(u);
+      if (u) {
+        setQuota(null);
+        await refreshQuota();
+      } else {
+        setQuota({
+          authenticated: false,
+          limit: 12,
+          used: 0,
+          remaining: 0,
+        });
+      }
+    } finally {
+      setAuthLoading(false);
+    }
+  }, [refreshQuota]);
+
+  useEffect(() => {
+    void loadAuth();
+  }, [loadAuth]);
+
+  useEffect(() => {
+    const onAuth = () => void loadAuth();
+    window.addEventListener("mojput-auth-changed", onAuth);
+    return () => window.removeEventListener("mojput-auth-changed", onAuth);
+  }, [loadAuth]);
+
+  /** Blokiraj samo kad znamo iz API-ja da je limit iscrpljen. null kvota = još učitavamo ili fetch pao — ne blokiraj prijavu. */
+  const atDailyLimit = useMemo(
+    () =>
+      Boolean(user) &&
+      !STATIC_NO_API &&
+      quota != null &&
+      quota.authenticated === true &&
+      (quota.remaining ?? 0) <= 0,
+    [user, quota],
+  );
+
+  /** Odbrojavanje do ponoći (Europe/Zagreb) kad je limit iscrpljen — format 16h 54m 33s. */
+  useEffect(() => {
+    if (!atDailyLimit || !quota?.resetsAt) {
+      setLimitCountdown("");
+      return;
+    }
+    const end = new Date(quota.resetsAt).getTime();
+    const tick = () => {
+      const ms = Math.max(0, end - Date.now());
+      const h = Math.floor(ms / 3600000);
+      const m = Math.floor((ms % 3600000) / 60000);
+      const s = Math.floor((ms % 60000) / 1000);
+      setLimitCountdown(`${h}h ${m}m ${s}s`);
+    };
+    tick();
+    const id = window.setInterval(tick, 1000);
+    return () => window.clearInterval(id);
+  }, [atDailyLimit, quota?.resetsAt]);
+
+  const canSendChat =
+    !isLoading && (STATIC_NO_API || (Boolean(user) && !authLoading && !atDailyLimit));
 
   const autoResize = (el: HTMLTextAreaElement) => {
     el.style.height = "24px";
@@ -157,6 +301,14 @@ const Chatbot = () => {
   const sendMessage = async (text?: string) => {
     const content = (text ?? input).trim();
     if (!content || isLoading) return;
+
+    if (!user && !STATIC_NO_API) {
+      return;
+    }
+    if (atDailyLimit) {
+      setPremiumOpen(true);
+      return;
+    }
 
     setInput("");
     if (textareaRef.current) textareaRef.current.style.height = "24px";
@@ -194,41 +346,90 @@ const Chatbot = () => {
         body: JSON.stringify({ messages: conversationHistory }),
       });
 
+      if (res.status === 401) {
+        setMessages((m) => m.slice(0, -2));
+        setUser(null);
+        await refreshQuota();
+        throw new Error("Moraš biti prijavljen za chatbot.");
+      }
+
+      if (res.status === 403) {
+        const errBody = await res.json().catch(() => ({}));
+        if (errBody?.code === "CHAT_DAILY_LIMIT") {
+          setMessages((m) => m.slice(0, -2));
+          setQuota((q) =>
+            q
+              ? {
+                  ...q,
+                  used: errBody.limit ?? q.limit,
+                  remaining: 0,
+                }
+              : q,
+          );
+          void refreshQuota();
+          setPremiumOpen(true);
+          setIsLoading(false);
+          return;
+        }
+        throw new Error(errBody?.message || "Pristup odbijen.");
+      }
+
       if (!res.ok) {
         const err = await res.json().catch(() => ({}));
         throw new Error(err?.message || `Greška (${res.status})`);
       }
 
-      const reader = res.body?.getReader();
-      const decoder = new TextDecoder();
+      const ct = res.headers.get("content-type") || "";
       let fullText = "";
 
-      if (reader) {
-        while (true) {
-          const { done, value } = await reader.read();
-          if (done) break;
-          const chunk = decoder.decode(value, { stream: true });
-          const lines = chunk.split("\n");
-          for (const line of lines) {
-            if (line.startsWith("data: ")) {
-              const data = line.slice(6);
-              if (data === "[DONE]") continue;
+      if (ct.includes("application/json")) {
+        const data = await res.json();
+        fullText = typeof data?.content === "string" ? data.content : "";
+      } else {
+        const reader = res.body?.getReader();
+        const decoder = new TextDecoder();
+        let sseBuffer = "";
+        if (reader) {
+          while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+            sseBuffer += decoder.decode(value, { stream: true });
+            const lines = sseBuffer.split("\n");
+            sseBuffer = lines.pop() ?? "";
+            for (const line of lines) {
+              if (!line.startsWith("data: ")) continue;
+              const payload = line.slice(6);
+              if (payload === "[DONE]") continue;
               try {
-                const parsed = JSON.parse(data);
-                if (parsed?.content) {
-                  fullText += parsed.content;
-                  setMessages((m) => {
-                    const next = [...m];
-                    if (next[assistantIdx]) next[assistantIdx] = { ...next[assistantIdx], content: fullText };
-                    return next;
-                  });
-                }
+                const parsed = JSON.parse(payload);
+                if (parsed?.content) fullText += parsed.content;
               } catch {
-                /* ignore */
+                /* nepuni chunk — čeka se sljedeći */
               }
             }
           }
+          if (sseBuffer.startsWith("data: ") && sseBuffer.slice(6) !== "[DONE]") {
+            try {
+              const parsed = JSON.parse(sseBuffer.slice(6));
+              if (parsed?.content) fullText += parsed.content;
+            } catch {
+              /* ignore */
+            }
+          }
         }
+        setMessages((m) => {
+          const next = [...m];
+          if (next[assistantIdx]) next[assistantIdx] = { ...next[assistantIdx], content: fullText };
+          return next;
+        });
+      }
+
+      if (ct.includes("application/json") && fullText) {
+        setMessages((m) => {
+          const next = [...m];
+          if (next[assistantIdx]) next[assistantIdx] = { role: "assistant", content: fullText };
+          return next;
+        });
       }
 
       if (!fullText) {
@@ -238,12 +439,13 @@ const Chatbot = () => {
           return next;
         });
       }
+      await refreshQuota();
     } catch (err) {
       let msg = err instanceof Error ? err.message : "Došlo je do greške. Pokušajte ponovo.";
       if (msg.includes("404") || msg.includes("502") || msg.includes("Failed to fetch")) {
         msg = buildLocalChatReply(content);
       } else if (msg.includes("429") || msg.includes("quota") || msg.includes("OpenAI")) {
-        msg = "Chatbot koristi samo bazu podataka. Osvježi stranicu (F5) i pokušaj ponovo.";
+        msg = "OpenAI trenutno nije dostupan (kvota ili limit). Pokušaj za chvili ili provjeri račun na platform.openai.com.";
       }
       setMessages((m) => {
         const next = [...m];
@@ -262,8 +464,61 @@ const Chatbot = () => {
     }
   };
 
+  const showLoginGate = !authLoading && !user && !STATIC_NO_API;
+
   return (
     <Layout>
+      <Dialog open={premiumOpen} onOpenChange={setPremiumOpen}>
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader>
+            <div className="flex items-center gap-2 text-primary">
+              <Crown className="w-6 h-6 shrink-0" />
+              <DialogTitle>MojPut Premium (uskoro)</DialogTitle>
+            </div>
+            <DialogDescription className="sr-only">
+              Dnevni besplatni limit poruka dosegnut. Premium plan s dodatnim mogućnostima uskoro.
+            </DialogDescription>
+            <div className="text-left space-y-4 pt-1 text-sm text-foreground">
+              <p>
+                Iskoristio si besplatnih <strong>{quota?.limit ?? 12}</strong> poruka s Draženom za danas (besplatni
+                limit se osvježava u ponoć po hrvatskom vremenu).
+              </p>
+              {atDailyLimit && limitCountdown && (
+                <p className="flex flex-wrap items-center gap-2 rounded-lg border border-border bg-muted/50 px-3 py-2">
+                  <Timer className="w-4 h-4 shrink-0" />
+                  <span>
+                    Nova poruka za: <strong className="tabular-nums text-base">{limitCountdown}</strong>
+                  </span>
+                </p>
+              )}
+              <div className="space-y-2">
+                <p className="font-medium">Premium će donijeti (plan se još dogovara):</p>
+                <ul className="list-disc pl-5 space-y-1.5 text-muted-foreground">
+                  <li>
+                    <strong className="text-foreground">Više poruka</strong> dnevno ili neograničeno ovisno o paketu
+                  </li>
+                  <li>
+                    <strong className="text-foreground">Dodatne mogućnosti</strong> — dublje usporedbe fakulteta,
+                    osobni podsjetnici, prioritet odgovora
+                  </li>
+                  <li>
+                    <strong className="text-foreground">Rani pristup</strong> novim alatima na MojPutu
+                  </li>
+                </ul>
+              </div>
+              <p className="text-muted-foreground">
+                Pretplata još nije aktivna — pratite obavijesti na stranici i društvenim mrežama MojPuta.
+              </p>
+            </div>
+          </DialogHeader>
+          <div className="flex justify-end gap-2 pt-2">
+            <Button variant="secondary" onClick={() => setPremiumOpen(false)}>
+              Razumijem
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
       <section className="container py-6">
         <div className="flex flex-col lg:flex-row gap-6 max-w-6xl mx-auto">
           {/* Samo robot (drži AI prozor) */}
@@ -291,35 +546,125 @@ const Chatbot = () => {
                 <div className="chat-avatar">
                   <Bot className="w-5 h-5 text-primary-foreground" />
                 </div>
-                <div>
+                <div className="chat-header-title min-w-0 flex-1">
                   <h2 className="font-semibold">{AI_NAME}</h2>
                   <p className="chat-status">
                     <span className="chat-status-dot" />
-                    Online · AI asistent
+                    {authLoading
+                      ? "Učitavanje…"
+                      : STATIC_NO_API
+                        ? "Lokalni način (bez API)"
+                        : showLoginGate
+                          ? "Samo za prijavljene korisnike"
+                          : "Online · baza + OpenAI"}
                   </p>
                 </div>
-                <div className="flex items-center gap-2 ml-auto">
+                {user && !STATIC_NO_API && !authLoading && (quotaLoading || quotaError || quota?.authenticated) && (
+                  <div
+                    className={`chat-quota-pill ${atDailyLimit ? "chat-quota-pill--limit" : ""}`}
+                    role="status"
+                    aria-live="polite"
+                    aria-label="Dnevna kvota besplatnih poruka s Draženom"
+                  >
+                    {quotaLoading ? (
+                      <>
+                        <Loader2 className="w-4 h-4 shrink-0 animate-spin text-primary" aria-hidden />
+                        <span className="text-sm">Učitavanje kvote…</span>
+                      </>
+                    ) : quotaError ? (
+                      <>
+                        <span
+                          className="text-xs text-muted-foreground max-w-[min(100%,14rem)] leading-snug"
+                          title={quotaErrorMessage || undefined}
+                        >
+                          {quotaErrorMessage || "Kvota se nije učitala."}
+                        </span>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          className="h-7 px-2 text-xs shrink-0"
+                          onClick={() => void refreshQuota()}
+                        >
+                          Osvježi
+                        </Button>
+                      </>
+                    ) : quota?.authenticated ? (
+                      <>
+                        <span className="chat-quota-pill-label">Preostalo</span>
+                        <span
+                          className={`chat-quota-pill-nums tabular-nums ${atDailyLimit ? "text-destructive" : "text-primary"}`}
+                        >
+                          <strong>{quota.remaining}</strong>
+                          <span className="text-muted-foreground font-normal">/</span>
+                          <strong>{quota.limit}</strong>
+                        </span>
+                        <span className="chat-quota-pill-suffix">poruka danas</span>
+                        {atDailyLimit && (
+                          <>
+                            <span className="chat-quota-pill-divider" aria-hidden />
+                            <Timer className="w-3.5 h-3.5 shrink-0 text-muted-foreground" aria-hidden />
+                            <span className="tabular-nums text-xs font-medium text-foreground">
+                              {limitCountdown || "…"}
+                            </span>
+                            <Button
+                              type="button"
+                              size="sm"
+                              variant="secondary"
+                              className="h-7 px-2 text-xs shrink-0"
+                              onClick={() => setPremiumOpen(true)}
+                            >
+                              <Crown className="w-3 h-3 mr-1" />
+                              Premium
+                            </Button>
+                          </>
+                        )}
+                      </>
+                    ) : null}
+                  </div>
+                )}
+                <div className="chat-header-actions flex items-center gap-2 shrink-0 ml-auto">
                   <Button
                     variant="ghost"
                     size="sm"
                     className="text-xs"
-                    onClick={() => setMessages([{ role: "assistant", content: AI_WELCOME }])}
-                    title="Novi razgovor"
+                    onClick={() => {
+                      setMessages([{ role: "assistant", content: AI_WELCOME }]);
+                      void refreshQuota();
+                    }}
+                    title={
+                      atDailyLimit
+                        ? "Isprazni razgovor — limit 12 poruka danas je iscrpljen; slanje novih poruka nije moguće do sutra."
+                        : "Novi razgovor"
+                    }
                   >
                     <RotateCcw className="w-3.5 h-3.5 mr-1" />
                     Novi razgovor
                   </Button>
-                  <div className="chat-badge">📚 Baza</div>
+                  <div className="chat-badge" title="Podaci iz baze u promptu; tekst generira OpenAI">
+                    📚 Baza + AI
+                  </div>
                 </div>
               </div>
 
-              <div className="chat-messages">
+              <div className="chat-messages" ref={messagesContainerRef}>
+                {showLoginGate && (
+                  <div className="rounded-xl border border-border bg-muted/40 p-4 text-sm text-center space-y-3">
+                    <p>Za Dražena trebaš biti prijavljen. Svaki dan imaš besplatnih 12 poruka.</p>
+                    <Button asChild size="sm">
+                      <Link to="/prijava" className="inline-flex items-center gap-2">
+                        <LogIn className="w-4 h-4" />
+                        Prijavi se
+                      </Link>
+                    </Button>
+                  </div>
+                )}
                 {messages.length === 0 && (
                   <div className="chat-welcome">
                     <Sparkles className="w-10 h-10 text-primary opacity-70 mb-2" />
                     <h3 className="font-semibold text-foreground">Što te zanima?</h3>
                     <p className="text-sm text-muted-foreground max-w-[320px]">
-                      Postavljaj pitanja o fakultetima, studijima i uvjetima upisa. Odgovori temelje se na podacima iz naše baze.
+                      Odgovori su u razgovornom tonu; koriste podatke iz baze kad odgovaraju na tvoje pitanje.
                     </p>
                     <div className="chat-suggestions">
                       {SUGGESTIONS.map((s) => (
@@ -327,6 +672,7 @@ const Chatbot = () => {
                           key={s}
                           type="button"
                           className="chat-sug-btn"
+                          disabled={!canSendChat}
                           onClick={() => sendMessage(s)}
                         >
                           <ChevronRight className="w-3 h-3 shrink-0" />
@@ -350,8 +696,11 @@ const Chatbot = () => {
                       {msg.role === "assistant" ? (
                         <>
                           <span dangerouslySetInnerHTML={{ __html: formatMessage(msg.content) }} />
-                          {msg.content && !msg.content.includes("Backend nije") && !msg.content.includes("Greška pri") && (
-                            <div className="chat-source-tag">📚 Temelji se na podacima iz baze</div>
+                          {i > 0 &&
+                            msg.content &&
+                            !msg.content.includes("Backend nije") &&
+                            !msg.content.includes("Greška pri") && (
+                            <div className="chat-source-tag">📚 Podaci iz baze u kontekstu · ✨ tekst (OpenAI) — provjeri službene uvjete na fakultetu</div>
                           )}
                         </>
                       ) : (
@@ -371,7 +720,6 @@ const Chatbot = () => {
                     </div>
                   </div>
                 )}
-                <div ref={messagesEndRef} />
               </div>
 
               <div className="chat-input-area">
@@ -384,22 +732,30 @@ const Chatbot = () => {
                       autoResize(e.target);
                     }}
                     onKeyDown={handleKeyDown}
-                    placeholder="Postavi pitanje o fakultetima…"
+                    placeholder={
+                      showLoginGate
+                        ? "Prijavi se za slanje poruka…"
+                        : authLoading
+                          ? "Učitavanje…"
+                          : atDailyLimit
+                            ? "Dnevni limit poruka (12) iscrpljen…"
+                            : "Npr. FER ili FOI za računarstvo?"
+                    }
                     rows={1}
                     className="chat-textarea"
-                    disabled={isLoading}
+                    disabled={isLoading || !canSendChat}
                   />
                   <Button
                     size="icon"
                     className="chat-send-btn shrink-0"
                     onClick={() => sendMessage()}
-                    disabled={isLoading}
+                    disabled={isLoading || !canSendChat}
                     title="Pošalji"
                   >
                     <Send className="w-4 h-4" />
                   </Button>
                 </div>
-                <p className="chat-footer-hint">Enter za slanje · Shift+Enter novi red</p>
+                <p className="chat-footer-hint">Enter za slanje · Shift+Enter novi red · razgovorni odgovori, podaci iz baze kad odgovaraju</p>
               </div>
             </div>
           </motion.div>
@@ -431,12 +787,70 @@ const Chatbot = () => {
         }
         .chat-header {
           display: flex;
+          flex-wrap: wrap;
           align-items: center;
-          gap: 0.875rem;
+          gap: 0.625rem 0.875rem;
           padding: 1rem 1.5rem;
           border-bottom: 1px solid hsl(var(--border));
           background: hsl(var(--muted) / 0.5);
           backdrop-filter: blur(10px);
+        }
+        .chat-quota-pill {
+          display: flex;
+          flex-wrap: wrap;
+          align-items: center;
+          gap: 0.35rem 0.5rem;
+          padding: 0.5rem 0.75rem;
+          border-radius: 0.75rem;
+          border: 1px solid hsl(var(--primary) / 0.35);
+          background: hsl(var(--card));
+          box-shadow: 0 1px 2px hsl(var(--foreground) / 0.06);
+          max-width: 100%;
+        }
+        .chat-quota-pill--limit {
+          border-color: hsl(var(--destructive) / 0.45);
+          background: hsl(var(--destructive) / 0.06);
+        }
+        .chat-quota-pill-label {
+          font-size: 0.6875rem;
+          font-weight: 600;
+          text-transform: uppercase;
+          letter-spacing: 0.06em;
+          color: hsl(var(--muted-foreground));
+        }
+        .chat-quota-pill-nums {
+          font-size: 1.125rem;
+          font-weight: 700;
+          line-height: 1;
+        }
+        .chat-quota-pill-suffix {
+          font-size: 0.75rem;
+          color: hsl(var(--muted-foreground));
+        }
+        .chat-quota-pill-divider {
+          width: 1px;
+          height: 1.25rem;
+          background: hsl(var(--border));
+          margin: 0 0.15rem;
+        }
+        @media (max-width: 639px) {
+          .chat-header .chat-avatar {
+            order: 1;
+          }
+          .chat-header .chat-header-title {
+            order: 2;
+            flex: 1 1 auto;
+            min-width: 0;
+          }
+          .chat-header .chat-header-actions {
+            order: 3;
+            margin-left: auto;
+          }
+          .chat-header .chat-quota-pill {
+            order: 4;
+            width: 100%;
+            justify-content: flex-start;
+          }
         }
         .chat-avatar {
           width: 40px; height: 40px;

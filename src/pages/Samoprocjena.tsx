@@ -3,7 +3,13 @@ import { motion } from "framer-motion";
 import { Target, ArrowRight, CheckCircle2, ExternalLink, Sparkles, MessageCircle, Clock, HelpCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
-import { forwardRef, useMemo, useRef, useState } from "react";
+import { forwardRef, useEffect, useMemo, useRef, useState } from "react";
+import { authMe, userFromAuthMe } from "@/lib/auth";
+import {
+  buildSamoprocjenaConfidencePayload,
+  buildSamoprocjenaSerenityPayload,
+  saveCareerQuizResult,
+} from "@/lib/careerQuizApi";
 import { cn } from "@/lib/utils";
 
 const SERENITY_INTAKE_PDF = "https://www.serene.me.uk/intake.pdf";
@@ -395,6 +401,43 @@ function SerenityIntakeQuiz() {
     ];
   }, [allAnswered, phq9Total, gad7Total, functionalScore]);
 
+  const serenitySavedRef = useRef<string | null>(null);
+  useEffect(() => {
+    if (!allAnswered) return;
+    const hash = answers.join(",");
+    if (serenitySavedRef.current === hash) return;
+    void authMe().then(async (res) => {
+      const u = userFromAuthMe(res);
+      if (!u) return;
+      try {
+        const flag = `mojput_samoprocjena_serenity_${hash}`;
+        if (sessionStorage.getItem(flag)) {
+          serenitySavedRef.current = hash;
+          return;
+        }
+      } catch {
+        /* ignore */
+      }
+      const payload = buildSamoprocjenaSerenityPayload({
+        answers,
+        phq9Total,
+        gad7Total,
+        functionalScore,
+        phq9Severity: phq9Severity(phq9Total),
+        gad7Severity: gad7Severity(gad7Total),
+      });
+      const r = await saveCareerQuizResult(payload);
+      if (r.success) {
+        serenitySavedRef.current = hash;
+        try {
+          sessionStorage.setItem(`mojput_samoprocjena_serenity_${hash}`, "1");
+        } catch {
+          /* ignore */
+        }
+      }
+    });
+  }, [allAnswered, answers, phq9Total, gad7Total, functionalScore]);
+
   return (
     <div className="grid gap-6 lg:grid-cols-[1.15fr_0.85fr] lg:items-start">
       <motion.div
@@ -548,8 +591,8 @@ function SerenityIntakeQuiz() {
       )}
 
       <div className="lg:col-span-2 rounded-xl border bg-muted/30 p-4 text-xs text-muted-foreground">
-        PHQ-9 i GAD-7 razvijeni su u okviru PRIME-MD / Pfizer (PHQ screeners). Ova stranica ne prikuplja niti šalje
-        odgovore na poslužitelj — rezultat je samo informativan i{" "}
+        PHQ-9 i GAD-7 razvijeni su u okviru PRIME-MD / Pfizer (PHQ screeners). Ako si prijavljen/a, sažetak rezultata može
+        se spremiti na tvoj MojPut profil; inače ostaje samo u pregledniku. Rezultat je informativan i{" "}
         <span className="font-medium text-foreground">ne zamjenjuje stručnu procjenu</span>.
       </div>
     </div>
@@ -614,6 +657,41 @@ function ConfidenceQuiz() {
       : confidenceLevel === "Srednje"
         ? "Na dobrom si putu. Program će ti pomoći da učvrstiš sigurnost i djeluješ bez overthinkanja."
         : "Imaš dobru bazu. Program će ti pomoći da svoje samopouzdanje pretvoriš u dosljedne rezultate.";
+
+  const confidenceSavedRef = useRef<string | null>(null);
+  useEffect(() => {
+    if (!resultsOpen || !allAnswered) return;
+    const hash = answers.join(",");
+    if (confidenceSavedRef.current === hash) return;
+    void authMe().then(async (res) => {
+      const u = userFromAuthMe(res);
+      if (!u) return;
+      try {
+        const flag = `mojput_samoprocjena_confidence_${hash}`;
+        if (sessionStorage.getItem(flag)) {
+          confidenceSavedRef.current = hash;
+          return;
+        }
+      } catch {
+        /* ignore */
+      }
+      const payload = buildSamoprocjenaConfidencePayload({
+        answers,
+        averageScore,
+        confidenceLevel,
+        recommendation,
+      });
+      const r = await saveCareerQuizResult(payload);
+      if (r.success) {
+        confidenceSavedRef.current = hash;
+        try {
+          sessionStorage.setItem(`mojput_samoprocjena_confidence_${hash}`, "1");
+        } catch {
+          /* ignore */
+        }
+      }
+    });
+  }, [resultsOpen, allAnswered, answers, averageScore, confidenceLevel, recommendation]);
 
   const onSelectAnswer = (score: number) => {
     const next = [...answers];

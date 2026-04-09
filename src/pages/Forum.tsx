@@ -7,13 +7,21 @@ import {
   LogIn,
   MessageCircle,
   Plus,
+  Reply,
   Search,
   Send,
   ThumbsUp,
+  Trash2,
   TrendingUp,
+  X,
 } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { apiGet, apiPost } from "@/lib/api";
+
+/** Razgovori/poruke iz localStorage (offline fallback) koriste velike ID-eve; serverski su mali autoincrement. */
+function isLocalForumConversationId(id: number): boolean {
+  return id >= 1_000_000_000_000;
+}
 import { Link, useLocation } from "react-router-dom";
 import { authLogout, authMe, userFromAuthMe, type AuthUser } from "@/lib/auth";
 import { cn } from "@/lib/utils";
@@ -26,6 +34,11 @@ type ForumMessage = {
   timestamp: Date;
   likeCount: number;
   userLiked: boolean;
+  replyToId?: number | null;
+  replyToUsername?: string | null;
+  replyToSnippet?: string | null;
+  /** Autor je uklonio poruku s prikaza; tekst ostaje u bazi za evidenciju. */
+  deletedByUser?: boolean;
 };
 
 type ForumConversation = {
@@ -194,7 +207,9 @@ const Forum = () => {
   const [newConvTitle, setNewConvTitle] = useState("");
   const [newConvDescription, setNewConvDescription] = useState("");
   const [messageInput, setMessageInput] = useState("");
+  const [replyingTo, setReplyingTo] = useState<ForumMessage | null>(null);
   const [sendingMessage, setSendingMessage] = useState(false);
+  const [deletingMessageId, setDeletingMessageId] = useState<number | null>(null);
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
@@ -290,14 +305,22 @@ const Forum = () => {
           created_at: string;
           like_count: number;
           user_liked: boolean;
+          reply_to_id?: number | null;
+          deleted_by_user_at?: string | null;
+          reply_to_username?: string | null;
+          reply_to_snippet?: string | null;
         }>).map((m) => ({
           id: m.id,
           userId: m.user_id,
           username: m.username,
-          text: m.text,
+          text: m.text ?? "",
           timestamp: new Date(m.created_at),
           likeCount: m.like_count ?? 0,
           userLiked: m.user_liked ?? false,
+          replyToId: m.reply_to_id ?? null,
+          replyToUsername: m.reply_to_username ?? null,
+          replyToSnippet: m.reply_to_snippet ?? null,
+          deletedByUser: Boolean(m.deleted_by_user_at),
         }));
 
         setConversations((prev) =>
@@ -419,7 +442,9 @@ const Forum = () => {
     if (!newConversation) return;
 
     setConversations((prev) => [newConversation, ...prev]);
-    writeLocalConversations([newConversation, ...readLocalConversations()]);
+    if (isLocalForumConversationId(newConversation.id)) {
+      writeLocalConversations([newConversation, ...readLocalConversations()]);
+    }
     setNewConvTitle("");
     setNewConvDescription("");
     setShowNewConversationModal(false);
@@ -430,15 +455,42 @@ const Forum = () => {
     e.preventDefault();
     if (!currentUser || !selectedConversation || !messageInput.trim()) return;
 
+    const replyId = replyingTo?.id;
     setSendingMessage(true);
-    const res = await apiPost<{ data?: { id: number; user_id: number; username: string; text: string; created_at: string; like_count: number; user_liked: boolean } }>(
-      `/api/forum/conversations/${selectedConversation.id}/messages`,
-      { text: messageInput.trim() },
-    );
+    const res = await apiPost<{
+      data?: {
+        id: number;
+        user_id: number;
+        username: string;
+        text: string;
+        created_at: string;
+        like_count: number;
+        user_liked: boolean;
+        reply_to_id?: number | null;
+        reply_to_username?: string | null;
+        reply_to_snippet?: string | null;
+      };
+    }>(`/api/forum/conversations/${selectedConversation.id}/messages`, {
+      text: messageInput.trim(),
+      ...(replyId != null && !isLocalForumConversationId(replyId) ? { reply_to_id: replyId } : {}),
+    });
     setSendingMessage(false);
     let newMessage: ForumMessage | null = null;
     if (res.success) {
-      const payload = (res as { data?: { id: number; user_id: number; username: string; text: string; created_at: string; like_count: number; user_liked: boolean } }).data;
+      const payload = (res as { data?: Record<string, unknown> }).data as
+        | {
+            id: number;
+            user_id: number;
+            username: string;
+            text: string;
+            created_at: string;
+            like_count: number;
+            user_liked: boolean;
+            reply_to_id?: number | null;
+            reply_to_username?: string | null;
+            reply_to_snippet?: string | null;
+          }
+        | undefined;
       if (payload) {
         newMessage = {
           id: payload.id,
@@ -448,6 +500,10 @@ const Forum = () => {
           timestamp: new Date(payload.created_at),
           likeCount: payload.like_count ?? 0,
           userLiked: payload.user_liked ?? false,
+          replyToId: payload.reply_to_id ?? null,
+          replyToUsername: payload.reply_to_username ?? null,
+          replyToSnippet: payload.reply_to_snippet ?? null,
+          deletedByUser: false,
         };
       }
     } else {
@@ -460,6 +516,14 @@ const Forum = () => {
         timestamp: new Date(),
         likeCount: 0,
         userLiked: false,
+        replyToId: replyingTo?.id,
+        replyToUsername: replyingTo?.username,
+        replyToSnippet: replyingTo
+          ? replyingTo.deletedByUser
+            ? "(poruka uklonjena od autora)"
+            : (replyingTo.text || "").slice(0, 120)
+          : undefined,
+        deletedByUser: false,
       };
     }
     if (!newMessage) return;
@@ -474,14 +538,65 @@ const Forum = () => {
     setSelectedConversation((prev) =>
       prev ? { ...prev, messages: [...prev.messages, newMessage], messageCount: prev.messageCount + 1 } : prev,
     );
-    const localConvs = readLocalConversations();
-    const updatedLocal = localConvs.map((conv) =>
-      conv.id === selectedConversation.id
-        ? { ...conv, messages: [...conv.messages, newMessage], messageCount: conv.messageCount + 1 }
-        : conv,
-    );
-    writeLocalConversations(updatedLocal);
+    if (isLocalForumConversationId(selectedConversation.id)) {
+      const localConvs = readLocalConversations();
+      const updatedLocal = localConvs.map((conv) =>
+        conv.id === selectedConversation.id
+          ? { ...conv, messages: [...conv.messages, newMessage!], messageCount: conv.messageCount + 1 }
+          : conv,
+      );
+      writeLocalConversations(updatedLocal);
+    }
     setMessageInput("");
+    setReplyingTo(null);
+  };
+
+  const handleSoftDeleteMessage = async (msg: ForumMessage) => {
+    if (!currentUser || msg.userId !== currentUser.id || msg.deletedByUser) return;
+    if (!selectedConversation) return;
+
+    if (isLocalForumConversationId(msg.id)) {
+      const mark = (m: ForumMessage) =>
+        m.id === msg.id ? { ...m, text: "", deletedByUser: true, replyToSnippet: m.replyToSnippet } : m;
+      setConversations((prev) =>
+        prev.map((c) =>
+          c.id === selectedConversation.id
+            ? { ...c, messages: c.messages.map(mark) }
+            : c,
+        ),
+      );
+      setSelectedConversation((prev) =>
+        prev ? { ...prev, messages: prev.messages.map(mark) } : prev,
+      );
+      if (isLocalForumConversationId(selectedConversation.id)) {
+        const localConvs = readLocalConversations();
+        const updated = localConvs.map((c) =>
+          c.id === selectedConversation.id ? { ...c, messages: c.messages.map(mark) } : c,
+        );
+        writeLocalConversations(updated);
+      }
+      return;
+    }
+
+    setDeletingMessageId(msg.id);
+    try {
+      const res = await apiPost<{ success?: boolean }>(`/api/forum/messages/${msg.id}/soft-delete`, {});
+      if (res.success) {
+        const mark = (m: ForumMessage) =>
+          m.id === msg.id ? { ...m, text: "", deletedByUser: true } : m;
+        setConversations((prev) =>
+          prev.map((c) =>
+            c.id === selectedConversation.id ? { ...c, messages: c.messages.map(mark) } : c,
+          ),
+        );
+        setSelectedConversation((prev) =>
+          prev ? { ...prev, messages: prev.messages.map(mark) } : prev,
+        );
+        if (replyingTo?.id === msg.id) setReplyingTo(null);
+      }
+    } finally {
+      setDeletingMessageId(null);
+    }
   };
 
   const handleLikeMessage = async (messageId: number) => {
@@ -511,14 +626,16 @@ const Forum = () => {
     setSelectedConversation((prev) =>
       prev ? { ...prev, messages: prev.messages.map(updateMsg) } : prev,
     );
-    const localConvs = readLocalConversations();
-    if (localConvs.length) {
-      const updatedLocal = localConvs.map((conv) =>
-        conv.id === selectedConversation.id
-          ? { ...conv, messages: conv.messages.map(updateMsg) }
-          : conv,
-      );
-      writeLocalConversations(updatedLocal);
+    if (isLocalForumConversationId(selectedConversation.id)) {
+      const localConvs = readLocalConversations();
+      if (localConvs.length) {
+        const updatedLocal = localConvs.map((conv) =>
+          conv.id === selectedConversation.id
+            ? { ...conv, messages: conv.messages.map(updateMsg) }
+            : conv,
+        );
+        writeLocalConversations(updatedLocal);
+      }
     }
   };
 
@@ -818,29 +935,82 @@ const Forum = () => {
                                   })}
                                 </span>
                               </div>
-                              <div
-                                className={`rounded-2xl px-4 py-2.5 text-sm ${
-                                  msg.userId === currentUser?.id
-                                    ? "rounded-br-md bg-primary text-primary-foreground"
-                                    : "rounded-bl-md border border-border bg-muted/60 text-foreground"
-                                }`}
-                              >
-                                <p className="whitespace-pre-wrap break-words">{msg.text}</p>
-                              </div>
-                              {canUseForum && (
-                                <button
-                                  type="button"
-                                  onClick={() => handleLikeMessage(msg.id)}
+                              {msg.replyToId != null && (msg.replyToSnippet || msg.replyToUsername) && (
+                                <div
                                   className={cn(
-                                    "mt-1.5 -ml-1 inline-flex min-h-9 items-center gap-1.5 px-1 text-xs transition-colors touch-manipulation",
-                                    msg.userLiked ? "text-primary" : "text-muted-foreground hover:text-foreground",
-                                    msg.userId === currentUser?.id && "self-end",
+                                    "mb-1 max-w-full rounded-lg border border-border/60 bg-background/80 px-2.5 py-1.5 text-[11px] leading-snug text-muted-foreground",
+                                    msg.userId === currentUser?.id ? "self-end" : "self-start",
                                   )}
                                 >
-                                  <ThumbsUp className={`h-3.5 w-3.5 ${msg.userLiked ? "fill-current" : ""}`} />
-                                  {msg.likeCount > 0 && <span>{msg.likeCount}</span>}
-                                </button>
+                                  <Reply className="inline h-3 w-3 shrink-0 opacity-70" aria-hidden />
+                                  {msg.replyToUsername && (
+                                    <span className="font-semibold text-foreground"> {msg.replyToUsername}</span>
+                                  )}
+                                  {msg.replyToSnippet && (
+                                    <span className="line-clamp-2 text-muted-foreground"> · {msg.replyToSnippet}</span>
+                                  )}
+                                </div>
                               )}
+                              <div
+                                className={`rounded-2xl px-4 py-2.5 text-sm ${
+                                  msg.deletedByUser
+                                    ? "rounded-br-md rounded-bl-md border border-dashed border-border bg-muted/50 text-muted-foreground"
+                                    : msg.userId === currentUser?.id
+                                      ? "rounded-br-md bg-primary text-primary-foreground"
+                                      : "rounded-bl-md border border-border bg-muted/60 text-foreground"
+                                }`}
+                              >
+                                <p className="whitespace-pre-wrap break-words">
+                                  {msg.deletedByUser ? (
+                                    <span className="italic">
+                                      Ova poruka je uklonjena s tvog prikaza; u temi ostaje zapis za kontekst.
+                                    </span>
+                                  ) : (
+                                    msg.text
+                                  )}
+                                </p>
+                              </div>
+                              <div
+                                className={cn(
+                                  "mt-1 flex flex-wrap items-center gap-x-3 gap-y-1",
+                                  msg.userId === currentUser?.id ? "justify-end" : "justify-start",
+                                )}
+                              >
+                                {canUseForum && !msg.deletedByUser && (
+                                  <button
+                                    type="button"
+                                    onClick={() => setReplyingTo(msg)}
+                                    className="inline-flex min-h-9 items-center gap-1 px-1 text-xs text-muted-foreground transition-colors hover:text-primary touch-manipulation"
+                                  >
+                                    <Reply className="h-3.5 w-3.5" />
+                                    Odgovori
+                                  </button>
+                                )}
+                                {canUseForum && currentUser?.id === msg.userId && !msg.deletedByUser && (
+                                  <button
+                                    type="button"
+                                    disabled={deletingMessageId === msg.id}
+                                    onClick={() => void handleSoftDeleteMessage(msg)}
+                                    className="inline-flex min-h-9 items-center gap-1 px-1 text-xs text-muted-foreground transition-colors hover:text-destructive touch-manipulation disabled:opacity-50"
+                                  >
+                                    <Trash2 className="h-3.5 w-3.5" />
+                                    Ukloni s prikaza
+                                  </button>
+                                )}
+                                {canUseForum && (
+                                  <button
+                                    type="button"
+                                    onClick={() => handleLikeMessage(msg.id)}
+                                    className={cn(
+                                      "inline-flex min-h-9 items-center gap-1.5 px-1 text-xs transition-colors touch-manipulation",
+                                      msg.userLiked ? "text-primary" : "text-muted-foreground hover:text-foreground",
+                                    )}
+                                  >
+                                    <ThumbsUp className={`h-3.5 w-3.5 ${msg.userLiked ? "fill-current" : ""}`} />
+                                    {msg.likeCount > 0 && <span>{msg.likeCount}</span>}
+                                  </button>
+                                )}
+                              </div>
                             </div>
                           </motion.div>
                         ))
@@ -853,6 +1023,28 @@ const Forum = () => {
                         onSubmit={handleSendMessage}
                         className="shrink-0 border-t border-border bg-muted/30 p-3 sm:p-4 pb-[max(0.75rem,env(safe-area-inset-bottom))]"
                       >
+                        {replyingTo && (
+                          <div className="mb-2 flex items-start justify-between gap-2 rounded-xl border border-primary/25 bg-primary/[0.06] px-3 py-2 text-xs text-foreground">
+                            <span className="min-w-0 leading-snug">
+                              <Reply className="inline h-3.5 w-3.5 shrink-0 text-primary" aria-hidden />
+                              <span className="font-medium"> Odgovor na {replyingTo.username}</span>
+                              {!replyingTo.deletedByUser && replyingTo.text && (
+                                <span className="text-muted-foreground"> — {replyingTo.text.slice(0, 100)}</span>
+                              )}
+                              {replyingTo.deletedByUser && (
+                                <span className="text-muted-foreground"> — (poruka uklonjena)</span>
+                              )}
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() => setReplyingTo(null)}
+                              className="shrink-0 rounded-lg p-1 text-muted-foreground hover:bg-muted hover:text-foreground"
+                              aria-label="Odustani od odgovora"
+                            >
+                              <X className="h-4 w-4" />
+                            </button>
+                          </div>
+                        )}
                         <div className="flex items-end gap-2 sm:gap-3">
                           <label className="sr-only" htmlFor="forum-message-input">
                             Poruka
