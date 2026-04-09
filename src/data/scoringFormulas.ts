@@ -25,6 +25,12 @@ export type ScoringComponent = {
   opis?: string;
 };
 
+export type Natjecanje = {
+  kategorija: string;
+  disciplina: string;
+  vrednovanje: string;
+};
+
 export type ProgramScoring = {
   programId: string;
   fakultet: string;
@@ -36,6 +42,9 @@ export type ProgramScoring = {
   napomena?: string;
   kategorija?: string;
   izvor?: string;
+  preduvjeti?: string[];
+  natjecanja?: Natjecanje[];
+  napomene?: string[];
 };
 
 // Parse JSON into typed array
