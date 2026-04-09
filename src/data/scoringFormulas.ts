@@ -27,6 +27,12 @@ export type ScoringComponent = {
   opis?: string;
 };
 
+export type Natjecanje = {
+  kategorija: string;
+  disciplina: string;
+  vrednovanje: string;
+};
+
 export type ProgramScoring = {
   programId: string;
   fakultet: string;
@@ -46,6 +52,12 @@ export type ProgramScoring = {
   requiredSubjects?: RequiredSubjectSpec[];
   /** Način unosa prijemnog kad su zadane težine */
   prijemniInputMode?: "percent" | "points";
+  /** Posebni uvjeti za upis (zdravstveni pregledi, prijemni ispiti, eliminacijski kriteriji) */
+  preduvjeti?: string[];
+  /** Natjecanja koja donose bodove ili izravan upis */
+  natjecanja?: Natjecanje[];
+  /** Napomene uz program */
+  napomene?: string[];
 };
 
 // Parse JSON into typed array

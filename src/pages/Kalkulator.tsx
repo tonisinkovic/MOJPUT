@@ -25,6 +25,10 @@ import {
   Search,
   Building2,
   Check,
+  ShieldAlert,
+  Medal,
+  FileWarning,
+  Trophy,
 } from "lucide-react";
 import {
   Card,
@@ -1049,6 +1053,89 @@ const Kalkulator = () => {
                           })}
                         </CardContent>
                       </Card>
+                    )}
+
+                    {/* Preduvjeti za upis (info iz postani-student.hr) — korak 2 */}
+                    {wizardStep === 2 && selectedFormula?.preduvjeti && selectedFormula.preduvjeti.length > 0 && (
+                      <Card className={cn(cardShell, "border-amber-200 dark:border-amber-800")}>
+                        <CardHeader className="pb-3">
+                          <div className="flex items-center gap-2">
+                            <ShieldAlert className="w-5 h-5 text-amber-600" />
+                            <CardTitle className="text-lg">
+                              Dodatne provjere i preduvjeti za upis
+                            </CardTitle>
+                          </div>
+                          <CardDescription>
+                            Ovaj program zahtijeva posebne uvjete za upis
+                          </CardDescription>
+                        </CardHeader>
+                        <CardContent className="space-y-2">
+                          {selectedFormula.preduvjeti.map((pred, i) => (
+                            <div
+                              key={i}
+                              className="flex items-start gap-2.5 rounded-xl border border-amber-100 bg-amber-50 p-3 dark:border-amber-900/30 dark:bg-amber-950/20"
+                            >
+                              <FileWarning className="mt-0.5 h-4 w-4 shrink-0 text-amber-600" />
+                              <p className="text-sm text-foreground/90">{pred}</p>
+                            </div>
+                          ))}
+                        </CardContent>
+                      </Card>
+                    )}
+
+                    {/* Natjecanja (info iz postani-student.hr) — korak 2 */}
+                    {wizardStep === 2 && selectedFormula?.natjecanja && selectedFormula.natjecanja.length > 0 && (
+                      <Card className={cn(cardShell, "border-amber-200 dark:border-amber-800")}>
+                        <CardHeader className="pb-3">
+                          <div className="flex items-center gap-2">
+                            <Medal className="w-5 h-5 text-amber-600" />
+                            <CardTitle className="text-lg">
+                              Natjecanja i posebna postignuća
+                            </CardTitle>
+                          </div>
+                          <CardDescription>
+                            Nagrade s natjecanja koje donose bodove ili izravan upis
+                          </CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                          <div className="space-y-1.5">
+                            {selectedFormula.natjecanja.map((natj, i) => (
+                              <div
+                                key={i}
+                                className="flex items-center justify-between gap-3 rounded-lg bg-secondary/50 px-3 py-2 transition-colors hover:bg-secondary/80"
+                              >
+                                <div className="flex min-w-0 items-center gap-2">
+                                  <Trophy className="h-3.5 w-3.5 shrink-0 text-amber-600" />
+                                  <span className="truncate text-sm">{natj.disciplina}</span>
+                                  <Badge variant="outline" className="shrink-0 text-[10px]">
+                                    {natj.kategorija}
+                                  </Badge>
+                                </div>
+                                <Badge
+                                  variant="outline"
+                                  className={cn(
+                                    "shrink-0 text-[10px]",
+                                    natj.vrednovanje.toLowerCase().includes("izravan")
+                                      ? "border-emerald-200 bg-emerald-100 text-emerald-700 dark:bg-emerald-900/50 dark:text-emerald-300"
+                                      : "border-blue-200 bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300",
+                                  )}
+                                >
+                                  {natj.vrednovanje}
+                                </Badge>
+                              </div>
+                            ))}
+                          </div>
+                        </CardContent>
+                      </Card>
+                    )}
+
+                    {/* Napomene — korak 2 */}
+                    {wizardStep === 2 && selectedFormula?.napomene && selectedFormula.napomene.length > 0 && (
+                      <div className="px-1">
+                        {selectedFormula.napomene.map((nap, i) => (
+                          <p key={i} className="text-xs italic text-muted-foreground">{nap}</p>
+                        ))}
+                      </div>
                     )}
 
                     {/* Matura – izborni predmeti — korak 3 */}
