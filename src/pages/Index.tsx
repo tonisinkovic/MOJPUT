@@ -11,6 +11,7 @@ import {
   Video,
   MessageSquare,
   Calendar,
+  ScrollText,
   Users,
   Bot,
   Target,
@@ -72,6 +73,12 @@ const features = [
     title: "Kalendar datuma",
     description: "Svi važni rokovi za maturu, prijave i upise na jednom mjestu.",
     path: "/kalendar",
+  },
+  {
+    icon: <ScrollText className="h-6 w-6 text-primary" />,
+    title: "Matura",
+    description: "Kviz iz matematike (ključ NCVVO), PDF materijali i ukupan broj bodova.",
+    path: "/mature",
   },
   {
     icon: <Users className="h-6 w-6 text-primary" />,

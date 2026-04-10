@@ -14,6 +14,7 @@ const navItems = [
   { label: "Video", path: "/video" },
   { label: "Forum", path: "/forum" },
   { label: "Kalendar", path: "/kalendar" },
+  { label: "Matura", path: "/mature" },
   { label: "Roditelji", path: "/roditelji" },
 ];
 

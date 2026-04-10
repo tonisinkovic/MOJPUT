@@ -12,6 +12,7 @@ import KalkulatorDoma from "./pages/KalkulatorDoma";
 import VideoPage from "./pages/VideoPage";
 import Forum from "./pages/Forum";
 import Kalendar from "./pages/Kalendar";
+import Mature from "./pages/Mature";
 import Roditelji from "./pages/Roditelji";
 import ParentGuide from "./pages/ParentGuide";
 import ParentMentalHealth from "./pages/ParentMentalHealth";
@@ -53,6 +54,7 @@ const App = () => (
           <Route path="/video" element={<VideoPage />} />
           <Route path="/forum" element={<Forum />} />
           <Route path="/kalendar" element={<Kalendar />} />
+          <Route path="/mature" element={<Mature />} />
           <Route path="/roditelji" element={<Roditelji />} />
           <Route path="/roditeljski-kutak" element={<Roditelji />} />
           <Route path="/roditeljski-kutak/vodic-za-roditelje" element={<ParentGuide />} />

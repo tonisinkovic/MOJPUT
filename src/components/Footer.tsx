@@ -8,6 +8,7 @@ const footerLinks = [
       { label: "Karta fakulteta", path: "/karta" },
       { label: "Kviz", path: "/kviz" },
       { label: "Kalkulator bodova", path: "/kalkulator" },
+      { label: "Matura (dokumenti)", path: "/mature" },
       { label: "Samoprocjena", path: "/samoprocjena" },
     ],
   },
