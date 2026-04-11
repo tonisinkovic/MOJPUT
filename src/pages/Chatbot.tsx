@@ -28,7 +28,7 @@ import {
 } from "@/components/ui/dialog";
 import { facultyInstitutions } from "@/data/faculties";
 import { API_BASE_URL } from "@/config/apiBase";
-import { apiGet } from "@/lib/api";
+import { apiGet, getStoredAuthToken, setStoredAuthToken } from "@/lib/api";
 import { authMe, userFromAuthMe, type AuthUser } from "@/lib/auth";
 import { cn } from "@/lib/utils";
 
@@ -496,14 +496,19 @@ const Chatbot = () => {
     }
 
     try {
+      const authHdr = getStoredAuthToken();
       const res = await fetch(`${API_BASE}/api/chat`, {
         method: "POST",
         credentials: "include",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          ...(authHdr ? { Authorization: `Bearer ${authHdr}` } : {}),
+        },
         body: JSON.stringify({ messages: conversationHistory }),
       });
 
       if (res.status === 401) {
+        setStoredAuthToken(null);
         setMessages((m) => m.slice(0, -2));
         setUser(null);
         await refreshQuota();

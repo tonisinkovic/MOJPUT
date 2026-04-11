@@ -1,4 +1,4 @@
-import { apiGet, apiPost, type ApiResponse } from "@/lib/api";
+import { apiGet, apiPost, setStoredAuthToken, type ApiResponse } from "@/lib/api";
 
 const AUTH_CHANGED = "mojput-auth-changed";
 
@@ -48,9 +48,13 @@ export async function authMe(): Promise<ApiResponse<{ user: AuthUser }>> {
 export async function authLogin(params: {
   email: string;
   password: string;
-}): Promise<ApiResponse<{ user: AuthUser }>> {
-  const res = await apiPost<{ user: AuthUser }>("/api/auth/login", params);
-  if (res.success) notifyAuthChanged();
+}): Promise<ApiResponse<{ user: AuthUser; token?: string }>> {
+  const res = await apiPost<{ user: AuthUser; token?: string }>("/api/auth/login", params);
+  if (res.success) {
+    const t = typeof (res as { token?: string }).token === "string" ? (res as { token?: string }).token : "";
+    if (t) setStoredAuthToken(t);
+    notifyAuthChanged();
+  }
   return res;
 }
 
@@ -79,6 +83,7 @@ export async function authRegister(params: {
 
 export async function authLogout(): Promise<ApiResponse<unknown>> {
   const res = await apiPost<unknown>("/api/auth/logout", {});
+  setStoredAuthToken(null);
   if (res.success) notifyAuthChanged();
   return res;
 }

@@ -4,6 +4,39 @@ export type ApiOk<T> = { success: true; data?: T; user?: T };
 export type ApiErr = { success: false; message: string; code?: string };
 export type ApiResponse<T> = ApiOk<T> | ApiErr;
 
+const AUTH_TOKEN_KEY = "mojput_bearer_token";
+
+export function getStoredAuthToken(): string | null {
+  if (typeof window === "undefined") return null;
+  try {
+    return localStorage.getItem(AUTH_TOKEN_KEY);
+  } catch {
+    return null;
+  }
+}
+
+export function setStoredAuthToken(token: string | null): void {
+  if (typeof window === "undefined") return;
+  try {
+    if (token) localStorage.setItem(AUTH_TOKEN_KEY, token);
+    else localStorage.removeItem(AUTH_TOKEN_KEY);
+  } catch {
+    /* ignore */
+  }
+}
+
+function withAuthHeaders(headers: Record<string, string>): Record<string, string> {
+  const t = getStoredAuthToken();
+  if (t) return { ...headers, Authorization: `Bearer ${t}` };
+  return headers;
+}
+
+/** Ne briši spremljeni JWT na 401 od prijave (pogrešna lozinka itd.). */
+function shouldClearStoredTokenOn401(reqPath: string): boolean {
+  const skip = ["/api/auth/login", "/api/auth/register"];
+  return !skip.some((p) => reqPath.startsWith(p));
+}
+
 function formatHttpError(res: Response, json: unknown, rawText: string): string {
   const fromApi = typeof (json as any)?.message === "string" ? (json as any).message.trim() : "";
   if (fromApi) return fromApi;
@@ -13,7 +46,7 @@ function formatHttpError(res: Response, json: unknown, rawText: string): string 
   return `Greška (${res.status}).`;
 }
 
-async function parseJson<T>(res: Response): Promise<ApiResponse<T>> {
+async function parseJson<T>(res: Response, reqPath: string): Promise<ApiResponse<T>> {
   const text = await res.text();
   let json: unknown = {};
   try {
@@ -25,6 +58,9 @@ async function parseJson<T>(res: Response): Promise<ApiResponse<T>> {
     };
   }
   if (!res.ok) {
+    if (res.status === 401 && shouldClearStoredTokenOn401(reqPath)) {
+      setStoredAuthToken(null);
+    }
     const msg = formatHttpError(res, json, text);
     const code = typeof (json as any)?.code === "string" ? (json as any).code : undefined;
     return { success: false, message: msg, code };
@@ -41,9 +77,9 @@ export async function apiGet<T>(url: string): Promise<ApiResponse<T>> {
     const res = await fetch(`${API_BASE_URL}${url}`, {
       method: "GET",
       credentials: "include",
-      headers: { "Accept": "application/json" },
+      headers: withAuthHeaders({ Accept: "application/json" }),
     });
-    return parseJson<T>(res);
+    return parseJson<T>(res, url);
   } catch {
     return { success: false, message: "Server nije dostupan. Provjeri je li pokrenut." };
   }
@@ -57,13 +93,13 @@ export async function apiPost<T>(
     const res = await fetch(`${API_BASE_URL}${url}`, {
       method: "POST",
       credentials: "include",
-      headers: {
+      headers: withAuthHeaders({
         "Content-Type": "application/json",
-        "Accept": "application/json",
-      },
+        Accept: "application/json",
+      }),
       body: JSON.stringify(body),
     });
-    return parseJson<T>(res);
+    return parseJson<T>(res, url);
   } catch {
     return { success: false, message: "Server nije dostupan. Provjeri je li pokrenut." };
   }
@@ -74,13 +110,13 @@ export async function apiPatch<T>(url: string, body: unknown): Promise<ApiRespon
     const res = await fetch(`${API_BASE_URL}${url}`, {
       method: "PATCH",
       credentials: "include",
-      headers: {
+      headers: withAuthHeaders({
         "Content-Type": "application/json",
-        "Accept": "application/json",
-      },
+        Accept: "application/json",
+      }),
       body: JSON.stringify(body),
     });
-    return parseJson<T>(res);
+    return parseJson<T>(res, url);
   } catch {
     return { success: false, message: "Server nije dostupan. Provjeri je li pokrenut." };
   }
@@ -91,11 +127,10 @@ export async function apiDelete<T>(url: string): Promise<ApiResponse<T>> {
     const res = await fetch(`${API_BASE_URL}${url}`, {
       method: "DELETE",
       credentials: "include",
-      headers: { Accept: "application/json" },
+      headers: withAuthHeaders({ Accept: "application/json" }),
     });
-    return parseJson<T>(res);
+    return parseJson<T>(res, url);
   } catch {
     return { success: false, message: "Server nije dostupan. Provjeri je li pokrenut." };
   }
 }
-

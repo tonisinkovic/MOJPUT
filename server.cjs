@@ -732,6 +732,16 @@ function signToken(payload) {
   return jwt.sign(payload, JWT_SECRET, { expiresIn: "14d" });
 }
 
+/** Cookie (httpOnly) ili Authorization: Bearer — cross-site kolačići često padnu na mobitelu; token u headeru ostaje pouzdan. */
+function getAuthTokenFromRequest(req) {
+  const fromCookie = req.cookies?.[TOKEN_COOKIE];
+  if (fromCookie && String(fromCookie).trim()) return String(fromCookie).trim();
+  const raw = String(req.get("authorization") || req.get("Authorization") || "").trim();
+  const m = raw.match(/^Bearer\s+(.+)$/i);
+  if (m && m[1]) return m[1].trim();
+  return null;
+}
+
 /**
  * Session cookie: za GitHub Pages → Render (različit host od API-ja) preglednik traži SameSite=None; Secure.
  * Lokalno preko Vite proxyja (http → isti host u browseru): Lax je dovoljan.
@@ -785,7 +795,7 @@ function clearAuthCookie(res, req) {
 
 function authMiddleware(db) {
   return (req, res, next) => {
-    const token = req.cookies?.[TOKEN_COOKIE];
+    const token = getAuthTokenFromRequest(req);
     if (!token) return res.status(401).json({ success: false, message: "Nisi prijavljen." });
 
     try {
@@ -814,7 +824,7 @@ function authMiddleware(db) {
 function optionalAuthMiddleware(db) {
   return (req, res, next) => {
     req.user = null;
-    const token = req.cookies?.[TOKEN_COOKIE];
+    const token = getAuthTokenFromRequest(req);
     if (!token) return next();
     try {
       const decoded = jwt.verify(token, JWT_SECRET);
@@ -1025,18 +1035,14 @@ function getVerificationMailFrom() {
 }
 
 async function sendVerificationEmail({ to, username, code }) {
-  const verifyPage = frontendVerifyPageUrl(`email=${encodeURIComponent(to)}`);
-  const pageHtml = verifyPage.replace(/&/g, "&amp;");
   const subject = "MojPut — potvrdi svoj račun";
-  const textBody = `Pozdrav ${username},\n\nTvoj kod za potvrdu MojPut računa: ${code}\n\nUpiši ga na stranici za potvrdu (otvori u pregledniku):\n${verifyPage}\n\nKod vrijedi 24 sata. Ako nisi ti tražio registraciju, zanemari ovu poruku.\n`;
+  const textBody = `Pozdrav ${username},\n\nTvoj 6-znamenkasti kod za potvrdu MojPut računa:\n\n${code}\n\nOtvori MojPut u pregledniku (npr. mojput na GitHub Pages), idi na stranicu za potvrdu računa i upiši ovaj kod zajedno s email adresom koju si koristio pri registraciji.\n\nKod vrijedi 24 sata. Ako nisi ti tražio registraciju, zanemari ovu poruku.\n`;
   const htmlBody = `
         <p>Pozdrav ${username},</p>
-        <p>Tvoj <strong>6-znamenkasti kod</strong> za potvrdu računa:</p>
+        <p>Tvoj <strong>6-znamenkasti kod</strong> za potvrdu računa na MojPutu:</p>
         <p style="font-size:28px;letter-spacing:0.25em;font-weight:700;font-family:ui-monospace,monospace;color:#0f172a;">${code}</p>
-        <p>Otvori stranicu za potvrdu i upiši kod zajedno s email adresom:</p>
-        <p><a href="${pageHtml}" style="display:inline-block;padding:10px 16px;background:#1e293b;color:#fff;text-decoration:none;border-radius:8px;font-weight:600;">Otvori stranicu za potvrdu</a></p>
-        <p style="word-break:break-all;font-size:13px;"><a href="${pageHtml}">${pageHtml}</a></p>
-        <p style="font-size:13px;color:#64748b;">Kod vrijedi 24 sata. Ako nisi ti tražio registraciju, zanemari ovu poruku.</p>
+        <p>Otvori MojPut u pregledniku, idi na stranicu za potvrdu računa i upiši gornji kod zajedno s email adresom koju si koristio pri registraciji.</p>
+        <p style="font-size:13px;color:#64748b;">Kod vrijedi 24 sata. Ne koristi linkove iz drugih starih poruka — samo ovaj kod u aplikaciji. Ako nisi ti tražio registraciju, zanemari ovu poruku.</p>
       `;
 
   /** Produkcija (Render): Resend ne koristi Gmail SMTP — samo API ključ. https://resend.com */
@@ -1324,12 +1330,47 @@ async function main() {
     ).run(userId, day);
   }
 
-  /** Isti origin kao APP_ORIGIN / linkovi u mailu — inače fork ili drugi GH Pages URL ne može slati cookie na API. */
-  const productionCorsOrigin = appOriginForLinks();
+  /**
+   * GitHub Pages i API na različitim hostovima — CORS mora točno odgovarati Originu.
+   * Više origin-a: CORS_ALLOWED_ORIGINS (zarezom), plus APP_ORIGIN / zadani GH Pages.
+   */
+  function collectAllowedCorsOrigins() {
+    const set = new Set();
+    const add = (raw) => {
+      let s = String(raw || "")
+        .trim()
+        .replace(/\/$/, "")
+        .replace(/\/MOJPUT$/i, "");
+      if (s && /^https:\/\//i.test(s)) set.add(s);
+    };
+    add(GITHUB_PAGES_ORIGIN);
+    add(normalizeAppOrigin());
+    add(publicAppOriginFallback());
+    add(appOriginForLinks());
+    const extra = String(process.env.CORS_ALLOWED_ORIGINS || "");
+    for (const part of extra.split(/[,;]+/)) add(part.trim());
+    return [...set];
+  }
+
+  const productionCorsOrigins = collectAllowedCorsOrigins();
+  const productionCorsOptions =
+    productionCorsOrigins.length === 1
+      ? { origin: productionCorsOrigins[0], credentials: true, allowedHeaders: ["Content-Type", "Accept", "Authorization"] }
+      : {
+          origin(origin, cb) {
+            if (!origin) return cb(null, true);
+            if (productionCorsOrigins.includes(origin)) return cb(null, true);
+            console.warn("[cors] odbijen origin:", origin, "| dopušteno:", productionCorsOrigins.join(", "));
+            cb(null, false);
+          },
+          credentials: true,
+          allowedHeaders: ["Content-Type", "Accept", "Authorization"],
+        };
+
   app.use(
     process.env.NODE_ENV === "production"
-      ? cors({ origin: productionCorsOrigin, credentials: true })
-      : cors({ origin: true, credentials: true }),
+      ? cors(productionCorsOptions)
+      : cors({ origin: true, credentials: true, allowedHeaders: ["Content-Type", "Accept", "Authorization"] }),
   );
   app.use(express.json({ limit: "2mb" }));
   app.use(cookieParser());
@@ -1561,7 +1602,8 @@ async function main() {
       const user = userPayloadWithAdminFlag(fresh);
       const token = signToken({ sub: user.id });
       setAuthCookie(res, token, req);
-      return res.json({ success: true, user });
+      /** Isti JWT i u JSON-u — preglednici često blokiraju cross-site kolačić (Pages → Render); klijent šalje Authorization. */
+      return res.json({ success: true, user, token });
     } catch (err) {
       console.error("[auth/login] greška:", err?.message || err);
       return res.status(500).json({ success: false, message: "Interna greška servera." });
