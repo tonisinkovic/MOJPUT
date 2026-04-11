@@ -15,7 +15,7 @@ services:
         value: "3000"
       # Javni URL ovog API-ja — isti kao VITE_API_URL u buildu za GitHub Pages. Link u mailu: …/api/auth/verify?…
       - key: API_PUBLIC_URL
-        value: https://mojput-api.onrender.com
+        value: https://mojput.onrender.com
       # Frontend (GitHub Pages) — redirect nakon klika na potvrdu u mailu
       - key: APP_ORIGIN
         value: https://tonisinkovic.github.io

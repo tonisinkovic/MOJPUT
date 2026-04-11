@@ -316,7 +316,7 @@ function localApiVerifyBaseUrl() {
 }
 
 /** Isti zadani kao u frontendu (src/config/apiBase.ts) — mora biti javni URL ovog Node servisa. */
-const DEFAULT_PUBLIC_API_BASE = "https://mojput-api.onrender.com";
+const DEFAULT_PUBLIC_API_BASE = "https://mojput.onrender.com";
 
 /**
  * Javni URL Node API-ja za link u mailu (mora biti isti servis gdje je token u bazi).
@@ -1006,11 +1006,32 @@ function resendErrorForClient(json, status) {
       "). Na Renderu u Environment provjeri RESEND_API_KEY (mora biti aktivan ključ s resend.com → API Keys, obično počinje s re_)."
     );
   }
-  if (/domain|not valid|verify|not authorized to send|only send testing emails to your own email/i.test(lower)) {
+  // Testni API ključ / sandbox: slanje samo na adresu vlasnika računa — nije problem RESEND_FROM.
+  if (
+    /only send testing|testing emails to your own|you can only send testing|verify a domain to send to other recipients|your own verified email|send to other recipient|not allowed to send to this recipient/i.test(
+      lower
+    )
+  ) {
     return (
-      "Resend: adresa «from» mora biti dozvoljena u Resend konzoli (npr. onboarding@resend.dev ili tvoj verificirani domen). " +
-      "Ukloni RESEND_FROM s Rendera za zadano MojPut <onboarding@resend.dev>, ili postavi verificiranu adresu. " +
-      "Za test domenu Resend često dopušta slanje samo na tvoj vlastiti email — za sve korisnike verificiraj vlastiti domen na resend.com/domains."
+      "Resend u testnom načinu šalje samo na email s kojim si registriran na resend.com. " +
+      "Za registracije drugih korisnika: na https://resend.com/domains verificiraj vlastiti domen, " +
+      "pa u Render Environment postavi RESEND_FROM=MojPut <noreply@tvoj-verificirani-domen> (bez razmaka oko znaka =)."
+    );
+  }
+  // Ista engleska poruka često spominje «verify/domain» kad zapravo misli na primatelja, ne na FROM.
+  if (/recipient|your own (@|email)|only.*you can email|external recipient/i.test(lower) && /verify|domain|not authorized/i.test(lower)) {
+    return (
+      "Resend ne šalje na ovu adresu dok nemaš verificiran domen za slanje svima (testni način). " +
+      "To nije zato što nedostaje RESEND_FROM — bez te varijable već se koristi MojPut <onboarding@resend.dev>. " +
+      "Rješenje: https://resend.com/domains → verificiraj domen → RESEND_FROM=MojPut <noreply@tvoj-domen>."
+    );
+  }
+  if (/domain|not valid|verify|not authorized to send/i.test(lower)) {
+    return (
+      "Resend: adresa «from» mora biti dozvoljena (ili je u odgovoru spomenuta verifikacija domena). " +
+      "Ako RESEND_FROM nemaš u Environmentu, već se šalje s MojPut <onboarding@resend.dev>. " +
+      "Inače postavi RESEND_FROM=MojPut <onboarding@resend.dev> ili, nakon verifikacije domena, MojPut <noreply@tvojdomen.hr>. " +
+      "Točan uzrok vidi u Render logu uz redak [mail] Resend error: (JSON od API-ja)."
     );
   }
   if (/api.key|invalid key|unauthori|forbidden/i.test(lower)) {
