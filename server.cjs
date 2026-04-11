@@ -110,6 +110,12 @@ function normalizeResendFrom(raw) {
   return DEFAULT_RESEND_FROM;
 }
 
+/** Resend odbija zahtjeve bez User-Agent (403, često statusCode 1010). https://resend.com/docs/knowledge-base/403-error-1010 */
+const RESEND_JSON_HEADERS = {
+  "Content-Type": "application/json",
+  "User-Agent": "MojPut/1.0 (+https://github.com/tonisinkovic/MOJPUT)",
+};
+
 /** GitHub Pages origin (bez /MOJPUT) — CORS u produkciji. */
 const GITHUB_PAGES_ORIGIN = "https://tonisinkovic.github.io";
 
@@ -999,13 +1005,7 @@ function smtpErrorForClient(err) {
 function resendErrorForClient(json, status) {
   const msg = typeof json?.message === "string" ? json.message.trim() : "";
   const lower = msg.toLowerCase();
-  if (status === 401 || status === 403) {
-    return (
-      "Resend je odbio API ključ (HTTP " +
-      status +
-      "). Na Renderu u Environment provjeri RESEND_API_KEY (mora biti aktivan ključ s resend.com → API Keys, obično počinje s re_)."
-    );
-  }
+  const resendCode = json && (json.statusCode ?? json.status_code);
   // Testni API ključ / sandbox: slanje samo na adresu vlasnika računa — nije problem RESEND_FROM.
   if (
     /only send testing|testing emails to your own|you can only send testing|verify a domain to send to other recipients|your own verified email|send to other recipient|not allowed to send to this recipient/i.test(
@@ -1036,6 +1036,23 @@ function resendErrorForClient(json, status) {
   }
   if (/api.key|invalid key|unauthori|forbidden/i.test(lower)) {
     return "Resend: nevažeći ili odbijen API ključ. Provjeri RESEND_API_KEY u Render Environment.";
+  }
+  if (status === 401) {
+    return (
+      "Resend je odbio API ključ (HTTP 401). Na Renderu u Environment provjeri RESEND_API_KEY (aktivan ključ s resend.com → API Keys, obično re_…)."
+    );
+  }
+  if (status === 403) {
+    if (resendCode === 1010 || /user-agent|access denied/i.test(lower)) {
+      return (
+        "Resend 403: HTTP zahtjev mora imati User-Agent (Resend blokira inače — kod 1010). " +
+        "Ažuriraj server na zadnju verziju MojPuta i redeploy na Renderu. https://resend.com/docs/knowledge-base/403-error-1010"
+      );
+    }
+    return (
+      "Resend je odbio zahtjev (HTTP 403). Provjeri RESEND_API_KEY, Domains u Resendu i RESEND_FROM. " +
+      (msg ? `API: ${msg}` : "U Render logu traži redak [mail] Resend error: za JSON odgovor.")
+    );
   }
   if (msg) return `Resend: ${msg}`;
   return `Ne mogu poslati email (Resend, HTTP ${status}).`;
@@ -1075,7 +1092,7 @@ async function sendVerificationEmail({ to, username, code }) {
         method: "POST",
         headers: {
           Authorization: `Bearer ${resendKey}`,
-          "Content-Type": "application/json",
+          ...RESEND_JSON_HEADERS,
         },
         body: JSON.stringify({
           from,
@@ -1210,7 +1227,7 @@ async function sendFeedbackNotifyEmail({ feedbackId, userEmail, username, messag
         method: "POST",
         headers: {
           Authorization: `Bearer ${resendKey}`,
-          "Content-Type": "application/json",
+          ...RESEND_JSON_HEADERS,
         },
         body: JSON.stringify({
           from,
