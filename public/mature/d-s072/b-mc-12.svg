@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 260" font-family="system-ui,sans-serif" font-size="12">
+  <text x="240" y="20" text-anchor="middle" fill="#333" font-weight="600">B · zadatak 12 · graf f na [4, 6]</text>
+  <g stroke="#333" fill="none"><path d="M40 200 L440 200 M200 40 L200 220"/></g>
+  <path stroke="#2563eb" stroke-width="2" fill="none" d="M60 80 L120 140 L200 100 L280 160 L360 60 L420 120"/>
+  <text x="50" y="215" fill="#666">4</text><text x="400" y="215" fill="#666">6</text>
+</svg>

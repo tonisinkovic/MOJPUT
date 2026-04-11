@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 440 260" font-family="system-ui,sans-serif" font-size="12">
+  <text x="220" y="22" text-anchor="middle" font-weight="600">A · zadatak 25 · sklekovi Bruno / Mislav</text>
+  <g stroke="#333"><path d="M50 220 L400 220 M50 220 L50 40"/></g>
+  <path stroke="#2563eb" stroke-width="2" fill="none" d="M50 180 L150 120 L250 80 L350 50 L400 40"/>
+  <path stroke="#0d9488" stroke-width="2" fill="none" d="M50 200 L120 170 L200 140 L300 90 L400 60"/>
+  <text x="380" y="35" fill="#2563eb">Mislav</text><text x="380" y="58" fill="#0d9488">Bruno</text>
+  <text x="220" y="245" text-anchor="middle" fill="#666">broj dana vje~banja ’</text>
+  <text x="18" y="130" fill="#666" transform="rotate(-90 18,130)">broj sklekova</text>
+</svg>

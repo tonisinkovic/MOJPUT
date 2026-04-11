@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 300" font-family="system-ui,sans-serif" font-size="11">
+  <text x="210" y="20" text-anchor="middle" font-weight="600">B · zadatak 16 · kvadar ABCDEFGH</text>
+  <path fill="none" stroke="#333" stroke-width="2" d="M80 200 L220 200 L260 140 L120 140 Z M120 80 L260 80 L300 20 L160 20 Z M80 200 L120 140 L120 80 M220 200 L260 140 L260 80 M260 140 L300 80 M160 20 L120 80"/>
+  <line x1="80" y1="200" x2="260" y2="80" stroke="#2563eb" stroke-width="2"/>
+  <text x="65" y="215">A</text><text x="225" y="215">B</text><text x="115" y="155">D</text><text x="265" y="155">C</text>
+  <text x="125" y="75">E</text><text x="265" y="75">F</text><text x="165" y="18">G</text><text x="305" y="88">H</text>
+</svg>

@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 280 280" font-family="system-ui,sans-serif" font-size="12">
+  <text x="140" y="22" text-anchor="middle" font-weight="600">A · zadatak 11 · jedinina kru~nica, toka E(t)</text>
+  <circle cx="140" cy="150" r="90" stroke="#2563eb" stroke-width="2" fill="none"/>
+  <line x1="50" y1="150" x2="230" y2="150" stroke="#999"/><line x1="140" y1="60" x2="140" y2="240" stroke="#999"/>
+  <circle cx="185" cy="95" r="5" fill="#dc2626"/><text x="195" y="90" font-weight="700">E</text>
+</svg>

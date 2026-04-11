@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 520 300" font-family="system-ui,sans-serif" font-size="11">
+  <text x="260" y="16" text-anchor="middle" font-weight="600">A · zadatak 9 · inverz grafa f(x) = 1/(x1)</text>
+  <g transform="translate(30,40)"><text x="55" y="0" text-anchor="middle">A</text><g stroke="#333"><path d="M10 110 L100 110 M55 20 L55 120"/></g><path stroke="#2563eb" fill="none" d="M65 15 Q55 55 20 100"/></g>
+  <g transform="translate(150,40)"><text x="55" y="0" text-anchor="middle">B</text><g stroke="#333"><path d="M10 110 L100 110 M55 20 L55 120"/></g><path stroke="#2563eb" fill="none" d="M15 65 Q55 55 95 65"/></g>
+  <g transform="translate(270,40)"><text x="55" y="0" text-anchor="middle">C</text><g stroke="#333"><path d="M10 110 L100 110 M55 20 L55 120"/></g><path stroke="#2563eb" fill="none" d="M20 100 Q55 60 90 20"/></g>
+  <g transform="translate(390,40)"><text x="55" y="0" text-anchor="middle">D</text><g stroke="#333"><path d="M10 110 L100 110 M55 20 L55 120"/></g><path stroke="#2563eb" fill="none" d="M20 20 Q55 70 90 115"/></g>
+</svg>

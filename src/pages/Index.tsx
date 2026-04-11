@@ -77,7 +77,7 @@ const features = [
   {
     icon: <ScrollText className="h-6 w-6 text-primary" />,
     title: "Matura",
-    description: "Kviz iz matematike (ključ NCVVO), PDF materijali i ukupan broj bodova.",
+    description: "Kvizovi i PDF materijali za šk. god. 2024/2025. (matematika; ostali predmeti uskoro).",
     path: "/mature",
   },
   {

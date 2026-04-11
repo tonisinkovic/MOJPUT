@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 280" font-family="system-ui,sans-serif" font-size="12">
+  <text x="180" y="22" text-anchor="middle" font-weight="600">A · zadatak 36 · trokut ABC u koordinatnome sustavu</text>
+  <g stroke="#999"><path d="M40 240 L320 240 M80 40 L80 250"/></g>
+  <polygon points="80,200 260,220 140,80" fill="rgba(37,99,235,0.08)" stroke="#2563eb" stroke-width="2"/>
+  <text x="70" y="235">A</text><text x="265" y="235">B</text><text x="130" y="75">C</text>
+</svg>

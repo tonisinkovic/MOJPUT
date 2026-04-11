@@ -11,6 +11,8 @@ export type McQuestion = {
   n: number;
   stem: string;
   options: Record<McOptionLetter, string>;
+  /** Slika iz ispitne knjižice (put od `public/`, npr. `mature/d-s072/a-mc-09.svg`) */
+  figureSrc?: string;
 };
 
 export const MC_QUESTIONS_MAT_B: McQuestion[] = [
@@ -90,7 +92,7 @@ export const MC_QUESTIONS_MAT_B: McQuestion[] = [
   {
     n: 8,
     stem:
-      "Linearna funkcija f(x) = ax + b zadana je tablicom: kada je x = −1, f(x) = 7; kada je x = 7, f(x) = 5. Što od navedenoga vrijedi za koeficijente a i b?",
+      "Linearna funkcija f(x) = ax + b zadana je tablicom: kada je x = −1, f(x) = 5; kada je x = 7, f(x) = 2. Što od navedenoga vrijedi za koeficijente a i b?",
     options: {
       A: "a < 0 i b < 0",
       B: "a < 0 i b > 0",
@@ -121,24 +123,26 @@ export const MC_QUESTIONS_MAT_B: McQuestion[] = [
   {
     n: 11,
     stem:
-      "Na kojoj je slici prikazan graf kvadratne funkcije f(x) = −x² + bx + c kojoj je koeficijent c < 0? (U originalu su dane četiri slike grafova.)",
+      "Na kojoj je slici prikazan graf kvadratne funkcije f(x) = −x² + bx + c kojoj je koeficijent c < 0?",
     options: {
       A: "Slika A",
       B: "Slika B",
       C: "Slika C",
       D: "Slika D",
     },
+    figureSrc: "mature/d-s072/b-mc-11.svg",
   },
   {
     n: 12,
     stem:
-      "Graf funkcije f prikazan je na slici. Koliko iznosi najmanja vrijednost funkcije f na intervalu [−4, 6]? (U originalu je priložena skica grafa.)",
+      "Graf funkcije f prikazan je na slici. Koliko iznosi najmanja vrijednost funkcije f na intervalu [−4, 6]?",
     options: {
       A: "−4",
       B: "−2",
       C: "1",
       D: "4",
     },
+    figureSrc: "mature/d-s072/b-mc-12.svg",
   },
   {
     n: 13,
@@ -171,17 +175,19 @@ export const MC_QUESTIONS_MAT_B: McQuestion[] = [
       C: "45°",
       D: "60°",
     },
+    figureSrc: "mature/d-s072/b-mc-15.svg",
   },
   {
     n: 16,
     stem:
-      "Na skici je prikazan kvadar ABCDEFGH. Koji od navedenih pravaca siječe pravac BH? (U originalu je priložena skica.)",
+      "Na skici je prikazan kvadar ABCDEFGH. Koji od navedenih pravaca siječe pravac BH?",
     options: {
       A: "AC",
       B: "AD",
       C: "AE",
       D: "AG",
     },
+    figureSrc: "mature/d-s072/b-mc-16.svg",
   },
   {
     n: 17,
@@ -297,7 +303,7 @@ export const MC_QUESTIONS_MAT_A: McQuestion[] = [
   {
     n: 7,
     stem:
-      "Linearna funkcija f(x) = ax + b zadana je tablicom: kada je x = −1, f(x) = 7; kada je x = 7, f(x) = 5. Što od navedenoga vrijedi za koeficijente a i b?",
+      "Linearna funkcija f(x) = ax + b zadana je tablicom: kada je x = −1, f(x) = 5; kada je x = 7, f(x) = 2. Što od navedenoga vrijedi za koeficijente a i b?",
     options: {
       A: "a < 0 i b < 0",
       B: "a < 0 i b > 0",
@@ -318,13 +324,14 @@ export const MC_QUESTIONS_MAT_A: McQuestion[] = [
   {
     n: 9,
     stem:
-      "Koji je od prikazanih grafova graf funkcije koja je inverzna funkciji f(x) = 1/(x − 1)? (U originalu su dane četiri slike grafova.)",
+      "Koji je od prikazanih grafova graf funkcije koja je inverzna funkciji f(x) = 1/(x − 1)?",
     options: {
       A: "Slika A",
       B: "Slika B",
       C: "Slika C",
       D: "Slika D",
     },
+    figureSrc: "mature/d-s072/a-mc-09.svg",
   },
   {
     n: 10,
@@ -339,13 +346,14 @@ export const MC_QUESTIONS_MAT_A: McQuestion[] = [
   {
     n: 11,
     stem:
-      "Koja od navedenih tvrdnji vrijedi za broj pridružen točki E(t) sa slike jedinične kružnice? (U originalu je priložena skica.)",
+      "Koja od navedenih tvrdnji vrijedi za broj pridružen točki E(t) sa slike jedinične kružnice?",
     options: {
       A: "5/3 = sin t",
       B: "5/4 = sin t",
       C: "5/3 = cos t",
       D: "5/4 = cos t",
     },
+    figureSrc: "mature/d-s072/a-mc-11.svg",
   },
   {
     n: 12,
@@ -361,13 +369,14 @@ export const MC_QUESTIONS_MAT_A: McQuestion[] = [
   {
     n: 13,
     stem:
-      "Četverokut ABCD prikazan na skici je paralelogram. Točka E pripada pravcu AB i vrijedi |BE| = |BC|. Kolika je mjera kuta y? (U originalu je priložena skica.)",
+      "Četverokut ABCD prikazan na skici je paralelogram. Točka E pripada pravcu AB i vrijedi |BE| = |BC|. Kolika je mjera kuta y?",
     options: {
       A: "45°",
       B: "50°",
       C: "55°",
       D: "70°",
     },
+    figureSrc: "mature/d-s072/a-mc-13.svg",
   },
   {
     n: 14,
@@ -382,13 +391,14 @@ export const MC_QUESTIONS_MAT_A: McQuestion[] = [
   {
     n: 15,
     stem:
-      "Na skici je prikazan kvadar ABCDEFGH. Koji od navedenih pravaca siječe pravac BH? (U originalu je priložena skica.)",
+      "Na skici je prikazan kvadar ABCDEFGH. Koji od navedenih pravaca siječe pravac BH?",
     options: {
       A: "AC",
       B: "AD",
       C: "AE",
       D: "AG",
     },
+    figureSrc: "mature/d-s072/a-mc-15.svg",
   },
   {
     n: 16,

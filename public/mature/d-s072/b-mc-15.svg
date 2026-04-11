@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 320" font-family="system-ui,sans-serif" font-size="12">
+  <text x="200" y="22" text-anchor="middle" font-weight="600" fill="#333">B · zadatak 15 · kru~nica, promjer AB, kut x</text>
+  <circle cx="200" cy="170" r="90" stroke="#2563eb" stroke-width="2" fill="none"/>
+  <line x1="110" y1="170" x2="290" y2="170" stroke="#333" stroke-width="2"/>
+  <polygon points="200,170 260,110 240,200" fill="none" stroke="#0d9488" stroke-width="2"/>
+  <text x="95" y="175">A</text><text x="300" y="175">B</text><text x="205" y="165">O</text><text x="265" y="105">C</text>
+  <text x="230" y="130" fill="#dc2626" font-weight="700">x</text>
+</svg>
