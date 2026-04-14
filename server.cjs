@@ -348,11 +348,26 @@ function resolvePublicApiBaseForMail() {
   return localApiVerifyBaseUrl();
 }
 
+/**
+ * Segment putanje u linkovima maila/redirecta (zadano MOJPUT = GitHub Pages).
+ * Za frontend na korijenu domene (npr. Vercel): FRONTEND_AT_ROOT=1 ili FRONTEND_PATH_PREFIX= (prazan).
+ */
+function frontendPathPrefixSegment() {
+  const root = String(process.env.FRONTEND_AT_ROOT || "")
+    .trim()
+    .toLowerCase();
+  if (root === "1" || root === "true" || root === "yes") return "";
+  if (!Object.prototype.hasOwnProperty.call(process.env, "FRONTEND_PATH_PREFIX")) return "MOJPUT";
+  return String(process.env.FRONTEND_PATH_PREFIX || "").trim().replace(/^\/+|\/+$/g, "");
+}
+
 /** Stranica frontenda za unos 6-znamenkastog koda (nakon registracije). */
 function frontendVerifyPageUrl(querySuffix) {
   const origin = getFrontendOriginForRedirect();
   const q = querySuffix ? `?${querySuffix}` : "";
-  return `${origin}/MOJPUT/verify${q}`;
+  const seg = frontendPathPrefixSegment();
+  const path = seg ? `/${seg}/verify` : `/verify`;
+  return `${origin}${path}${q}`;
 }
 
 /** Nakon potvrde na Renderu: uvijek HTTPS GitHub Pages (APP_ORIGIN), bez lokalne Vite logike. */
@@ -377,7 +392,9 @@ function getFrontendOriginForRedirect() {
 function frontendPrijavaUrl(querySuffix) {
   const origin = getFrontendOriginForRedirect();
   const q = querySuffix ? `?${querySuffix}` : "";
-  return `${origin}/MOJPUT/prijava${q}`;
+  const seg = frontendPathPrefixSegment();
+  const path = seg ? `/${seg}/prijava` : `/prijava`;
+  return `${origin}${path}${q}`;
 }
 
 /** Klik iz maila u pregledniku: redirect na Pages. fetch() iz SPA šalje samo Accept: application/json → JSON. */
@@ -417,7 +434,7 @@ console.log("[config] APP_ORIGIN:", String(process.env.APP_ORIGIN || "").trim() 
 console.log("[config] Render/PaaS:", isDeployedOnPaaS(), "| NODE_ENV:", process.env.NODE_ENV || "(nema)");
 console.log("[config] Stranica za unos koda (potvrda) →", frontendVerifyPageUrl(""));
 console.log("[config] Javni API (ostalo) →", resolvePublicApiBaseForMail());
-console.log("[config] Redirect nakon potvrde →", getFrontendOriginForRedirect(), "/MOJPUT/prijava");
+console.log("[config] Redirect nakon potvrde →", frontendPrijavaUrl(""));
 if (isDeployedOnPaaS() && !String(process.env.API_PUBLIC_URL || "").trim() && !readApiPublicUrlFromDisk()) {
   console.warn("[config] API_PUBLIC_URL nije u env — koristi se zadani:", DEFAULT_PUBLIC_API_BASE);
 }

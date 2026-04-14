@@ -60,9 +60,19 @@ function injectDeployMetaPlugin() {
   };
 }
 
+/**
+ * GitHub Pages: `/MOJPUT/`. Na Vercel / vlastitoj domeni u Project Settings postavi `VITE_BASE_PATH=/`
+ * (inače build traži JS/CSS pod `/MOJPUT/` i stranica ostane prazna).
+ */
+function publicBasePath(): string {
+  const raw = String(process.env.VITE_BASE_PATH ?? "/MOJPUT/").trim();
+  if (!raw || raw === "/") return "/";
+  return raw.endsWith("/") ? raw : `${raw}/`;
+}
+
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
-  base: "/MOJPUT/",
+  base: publicBasePath(),
   server: {
     host: "::",
     port: 8080,
