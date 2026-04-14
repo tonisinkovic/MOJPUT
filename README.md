@@ -8,11 +8,9 @@
 
 There are several ways of editing your application.
 
-**Use Lovable**
+**Use Lovable (opcionalno)**
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and start prompting.
-
-Changes made via Lovable will be committed automatically to this repo.
+Ako projekt uređuješ kroz [Lovable](https://lovable.dev), promjene se mogu automatski sinkronizirati s ovim repozitorijem (ovisno o postavkama projekta).
 
 **Use your preferred IDE**
 
@@ -139,7 +137,9 @@ This project is built with:
 
 ## How can I deploy this project?
 
-Simply open [Lovable](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and click on Share -> Publish.
+**Frontend (GitHub Pages):** push na granu `main` pokreće workflow [Deploy to GitHub Pages](.github/workflows/deploy-pages.yml) — build (`npm run build`) i objava artefakta iz `dist/`.
+
+**Backend (API):** vidi `render.yaml` i odjeljak *Registracija i potvrda emaila* gore — API na Renderu, statički frontend na Pages.
 
 ## Can I connect a custom domain to my Lovable project?
 
