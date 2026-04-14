@@ -18,7 +18,16 @@ export type CareerQuizResultPayloadV1 = {
 /** Samoprocjena (/samoprocjena) — sprema se u istu tablicu kao karijerni kviz. */
 export type SamoprocjenaQuizPayloadV1 = {
   version: 2;
-  kind: "confidence" | "serenity";
+  kind:
+    | "confidence"
+    | "serenity"
+    | "depression"
+    | "empathy"
+    | "innate_iq"
+    | "personality_type"
+    | "ocd_screening"
+    | "bipolar_screening"
+    | "therapy_need";
   savedAt: string;
   confidence?: {
     answers: number[];
@@ -33,6 +42,52 @@ export type SamoprocjenaQuizPayloadV1 = {
     functionalScore: number | null;
     phq9Severity: string;
     gad7Severity: string;
+  };
+  depression?: {
+    answers: number[];
+    totalScore: number;
+    severity: string;
+  };
+  empathy?: {
+    /** 0 = ne slažem se, 1 = slažem se */
+    answers: number[];
+    totalScore: number;
+    level: string;
+  };
+  innateIq?: {
+    /** indeks odabranog odgovora 0–3 po pitanju */
+    answers: number[];
+    correctCount: number;
+    totalQuestions: number;
+    estimatedMid: number;
+    bandLabel: string;
+    tierLabel: string;
+  };
+  personalityType?: {
+    /** 0 = prvi odgovor (E/S/T/J), 1 = drugi (I/N/F/P) */
+    answers: number[];
+    typeCode: string;
+    eiScore: number;
+    snScore: number;
+    tfScore: number;
+    jpScore: number;
+  };
+  ocdScreening?: {
+    answers: number[];
+    totalScore: number;
+    severity: string;
+  };
+  bipolarScreening?: {
+    answers: number[];
+    totalScore: number;
+    severity: string;
+  };
+  therapyNeed?: {
+    /** indeks odabranog odgovora po pitanju */
+    answers: number[];
+    totalScore: number;
+    maxScore: number;
+    tier: string;
   };
 };
 
@@ -84,6 +139,139 @@ export function buildSamoprocjenaSerenityPayload(params: {
       functionalScore: params.functionalScore,
       phq9Severity: params.phq9Severity,
       gad7Severity: params.gad7Severity,
+    },
+  };
+}
+
+export function buildSamoprocjenaDepressionPayload(params: {
+  answers: number[];
+  totalScore: number;
+  severity: string;
+}): SamoprocjenaQuizPayloadV1 {
+  return {
+    version: 2,
+    kind: "depression",
+    savedAt: new Date().toISOString(),
+    depression: {
+      answers: [...params.answers],
+      totalScore: params.totalScore,
+      severity: params.severity,
+    },
+  };
+}
+
+export function buildSamoprocjenaEmpathyPayload(params: {
+  answers: number[];
+  totalScore: number;
+  level: string;
+}): SamoprocjenaQuizPayloadV1 {
+  return {
+    version: 2,
+    kind: "empathy",
+    savedAt: new Date().toISOString(),
+    empathy: {
+      answers: [...params.answers],
+      totalScore: params.totalScore,
+      level: params.level,
+    },
+  };
+}
+
+export function buildSamoprocjenaInnateIqPayload(params: {
+  answers: number[];
+  correctCount: number;
+  totalQuestions: number;
+  estimatedMid: number;
+  bandLabel: string;
+  tierLabel: string;
+}): SamoprocjenaQuizPayloadV1 {
+  return {
+    version: 2,
+    kind: "innate_iq",
+    savedAt: new Date().toISOString(),
+    innateIq: {
+      answers: [...params.answers],
+      correctCount: params.correctCount,
+      totalQuestions: params.totalQuestions,
+      estimatedMid: params.estimatedMid,
+      bandLabel: params.bandLabel,
+      tierLabel: params.tierLabel,
+    },
+  };
+}
+
+export function buildSamoprocjenaPersonalityTypePayload(params: {
+  answers: number[];
+  typeCode: string;
+  eiScore: number;
+  snScore: number;
+  tfScore: number;
+  jpScore: number;
+}): SamoprocjenaQuizPayloadV1 {
+  return {
+    version: 2,
+    kind: "personality_type",
+    savedAt: new Date().toISOString(),
+    personalityType: {
+      answers: [...params.answers],
+      typeCode: params.typeCode,
+      eiScore: params.eiScore,
+      snScore: params.snScore,
+      tfScore: params.tfScore,
+      jpScore: params.jpScore,
+    },
+  };
+}
+
+export function buildSamoprocjenaOcdScreeningPayload(params: {
+  answers: number[];
+  totalScore: number;
+  severity: string;
+}): SamoprocjenaQuizPayloadV1 {
+  return {
+    version: 2,
+    kind: "ocd_screening",
+    savedAt: new Date().toISOString(),
+    ocdScreening: {
+      answers: [...params.answers],
+      totalScore: params.totalScore,
+      severity: params.severity,
+    },
+  };
+}
+
+export function buildSamoprocjenaBipolarScreeningPayload(params: {
+  answers: number[];
+  totalScore: number;
+  severity: string;
+}): SamoprocjenaQuizPayloadV1 {
+  return {
+    version: 2,
+    kind: "bipolar_screening",
+    savedAt: new Date().toISOString(),
+    bipolarScreening: {
+      answers: [...params.answers],
+      totalScore: params.totalScore,
+      severity: params.severity,
+    },
+  };
+}
+
+export function buildSamoprocjenaTherapyNeedPayload(params: {
+  answers: number[];
+  totalScore: number;
+  maxScore: number;
+  tier: string;
+}): SamoprocjenaQuizPayloadV1 {
+  return {
+    version: 2,
+    kind: "therapy_need",
+    savedAt: new Date().toISOString(),
+    therapyNeed: {
+      answers: [...params.answers],
+      totalScore: params.totalScore,
+      maxScore: params.maxScore,
+      tier: params.tier,
     },
   };
 }

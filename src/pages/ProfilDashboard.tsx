@@ -174,6 +174,31 @@ export default function ProfilDashboard() {
     if (p.kind === "confidence") {
       return `Samopouzdanje · ${p.confidence?.confidenceLevel ?? "—"} (prosjek ${p.confidence?.averageScore?.toFixed(2) ?? "—"})`;
     }
+    if (p.kind === "depression") {
+      return `Test depresije · ${p.depression?.severity ?? "—"} (${p.depression?.totalScore ?? "—"}/63)`;
+    }
+    if (p.kind === "empathy") {
+      return `Test empatije · ${p.empathy?.level ?? "—"} (${p.empathy?.totalScore ?? "—"}/40)`;
+    }
+    if (p.kind === "innate_iq") {
+      const iq = p.innateIq;
+      return `IQ skrining · ${iq?.tierLabel ?? "—"} (~${iq?.estimatedMid ?? "—"}, ${iq?.bandLabel ?? "—"})`;
+    }
+    if (p.kind === "personality_type") {
+      return `Tip osobnosti · ${p.personalityType?.typeCode ?? "—"}`;
+    }
+    if (p.kind === "ocd_screening") {
+      const o = p.ocdScreening;
+      return `OKP skrining · ${o?.severity ?? "—"} (${o?.totalScore ?? "—"}/32)`;
+    }
+    if (p.kind === "bipolar_screening") {
+      const b = p.bipolarScreening;
+      return `Bipolarni skrining · ${b?.severity ?? "—"} (${b?.totalScore ?? "—"}/60)`;
+    }
+    if (p.kind === "therapy_need") {
+      const t = p.therapyNeed;
+      return `Mini: stručna podrška · ${t?.tier ?? "—"} (${t?.totalScore ?? "—"}/${t?.maxScore ?? "—"})`;
+    }
     return `PHQ-9 / GAD-7 · ${p.serenity?.phq9Severity ?? "—"} / ${p.serenity?.gad7Severity ?? "—"}`;
   }, [lastQuiz]);
 
@@ -649,7 +674,21 @@ export default function ProfilDashboard() {
                                       ? q.payload.summary.topCareerNames.slice(0, 2).join(", ")
                                       : q.payload.kind === "confidence"
                                         ? `Samopouzdanje · ${q.payload.confidence?.confidenceLevel ?? ""}`
-                                        : `PHQ/GAD · ${q.payload.serenity?.phq9Severity ?? ""}`}
+                                        : q.payload.kind === "depression"
+                                          ? `Depresija · ${q.payload.depression?.severity ?? ""}`
+                                          : q.payload.kind === "empathy"
+                                            ? `Empatija · ${q.payload.empathy?.level ?? ""}`
+                                            : q.payload.kind === "innate_iq"
+                                              ? `IQ · ${q.payload.innateIq?.tierLabel ?? ""}`
+                                              : q.payload.kind === "personality_type"
+                                                ? `Tip · ${q.payload.personalityType?.typeCode ?? ""}`
+                                                : q.payload.kind === "ocd_screening"
+                                                  ? `OKP · ${q.payload.ocdScreening?.severity ?? ""}`
+                                                  : q.payload.kind === "bipolar_screening"
+                                                    ? `Bipolarni · ${q.payload.bipolarScreening?.severity ?? ""}`
+                                                    : q.payload.kind === "therapy_need"
+                                                      ? `Stručna podrška · ${q.payload.therapyNeed?.tier ?? ""}`
+                                                      : `PHQ/GAD · ${q.payload.serenity?.phq9Severity ?? ""}`}
                                   </span>
                                   <Button
                                     variant="ghost"

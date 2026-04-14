@@ -8,11 +8,51 @@ import { authMe, userFromAuthMe } from "@/lib/auth";
 import {
   buildSamoprocjenaConfidencePayload,
   buildSamoprocjenaSerenityPayload,
+  buildSamoprocjenaDepressionPayload,
+  buildSamoprocjenaEmpathyPayload,
+  buildSamoprocjenaInnateIqPayload,
+  buildSamoprocjenaPersonalityTypePayload,
+  buildSamoprocjenaOcdScreeningPayload,
+  buildSamoprocjenaBipolarScreeningPayload,
+  buildSamoprocjenaTherapyNeedPayload,
   saveCareerQuizResult,
 } from "@/lib/careerQuizApi";
+import { depressionScreeningItems } from "@/data/depressionScreeningItems";
+import { empathyQuotientItems, scoreEmpathyAnswer } from "@/data/empathyQuotientItems";
+import {
+  innateIntelligenceQuizItems,
+  innateIqCorrectCount,
+  innateIqEstimate,
+} from "@/data/innateIntelligenceQuizItems";
+import {
+  personalityTypeCodeFromAnswers,
+  personalityTypeScreeningItems,
+  personalityTypeScores,
+  personalityTypeShortBlurbs,
+} from "@/data/personalityTypeScreening";
+import {
+  OCD_INTRUSIVE_ITEM_INDEX,
+  ocdLikertOptions,
+  ocdScreeningItems,
+  ocdScreeningSeverity,
+} from "@/data/ocdScreeningItems";
+import { bipolarScreeningItems, bipolarScreeningSeverity, bipolarSixPointOptions } from "@/data/bipolarScreeningItems";
+import {
+  psychotherapyMiniItems,
+  psychotherapyMiniMaxScore,
+  psychotherapyNeedTier,
+} from "@/data/psychotherapyMiniItems";
 import { cn } from "@/lib/utils";
 
 const SERENITY_INTAKE_PDF = "https://www.serene.me.uk/intake.pdf";
+const PSIHO_DEPRESSION_TEST = "https://www.psihocentrala.com/testovi/test-za-depresiju/";
+const PSIHO_OCD_TEST = "https://www.psihocentrala.com/testovi/test-za-okp-opsesivno-kompulzivni-poremecaj/";
+const PSIHO_BIPOLAR_TEST = "https://www.psihocentrala.com/testovi/test-za-bipolarni-poremecaj/";
+const PSIHO_THERAPY_MINI_TEST =
+  "https://www.psihocentrala.com/testovi/da-li-mi-je-potrebna-psihoterapija-mini-test/";
+const AREALME_EQ_TEST = "https://www.arealme.com/empathy-quotient/sr/";
+const IQ_TESTER_INNATE_HR = "https://www.hr.iqtester.eu/iq-testovi/urodena-inteligencija.htm";
+const PERSONALITIES_16_HR = "https://www.16personalities.com/hr/test-osobnosti";
 
 const frequencyOptions = [
   { label: "Uopće", score: 0 },
@@ -77,6 +117,23 @@ function gad7Severity(total: number): string {
   if (total <= 9) return "Blaga";
   if (total <= 14) return "Umjerena";
   return "Teška";
+}
+
+/** Zbroj 0–63, uobičajene grupe za BDI-stil skrining. */
+function depressionBdiSeverity(total: number): string {
+  if (total <= 9) return "Minimalni simptomi";
+  if (total <= 16) return "Blaga razina";
+  if (total <= 29) return "Umjerena razina";
+  return "Izražena razina";
+}
+
+/** Skraćeni 20-stavčni zbroj 0–40 (dvije opcije po stavci). */
+function empathyQuotientLevel(total: number): string {
+  if (total >= 32) return "Vrlo visoka empatija";
+  if (total >= 26) return "Visoka empatija";
+  if (total >= 20) return "Prosječna razina";
+  if (total >= 14) return "Ispod prosjeka";
+  return "Niska razina";
 }
 
 const questions = [
@@ -228,6 +285,372 @@ function SerenityFeedback({ phq9Total, gad7Total, phq9Sev, gad7Sev }: { phq9Tota
         </div>
         <p className="mt-4 rounded-lg border-l-4 border-primary bg-muted/50 px-4 py-3 text-sm text-muted-foreground">
           {tip}
+        </p>
+      </div>
+    </motion.div>
+  );
+}
+
+function DepressionFeedback({
+  total,
+  severity,
+  suicideItemScore,
+}: {
+  total: number;
+  severity: string;
+  suicideItemScore: number;
+}) {
+  const isLow = total <= 9;
+  const isModerate = total <= 29 && !isLow;
+  const crisis = suicideItemScore >= 2;
+
+  const opening = crisis
+    ? "Označio/la si visoku razinu tjeskobe zbog misli o ozljeđivanju ili samoubojstvu. To je ozbiljan signal — molimo odmah potraži pomoć."
+    : isLow
+      ? "Rezultat upućuje na minimalne ili vrlo blage simptome. I dalje je korisno pratiti raspoloženje i brinuti o sebi."
+      : isModerate
+        ? "Rezultat ukazuje na umjerenu razinu simptoma. Mnogima pomaže razgovor s bliskom osobom, liječnikom ili savjetnikom."
+        : "Rezultat ukazuje na izraženije simptome. Preporučujemo da što prije razgovaraš s liječnikom ili stručnjakom za mentalno zdravlje.";
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="relative overflow-hidden rounded-2xl border border-primary/20 bg-gradient-to-br from-primary/5 via-transparent to-accent/5 p-6 shadow-lg md:p-7"
+    >
+      <div className="absolute right-4 top-4 opacity-30">
+        <Sparkles className="h-12 w-12 text-primary" />
+      </div>
+      <div className="relative">
+        <div className="mb-4 flex items-center gap-2">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/15">
+            <MessageCircle className="h-5 w-5 text-primary" />
+          </div>
+          <h3 className="text-lg font-bold tracking-tight text-foreground md:text-xl">Povratni komentar</h3>
+        </div>
+        <p className="text-base leading-relaxed text-foreground/90 md:text-lg">{opening}</p>
+        {crisis && (
+          <div className="mt-4 rounded-lg border-2 border-destructive/40 bg-destructive/10 px-4 py-3 text-sm font-medium text-foreground">
+            Ako si u neposrednoj opasnosti, nazovi{" "}
+            <span className="whitespace-nowrap">112</span> (hitna pomoć). Za razgovor i podršku možeš potražiti i
+            savjetovalište ili psihijatrijsku pomoć u svojoj županiji — ne ostaj sam/a s tim osjećajima.
+          </div>
+        )}
+        <div className="mt-4 flex flex-wrap gap-2">
+          <span className="inline-flex rounded-full bg-badge-info/15 px-3 py-1 text-xs font-medium text-badge-info">
+            Zbroj: {total}/63 · {severity}
+          </span>
+        </div>
+        {!crisis && (
+          <p className="mt-4 rounded-lg border-l-4 border-primary bg-muted/50 px-4 py-3 text-sm text-muted-foreground">
+            {isLow
+              ? "Nastavi s navikama koje ti dobro čine — san, kretanje i druženje i dalje su važni."
+              : "Stručna pomoć može puno značiti. Traženje pomoći je znak snage."}
+          </p>
+        )}
+      </div>
+    </motion.div>
+  );
+}
+
+function OcdFeedback({
+  total,
+  severity,
+  intrusiveItemScore,
+}: {
+  total: number;
+  severity: string;
+  intrusiveItemScore: number;
+}) {
+  const isLow = total <= 8;
+  const isModerate = total <= 23 && !isLow;
+  const intrusiveHigh = intrusiveItemScore >= 3;
+
+  const opening = intrusiveHigh
+    ? "Označio/la si česte nametljive misli koje mogu biti jako neugodne. Kod OKP-a takve misli često su u suprotnosti s tvojim vrijednostima — ne znače da ćeš ih ostvariti."
+    : isLow
+      ? "Rezultat upućuje na minimalne ili blage simptome u ovom uzorku. I dalje je korisno pratiti što ti pomaže u stresu."
+      : isModerate
+        ? "Rezultat ukazuje na umjerenu razinu simptoma. Mnogi dobiju olakšanje kroz stručnu procjenu i terapiju (npr. ERP)."
+        : "Rezultat ukazuje na izraženije simptome. Preporučujemo razgovor s liječnikom ili psihologom/kinjom — OKP se može uspješno liječiti.";
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="relative overflow-hidden rounded-2xl border border-primary/20 bg-gradient-to-br from-primary/5 via-transparent to-accent/5 p-6 shadow-lg md:p-7"
+    >
+      <div className="absolute right-4 top-4 opacity-30">
+        <Sparkles className="h-12 w-12 text-primary" />
+      </div>
+      <div className="relative">
+        <div className="mb-4 flex items-center gap-2">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/15">
+            <MessageCircle className="h-5 w-5 text-primary" />
+          </div>
+          <h3 className="text-lg font-bold tracking-tight text-foreground md:text-xl">Povratni komentar</h3>
+        </div>
+        <p className="text-base leading-relaxed text-foreground/90 md:text-lg">{opening}</p>
+        {intrusiveHigh && (
+          <div className="mt-4 rounded-lg border border-border/70 bg-muted/40 px-4 py-3 text-sm text-foreground/90">
+            Ako misli izazivaju jaku tjeskobu ili osjećaj gubitka kontrole, potraži stručnu pomoć. Ako postoji neposredna
+            opasnost po život, nazovi <span className="whitespace-nowrap font-semibold">112</span>.
+          </div>
+        )}
+        <div className="mt-4 flex flex-wrap gap-2">
+          <span className="inline-flex rounded-full bg-badge-info/15 px-3 py-1 text-xs font-medium text-badge-info">
+            Zbroj: {total}/32 · {severity}
+          </span>
+        </div>
+        <p className="mt-4 rounded-lg border-l-4 border-primary bg-muted/50 px-4 py-3 text-sm text-muted-foreground">
+          {isLow
+            ? "Navike spavanja, kretanja i smanjenje kofeina/stresa ponekad pomažu; ako simptomi i dalje smetaju, razgovor s stručnjakom je koristan korak."
+            : "OKP nije „kapric“ — stručnjaci imaju učinkovite pristupe. Traženje pomoći je znak snage."}
+        </p>
+      </div>
+    </motion.div>
+  );
+}
+
+const BIPOLAR_MIXED_ITEM_INDEX = 8;
+
+function BipolarFeedback({
+  total,
+  severity,
+  mixedItemScore,
+}: {
+  total: number;
+  severity: string;
+  mixedItemScore: number;
+}) {
+  const isLow = total <= 15;
+  const isModerate = total <= 45 && !isLow;
+  const mixedHigh = mixedItemScore >= 4;
+
+  const opening = mixedHigh
+    ? "Označio/la si česte epizode kada se osjećaš jako „uzdignuto“ i istovremeno potišteno. Takvi mješoviti obrasci zaslužuju stručnu procjenu."
+    : isLow
+      ? "Rezultat upućuje na relativno malu učestalost opisanih kolebanja u ovom uzorku. I dalje prati san i stres."
+      : isModerate
+        ? "Rezultat ukazuje na umjerenu učestalost kolebanja raspoloženja i aktivnosti. Razgovor s psihijatrom ili psihologom/kinjom može donijeti jasnoću."
+        : "Rezultat je viši — preporučujemo stručnu procjenu; bipolarni spektar dobro se liječi kad se pravovremeno prepozna.";
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="relative overflow-hidden rounded-2xl border border-primary/20 bg-gradient-to-br from-primary/5 via-transparent to-accent/5 p-6 shadow-lg md:p-7"
+    >
+      <div className="absolute right-4 top-4 opacity-30">
+        <Sparkles className="h-12 w-12 text-primary" />
+      </div>
+      <div className="relative">
+        <div className="mb-4 flex items-center gap-2">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/15">
+            <MessageCircle className="h-5 w-5 text-primary" />
+          </div>
+          <h3 className="text-lg font-bold tracking-tight text-foreground md:text-xl">Povratni komentar</h3>
+        </div>
+        <p className="text-base leading-relaxed text-foreground/90 md:text-lg">{opening}</p>
+        {mixedHigh && (
+          <div className="mt-4 rounded-lg border border-amber-500/50 bg-amber-500/10 px-4 py-3 text-sm text-foreground/90">
+            Mješovita stanja mogu biti teška — ne čekaj sam/sama; obrati se hitnoj ili psihijatrijskoj službi ako si u
+            krizi.
+          </div>
+        )}
+        <div className="mt-4 flex flex-wrap gap-2">
+          <span className="inline-flex rounded-full bg-badge-info/15 px-3 py-1 text-xs font-medium text-badge-info">
+            Zbroj: {total}/60 · {severity}
+          </span>
+        </div>
+        <p className="mt-4 rounded-lg border-l-4 border-primary bg-muted/50 px-4 py-3 text-sm text-muted-foreground">
+          Bipolarni poremećaj ne može se postaviti iz kratkog online testa. Ovo je samo skrining; dijagnozu donosi
+          stručnjak.
+        </p>
+      </div>
+    </motion.div>
+  );
+}
+
+function TherapyNeedFeedback({ total, maxScore, tier }: { total: number; maxScore: number; tier: string }) {
+  const pct = maxScore > 0 ? Math.round((total / maxScore) * 100) : 0;
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="relative overflow-hidden rounded-2xl border border-primary/20 bg-gradient-to-br from-primary/5 via-transparent to-accent/5 p-6 shadow-lg md:p-7"
+    >
+      <div className="absolute right-4 top-4 opacity-30">
+        <Sparkles className="h-12 w-12 text-primary" />
+      </div>
+      <div className="relative">
+        <div className="mb-4 flex items-center gap-2">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/15">
+            <MessageCircle className="h-5 w-5 text-primary" />
+          </div>
+          <h3 className="text-lg font-bold tracking-tight text-foreground md:text-xl">Povratni komentar</h3>
+        </div>
+        <p className="text-xl font-semibold text-primary">{tier}</p>
+        <p className="mt-2 text-sm text-muted-foreground">
+          Zbroj bodova: {total}/{maxScore} ({pct}% prema maksimalnom mogućem u ovom modelu).
+        </p>
+        <p className="mt-4 rounded-lg border-l-4 border-primary bg-muted/50 px-4 py-3 text-sm text-muted-foreground">
+          Psihoterapija, psihijatrija i savjetovanje nisu isto, ali svi mogu pomoći ovisno o situaciji. Ovaj mini test je
+          orijentacijski — odluku o terapiji donosiš ti zajedno sa stručnjakom.
+        </p>
+      </div>
+    </motion.div>
+  );
+}
+
+function EmpathyFeedback({ total, level }: { total: number; level: string }) {
+  const high = total >= 26;
+  const mid = total >= 14 && total < 26;
+  const opening = high
+    ? "Tvoji odgovori upućuju na dobru sposobnost uočavanja tuđih osjećaja i sklonost brizi za druge. Ljudi često cijene takav odnos."
+    : mid
+      ? "Rezultat je u srednjem rasponu — empatija varira ovisno o kontekstu i umoru. Slušanje i „stavljanje u tuđe cipele“ i dalje su vještine koje se mogu jačati."
+      : "Rezultat je niži — to ne znači da si „los/la“ čovjek. Empatija se može trenirati (slušanje, povratne informacije, svjesnost u razgovoru).";
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="relative overflow-hidden rounded-2xl border border-primary/20 bg-gradient-to-br from-primary/5 via-transparent to-accent/5 p-6 shadow-lg md:p-7"
+    >
+      <div className="absolute right-4 top-4 opacity-30">
+        <Sparkles className="h-12 w-12 text-primary" />
+      </div>
+      <div className="relative">
+        <div className="mb-4 flex items-center gap-2">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/15">
+            <MessageCircle className="h-5 w-5 text-primary" />
+          </div>
+          <h3 className="text-lg font-bold tracking-tight text-foreground md:text-xl">Povratni komentar</h3>
+        </div>
+        <p className="text-base leading-relaxed text-foreground/90 md:text-lg">{opening}</p>
+        <div className="mt-4 flex flex-wrap gap-2">
+          <span className="inline-flex rounded-full bg-badge-success/15 px-3 py-1 text-xs font-medium text-badge-success">
+            Zbroj: {total}/40 · {level}
+          </span>
+        </div>
+        <p className="mt-4 rounded-lg border-l-4 border-primary bg-muted/50 px-4 py-3 text-sm text-muted-foreground">
+          Odgovaraj iskreno, bez pritiska „kako bi trebalo“. Ovaj skrining je kratak i informativan — puni EQ u znanstvenim
+          studijima ima više stavki i ljestvicu od četiri stupnja.
+        </p>
+      </div>
+    </motion.div>
+  );
+}
+
+function InnateIqFeedback({
+  correct,
+  total,
+  tier,
+  band,
+  mid,
+}: {
+  correct: number;
+  total: number;
+  tier: string;
+  band: string;
+  mid: number;
+}) {
+  const opening =
+    correct >= total * 0.69
+      ? "Na ovom kratkom uzorku pokazuješ dobru brzinu logičkog i numeričkog rezoniranja. To je korisna vještina u učenju i rješavanju problema."
+      : correct >= total * 0.44
+        ? "Rezultat je u srednjem rasponu — takvi testovi ovise i o koncentraciji i navici, ne samo o „urođenom“ potencijalu."
+        : "Niži broj točnih ne znači da nemaš potencijala; kratki online test puno šuma i ne pokriva sve vrste inteligencije.";
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="relative overflow-hidden rounded-2xl border border-primary/20 bg-gradient-to-br from-primary/5 via-transparent to-accent/5 p-6 shadow-lg md:p-7"
+    >
+      <div className="absolute right-4 top-4 opacity-30">
+        <Sparkles className="h-12 w-12 text-primary" />
+      </div>
+      <div className="relative">
+        <div className="mb-4 flex items-center gap-2">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/15">
+            <MessageCircle className="h-5 w-5 text-primary" />
+          </div>
+          <h3 className="text-lg font-bold tracking-tight text-foreground md:text-xl">Povratni komentar</h3>
+        </div>
+        <p className="text-base leading-relaxed text-foreground/90 md:text-lg">{opening}</p>
+        <div className="mt-4 flex flex-wrap gap-2">
+          <span className="inline-flex rounded-full bg-badge-info/15 px-3 py-1 text-xs font-medium text-badge-info">
+            Točno: {correct}/{total} · {tier}
+          </span>
+          <span className="inline-flex rounded-full bg-muted px-3 py-1 text-xs font-medium text-muted-foreground">
+            Gruba procjena raspona IQ: ~{band} (sredina ~{mid})
+          </span>
+        </div>
+        <p className="mt-4 rounded-lg border-l-4 border-amber-500/60 bg-amber-500/10 px-4 py-3 text-sm text-foreground/90">
+          Ovo <span className="font-semibold">nije</span> službeni psihološki test ni zamjena za WAIS i slične instrumente. Brojke su informativne i
+          ne bi ih trebalo shvatiti kao dijagnozu ili točan IQ.
+        </p>
+      </div>
+    </motion.div>
+  );
+}
+
+function PersonalityTypeFeedback({
+  typeCode,
+  blurb,
+  ei,
+  sn,
+  tf,
+  jp,
+}: {
+  typeCode: string;
+  blurb: string;
+  ei: number;
+  sn: number;
+  tf: number;
+  jp: number;
+}) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="relative overflow-hidden rounded-2xl border border-primary/20 bg-gradient-to-br from-primary/5 via-transparent to-accent/5 p-6 shadow-lg md:p-7"
+    >
+      <div className="absolute right-4 top-4 opacity-30">
+        <Sparkles className="h-12 w-12 text-primary" />
+      </div>
+      <div className="relative">
+        <div className="mb-4 flex items-center gap-2">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/15">
+            <MessageCircle className="h-5 w-5 text-primary" />
+          </div>
+          <h3 className="text-lg font-bold tracking-tight text-foreground md:text-xl">Tvoj tip (skrining)</h3>
+        </div>
+        <p className="text-2xl font-bold tracking-tight text-primary md:text-3xl">{typeCode}</p>
+        <p className="mt-3 text-base leading-relaxed text-foreground/90 md:text-lg">{blurb}</p>
+        <div className="mt-4 flex flex-wrap gap-2 text-[11px] text-muted-foreground">
+          <span className="rounded-full bg-muted px-2.5 py-1">
+            E–I: {ei >= 0 ? "E" : "I"} ({ei > 0 ? `+${ei}` : `${ei}`})
+          </span>
+          <span className="rounded-full bg-muted px-2.5 py-1">
+            S–N: {sn >= 0 ? "S" : "N"} ({sn > 0 ? `+${sn}` : `${sn}`})
+          </span>
+          <span className="rounded-full bg-muted px-2.5 py-1">
+            T–F: {tf >= 0 ? "T" : "F"} ({tf > 0 ? `+${tf}` : `${tf}`})
+          </span>
+          <span className="rounded-full bg-muted px-2.5 py-1">
+            J–P: {jp >= 0 ? "J" : "P"} ({jp > 0 ? `+${jp}` : `${jp}`})
+          </span>
+        </div>
+        <p className="mt-4 rounded-lg border-l-4 border-primary bg-muted/50 px-4 py-3 text-sm text-muted-foreground">
+          Kratak test ne može zamijeniti dulje validirane upitnike. Za dubinsku procjenu pogledaj i službeni{" "}
+          <a href={PERSONALITIES_16_HR} target="_blank" rel="noopener noreferrer" className="font-medium text-primary underline-offset-4 hover:underline">
+            16Personalities
+            <ExternalLink className="ml-0.5 inline h-3 w-3 align-text-bottom opacity-70" />
+          </a>{" "}
+          kad imaš više vremena.
         </p>
       </div>
     </motion.div>
@@ -599,6 +1022,1766 @@ function SerenityIntakeQuiz() {
   );
 }
 
+const DEPRESSION_SUICIDE_ITEM_INDEX = 6;
+
+function DepressionScreeningQuiz() {
+  const n = depressionScreeningItems.length;
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [answers, setAnswers] = useState<number[]>(Array(n).fill(-1));
+  const sidebarRef = useRef<HTMLElement>(null);
+
+  const progress = ((currentQuestion + 1) / n) * 100;
+  const allAnswered = answers.every((v) => v >= 0);
+  const isLastQuestion = currentQuestion === n - 1;
+
+  const totalScore = useMemo(() => answers.reduce((s, v) => s + (v >= 0 ? v : 0), 0), [answers]);
+  const answeredCount = answers.filter((v) => v >= 0).length;
+  const item = depressionScreeningItems[currentQuestion];
+  const suicideItemScore = answers[DEPRESSION_SUICIDE_ITEM_INDEX] >= 0 ? answers[DEPRESSION_SUICIDE_ITEM_INDEX] : 0;
+
+  const onSelectAnswer = (score: number) => {
+    const next = [...answers];
+    next[currentQuestion] = score;
+    setAnswers(next);
+  };
+
+  const goNext = () => {
+    if (currentQuestion < n - 1) setCurrentQuestion((p) => p + 1);
+  };
+
+  const goBack = () => {
+    if (currentQuestion > 0) setCurrentQuestion((p) => p - 1);
+  };
+
+  const finishQuiz = () => {
+    if (!allAnswered || answers[currentQuestion] < 0) return;
+    requestAnimationFrame(() => {
+      sidebarRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+  };
+
+  const sidebarItems: ResultsSidebarItem[] = useMemo(() => {
+    const pct = answeredCount > 0 ? Math.round((totalScore / 63) * 100) : 0;
+    const sev = depressionBdiSeverity(totalScore);
+    const display =
+      answeredCount > 0
+        ? `${totalScore}/63` + (allAnswered ? ` · ${sev}` : "")
+        : undefined;
+    return [{ label: "Depresijski skrining (zbroj)", value: pct, color: "bg-badge-info", displayValue: display }];
+  }, [answeredCount, totalScore, allAnswered]);
+
+  const depressionComparison: ComparisonItem[] | undefined = useMemo(() => {
+    if (!allAnswered) return undefined;
+    return [{ label: "Zbroj", before: "0/63", after: `${totalScore}/63`, delta: `+${totalScore} bod.` }];
+  }, [allAnswered, totalScore]);
+
+  const depressionSavedRef = useRef<string | null>(null);
+  useEffect(() => {
+    if (!allAnswered) return;
+    const hash = answers.join(",");
+    if (depressionSavedRef.current === hash) return;
+    void authMe().then(async (res) => {
+      const u = userFromAuthMe(res);
+      if (!u) return;
+      try {
+        const flag = `mojput_samoprocjena_depression_${hash}`;
+        if (sessionStorage.getItem(flag)) {
+          depressionSavedRef.current = hash;
+          return;
+        }
+      } catch {
+        /* ignore */
+      }
+      const payload = buildSamoprocjenaDepressionPayload({
+        answers,
+        totalScore,
+        severity: depressionBdiSeverity(totalScore),
+      });
+      const r = await saveCareerQuizResult(payload);
+      if (r.success) {
+        depressionSavedRef.current = hash;
+        try {
+          sessionStorage.setItem(`mojput_samoprocjena_depression_${hash}`, "1");
+        } catch {
+          /* ignore */
+        }
+      }
+    });
+  }, [allAnswered, answers, totalScore]);
+
+  return (
+    <div className="grid gap-6 lg:grid-cols-[1.15fr_0.85fr] lg:items-start">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.05 }}
+        className="rounded-2xl border bg-card p-5 shadow-card md:p-7"
+      >
+        <div className="mb-5 flex items-start gap-2 rounded-xl border border-border/50 bg-muted/30 px-3.5 py-2.5">
+          <span className="mt-0.5 text-base">💙</span>
+          <p className="text-xs leading-relaxed text-muted-foreground">
+            Odaberi tvrdnju koja najbolje opisuje tvoje stanje u{" "}
+            <span className="font-medium text-foreground">posljednja dva tjedna</span>. Struktura odgovara javnom
+            upitniku na{" "}
+            <a
+              href={PSIHO_DEPRESSION_TEST}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-medium text-primary underline-offset-4 hover:underline"
+            >
+              Psihocentrala
+              <ExternalLink className="ml-0.5 inline h-3 w-3 align-text-bottom opacity-70" />
+            </a>{" "}
+            (prilagođeno hrvatskom). Namijenjeno punoljetnim korisnicima; rezultat je informativan.
+          </p>
+        </div>
+
+        <div className="mb-6">
+          <div className="mb-2 flex items-center justify-between gap-3">
+            <span className="text-xs font-medium tabular-nums text-muted-foreground">
+              {currentQuestion + 1} od {n}
+            </span>
+            <span className="text-xs font-semibold tabular-nums text-primary">{Math.round(progress)}%</span>
+          </div>
+          <div className="h-2 overflow-hidden rounded-full bg-muted">
+            <motion.div
+              initial={false}
+              animate={{ width: `${progress}%` }}
+              transition={{ type: "spring", stiffness: 120, damping: 22 }}
+              className="h-full rounded-full gradient-hero"
+            />
+          </div>
+        </div>
+
+        <motion.div
+          key={currentQuestion}
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.22 }}
+          className="space-y-5"
+        >
+          <div>
+            <div className="mb-2 inline-flex items-center rounded-full bg-primary/[0.08] px-3 py-1 text-xs font-semibold text-primary">
+              Pitanje {currentQuestion + 1}
+            </div>
+            <h2 className="mt-1 text-base font-semibold leading-snug text-muted-foreground md:text-lg">
+              Koja tvrdnja najviše odgovara tvom raspoloženju?
+            </h2>
+          </div>
+
+          <div className="grid gap-2.5">
+            {item.options.map((option, optIdx) => {
+              const selected = answers[currentQuestion] === option.score;
+              const letters = ["A", "B", "C", "D"];
+              return (
+                <button
+                  key={`${currentQuestion}-${option.score}`}
+                  type="button"
+                  onClick={() => onSelectAnswer(option.score)}
+                  className={cn(
+                    "group w-full rounded-xl border p-3.5 text-left transition-all duration-200",
+                    selected
+                      ? "border-primary/50 bg-primary/[0.07] shadow-sm ring-1 ring-primary/20"
+                      : "border-border/70 bg-background hover:border-primary/30 hover:bg-muted/30",
+                  )}
+                >
+                  <div className="flex items-center gap-3">
+                    <span
+                      className={cn(
+                        "flex h-7 w-7 shrink-0 items-center justify-center rounded-lg text-xs font-bold transition-colors",
+                        selected
+                          ? "bg-primary text-primary-foreground"
+                          : "bg-muted text-muted-foreground group-hover:bg-primary/10 group-hover:text-primary",
+                      )}
+                    >
+                      {letters[optIdx]}
+                    </span>
+                    <span className="flex-1 text-sm font-medium leading-snug">{option.label}</span>
+                    {selected && <CheckCircle2 className="h-4 w-4 shrink-0 text-primary" />}
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+
+          <div className="flex flex-col-reverse gap-3 pt-2 sm:flex-row sm:justify-between">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={goBack}
+              disabled={currentQuestion === 0}
+              className="w-full sm:w-auto"
+            >
+              Natrag
+            </Button>
+            {isLastQuestion ? (
+              <Button
+                type="button"
+                onClick={finishQuiz}
+                disabled={answers[currentQuestion] < 0}
+                className="w-full gradient-hero border-0 text-primary-foreground sm:w-auto"
+              >
+                Kraj
+              </Button>
+            ) : (
+              <Button
+                type="button"
+                onClick={goNext}
+                disabled={answers[currentQuestion] < 0}
+                className="w-full gradient-hero border-0 text-primary-foreground sm:w-auto"
+              >
+                Sljedeće pitanje
+              </Button>
+            )}
+          </div>
+        </motion.div>
+      </motion.div>
+
+      <ResultsSidebar
+        ref={sidebarRef}
+        title="Skrining depresije"
+        items={sidebarItems}
+        totalQuestions={n}
+        answeredCount={answeredCount}
+        subtitle={allAnswered ? "Rezultati kviza (informativno). Ne zamjenjuje stručnu procjenu." : "Rezultati se ažuriraju dok rješavaš kviz."}
+        comparison={depressionComparison}
+      />
+
+      {allAnswered && (
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="lg:col-span-2"
+        >
+          <DepressionFeedback
+            total={totalScore}
+            severity={depressionBdiSeverity(totalScore)}
+            suicideItemScore={suicideItemScore}
+          />
+        </motion.div>
+      )}
+
+      <div className="lg:col-span-2 rounded-xl border bg-muted/30 p-4 text-xs text-muted-foreground">
+        Upitnik je u duhu bihevioralnog skrininga sličnog BDI-u, kao na referentnoj stranici. Ako si prijavljen/a, sažetak se
+        može spremiti na profil; inače ostaje u pregledniku.{" "}
+        <span className="font-medium text-foreground">Ne zamjenjuje stručnu procjenu.</span>
+      </div>
+    </div>
+  );
+}
+
+function EmpathyQuotientQuiz() {
+  const n = empathyQuotientItems.length;
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [answers, setAnswers] = useState<number[]>(Array(n).fill(-1));
+  const sidebarRef = useRef<HTMLElement>(null);
+
+  const progress = ((currentQuestion + 1) / n) * 100;
+  const allAnswered = answers.every((v) => v >= 0);
+  const isLastQuestion = currentQuestion === n - 1;
+
+  const totalScore = useMemo(() => {
+    return answers.reduce((sum, a, i) => {
+      if (a < 0) return sum;
+      return sum + scoreEmpathyAnswer(empathyQuotientItems[i], a as 0 | 1);
+    }, 0);
+  }, [answers]);
+
+  const answeredCount = answers.filter((v) => v >= 0).length;
+  const item = empathyQuotientItems[currentQuestion];
+
+  const onSelectAnswer = (v: 0 | 1) => {
+    const next = [...answers];
+    next[currentQuestion] = v;
+    setAnswers(next);
+  };
+
+  const goNext = () => {
+    if (currentQuestion < n - 1) setCurrentQuestion((p) => p + 1);
+  };
+
+  const goBack = () => {
+    if (currentQuestion > 0) setCurrentQuestion((p) => p - 1);
+  };
+
+  const finishQuiz = () => {
+    if (!allAnswered || answers[currentQuestion] < 0) return;
+    requestAnimationFrame(() => {
+      sidebarRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+  };
+
+  const sidebarItems: ResultsSidebarItem[] = useMemo(() => {
+    const pct = answeredCount > 0 ? Math.round((totalScore / 40) * 100) : 0;
+    const lvl = empathyQuotientLevel(totalScore);
+    const display =
+      answeredCount > 0 ? `${totalScore}/40` + (allAnswered ? ` · ${lvl}` : "") : undefined;
+    return [{ label: "Empatija (zbroj)", value: pct, color: "bg-badge-success", displayValue: display }];
+  }, [answeredCount, totalScore, allAnswered]);
+
+  const empathyComparison: ComparisonItem[] | undefined = useMemo(() => {
+    if (!allAnswered) return undefined;
+    return [{ label: "Zbroj", before: "0/40", after: `${totalScore}/40`, delta: `+${totalScore} bod.` }];
+  }, [allAnswered, totalScore]);
+
+  const empathySavedRef = useRef<string | null>(null);
+  useEffect(() => {
+    if (!allAnswered) return;
+    const hash = answers.join(",");
+    if (empathySavedRef.current === hash) return;
+    void authMe().then(async (res) => {
+      const u = userFromAuthMe(res);
+      if (!u) return;
+      try {
+        const flag = `mojput_samoprocjena_empathy_${hash}`;
+        if (sessionStorage.getItem(flag)) {
+          empathySavedRef.current = hash;
+          return;
+        }
+      } catch {
+        /* ignore */
+      }
+      const payload = buildSamoprocjenaEmpathyPayload({
+        answers: answers.map((a) => Math.max(0, a)),
+        totalScore,
+        level: empathyQuotientLevel(totalScore),
+      });
+      const r = await saveCareerQuizResult(payload);
+      if (r.success) {
+        empathySavedRef.current = hash;
+        try {
+          sessionStorage.setItem(`mojput_samoprocjena_empathy_${hash}`, "1");
+        } catch {
+          /* ignore */
+        }
+      }
+    });
+  }, [allAnswered, answers, totalScore]);
+
+  const binaryOptions: { label: string; value: 0 | 1 }[] = [
+    { label: "Ne slažem se", value: 0 },
+    { label: "Slažem se", value: 1 },
+  ];
+
+  return (
+    <div className="grid gap-6 lg:grid-cols-[1.15fr_0.85fr] lg:items-start">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.05 }}
+        className="rounded-2xl border bg-card p-5 shadow-card md:p-7"
+      >
+        <div className="mb-5 flex items-start gap-2 rounded-xl border border-border/50 bg-muted/30 px-3.5 py-2.5">
+          <span className="mt-0.5 text-base">🤝</span>
+          <p className="text-xs leading-relaxed text-muted-foreground">
+            Empatija je sposobnost razumijevanja tuđih namjera i osjećaja. Ovih 20 tvrdnji u duhu je{" "}
+            <span className="font-medium text-foreground">Empathy Quotient</span> (Baron-Cohen &amp; Wheelwright), u
+            formatu kao na{" "}
+            <a
+              href={AREALME_EQ_TEST}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-medium text-primary underline-offset-4 hover:underline"
+              lang="sr"
+            >
+              ArealMe
+              <ExternalLink className="ml-0.5 inline h-3 w-3 align-text-bottom opacity-70" />
+            </a>
+            . Odaberi odgovor koji ti je iskreniji — nema „točnih“ društvenih odgovora.
+          </p>
+        </div>
+
+        <div className="mb-6">
+          <div className="mb-2 flex items-center justify-between gap-3">
+            <span className="text-xs font-medium tabular-nums text-muted-foreground">
+              {currentQuestion + 1} od {n}
+            </span>
+            <span className="text-xs font-semibold tabular-nums text-primary">{Math.round(progress)}%</span>
+          </div>
+          <div className="h-2 overflow-hidden rounded-full bg-muted">
+            <motion.div
+              initial={false}
+              animate={{ width: `${progress}%` }}
+              transition={{ type: "spring", stiffness: 120, damping: 22 }}
+              className="h-full rounded-full gradient-hero"
+            />
+          </div>
+        </div>
+
+        <motion.div
+          key={currentQuestion}
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.22 }}
+          className="space-y-5"
+        >
+          <div>
+            <div className="mb-2 inline-flex items-center rounded-full bg-primary/[0.08] px-3 py-1 text-xs font-semibold text-primary">
+              Pitanje {currentQuestion + 1}
+            </div>
+            <h2 className="mt-1 text-xl font-semibold leading-snug md:text-2xl">{item.text}</h2>
+          </div>
+
+          <div className="grid gap-2.5 sm:grid-cols-2">
+            {binaryOptions.map((option, optIdx) => {
+              const selected = answers[currentQuestion] === option.value;
+              const letters = ["A", "B"];
+              return (
+                <button
+                  key={option.value}
+                  type="button"
+                  onClick={() => onSelectAnswer(option.value)}
+                  className={cn(
+                    "group w-full rounded-xl border p-3.5 text-left transition-all duration-200",
+                    selected
+                      ? "border-primary/50 bg-primary/[0.07] shadow-sm ring-1 ring-primary/20"
+                      : "border-border/70 bg-background hover:border-primary/30 hover:bg-muted/30",
+                  )}
+                >
+                  <div className="flex items-center gap-3">
+                    <span
+                      className={cn(
+                        "flex h-7 w-7 shrink-0 items-center justify-center rounded-lg text-xs font-bold transition-colors",
+                        selected
+                          ? "bg-primary text-primary-foreground"
+                          : "bg-muted text-muted-foreground group-hover:bg-primary/10 group-hover:text-primary",
+                      )}
+                    >
+                      {letters[optIdx]}
+                    </span>
+                    <span className="flex-1 text-sm font-medium leading-snug">{option.label}</span>
+                    {selected && <CheckCircle2 className="h-4 w-4 shrink-0 text-primary" />}
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+
+          <div className="flex flex-col-reverse gap-3 pt-2 sm:flex-row sm:justify-between">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={goBack}
+              disabled={currentQuestion === 0}
+              className="w-full sm:w-auto"
+            >
+              Natrag
+            </Button>
+            {isLastQuestion ? (
+              <Button
+                type="button"
+                onClick={finishQuiz}
+                disabled={answers[currentQuestion] < 0}
+                className="w-full gradient-hero border-0 text-primary-foreground sm:w-auto"
+              >
+                Kraj
+              </Button>
+            ) : (
+              <Button
+                type="button"
+                onClick={goNext}
+                disabled={answers[currentQuestion] < 0}
+                className="w-full gradient-hero border-0 text-primary-foreground sm:w-auto"
+              >
+                Sljedeće pitanje
+              </Button>
+            )}
+          </div>
+        </motion.div>
+      </motion.div>
+
+      <ResultsSidebar
+        ref={sidebarRef}
+        title="Test empatije"
+        items={sidebarItems}
+        totalQuestions={n}
+        answeredCount={answeredCount}
+        subtitle={allAnswered ? "Rezultati kviza (informativno). Ne zamjenjuje stručnu procjenu." : "Rezultati se ažuriraju dok rješavaš kviz."}
+        comparison={empathyComparison}
+      />
+
+      {allAnswered && (
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="lg:col-span-2"
+        >
+          <EmpathyFeedback total={totalScore} level={empathyQuotientLevel(totalScore)} />
+        </motion.div>
+      )}
+
+      <div className="lg:col-span-2 rounded-xl border bg-muted/30 p-4 text-xs text-muted-foreground">
+        Znanstveni EQ često ima više stavki i detaljniju ljestvicu odgovora (
+        <span className="font-medium text-foreground">Psychological Medicine</span>, Baron-Cohen i sur.). Ovaj kratak
+        oblik služi samoinformaciji. Ako si prijavljen/a, sažetak se može spremiti na profil.
+      </div>
+    </div>
+  );
+}
+
+function InnateIntelligenceQuiz() {
+  const items = innateIntelligenceQuizItems;
+  const n = items.length;
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [answers, setAnswers] = useState<number[]>(Array(n).fill(-1));
+  const sidebarRef = useRef<HTMLElement>(null);
+
+  const progress = ((currentQuestion + 1) / n) * 100;
+  const allAnswered = answers.every((v) => v >= 0);
+  const isLastQuestion = currentQuestion === n - 1;
+
+  const correctCount = useMemo(() => innateIqCorrectCount(answers, items), [answers, items]);
+  const answeredCount = answers.filter((v) => v >= 0).length;
+  const est = useMemo(
+    () => (allAnswered ? innateIqEstimate(correctCount, n) : { mid: 0, band: "—", tier: "—" }),
+    [allAnswered, correctCount, n],
+  );
+
+  const item = items[currentQuestion];
+
+  const onSelectAnswer = (idx: number) => {
+    const next = [...answers];
+    next[currentQuestion] = idx;
+    setAnswers(next);
+  };
+
+  const goNext = () => {
+    if (currentQuestion < n - 1) setCurrentQuestion((p) => p + 1);
+  };
+
+  const goBack = () => {
+    if (currentQuestion > 0) setCurrentQuestion((p) => p - 1);
+  };
+
+  const finishQuiz = () => {
+    if (!allAnswered || answers[currentQuestion] < 0) return;
+    requestAnimationFrame(() => {
+      sidebarRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+  };
+
+  const sidebarItems: ResultsSidebarItem[] = useMemo(() => {
+    const pct = answeredCount > 0 ? Math.round((correctCount / n) * 100) : 0;
+    const display =
+      answeredCount > 0
+        ? `${correctCount}/${n} točno` + (allAnswered ? ` · ${est.tier}` : "")
+        : undefined;
+    return [{ label: "Točni odgovori", value: pct, color: "bg-badge-info", displayValue: display }];
+  }, [answeredCount, correctCount, n, allAnswered, est.tier]);
+
+  const iqComparison: ComparisonItem[] | undefined = useMemo(() => {
+    if (!allAnswered) return undefined;
+    return [{ label: "Točno", before: "0/" + n, after: `${correctCount}/${n}`, delta: `+${correctCount}` }];
+  }, [allAnswered, correctCount, n]);
+
+  const iqSavedRef = useRef<string | null>(null);
+  useEffect(() => {
+    if (!allAnswered) return;
+    const hash = answers.join(",");
+    if (iqSavedRef.current === hash) return;
+    const { mid, band, tier } = innateIqEstimate(correctCount, n);
+    void authMe().then(async (res) => {
+      const u = userFromAuthMe(res);
+      if (!u) return;
+      try {
+        const flag = `mojput_samoprocjena_innate_iq_${hash}`;
+        if (sessionStorage.getItem(flag)) {
+          iqSavedRef.current = hash;
+          return;
+        }
+      } catch {
+        /* ignore */
+      }
+      const payload = buildSamoprocjenaInnateIqPayload({
+        answers: [...answers],
+        correctCount,
+        totalQuestions: n,
+        estimatedMid: mid,
+        bandLabel: band,
+        tierLabel: tier,
+      });
+      const r = await saveCareerQuizResult(payload);
+      if (r.success) {
+        iqSavedRef.current = hash;
+        try {
+          sessionStorage.setItem(`mojput_samoprocjena_innate_iq_${hash}`, "1");
+        } catch {
+          /* ignore */
+        }
+      }
+    });
+  }, [allAnswered, answers, correctCount, n]);
+
+  return (
+    <div className="grid gap-6 lg:grid-cols-[1.15fr_0.85fr] lg:items-start">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.05 }}
+        className="rounded-2xl border bg-card p-5 shadow-card md:p-7"
+      >
+        <div className="mb-5 flex items-start gap-2 rounded-xl border border-border/50 bg-muted/30 px-3.5 py-2.5">
+          <span className="mt-0.5 text-base">🧠</span>
+          <p className="text-xs leading-relaxed text-muted-foreground">
+            Kratki zadaci iz logike, nizova i verbalnih veza u duhu kategorije{" "}
+            <span className="font-medium text-foreground">urođena inteligencija</span> na{" "}
+            <a
+              href={IQ_TESTER_INNATE_HR}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-medium text-primary underline-offset-4 hover:underline"
+            >
+              IQ-TESTER (hr)
+              <ExternalLink className="ml-0.5 inline h-3 w-3 align-text-bottom opacity-70" />
+            </a>
+            . Pitanja su autorski sastavljena za MojPut — ne kopiraju komercijalne testove.
+          </p>
+        </div>
+
+        <div className="mb-6">
+          <div className="mb-2 flex items-center justify-between gap-3">
+            <span className="text-xs font-medium tabular-nums text-muted-foreground">
+              {currentQuestion + 1} od {n}
+            </span>
+            <span className="text-xs font-semibold tabular-nums text-primary">{Math.round(progress)}%</span>
+          </div>
+          <div className="h-2 overflow-hidden rounded-full bg-muted">
+            <motion.div
+              initial={false}
+              animate={{ width: `${progress}%` }}
+              transition={{ type: "spring", stiffness: 120, damping: 22 }}
+              className="h-full rounded-full gradient-hero"
+            />
+          </div>
+        </div>
+
+        <motion.div
+          key={currentQuestion}
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.22 }}
+          className="space-y-5"
+        >
+          <div>
+            <div className="mb-2 inline-flex items-center rounded-full bg-primary/[0.08] px-3 py-1 text-xs font-semibold text-primary">
+              Pitanje {currentQuestion + 1}
+            </div>
+            <h2 className="mt-1 text-xl font-semibold leading-snug md:text-2xl">{item.stem}</h2>
+            <p className="mt-1.5 text-sm text-muted-foreground">Odaberi jedan točan odgovor.</p>
+          </div>
+
+          <div className="grid gap-2.5">
+            {item.options.map((label, optIdx) => {
+              const selected = answers[currentQuestion] === optIdx;
+              const letters = ["A", "B", "C", "D"];
+              return (
+                <button
+                  key={optIdx}
+                  type="button"
+                  onClick={() => onSelectAnswer(optIdx)}
+                  className={cn(
+                    "group w-full rounded-xl border p-3.5 text-left transition-all duration-200",
+                    selected
+                      ? "border-primary/50 bg-primary/[0.07] shadow-sm ring-1 ring-primary/20"
+                      : "border-border/70 bg-background hover:border-primary/30 hover:bg-muted/30",
+                  )}
+                >
+                  <div className="flex items-center gap-3">
+                    <span
+                      className={cn(
+                        "flex h-7 w-7 shrink-0 items-center justify-center rounded-lg text-xs font-bold transition-colors",
+                        selected
+                          ? "bg-primary text-primary-foreground"
+                          : "bg-muted text-muted-foreground group-hover:bg-primary/10 group-hover:text-primary",
+                      )}
+                    >
+                      {letters[optIdx]}
+                    </span>
+                    <span className="flex-1 text-sm font-medium leading-snug">{label}</span>
+                    {selected && <CheckCircle2 className="h-4 w-4 shrink-0 text-primary" />}
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+
+          <div className="flex flex-col-reverse gap-3 pt-2 sm:flex-row sm:justify-between">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={goBack}
+              disabled={currentQuestion === 0}
+              className="w-full sm:w-auto"
+            >
+              Natrag
+            </Button>
+            {isLastQuestion ? (
+              <Button
+                type="button"
+                onClick={finishQuiz}
+                disabled={answers[currentQuestion] < 0}
+                className="w-full gradient-hero border-0 text-primary-foreground sm:w-auto"
+              >
+                Kraj
+              </Button>
+            ) : (
+              <Button
+                type="button"
+                onClick={goNext}
+                disabled={answers[currentQuestion] < 0}
+                className="w-full gradient-hero border-0 text-primary-foreground sm:w-auto"
+              >
+                Sljedeće pitanje
+              </Button>
+            )}
+          </div>
+        </motion.div>
+      </motion.div>
+
+      <ResultsSidebar
+        ref={sidebarRef}
+        title="IQ test"
+        items={sidebarItems}
+        totalQuestions={n}
+        answeredCount={answeredCount}
+        subtitle={allAnswered ? "Rezultati su informativni i grubo procijenjeni." : "Broj točnih raste dok rješavaš."}
+        comparison={iqComparison}
+      />
+
+      {allAnswered && (
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="lg:col-span-2"
+        >
+          <InnateIqFeedback
+            correct={correctCount}
+            total={n}
+            tier={est.tier}
+            band={est.band}
+            mid={est.mid}
+          />
+        </motion.div>
+      )}
+
+      <div className="lg:col-span-2 rounded-xl border bg-muted/30 p-4 text-xs text-muted-foreground">
+        Pravi IQ testovi u kliničkoj praksi traju dulje i imaju normirane rezultate. Ovaj kviz je zabava i samoprocjena; ako
+        si prijavljen/a, sažetak se može spremiti na profil.
+      </div>
+    </div>
+  );
+}
+
+function PersonalityTypeScreeningQuiz() {
+  const items = personalityTypeScreeningItems;
+  const n = items.length;
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [answers, setAnswers] = useState<number[]>(Array(n).fill(-1));
+  const sidebarRef = useRef<HTMLElement>(null);
+
+  const progress = ((currentQuestion + 1) / n) * 100;
+  const allAnswered = answers.every((v) => v >= 0);
+  const isLastQuestion = currentQuestion === n - 1;
+
+  const scores = useMemo(() => personalityTypeScores(answers, items), [answers, items]);
+  const typeCode = useMemo(
+    () => (allAnswered ? personalityTypeCodeFromAnswers(answers, items) : null),
+    [allAnswered, answers, items],
+  );
+  const answeredCount = answers.filter((v) => v >= 0).length;
+  const q = items[currentQuestion];
+
+  const onSelectAnswer = (v: 0 | 1) => {
+    const next = [...answers];
+    next[currentQuestion] = v;
+    setAnswers(next);
+  };
+
+  const goNext = () => {
+    if (currentQuestion < n - 1) setCurrentQuestion((p) => p + 1);
+  };
+
+  const goBack = () => {
+    if (currentQuestion > 0) setCurrentQuestion((p) => p - 1);
+  };
+
+  const finishQuiz = () => {
+    if (!allAnswered || answers[currentQuestion] < 0) return;
+    requestAnimationFrame(() => {
+      sidebarRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+  };
+
+  const sidebarItems: ResultsSidebarItem[] = useMemo(() => {
+    const pct = Math.round((answeredCount / n) * 100);
+    const display =
+      answeredCount > 0 ? (allAnswered && typeCode ? typeCode : `${answeredCount}/${n}`) : undefined;
+    return [{ label: "MBTI-stil tip", value: pct, color: "bg-badge-warning", displayValue: display }];
+  }, [answeredCount, allAnswered, n, typeCode]);
+
+  const personalityComparison: ComparisonItem[] | undefined = useMemo(() => {
+    if (!allAnswered || !typeCode) return undefined;
+    return [{ label: "Tip", before: "?", after: typeCode, delta: "4 dimenzije" }];
+  }, [allAnswered, typeCode]);
+
+  const personalitySavedRef = useRef<string | null>(null);
+  useEffect(() => {
+    if (!allAnswered || !typeCode) return;
+    const hash = answers.join(",");
+    if (personalitySavedRef.current === hash) return;
+    void authMe().then(async (res) => {
+      const u = userFromAuthMe(res);
+      if (!u) return;
+      try {
+        const flag = `mojput_samoprocjena_personality_${hash}`;
+        if (sessionStorage.getItem(flag)) {
+          personalitySavedRef.current = hash;
+          return;
+        }
+      } catch {
+        /* ignore */
+      }
+      const payload = buildSamoprocjenaPersonalityTypePayload({
+        answers: [...answers],
+        typeCode,
+        eiScore: scores.EI,
+        snScore: scores.SN,
+        tfScore: scores.TF,
+        jpScore: scores.JP,
+      });
+      const r = await saveCareerQuizResult(payload);
+      if (r.success) {
+        personalitySavedRef.current = hash;
+        try {
+          sessionStorage.setItem(`mojput_samoprocjena_personality_${hash}`, "1");
+        } catch {
+          /* ignore */
+        }
+      }
+    });
+  }, [allAnswered, answers, scores.EI, scores.JP, scores.SN, scores.TF, typeCode]);
+
+  const binaryOptions: { label: string; value: 0 | 1 }[] = [
+    { label: q.towardFirst, value: 0 },
+    { label: q.towardSecond, value: 1 },
+  ];
+
+  const blurb =
+    typeCode && personalityTypeShortBlurbs[typeCode]
+      ? personalityTypeShortBlurbs[typeCode]
+      : "Tvoj profil je kombinacija četiri dimenzije; svaki tip ima snage i područja za rast.";
+
+  return (
+    <div className="grid gap-6 lg:grid-cols-[1.15fr_0.85fr] lg:items-start">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.05 }}
+        className="rounded-2xl border bg-card p-5 shadow-card md:p-7"
+      >
+        <div className="mb-5 flex items-start gap-2 rounded-xl border border-border/50 bg-muted/30 px-3.5 py-2.5">
+          <span className="mt-0.5 text-base">✨</span>
+          <p className="text-xs leading-relaxed text-muted-foreground">
+            Šesnaest tipova u okviru četiri dimenzije (E/I, S/N, T/F, J/P), u duhu popularnih testova poput{" "}
+            <a
+              href={PERSONALITIES_16_HR}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-medium text-primary underline-offset-4 hover:underline"
+            >
+              16Personalities
+              <ExternalLink className="ml-0.5 inline h-3 w-3 align-text-bottom opacity-70" />
+            </a>
+            . Ovdje je <span className="font-medium text-foreground">skraćeni</span> MojPut skrining — pitanja su
+            autorska.
+          </p>
+        </div>
+
+        <div className="mb-6">
+          <div className="mb-2 flex items-center justify-between gap-3">
+            <span className="text-xs font-medium tabular-nums text-muted-foreground">
+              {currentQuestion + 1} od {n}
+            </span>
+            <span className="text-xs font-semibold tabular-nums text-primary">{Math.round(progress)}%</span>
+          </div>
+          <div className="h-2 overflow-hidden rounded-full bg-muted">
+            <motion.div
+              initial={false}
+              animate={{ width: `${progress}%` }}
+              transition={{ type: "spring", stiffness: 120, damping: 22 }}
+              className="h-full rounded-full gradient-hero"
+            />
+          </div>
+        </div>
+
+        <motion.div
+          key={currentQuestion}
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.22 }}
+          className="space-y-5"
+        >
+          <div>
+            <div className="mb-2 inline-flex items-center rounded-full bg-primary/[0.08] px-3 py-1 text-xs font-semibold text-primary">
+              Pitanje {currentQuestion + 1}
+            </div>
+            <h2 className="mt-1 text-xl font-semibold leading-snug md:text-2xl">{q.prompt}</h2>
+            <p className="mt-1.5 text-sm text-muted-foreground">Odaberi tvrdnju koja ti je bliža — nema „pogrešnog“ odgovora.</p>
+          </div>
+
+          <div className="grid gap-2.5">
+            {binaryOptions.map((option, optIdx) => {
+              const selected = answers[currentQuestion] === option.value;
+              const letters = ["A", "B"];
+              return (
+                <button
+                  key={option.value}
+                  type="button"
+                  onClick={() => onSelectAnswer(option.value)}
+                  className={cn(
+                    "group w-full rounded-xl border p-3.5 text-left transition-all duration-200",
+                    selected
+                      ? "border-primary/50 bg-primary/[0.07] shadow-sm ring-1 ring-primary/20"
+                      : "border-border/70 bg-background hover:border-primary/30 hover:bg-muted/30",
+                  )}
+                >
+                  <div className="flex items-start gap-3">
+                    <span
+                      className={cn(
+                        "mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-lg text-xs font-bold transition-colors",
+                        selected
+                          ? "bg-primary text-primary-foreground"
+                          : "bg-muted text-muted-foreground group-hover:bg-primary/10 group-hover:text-primary",
+                      )}
+                    >
+                      {letters[optIdx]}
+                    </span>
+                    <span className="flex-1 text-sm font-medium leading-snug">{option.label}</span>
+                    {selected && <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-primary" />}
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+
+          <div className="flex flex-col-reverse gap-3 pt-2 sm:flex-row sm:justify-between">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={goBack}
+              disabled={currentQuestion === 0}
+              className="w-full sm:w-auto"
+            >
+              Natrag
+            </Button>
+            {isLastQuestion ? (
+              <Button
+                type="button"
+                onClick={finishQuiz}
+                disabled={answers[currentQuestion] < 0}
+                className="w-full gradient-hero border-0 text-primary-foreground sm:w-auto"
+              >
+                Kraj
+              </Button>
+            ) : (
+              <Button
+                type="button"
+                onClick={goNext}
+                disabled={answers[currentQuestion] < 0}
+                className="w-full gradient-hero border-0 text-primary-foreground sm:w-auto"
+              >
+                Sljedeće pitanje
+              </Button>
+            )}
+          </div>
+        </motion.div>
+      </motion.div>
+
+      <ResultsSidebar
+        ref={sidebarRef}
+        title="Osobnost (skrining)"
+        items={sidebarItems}
+        totalQuestions={n}
+        answeredCount={answeredCount}
+        subtitle={allAnswered ? "Prikaz tipa je informativan." : "Tip se približava kako rasteš broj odgovora."}
+        comparison={personalityComparison}
+      />
+
+      {allAnswered && typeCode && (
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="lg:col-span-2"
+        >
+          <PersonalityTypeFeedback
+            typeCode={typeCode}
+            blurb={blurb}
+            ei={scores.EI}
+            sn={scores.SN}
+            tf={scores.TF}
+            jp={scores.JP}
+          />
+        </motion.div>
+      )}
+
+      <div className="lg:col-span-2 rounded-xl border bg-muted/30 p-4 text-xs text-muted-foreground">
+        Myers-Briggs tipologija i brandirani testovi imaju svoje limite u znanosti, ali mogu pomoći u samopoznavanju. Za
+        puni doživljaj pogledaj i{" "}
+        <a href={PERSONALITIES_16_HR} className="font-medium text-primary underline-offset-4 hover:underline" target="_blank" rel="noopener noreferrer">
+          16Personalities
+        </a>
+        . Sažetak se može spremiti na profil ako si prijavljen/a.
+      </div>
+    </div>
+  );
+}
+
+function OcdScreeningQuiz() {
+  const n = ocdScreeningItems.length;
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [answers, setAnswers] = useState<number[]>(Array(n).fill(-1));
+  const sidebarRef = useRef<HTMLElement>(null);
+
+  const progress = ((currentQuestion + 1) / n) * 100;
+  const allAnswered = answers.every((v) => v >= 0);
+  const isLastQuestion = currentQuestion === n - 1;
+
+  const totalScore = useMemo(() => answers.reduce((s, v) => s + (v >= 0 ? v : 0), 0), [answers]);
+  const answeredCount = answers.filter((v) => v >= 0).length;
+  const item = ocdScreeningItems[currentQuestion];
+  const intrusiveItemScore =
+    answers[OCD_INTRUSIVE_ITEM_INDEX] >= 0 ? answers[OCD_INTRUSIVE_ITEM_INDEX] : 0;
+
+  const onSelectAnswer = (score: number) => {
+    const next = [...answers];
+    next[currentQuestion] = score;
+    setAnswers(next);
+  };
+
+  const goNext = () => {
+    if (currentQuestion < n - 1) setCurrentQuestion((p) => p + 1);
+  };
+
+  const goBack = () => {
+    if (currentQuestion > 0) setCurrentQuestion((p) => p - 1);
+  };
+
+  const finishQuiz = () => {
+    if (!allAnswered || answers[currentQuestion] < 0) return;
+    requestAnimationFrame(() => {
+      sidebarRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+  };
+
+  const sidebarItems: ResultsSidebarItem[] = useMemo(() => {
+    const pct = answeredCount > 0 ? Math.round((totalScore / 32) * 100) : 0;
+    const sev = ocdScreeningSeverity(totalScore);
+    const display =
+      answeredCount > 0 ? `${totalScore}/32` + (allAnswered ? ` · ${sev}` : "") : undefined;
+    return [{ label: "OKP (zbroj)", value: pct, color: "bg-badge-warning", displayValue: display }];
+  }, [answeredCount, totalScore, allAnswered]);
+
+  const ocdComparison: ComparisonItem[] | undefined = useMemo(() => {
+    if (!allAnswered) return undefined;
+    return [{ label: "Zbroj", before: "0/32", after: `${totalScore}/32`, delta: `+${totalScore} bod.` }];
+  }, [allAnswered, totalScore]);
+
+  const ocdSavedRef = useRef<string | null>(null);
+  useEffect(() => {
+    if (!allAnswered) return;
+    const hash = answers.join(",");
+    if (ocdSavedRef.current === hash) return;
+    void authMe().then(async (res) => {
+      const u = userFromAuthMe(res);
+      if (!u) return;
+      try {
+        const flag = `mojput_samoprocjena_ocd_${hash}`;
+        if (sessionStorage.getItem(flag)) {
+          ocdSavedRef.current = hash;
+          return;
+        }
+      } catch {
+        /* ignore */
+      }
+      const payload = buildSamoprocjenaOcdScreeningPayload({
+        answers,
+        totalScore,
+        severity: ocdScreeningSeverity(totalScore),
+      });
+      const r = await saveCareerQuizResult(payload);
+      if (r.success) {
+        ocdSavedRef.current = hash;
+        try {
+          sessionStorage.setItem(`mojput_samoprocjena_ocd_${hash}`, "1");
+        } catch {
+          /* ignore */
+        }
+      }
+    });
+  }, [allAnswered, answers, totalScore]);
+
+  const letters = ["A", "B", "C", "D", "E"];
+
+  return (
+    <div className="grid gap-6 lg:grid-cols-[1.15fr_0.85fr] lg:items-start">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.05 }}
+        className="rounded-2xl border bg-card p-5 shadow-card md:p-7"
+      >
+        <div className="mb-5 flex items-start gap-2 rounded-xl border border-border/50 bg-muted/30 px-3.5 py-2.5">
+          <span className="mt-0.5 text-base">🔁</span>
+          <p className="text-xs leading-relaxed text-muted-foreground">
+            Odnosi se na <span className="font-medium text-foreground">zadnji tjedan</span>. Struktura odgovara javnom
+            skriningu na{" "}
+            <a
+              href={PSIHO_OCD_TEST}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-medium text-primary underline-offset-4 hover:underline"
+            >
+              Psihocentrala (OKP)
+              <ExternalLink className="ml-0.5 inline h-3 w-3 align-text-bottom opacity-70" />
+            </a>
+            ; tekstovi su na hrvatskom za MojPut.
+          </p>
+        </div>
+
+        <div className="mb-6">
+          <div className="mb-2 flex items-center justify-between gap-3">
+            <span className="text-xs font-medium tabular-nums text-muted-foreground">
+              {currentQuestion + 1} od {n}
+            </span>
+            <span className="text-xs font-semibold tabular-nums text-primary">{Math.round(progress)}%</span>
+          </div>
+          <div className="h-2 overflow-hidden rounded-full bg-muted">
+            <motion.div
+              initial={false}
+              animate={{ width: `${progress}%` }}
+              transition={{ type: "spring", stiffness: 120, damping: 22 }}
+              className="h-full rounded-full gradient-hero"
+            />
+          </div>
+        </div>
+
+        <motion.div
+          key={currentQuestion}
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.22 }}
+          className="space-y-5"
+        >
+          <div>
+            <div className="mb-2 inline-flex items-center rounded-full bg-primary/[0.08] px-3 py-1 text-xs font-semibold text-primary">
+              Pitanje {currentQuestion + 1}
+            </div>
+            <h2 className="mt-1 text-xl font-semibold leading-snug md:text-2xl">{item.text}</h2>
+            <p className="mt-1.5 text-sm text-muted-foreground">Odaberi koliko često — u posljednjih oko tjedan dana.</p>
+          </div>
+
+          <div className="grid gap-2.5">
+            {ocdLikertOptions.map((option, optIdx) => {
+              const selected = answers[currentQuestion] === option.score;
+              return (
+                <button
+                  key={option.label}
+                  type="button"
+                  onClick={() => onSelectAnswer(option.score)}
+                  className={cn(
+                    "group w-full rounded-xl border p-3.5 text-left transition-all duration-200",
+                    selected
+                      ? "border-primary/50 bg-primary/[0.07] shadow-sm ring-1 ring-primary/20"
+                      : "border-border/70 bg-background hover:border-primary/30 hover:bg-muted/30",
+                  )}
+                >
+                  <div className="flex items-center gap-3">
+                    <span
+                      className={cn(
+                        "flex h-7 w-7 shrink-0 items-center justify-center rounded-lg text-xs font-bold transition-colors",
+                        selected
+                          ? "bg-primary text-primary-foreground"
+                          : "bg-muted text-muted-foreground group-hover:bg-primary/10 group-hover:text-primary",
+                      )}
+                    >
+                      {letters[optIdx]}
+                    </span>
+                    <span className="flex-1 text-sm font-medium leading-snug">{option.label}</span>
+                    {selected && <CheckCircle2 className="h-4 w-4 shrink-0 text-primary" />}
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+
+          <div className="flex flex-col-reverse gap-3 pt-2 sm:flex-row sm:justify-between">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={goBack}
+              disabled={currentQuestion === 0}
+              className="w-full sm:w-auto"
+            >
+              Natrag
+            </Button>
+            {isLastQuestion ? (
+              <Button
+                type="button"
+                onClick={finishQuiz}
+                disabled={answers[currentQuestion] < 0}
+                className="w-full gradient-hero border-0 text-primary-foreground sm:w-auto"
+              >
+                Kraj
+              </Button>
+            ) : (
+              <Button
+                type="button"
+                onClick={goNext}
+                disabled={answers[currentQuestion] < 0}
+                className="w-full gradient-hero border-0 text-primary-foreground sm:w-auto"
+              >
+                Sljedeće pitanje
+              </Button>
+            )}
+          </div>
+        </motion.div>
+      </motion.div>
+
+      <ResultsSidebar
+        ref={sidebarRef}
+        title="OKP"
+        items={sidebarItems}
+        totalQuestions={n}
+        answeredCount={answeredCount}
+        subtitle={allAnswered ? "Rezultati su informativni. Ne zamjenjuju stručnu procjenu." : "Zbroj raste s odgovorima."}
+        comparison={ocdComparison}
+      />
+
+      {allAnswered && (
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="lg:col-span-2"
+        >
+          <OcdFeedback
+            total={totalScore}
+            severity={ocdScreeningSeverity(totalScore)}
+            intrusiveItemScore={intrusiveItemScore}
+          />
+        </motion.div>
+      )}
+
+      <div className="lg:col-span-2 rounded-xl border bg-muted/30 p-4 text-xs text-muted-foreground">
+        OKP je dijagnostička kategorija stručnjaka. Ovaj upitnik je samo skrining; ako simptomi ometaju život, obrati se
+        liječniku ili psihologu/kinji. Sažetak se može spremiti na profil ako si prijavljen/a.
+      </div>
+    </div>
+  );
+}
+
+function BipolarScreeningQuiz() {
+  const n = bipolarScreeningItems.length;
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [answers, setAnswers] = useState<number[]>(Array(n).fill(-1));
+  const sidebarRef = useRef<HTMLElement>(null);
+
+  const progress = ((currentQuestion + 1) / n) * 100;
+  const allAnswered = answers.every((v) => v >= 0);
+  const isLastQuestion = currentQuestion === n - 1;
+
+  const totalScore = useMemo(() => answers.reduce((s, v) => s + (v >= 0 ? v : 0), 0), [answers]);
+  const answeredCount = answers.filter((v) => v >= 0).length;
+  const item = bipolarScreeningItems[currentQuestion];
+  const mixedItemScore =
+    answers[BIPOLAR_MIXED_ITEM_INDEX] >= 0 ? answers[BIPOLAR_MIXED_ITEM_INDEX] : 0;
+
+  const onSelectAnswer = (score: number) => {
+    const next = [...answers];
+    next[currentQuestion] = score;
+    setAnswers(next);
+  };
+
+  const goNext = () => {
+    if (currentQuestion < n - 1) setCurrentQuestion((p) => p + 1);
+  };
+
+  const goBack = () => {
+    if (currentQuestion > 0) setCurrentQuestion((p) => p - 1);
+  };
+
+  const finishQuiz = () => {
+    if (!allAnswered || answers[currentQuestion] < 0) return;
+    requestAnimationFrame(() => {
+      sidebarRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+  };
+
+  const sidebarItems: ResultsSidebarItem[] = useMemo(() => {
+    const pct = answeredCount > 0 ? Math.round((totalScore / 60) * 100) : 0;
+    const sev = bipolarScreeningSeverity(totalScore);
+    const display =
+      answeredCount > 0 ? `${totalScore}/60` + (allAnswered ? ` · ${sev}` : "") : undefined;
+    return [{ label: "Test Bipolarnog poremećaja (zbroj)", value: pct, color: "bg-badge-warning", displayValue: display }];
+  }, [answeredCount, totalScore, allAnswered]);
+
+  const bipolarComparison: ComparisonItem[] | undefined = useMemo(() => {
+    if (!allAnswered) return undefined;
+    return [{ label: "Zbroj", before: "0/60", after: `${totalScore}/60`, delta: `+${totalScore} bod.` }];
+  }, [allAnswered, totalScore]);
+
+  const bipolarSavedRef = useRef<string | null>(null);
+  useEffect(() => {
+    if (!allAnswered) return;
+    const hash = answers.join(",");
+    if (bipolarSavedRef.current === hash) return;
+    void authMe().then(async (res) => {
+      const u = userFromAuthMe(res);
+      if (!u) return;
+      try {
+        const flag = `mojput_samoprocjena_bipolar_${hash}`;
+        if (sessionStorage.getItem(flag)) {
+          bipolarSavedRef.current = hash;
+          return;
+        }
+      } catch {
+        /* ignore */
+      }
+      const payload = buildSamoprocjenaBipolarScreeningPayload({
+        answers,
+        totalScore,
+        severity: bipolarScreeningSeverity(totalScore),
+      });
+      const r = await saveCareerQuizResult(payload);
+      if (r.success) {
+        bipolarSavedRef.current = hash;
+        try {
+          sessionStorage.setItem(`mojput_samoprocjena_bipolar_${hash}`, "1");
+        } catch {
+          /* ignore */
+        }
+      }
+    });
+  }, [allAnswered, answers, totalScore]);
+
+  const letters = ["A", "B", "C", "D", "E", "F"];
+
+  return (
+    <div className="grid gap-6 lg:grid-cols-[1.15fr_0.85fr] lg:items-start">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.05 }}
+        className="rounded-2xl border bg-card p-5 shadow-card md:p-7"
+      >
+        <div className="mb-5 flex items-start gap-2 rounded-xl border border-border/50 bg-muted/30 px-3.5 py-2.5">
+          <span className="mt-0.5 text-base">〰️</span>
+          <p className="text-xs leading-relaxed text-muted-foreground">
+            Odgovaraj u odnosu na to kako se tipično osjećaš i ponašaš (ne samo u zadnjih dana ako si nedavno promijenjen/a).
+            Struktura odgovara javnom skriningu na{" "}
+            <a
+              href={PSIHO_BIPOLAR_TEST}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-medium text-primary underline-offset-4 hover:underline"
+            >
+              Psihocentrala (bipolarni spektar)
+              <ExternalLink className="ml-0.5 inline h-3 w-3 align-text-bottom opacity-70" />
+            </a>
+            ; tekstovi su na hrvatskom za MojPut.
+          </p>
+        </div>
+
+        <div className="mb-6">
+          <div className="mb-2 flex items-center justify-between gap-3">
+            <span className="text-xs font-medium tabular-nums text-muted-foreground">
+              {currentQuestion + 1} od {n}
+            </span>
+            <span className="text-xs font-semibold tabular-nums text-primary">{Math.round(progress)}%</span>
+          </div>
+          <div className="h-2 overflow-hidden rounded-full bg-muted">
+            <motion.div
+              initial={false}
+              animate={{ width: `${progress}%` }}
+              transition={{ type: "spring", stiffness: 120, damping: 22 }}
+              className="h-full rounded-full gradient-hero"
+            />
+          </div>
+        </div>
+
+        <motion.div
+          key={currentQuestion}
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.22 }}
+          className="space-y-5"
+        >
+          <div>
+            <div className="mb-2 inline-flex items-center rounded-full bg-primary/[0.08] px-3 py-1 text-xs font-semibold text-primary">
+              Pitanje {currentQuestion + 1}
+            </div>
+            <h2 className="mt-1 text-xl font-semibold leading-snug md:text-2xl">{item.text}</h2>
+            <p className="mt-1.5 text-sm text-muted-foreground">Odaberi koliko često se to događa u tvom životu.</p>
+          </div>
+
+          <div className="grid gap-2.5">
+            {bipolarSixPointOptions.map((option, optIdx) => {
+              const selected = answers[currentQuestion] === option.score;
+              return (
+                <button
+                  key={option.label}
+                  type="button"
+                  onClick={() => onSelectAnswer(option.score)}
+                  className={cn(
+                    "group w-full rounded-xl border p-3.5 text-left transition-all duration-200",
+                    selected
+                      ? "border-primary/50 bg-primary/[0.07] shadow-sm ring-1 ring-primary/20"
+                      : "border-border/70 bg-background hover:border-primary/30 hover:bg-muted/30",
+                  )}
+                >
+                  <div className="flex items-center gap-3">
+                    <span
+                      className={cn(
+                        "flex h-7 w-7 shrink-0 items-center justify-center rounded-lg text-xs font-bold transition-colors",
+                        selected
+                          ? "bg-primary text-primary-foreground"
+                          : "bg-muted text-muted-foreground group-hover:bg-primary/10 group-hover:text-primary",
+                      )}
+                    >
+                      {letters[optIdx]}
+                    </span>
+                    <span className="flex-1 text-sm font-medium leading-snug">{option.label}</span>
+                    {selected && <CheckCircle2 className="h-4 w-4 shrink-0 text-primary" />}
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+
+          <div className="flex flex-col-reverse gap-3 pt-2 sm:flex-row sm:justify-between">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={goBack}
+              disabled={currentQuestion === 0}
+              className="w-full sm:w-auto"
+            >
+              Natrag
+            </Button>
+            {isLastQuestion ? (
+              <Button
+                type="button"
+                onClick={finishQuiz}
+                disabled={answers[currentQuestion] < 0}
+                className="w-full gradient-hero border-0 text-primary-foreground sm:w-auto"
+              >
+                Kraj
+              </Button>
+            ) : (
+              <Button
+                type="button"
+                onClick={goNext}
+                disabled={answers[currentQuestion] < 0}
+                className="w-full gradient-hero border-0 text-primary-foreground sm:w-auto"
+              >
+                Sljedeće pitanje
+              </Button>
+            )}
+          </div>
+        </motion.div>
+      </motion.div>
+
+      <ResultsSidebar
+        ref={sidebarRef}
+        title="Test Bipolarnog poremećaja"
+        items={sidebarItems}
+        totalQuestions={n}
+        answeredCount={answeredCount}
+        subtitle={allAnswered ? "Rezultati su informativni. Ne zamjenjuju stručnu procjenu." : "Zbroj raste s odgovorima."}
+        comparison={bipolarComparison}
+      />
+
+      {allAnswered && (
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="lg:col-span-2"
+        >
+          <BipolarFeedback
+            total={totalScore}
+            severity={bipolarScreeningSeverity(totalScore)}
+            mixedItemScore={mixedItemScore}
+          />
+        </motion.div>
+      )}
+
+      <div className="lg:col-span-2 rounded-xl border bg-muted/30 p-4 text-xs text-muted-foreground">
+        Bipolarni poremećaj i srodna stanja dijagnosticira stručnjak. Ovaj upitnik je samo skrining; ako kolebanja raspoloženja ili ponašanja ometaju život, obrati se liječniku ili psihologu/kinji. Sažetak se može spremiti na profil ako si prijavljen/a.
+      </div>
+    </div>
+  );
+}
+
+const psychotherapyMaxScore = psychotherapyMiniMaxScore(psychotherapyMiniItems);
+
+function TherapyNeedQuiz() {
+  const n = psychotherapyMiniItems.length;
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [answers, setAnswers] = useState<number[]>(Array(n).fill(-1));
+  const sidebarRef = useRef<HTMLElement>(null);
+
+  const progress = ((currentQuestion + 1) / n) * 100;
+  const allAnswered = answers.every((v) => v >= 0);
+  const isLastQuestion = currentQuestion === n - 1;
+
+  const totalScore = useMemo(
+    () =>
+      answers.reduce((sum, idx, i) => {
+        if (idx < 0) return sum;
+        return sum + psychotherapyMiniItems[i].options[idx].score;
+      }, 0),
+    [answers],
+  );
+  const answeredCount = answers.filter((v) => v >= 0).length;
+  const qItem = psychotherapyMiniItems[currentQuestion];
+  const tier = psychotherapyNeedTier(totalScore, psychotherapyMaxScore);
+
+  const onSelectOptionIndex = (optionIndex: number) => {
+    const next = [...answers];
+    next[currentQuestion] = optionIndex;
+    setAnswers(next);
+  };
+
+  const goNext = () => {
+    if (currentQuestion < n - 1) setCurrentQuestion((p) => p + 1);
+  };
+
+  const goBack = () => {
+    if (currentQuestion > 0) setCurrentQuestion((p) => p - 1);
+  };
+
+  const finishQuiz = () => {
+    if (!allAnswered || answers[currentQuestion] < 0) return;
+    requestAnimationFrame(() => {
+      sidebarRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+  };
+
+  const sidebarItems: ResultsSidebarItem[] = useMemo(() => {
+    const pct = answeredCount > 0 ? Math.round((totalScore / psychotherapyMaxScore) * 100) : 0;
+    const display =
+      answeredCount > 0
+        ? `${totalScore}/${psychotherapyMaxScore}` + (allAnswered ? ` · ${tier}` : "")
+        : undefined;
+    return [{ label: "Potreba stručnjaka (zbroj)", value: pct, color: "bg-badge-info", displayValue: display }];
+  }, [answeredCount, totalScore, allAnswered, tier]);
+
+  const therapyComparison: ComparisonItem[] | undefined = useMemo(() => {
+    if (!allAnswered) return undefined;
+    return [
+      {
+        label: "Zbroj",
+        before: `0/${psychotherapyMaxScore}`,
+        after: `${totalScore}/${psychotherapyMaxScore}`,
+        delta: `+${totalScore} bod.`,
+      },
+    ];
+  }, [allAnswered, totalScore]);
+
+  const therapySavedRef = useRef<string | null>(null);
+  useEffect(() => {
+    if (!allAnswered) return;
+    const hash = answers.join(",");
+    if (therapySavedRef.current === hash) return;
+    void authMe().then(async (res) => {
+      const u = userFromAuthMe(res);
+      if (!u) return;
+      try {
+        const flag = `mojput_samoprocjena_therapy_${hash}`;
+        if (sessionStorage.getItem(flag)) {
+          therapySavedRef.current = hash;
+          return;
+        }
+      } catch {
+        /* ignore */
+      }
+      const payload = buildSamoprocjenaTherapyNeedPayload({
+        answers,
+        totalScore,
+        maxScore: psychotherapyMaxScore,
+        tier: psychotherapyNeedTier(totalScore, psychotherapyMaxScore),
+      });
+      const r = await saveCareerQuizResult(payload);
+      if (r.success) {
+        therapySavedRef.current = hash;
+        try {
+          sessionStorage.setItem(`mojput_samoprocjena_therapy_${hash}`, "1");
+        } catch {
+          /* ignore */
+        }
+      }
+    });
+  }, [allAnswered, answers, totalScore]);
+
+  const optionLetters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+
+  return (
+    <div className="grid gap-6 lg:grid-cols-[1.15fr_0.85fr] lg:items-start">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.05 }}
+        className="rounded-2xl border bg-card p-5 shadow-card md:p-7"
+      >
+        <div className="mb-5 flex items-start gap-2 rounded-xl border border-border/50 bg-muted/30 px-3.5 py-2.5">
+          <span className="mt-0.5 text-base">💬</span>
+          <p className="text-xs leading-relaxed text-muted-foreground">
+            Odgovaraj u odnosu na <span className="font-medium text-foreground">zadnji mjesec dana</span>. Inspiracija je
+            mini test na{" "}
+            <a
+              href={PSIHO_THERAPY_MINI_TEST}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-medium text-primary underline-offset-4 hover:underline"
+            >
+              Psihocentrala (psihoterapija)
+              <ExternalLink className="ml-0.5 inline h-3 w-3 align-text-bottom opacity-70" />
+            </a>
+            ; tekstovi su prilagođeni za MojPut.
+          </p>
+        </div>
+
+        <div className="mb-6">
+          <div className="mb-2 flex items-center justify-between gap-3">
+            <span className="text-xs font-medium tabular-nums text-muted-foreground">
+              {currentQuestion + 1} od {n}
+            </span>
+            <span className="text-xs font-semibold tabular-nums text-primary">{Math.round(progress)}%</span>
+          </div>
+          <div className="h-2 overflow-hidden rounded-full bg-muted">
+            <motion.div
+              initial={false}
+              animate={{ width: `${progress}%` }}
+              transition={{ type: "spring", stiffness: 120, damping: 22 }}
+              className="h-full rounded-full gradient-hero"
+            />
+          </div>
+        </div>
+
+        <motion.div
+          key={currentQuestion}
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.22 }}
+          className="space-y-5"
+        >
+          <div>
+            <div className="mb-2 inline-flex items-center rounded-full bg-primary/[0.08] px-3 py-1 text-xs font-semibold text-primary">
+              Pitanje {currentQuestion + 1}
+            </div>
+            <h2 className="mt-1 text-xl font-semibold leading-snug md:text-2xl">{qItem.stem}</h2>
+            <p className="mt-1.5 text-sm text-muted-foreground">Odaberi odgovor koji najbolje opisuje tvoje iskustvo.</p>
+          </div>
+
+          <div className="grid gap-2.5">
+            {qItem.options.map((option, optIdx) => {
+              const selected = answers[currentQuestion] === optIdx;
+              return (
+                <button
+                  key={`${currentQuestion}-${optIdx}-${option.label}`}
+                  type="button"
+                  onClick={() => onSelectOptionIndex(optIdx)}
+                  className={cn(
+                    "group w-full rounded-xl border p-3.5 text-left transition-all duration-200",
+                    selected
+                      ? "border-primary/50 bg-primary/[0.07] shadow-sm ring-1 ring-primary/20"
+                      : "border-border/70 bg-background hover:border-primary/30 hover:bg-muted/30",
+                  )}
+                >
+                  <div className="flex items-center gap-3">
+                    <span
+                      className={cn(
+                        "flex h-7 w-7 shrink-0 items-center justify-center rounded-lg text-xs font-bold transition-colors",
+                        selected
+                          ? "bg-primary text-primary-foreground"
+                          : "bg-muted text-muted-foreground group-hover:bg-primary/10 group-hover:text-primary",
+                      )}
+                    >
+                      {optionLetters[optIdx] ?? String(optIdx + 1)}
+                    </span>
+                    <span className="flex-1 text-sm font-medium leading-snug">{option.label}</span>
+                    {selected && <CheckCircle2 className="h-4 w-4 shrink-0 text-primary" />}
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+
+          <div className="flex flex-col-reverse gap-3 pt-2 sm:flex-row sm:justify-between">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={goBack}
+              disabled={currentQuestion === 0}
+              className="w-full sm:w-auto"
+            >
+              Natrag
+            </Button>
+            {isLastQuestion ? (
+              <Button
+                type="button"
+                onClick={finishQuiz}
+                disabled={answers[currentQuestion] < 0}
+                className="w-full gradient-hero border-0 text-primary-foreground sm:w-auto"
+              >
+                Kraj
+              </Button>
+            ) : (
+              <Button
+                type="button"
+                onClick={goNext}
+                disabled={answers[currentQuestion] < 0}
+                className="w-full gradient-hero border-0 text-primary-foreground sm:w-auto"
+              >
+                Sljedeće pitanje
+              </Button>
+            )}
+          </div>
+        </motion.div>
+      </motion.div>
+
+      <ResultsSidebar
+        ref={sidebarRef}
+        title="Potreba stručnjaka?"
+        items={sidebarItems}
+        totalQuestions={n}
+        answeredCount={answeredCount}
+        subtitle={
+          allAnswered
+            ? "Ovo nije dijagnoza — samo orijentacija za razgovor sa stručnjakom ako želiš."
+            : "Zbroj raste s odgovorima."
+        }
+        comparison={therapyComparison}
+      />
+
+      {allAnswered && (
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="lg:col-span-2"
+        >
+          <TherapyNeedFeedback total={totalScore} maxScore={psychotherapyMaxScore} tier={tier} />
+        </motion.div>
+      )}
+
+      <div className="lg:col-span-2 rounded-xl border bg-muted/30 p-4 text-xs text-muted-foreground">
+        Odluku o psihoterapiji, savjetovanju ili psihijatrijskoj skrbi donosiš ti zajedno sa stručnjakom. Ako si u krizi
+        ili misliš na samoozljeđivanje, nazovi <span className="font-semibold whitespace-nowrap">112</span> ili
+        kontaktiraj najbližu hitnu pomoć.
+      </div>
+    </div>
+  );
+}
+
 function ConfidenceQuiz() {
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [answers, setAnswers] = useState<number[]>(Array(questions.length).fill(0));
@@ -868,7 +3051,16 @@ function ConfidenceQuiz() {
   );
 }
 
-type QuizId = "confidence" | "serenity";
+type QuizId =
+  | "confidence"
+  | "serenity"
+  | "depression"
+  | "empathy"
+  | "innate_iq"
+  | "personality_type"
+  | "ocd_screening"
+  | "bipolar_screening"
+  | "therapy_need";
 
 const quizFrameClass =
   "relative overflow-hidden rounded-2xl border-2 border-border/80 bg-gradient-to-b from-card to-muted/20 shadow-card ring-1 ring-black/5 dark:ring-white/5";
@@ -876,6 +3068,13 @@ const quizFrameClass =
 const QUIZ_TITLES: Record<QuizId, string> = {
   confidence: "Samopouzdanje",
   serenity: "Test Anksioznosti",
+  depression: "Test depresije",
+  empathy: "Test empatije",
+  innate_iq: "IQ test",
+  personality_type: "Procjena osobnosti",
+  ocd_screening: "OKP",
+  bipolar_screening: "Test Bipolarnog poremećaja",
+  therapy_need: "Potreba stručnjaka?",
 };
 
 const QUIZ_CARDS: { id: QuizId; icon: string; title: string; description: string; questionCount: number; minutes: string }[] = [
@@ -894,6 +3093,69 @@ const QUIZ_CARDS: { id: QuizId; icon: string; title: string; description: string
     description: "PHQ-9 i GAD-7 upitnik temeljen na Serenity Programme obrascu — potpuno privatno.",
     questionCount: 17,
     minutes: "~5 min",
+  },
+  {
+    id: "depression",
+    icon: "💙",
+    title: "Test depresije",
+    description:
+      "21 pitanje u stilu skrininga s Psihocentrala (BDI-stil) — posljednja dva tjedna, potpuno privatno.",
+    questionCount: 21,
+    minutes: "~10 min",
+  },
+  {
+    id: "empathy",
+    icon: "🤝",
+    title: "Test empatije",
+    description:
+      "20 tvrdnji u duhu Empathy Quotienta (ArealMe / Baron-Cohen) — „Ne slažem se“ / „Slažem se“, potpuno privatno.",
+    questionCount: 20,
+    minutes: "~4 min",
+  },
+  {
+    id: "innate_iq",
+    icon: "🧠",
+    title: "IQ test",
+    description:
+      "16 zadataka iz logike i nizova u duhu „urođene inteligencije“ (IQ-TESTER) — gruba procjena raspona, potpuno privatno.",
+    questionCount: 16,
+    minutes: "~6 min",
+  },
+  {
+    id: "personality_type",
+    icon: "✨",
+    title: "Procjena osobnosti",
+    description:
+      "16 pitanja u duhu MBTI / 16Personalities (4 dimenzije → 16 tipova) — skraćeni skrining, potpuno privatno.",
+    questionCount: 16,
+    minutes: "~5 min",
+  },
+  {
+    id: "ocd_screening",
+    icon: "🔁",
+    title: "OKP",
+    description:
+      "8 pitanja u duhu testa s Psihocentrala (opsesivno-kompulzivni poremećaj) — zadnji tjedan, potpuno privatno.",
+    questionCount: 8,
+    minutes: "~3 min",
+  },
+  {
+    id: "bipolar_screening",
+    icon: "〰️",
+    title: "Test Bipolarnog poremećaja",
+    description:
+      "12 pitanja u duhu testa s Psihocentrala (kolebanja raspoloženja i aktivnosti) — tipičan uzorak, potpuno privatno.",
+    questionCount: 12,
+    minutes: "~5 min",
+  },
+  {
+    id: "therapy_need",
+    icon: "💬",
+    title: "Potreba stručnjaka?",
+    description:
+      "12 pitanja u duhu mini testa s Psihocentrala (treba li razgovor sa stručnjakom) — zadnji mjesec, potpuno privatno.",
+    questionCount: 12,
+    minutes: "~4 min",
   },
 ];
 
@@ -935,7 +3197,7 @@ const Samoprocjena = () => {
           </div>
         </motion.div>
 
-        <div className="mb-8 grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <div className="mb-8 grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
           {QUIZ_CARDS.map((card, i) => (
             <motion.article
               key={card.id}
@@ -1010,8 +3272,24 @@ const Samoprocjena = () => {
               <div className="p-5 md:p-7">
                 {selectedQuiz === "confidence" ? (
                   <ConfidenceQuiz />
-                ) : (
+                ) : selectedQuiz === "serenity" ? (
                   <SerenityIntakeQuiz />
+                ) : selectedQuiz === "depression" ? (
+                  <DepressionScreeningQuiz />
+                ) : selectedQuiz === "empathy" ? (
+                  <EmpathyQuotientQuiz />
+                ) : selectedQuiz === "innate_iq" ? (
+                  <InnateIntelligenceQuiz />
+                ) : selectedQuiz === "personality_type" ? (
+                  <PersonalityTypeScreeningQuiz />
+                ) : selectedQuiz === "ocd_screening" ? (
+                  <OcdScreeningQuiz />
+                ) : selectedQuiz === "bipolar_screening" ? (
+                  <BipolarScreeningQuiz />
+                ) : selectedQuiz === "therapy_need" ? (
+                  <TherapyNeedQuiz />
+                ) : (
+                  <OcdScreeningQuiz />
                 )}
               </div>
             </div>
