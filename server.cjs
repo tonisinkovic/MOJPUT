@@ -397,6 +397,15 @@ function frontendPrijavaUrl(querySuffix) {
   return `${origin}${path}${q}`;
 }
 
+/** Stranica za novu lozinku nakon klika u mailu. */
+function frontendResetPasswordPageUrl(token) {
+  const origin = getFrontendOriginForRedirect();
+  const seg = frontendPathPrefixSegment();
+  const path = seg ? `/${seg}/zaboravljena-lozinka` : `/zaboravljena-lozinka`;
+  const q = `token=${encodeURIComponent(String(token || ""))}`;
+  return `${origin}${path}?${q}`;
+}
+
 /** Klik iz maila u pregledniku: redirect na Pages. fetch() iz SPA šalje samo Accept: application/json → JSON. */
 function shouldUseVerifyRedirect(req) {
   if (String(req.query.format || "").toLowerCase() === "json") return false;
@@ -614,6 +623,12 @@ function migrate(db) {
   if (!userCols.includes("last_login_at")) {
     db.exec("ALTER TABLE users ADD COLUMN last_login_at TEXT");
   }
+  if (!userCols.includes("password_reset_token_hash")) {
+    db.exec("ALTER TABLE users ADD COLUMN password_reset_token_hash TEXT");
+  }
+  if (!userCols.includes("password_reset_expires_at")) {
+    db.exec("ALTER TABLE users ADD COLUMN password_reset_expires_at TEXT");
+  }
 
   const forumMsgCols = db.prepare("PRAGMA table_info(forum_messages)").all().map((c) => c.name);
   if (!forumMsgCols.includes("reply_to_id")) {
@@ -735,6 +750,27 @@ function verifyCodeRateLimitOk(emailKey) {
   if (e.n >= 25) return false;
   e.n += 1;
   return true;
+}
+
+/** @type {Map<string, { n: number, resetAt: number }>} */
+const forgotPasswordAttempts = new Map();
+
+function forgotPasswordRateLimitOk(emailKey) {
+  const now = Date.now();
+  const k = `fp:${String(emailKey || "").toLowerCase().trim()}`;
+  if (k === "fp:") return false;
+  let e = forgotPasswordAttempts.get(k);
+  if (!e || e.resetAt < now) {
+    forgotPasswordAttempts.set(k, { n: 1, resetAt: now + 15 * 60 * 1000 });
+    return true;
+  }
+  if (e.n >= 5) return false;
+  e.n += 1;
+  return true;
+}
+
+function hashPasswordResetToken(token) {
+  return crypto.createHash("sha256").update(String(token || ""), "utf8").digest("hex");
 }
 
 function finalizePendingRegistration(db, pending) {
@@ -1206,6 +1242,119 @@ async function sendVerificationEmail({ to, username, code }) {
   }
 }
 
+async function sendPasswordResetEmail({ to, username, resetUrl }) {
+  const subject = "MojPut — nova lozinka";
+  const textBody = `Pozdrav ${username},\n\nZatražio/la si poveznicu za novu lozinku na MojPutu. Otvori ovaj link u pregledniku (vrijedi 1 sat):\n\n${resetUrl}\n\nAko nisi ti tražio/la promjenu lozinke, zanemari ovu poruku — tvoja lozinka ostaje ista dok ne otvoriš link.\n`;
+  const htmlBody = `
+        <p>Pozdrav ${username},</p>
+        <p>Zatražio/la si <strong>novu lozinku</strong> za MojPut. Klikni gumb ispod (poveznica vrijedi 1 sat):</p>
+        <p><a href="${resetUrl}" style="display:inline-block;padding:12px 20px;background:#2563eb;color:#fff;text-decoration:none;border-radius:8px;font-weight:600;">Postavi novu lozinku</a></p>
+        <p style="font-size:13px;word-break:break-all;color:#64748b;">Ako gumb ne radi, kopiraj ovu adresu u preglednik:<br/>${resetUrl}</p>
+        <p style="font-size:13px;color:#64748b;">Ako nisi ti tražio/la promjenu, zanemari poruku.</p>
+      `;
+
+  const resendKey = String(process.env.RESEND_API_KEY || "").trim();
+  if (resendKey) {
+    const from = normalizeResendFrom(process.env.RESEND_FROM);
+    try {
+      const r = await fetch("https://api.resend.com/emails", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${resendKey}`,
+          ...RESEND_JSON_HEADERS,
+        },
+        body: JSON.stringify({
+          from,
+          to: [to],
+          subject,
+          text: textBody,
+          html: htmlBody,
+        }),
+        signal: AbortSignal.timeout(25000),
+      });
+      const json = await r.json().catch(() => ({}));
+      if (!r.ok) {
+        console.error("[mail] Resend error (reset):", r.status, json);
+        return { sent: false, error: resendErrorForClient(json, r.status) };
+      }
+      console.log("[mail] Resend OK — reset lozinke poslan na:", to, "| from:", from);
+      return { sent: true };
+    } catch (err) {
+      const name = err?.name || "";
+      console.error("[mail] Resend fetch (reset):", name, err?.message || err);
+      if (name === "AbortError" || /timeout/i.test(String(err?.message))) {
+        return {
+          sent: false,
+          error: "Slanje maila preko Resenda je isteklo. Pokušaj ponovno.",
+        };
+      }
+      return {
+        sent: false,
+        error: "Ne mogu poslati email (Resend). Provjeri RESEND_API_KEY i mrežu.",
+      };
+    }
+  }
+
+  let transport;
+  let isEthereal;
+  try {
+    const t = await getMailTransport();
+    transport = t.transport;
+    isEthereal = t.isEthereal;
+  } catch {
+    return {
+      sent: false,
+      error:
+        "Mail nije konfiguriran. Na Renderu postavi RESEND_API_KEY (preporučeno) ili SMTP_* (Gmail app lozinka).",
+    };
+  }
+  const from = getVerificationMailFrom();
+  const replyTo = String(process.env.SMTP_USER || "").trim() || undefined;
+  try {
+    const info = await transport.sendMail({
+      from,
+      to,
+      replyTo,
+      subject,
+      text: textBody,
+      html: htmlBody,
+    });
+    const previewUrl = isEthereal && nodemailer.getTestMessageUrl ? nodemailer.getTestMessageUrl(info) : null;
+    if (previewUrl) {
+      console.log("[mail] Ethereal preview (reset lozinke):", previewUrl);
+    } else {
+      console.log("[mail] OK — reset lozinke poslan na:", to, "| od:", from, "| id:", info?.messageId || "—");
+    }
+    return { sent: true, previewUrl: previewUrl || undefined };
+  } catch (err) {
+    console.error("[mail] failed to send password reset email:", err?.message || err);
+    if (
+      !isEthereal &&
+      smtpConnectionLikelyFailed(err) &&
+      allowSmtpFallbackToEthereal()
+    ) {
+      try {
+        const eth = await getEtherealMailTransport();
+        const info = await eth.transport.sendMail({
+          from: `MojPut <${eth.etherealUser}>`,
+          to,
+          subject,
+          text: textBody,
+          html: htmlBody,
+        });
+        const previewUrl = nodemailer.getTestMessageUrl ? nodemailer.getTestMessageUrl(info) : null;
+        if (previewUrl) {
+          console.log("[mail] Ethereal preview (reset):", previewUrl);
+        }
+        return { sent: true, previewUrl: previewUrl || undefined };
+      } catch (err2) {
+        console.error("[mail] Ethereal fallback (reset) failed:", err2?.message || err2);
+      }
+    }
+    return { sent: false, error: smtpErrorForClient(err) };
+  }
+}
+
 /** Šalje adminu mail o novoj povratnoj informaciji (Resend ili SMTP kao kod registracije). */
 async function sendFeedbackNotifyEmail({ feedbackId, userEmail, username, message, pagePath }) {
   const to = getFeedbackNotifyEmail();
@@ -1597,6 +1746,113 @@ async function main() {
       return res.json(payload);
     } catch {
       return res.status(500).json({ success: false, message: "Ne mogu poslati email. Pokušaj kasnije." });
+    }
+  });
+
+  const GENERIC_FORGOT_PASSWORD_MSG =
+    "Ako ta email adresa ima potvrđen račun na MojPutu, poslali smo poveznicu za novu lozinku. Provjeri pristiglu poštu (i spam).";
+
+  app.post("/api/auth/forgot-password", async (req, res) => {
+    try {
+      const { email } = req.body || {};
+      const cleanEmail = String(email || "").trim().toLowerCase();
+      if (!isValidEmail(cleanEmail)) {
+        return res.status(400).json({ success: false, message: "Unesi valjanu email adresu." });
+      }
+      if (!forgotPasswordRateLimitOk(cleanEmail)) {
+        return res.status(429).json({
+          success: false,
+          message: "Previše zahtjeva. Pričekaj nekoliko minuta pa pokušaj ponovno.",
+        });
+      }
+
+      const userRow = db
+        .prepare("SELECT id, username, email_verified FROM users WHERE email = ?")
+        .get(cleanEmail);
+
+      if (!userRow || !userRow.email_verified) {
+        return res.json({ success: true, message: GENERIC_FORGOT_PASSWORD_MSG });
+      }
+
+      const rawToken = crypto.randomBytes(32).toString("hex");
+      const tokenHash = hashPasswordResetToken(rawToken);
+      const expiresAt = new Date(Date.now() + 60 * 60 * 1000).toISOString();
+
+      db.prepare(
+        "UPDATE users SET password_reset_token_hash = ?, password_reset_expires_at = ? WHERE id = ?",
+      ).run(tokenHash, expiresAt, userRow.id);
+
+      const resetUrl = frontendResetPasswordPageUrl(rawToken);
+      const mail = await sendPasswordResetEmail({
+        to: cleanEmail,
+        username: userRow.username,
+        resetUrl,
+      });
+
+      if (!mail.sent) {
+        db.prepare(
+          "UPDATE users SET password_reset_token_hash = NULL, password_reset_expires_at = NULL WHERE id = ?",
+        ).run(userRow.id);
+        return res.status(502).json({
+          success: false,
+          message: mail.error || "Ne mogu poslati email. Pokušaj kasnije.",
+        });
+      }
+
+      const payload = { success: true, message: GENERIC_FORGOT_PASSWORD_MSG };
+      if (mail.previewUrl) payload.email_preview_url = mail.previewUrl;
+      return res.json(payload);
+    } catch (err) {
+      console.error("[auth/forgot-password]", err?.message || err);
+      return res.status(500).json({ success: false, message: "Interna greška servera." });
+    }
+  });
+
+  app.post("/api/auth/reset-password", (req, res) => {
+    try {
+      const { token, password } = req.body || {};
+      const rawToken = String(token || "").trim();
+      const cleanPassword = String(password || "");
+
+      if (!rawToken || !cleanPassword) {
+        return res.status(400).json({ success: false, message: "Nedostaje token ili lozinka." });
+      }
+      if (cleanPassword.length < 6) {
+        return res.status(400).json({ success: false, message: "Lozinka mora imati barem 6 znakova." });
+      }
+
+      const tokenHash = hashPasswordResetToken(rawToken);
+      const row = db
+        .prepare("SELECT id, password_reset_expires_at FROM users WHERE password_reset_token_hash = ?")
+        .get(tokenHash);
+
+      if (!row) {
+        return res.status(400).json({
+          success: false,
+          message: "Poveznica nije valjana ili je već korištena. Zatraži novu na stranici za prijavu.",
+        });
+      }
+
+      const exp = row.password_reset_expires_at ? new Date(row.password_reset_expires_at).getTime() : 0;
+      if (!exp || Number.isNaN(exp) || exp < Date.now()) {
+        db.prepare(
+          "UPDATE users SET password_reset_token_hash = NULL, password_reset_expires_at = NULL WHERE id = ?",
+        ).run(row.id);
+        return res.status(400).json({
+          success: false,
+          message: "Poveznica je istekla. Zatraži novu poveznicu za lozinku.",
+        });
+      }
+
+      const passwordHash = bcrypt.hashSync(cleanPassword, 12);
+      db.prepare(
+        "UPDATE users SET password_hash = ?, password_reset_token_hash = NULL, password_reset_expires_at = NULL WHERE id = ?",
+      ).run(passwordHash, row.id);
+
+      return res.json({ success: true, message: "Lozinka je promijenjena. Možeš se prijaviti." });
+    } catch (err) {
+      console.error("[auth/reset-password]", err?.message || err);
+      return res.status(500).json({ success: false, message: "Interna greška servera." });
     }
   });
 
@@ -2148,12 +2404,12 @@ async function main() {
     });
   });
 
-  // AI Chatbot - Fakulteti, Studiji, Gradovi (PostgreSQL + Prisma)
+  // AI Chatbot — Prisma (SQLite) + universities_data.json; OpenAI ako je OPENAI_API_KEY
   let chatService;
   try {
     chatService = require(path.join(__dirname, "server", "services", "chatService.cjs"));
   } catch (err) {
-    console.warn("[chatbot] Prisma/chat service nije dostupan:", err?.message || err);
+    console.error("[chatbot] Učitavanje chatService.cjs nije uspjelo:", err?.message || err);
   }
 
   if (chatService) {
@@ -2228,6 +2484,14 @@ async function main() {
           message: err?.message || "Greška pri generiranju odgovora.",
         });
       }
+    });
+  } else {
+    app.post("/api/chat", authMiddleware(db), (_req, res) => {
+      return res.status(503).json({
+        success: false,
+        message:
+          "Chatbot modul nije učitan na serveru. Administrator: provjeri deploy log i da npm postinstall pokrene prisma generate.",
+      });
     });
   }
 

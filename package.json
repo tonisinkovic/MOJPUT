@@ -14,7 +14,7 @@
     "test:watch": "vitest",
     "start": "node server.cjs",
     "setup": "node scripts/setup-env.cjs",
-    "postinstall": "node -e \"const fs=require('fs');const {execFileSync}=require('child_process');if(fs.existsSync('scripts/setup-env.cjs'))execFileSync('node',['scripts/setup-env.cjs'],{stdio:'inherit'});\"",
+    "postinstall": "node -e \"const fs=require('fs');const {execFileSync}=require('child_process');if(fs.existsSync('scripts/setup-env.cjs'))execFileSync('node',['scripts/setup-env.cjs'],{stdio:'inherit'});\" && prisma generate",
     "dev:full": "node scripts/dev-full.cjs",
     "tunnel": "node scripts/wait-tcp.cjs 3000 node scripts/tunnel.cjs",
     "dev:public": "node scripts/dev-public.cjs",

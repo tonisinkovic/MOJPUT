@@ -37,11 +37,21 @@ function shouldClearStoredTokenOn401(reqPath: string): boolean {
   return !skip.some((p) => reqPath.startsWith(p));
 }
 
-function formatHttpError(res: Response, json: unknown, rawText: string): string {
+function formatHttpError(res: Response, json: unknown, rawText: string, reqPath: string): string {
   const fromApi = typeof (json as any)?.message === "string" ? (json as any).message.trim() : "";
   if (fromApi) return fromApi;
   if (!res.ok && rawText && !rawText.trim().startsWith("{")) {
-    return `Greška (${res.status}). Server je vratio stranicu umjesto JSON-a — provjeri VITE_API_URL (GitHub Pages) ili je li backend pokrenut (lokalno: npm run dev:full).`;
+    const base =
+      `Greška (${res.status}). Odgovor nije JSON (obično HTML) — API poziv vjerojatno ne stiže do Node backenda. ` +
+      `U produkciji VITE_API_URL pri buildu mora biti puni URL API-ja (npr. https://mojput.onrender.com), ne samo adresa statičkog frontenda. ` +
+      `Lokalno pokreni npm run dev:full (Vite + server.cjs).`;
+    if (res.status === 404 && reqPath.startsWith("/api/auth/")) {
+      return (
+        base +
+        ` Za novije rute (npr. zaboravljena lozinka) napravi redeploy API-ja ako je već ispravan URL.`
+      );
+    }
+    return base;
   }
   return `Greška (${res.status}).`;
 }
@@ -54,14 +64,14 @@ async function parseJson<T>(res: Response, reqPath: string): Promise<ApiResponse
   } catch {
     return {
       success: false,
-      message: formatHttpError(res, {}, text),
+      message: formatHttpError(res, {}, text, reqPath),
     };
   }
   if (!res.ok) {
     if (res.status === 401 && shouldClearStoredTokenOn401(reqPath)) {
       setStoredAuthToken(null);
     }
-    const msg = formatHttpError(res, json, text);
+    const msg = formatHttpError(res, json, text, reqPath);
     const code = typeof (json as any)?.code === "string" ? (json as any).code : undefined;
     return { success: false, message: msg, code };
   }

@@ -27,6 +27,7 @@ import Chatbot from "./pages/Chatbot";
 import NotFound from "./pages/NotFound";
 import Registracija from "./pages/Registracija";
 import Prijava from "./pages/Prijava";
+import ZaboravljenaLozinka from "./pages/ZaboravljenaLozinka";
 import Verify from "./pages/Verify";
 import FacultyProfiles from "./pages/FacultyProfiles";
 import FacultyProfile from "./pages/FacultyProfile";
@@ -73,6 +74,7 @@ const App = () => (
           <Route path="/privatnost" element={<Privatnost />} />
           <Route path="/chatbot" element={<Chatbot />} />
           <Route path="/prijava" element={<Prijava />} />
+          <Route path="/zaboravljena-lozinka" element={<ZaboravljenaLozinka />} />
           <Route path="/profil" element={<ProfilDashboard />} />
           <Route path="/verify" element={<Verify />} />
           <Route path="/registracija" element={<Registracija />} />

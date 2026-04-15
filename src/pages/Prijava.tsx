@@ -39,6 +39,7 @@ const Prijava = () => {
     let alive = true;
     const verifiedFlag = searchParams.get("verified");
     const verifyErr = searchParams.get("verify_error");
+    const pwdResetOk = searchParams.get("reset") === "ok";
 
     if (verifiedFlag === "1") {
       setEmailVerifyUi({
@@ -57,6 +58,11 @@ const Prijava = () => {
         kind: "error",
         message: "Potvrda više nije linkom. Otvori stranicu za potvrdu i upiši email te kod iz pisma.",
       });
+      setSearchParams({}, { replace: true });
+    }
+
+    if (pwdResetOk) {
+      setInfo("Lozinka je promijenjena. Prijavi se s novom lozinkom.");
       setSearchParams({}, { replace: true });
     }
 
@@ -299,6 +305,14 @@ const Prijava = () => {
                   placeholder="Unesi lozinku"
                   className="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-900 focus:border-transparent text-sm"
                 />
+                <div className="mt-2 text-right">
+                  <Link
+                    to="/zaboravljena-lozinka"
+                    className="text-xs font-semibold text-primary hover:underline"
+                  >
+                    Zaboravljena lozinka?
+                  </Link>
+                </div>
               </div>
 
               {loginError && (

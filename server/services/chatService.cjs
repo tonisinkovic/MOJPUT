@@ -1,18 +1,27 @@
-const { PrismaClient } = require("@prisma/client");
 const path = require("path");
 const fs = require("fs");
 
-if (!process.env.DATABASE_URL) {
+/** Bez ovoga `require` cijelog modula puca na deployu ako `prisma generate` nije pokrenut — tada nema /api/chat rute (404). */
+let PrismaClient = null;
+try {
+  PrismaClient = require("@prisma/client").PrismaClient;
+} catch (e) {
+  console.warn("[chatService] @prisma/client nije dostupan — koristim samo universities_data.json:", e?.message || e);
+}
+
+if (!process.env.DATABASE_URL && PrismaClient) {
   const dbPath = path.join(__dirname, "..", "..", "prisma", "chatbot.db");
   process.env.DATABASE_URL = `file:${dbPath}`;
 }
 
-let prisma;
-try {
-  prisma = new PrismaClient();
-} catch (e) {
-  prisma = null;
-  console.warn("[chatService] Prisma init:", e?.message);
+let prisma = null;
+if (PrismaClient) {
+  try {
+    prisma = new PrismaClient();
+  } catch (e) {
+    prisma = null;
+    console.warn("[chatService] PrismaClient init:", e?.message);
+  }
 }
 
 if (String(process.env.OPENAI_API_KEY || "").trim()) {

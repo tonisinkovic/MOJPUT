@@ -11,6 +11,8 @@ RUN npm ci --omit=dev --ignore-scripts && npm rebuild better-sqlite3
 
 COPY . .
 RUN mkdir -p data
+# postinstall se ne pokreće (--ignore-scripts) — klijent za Prisma mora postojati da se chatService učita
+RUN npx prisma generate
 
 ENV NODE_ENV=production
 ENV PORT=3000

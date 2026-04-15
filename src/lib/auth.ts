@@ -96,6 +96,19 @@ export async function authResendVerification(email: string): Promise<ApiResponse
   return apiPost<unknown>("/api/auth/resend-verification", { email });
 }
 
+export async function authForgotPassword(
+  email: string,
+): Promise<ApiResponse<{ message?: string; email_preview_url?: string }>> {
+  return apiPost<{ message?: string; email_preview_url?: string }>("/api/auth/forgot-password", { email });
+}
+
+export async function authResetPassword(params: {
+  token: string;
+  password: string;
+}): Promise<ApiResponse<{ message?: string }>> {
+  return apiPost<{ message?: string }>("/api/auth/reset-password", params);
+}
+
 export async function fetchAdminStats(): Promise<ApiResponse<unknown>> {
   return apiGet<unknown>("/api/admin/stats");
 }
