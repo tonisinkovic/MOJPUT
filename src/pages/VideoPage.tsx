@@ -117,7 +117,7 @@ const VideoPage = () => {
   const [activeCategory, setActiveCategory] = useState<string>("Sve");
   const [searchQuery, setSearchQuery] = useState("");
   const [sortBy, setSortBy] = useState<SortOption>("popularnost");
-  const [contentView, setContentView] = useState<ContentView>("predavanja");
+  const [contentView, setContentView] = useState<ContentView>("videozapisi");
   const [eventFilter, setEventFilter] = useState<EventFilter>("sva");
   const [selectedEvent, setSelectedEvent] = useState<EventItem | null>(null);
   const [now, setNow] = useState(new Date());
@@ -200,17 +200,6 @@ const VideoPage = () => {
           <div className="inline-flex w-full sm:w-auto rounded-2xl bg-slate-100 dark:bg-slate-800 p-1.5 gap-1">
             <button
               type="button"
-              onClick={() => setContentView("predavanja")}
-              className={`flex-1 sm:flex-none px-4 py-2 rounded-xl text-sm font-semibold transition-colors ${
-                contentView === "predavanja"
-                  ? "bg-violet-600 text-white"
-                  : "text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-slate-100"
-              }`}
-            >
-              Online predavanja
-            </button>
-            <button
-              type="button"
               onClick={() => setContentView("videozapisi")}
               className={`flex-1 sm:flex-none px-4 py-2 rounded-xl text-sm font-semibold transition-colors ${
                 contentView === "videozapisi"
@@ -219,6 +208,17 @@ const VideoPage = () => {
               }`}
             >
               Videozapisi
+            </button>
+            <button
+              type="button"
+              onClick={() => setContentView("predavanja")}
+              className={`flex-1 sm:flex-none px-4 py-2 rounded-xl text-sm font-semibold transition-colors ${
+                contentView === "predavanja"
+                  ? "bg-violet-600 text-white"
+                  : "text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-slate-100"
+              }`}
+            >
+              Online predavanja
             </button>
           </div>
         </motion.div>
@@ -260,9 +260,12 @@ const VideoPage = () => {
 
           {(eventFilter === "sva" || eventFilter === "nadolazeca") && (
             <div className="mb-8">
-              <h3 className="text-base md:text-lg font-semibold text-slate-900 dark:text-slate-100 mb-3">
+              <h3 className="text-base md:text-lg font-semibold text-slate-900 dark:text-slate-100 mb-1">
                 Nadolazeća predavanja
               </h3>
+              <p className="text-sm text-slate-600 dark:text-slate-400 mb-4">
+                {"Uskoro \u0107e ovdje biti zakazana predavanja — prati najave na MojPutu."}
+              </p>
               <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
                 {eventsByState.upcoming.map((event, i) => {
                   const status = getEventStatus(event, now);
@@ -348,38 +351,12 @@ const VideoPage = () => {
               <h3 className="text-base md:text-lg font-semibold text-slate-900 dark:text-slate-100 mb-3">
                 Prošla predavanja
               </h3>
-              <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
-                {eventsByState.past.map((event, i) => (
-                  <motion.article
-                    key={event.id}
-                    initial={{ opacity: 0, y: 12 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.3, delay: i * 0.06 }}
-                    whileHover={{ y: -3, scale: 1.01 }}
-                    onClick={() => setSelectedEvent(event)}
-                    className="cursor-pointer rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-4 shadow-sm hover:shadow-lg transition-all"
-                  >
-                    <div className="mb-3 h-28 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-3xl">
-                      <span>{event.thumbnail}</span>
-                    </div>
-                    <h4 className="font-bold text-slate-900 dark:text-slate-100 text-sm md:text-base mb-2">
-                      {event.title}
-                    </h4>
-                    <p className="text-xs md:text-sm text-slate-600 dark:text-slate-400 mb-4">
-                      {formatDateTime(event.startAt)}
-                    </p>
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setSelectedEvent(event);
-                      }}
-                      className="px-3 py-2 rounded-xl bg-violet-600 hover:bg-violet-700 text-white text-xs font-semibold transition-colors"
-                    >
-                      Pogledaj snimku
-                    </button>
-                  </motion.article>
-                ))}
+              <div className="rounded-2xl border border-dashed border-slate-200 bg-slate-50/80 px-4 py-10 text-center dark:border-slate-700 dark:bg-slate-900/40 sm:px-8">
+                <p className="text-sm text-slate-600 dark:text-slate-400 md:text-base">
+                  {
+                    "Trenuta\u010Dno nema pro\u0161lih predavanja u arhivi. Snimke \u0107e se ovdje pojaviti nakon odr\u017Eanih termina."
+                  }
+                </p>
               </div>
             </div>
           )}

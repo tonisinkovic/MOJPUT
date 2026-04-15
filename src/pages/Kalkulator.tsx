@@ -66,12 +66,15 @@ import {
   type ScoringComponent,
 } from "@/data/scoringFormulas";
 import { componentInputKey } from "@/lib/admissionCalculator";
+import { cutoffFromUniversitiesDataset } from "@/lib/upisPragFromDataset";
 
 // ─── Types ───
 
 type ProgramOption = {
   formula: ProgramScoring;
   cutoff: number | null;
+  /** Istovjetan izvor kao kartu fakulteta (universities_data) kad je postavljen */
+  cutoffSource: "universities_dataset" | "scoring_json";
 };
 
 type ChanceLevel = "high" | "medium" | "low";
@@ -81,10 +84,16 @@ type InstitutionType = "all" | "sveuciliste" | "veleuciliste";
 // ─── Build flat program list directly from scoring formulas (710 programa) ───
 
 function buildProgramOptions(): ProgramOption[] {
-  return scoringFormulas.map((f) => ({
-    formula: f,
-    cutoff: f.pragovi["2025"] ?? null,
-  }));
+  return scoringFormulas.map((f) => {
+    const fromDataset = cutoffFromUniversitiesDataset(f);
+    const fromJson = f.pragovi["2025"] ?? null;
+    const cutoff = fromDataset ?? fromJson;
+    return {
+      formula: f,
+      cutoff,
+      cutoffSource: fromDataset != null ? "universities_dataset" : "scoring_json",
+    };
+  });
 }
 
 const PROGRAM_OPTIONS = buildProgramOptions();
@@ -236,6 +245,7 @@ const Kalkulator = () => {
   }, [admissionResult]);
 
   const cutoff = selectedProgram?.cutoff ?? null;
+  const cutoffSource = selectedProgram?.cutoffSource ?? "scoring_json";
   const chanceLevel = getChanceLevel(totalPoints ?? 0, cutoff);
 
   // ─── Pre-filter by city and institution type ───
@@ -1582,10 +1592,21 @@ const Kalkulator = () => {
                         </div>
                         {cutoff != null && (
                           <p className="text-xs text-muted-foreground text-center leading-snug">
-                            Crtica: okvirno{" "}
-                            <span className="font-medium text-foreground/90">{Math.round(cutoff)} bodova</span> prema{" "}
-                            <span className="font-medium text-foreground/90">prošlogodišnjem upisu</span> — to{" "}
-                            <span className="font-medium">nije</span> službeni prag koji fakultet propisuje za ovu godinu.
+                            Crtica:{" "}
+                            <span className="font-medium text-foreground/90">{Math.round(cutoff)} bodova</span>
+                            {cutoffSource === "universities_dataset" ? (
+                              <>
+                                {" "}
+                                — objavljeni prag za 2025. iz iste baze kao i lista studija na karti fakulteta
+                                (službena tablica MZO-a).
+                              </>
+                            ) : (
+                              <>
+                                {" "}
+                                prema podacima u formuli (nema pouzdanog uparivanja s bazom kartice) — provjeri i na
+                                stranici učilišta.
+                              </>
+                            )}
                           </p>
                         )}
                       </div>
@@ -1645,14 +1666,18 @@ const Kalkulator = () => {
                           <div className="flex flex-wrap gap-2">
                             {Object.entries(selectedFormula.pragovi)
                               .sort(([a], [b]) => b.localeCompare(a))
-                              .map(([year, prag]) => (
-                                <span
-                                  key={year}
-                                  className="text-xs px-2 py-1 rounded-lg bg-secondary"
-                                >
-                                  {year}: {prag ? Math.round(prag) : "–"} bod.
-                                </span>
-                              ))}
+                              .map(([year, prag]) => {
+                                const display =
+                                  year === "2025" && cutoff != null ? Math.round(cutoff) : prag ? Math.round(prag) : null;
+                                return (
+                                  <span
+                                    key={year}
+                                    className="text-xs px-2 py-1 rounded-lg bg-secondary"
+                                  >
+                                    {year}: {display != null ? `${display}` : "–"} bod.
+                                  </span>
+                                );
+                              })}
                           </div>
                         </div>
                       )}

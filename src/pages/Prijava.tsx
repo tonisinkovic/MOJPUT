@@ -338,11 +338,13 @@ const Prijava = () => {
                 Prijavi se
               </button>
 
-              <p className="text-center text-xs text-slate-600 mt-2">
-                Nemaš račun? Posjeti stranicu{" "}
-                <span className="font-semibold">Registracija</span> u glavnom
-                izborniku.
-              </p>
+              <p className="text-center text-xs text-slate-600 mt-2">Nemaš račun?</p>
+              <Link
+                to="/registracija"
+                className="mt-2 flex w-full items-center justify-center rounded-lg border border-slate-300 bg-white py-2.5 text-sm font-semibold text-slate-900 shadow-sm transition hover:bg-slate-50 focus-visible:outline focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
+              >
+                Registracija
+              </Link>
               <p className="text-center text-[11px] text-slate-500 mt-3 leading-snug">
                 Račun s weba i račun s lokalnog testa nisu isti (različita baza). Email mora biti
                 potvrđen 6-znamenkastim kodom iz pisma. Ako te stranica ne drži prijavljenim nakon osvježenja,

@@ -255,30 +255,69 @@ export default function KalkulatorDoma() {
   return (
     <Layout>
       <div className="max-w-lg mx-auto px-4 pb-10 pt-6 md:pt-10 md:max-w-3xl">
-        {/* Header — mobile first */}
-        <header className="text-center mb-6">
-          <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl gradient-hero mb-3 min-h-[44px] min-w-[44px]">
-            <Home className="w-7 h-7 text-primary-foreground" aria-hidden />
+        {/* Header */}
+        <motion.header
+          initial={{ opacity: 0, y: 14 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+          className="relative mb-5 overflow-hidden rounded-2xl border border-primary/15 bg-gradient-to-b from-primary/[0.07] via-card/80 to-card px-4 py-5 shadow-sm md:px-6 md:py-5"
+        >
+          <div
+            className="pointer-events-none absolute -right-16 -top-16 h-36 w-36 rounded-full bg-primary/[0.12] blur-3xl dark:bg-primary/20"
+            aria-hidden
+          />
+          <div
+            className="pointer-events-none absolute -bottom-14 -left-14 h-32 w-32 rounded-full bg-accent/[0.08] blur-3xl dark:bg-accent/15"
+            aria-hidden
+          />
+          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_-20%,hsl(var(--primary)/0.08),transparent)] dark:bg-[radial-gradient(ellipse_80%_50%_at_50%_-20%,hsl(var(--primary)/0.12),transparent)]" aria-hidden />
+          <div className="relative text-center">
+            <div className="mx-auto mb-2.5 flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-primary/85 shadow-md shadow-primary/25 ring-2 ring-primary/10 dark:ring-primary/20">
+              <Home className="h-6 w-6 text-primary-foreground" strokeWidth={2} aria-hidden />
+            </div>
+            <p className="mb-2 inline-flex items-center gap-1 rounded-full border border-primary/20 bg-primary/10 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-primary shadow-sm md:text-[11px]">
+              <Sparkles className="h-3 w-3" aria-hidden />
+              Natječaj · studentski smještaj
+            </p>
+            <h1 className="text-balance text-xl font-extrabold tracking-tight md:text-2xl lg:text-3xl">
+              Kalkulator bodova za{" "}
+              <span className="text-gradient">studentske domove</span>
+            </h1>
+            <p className="mx-auto mt-2 max-w-2xl text-pretty text-sm leading-snug text-muted-foreground md:text-[15px]">
+              Okvirni broj bodova za natječaj. Za Zagreb usporedba s objavljenim pragom; za ostale gradove procjena
+              šanse bez službenog praga u aplikaciji.
+            </p>
           </div>
-          <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-balance">
-            Kalkulator bodova za studentske domove
-          </h1>
-          <p className="text-muted-foreground text-base mt-2 leading-relaxed">
-            Okvirni broj bodova za natječaj. Za Zagreb usporedba s objavljenim pragom; za ostale gradove procjena šanse bez službenog praga u aplikaciji.
-          </p>
-        </header>
+        </motion.header>
 
-        <Alert className="mb-6 rounded-2xl border-amber-500/35 bg-amber-500/[0.07] text-base [&>svg]:text-amber-700 dark:[&>svg]:text-amber-500">
-          <AlertCircle className="h-5 w-5 min-w-[44px]" aria-hidden />
-          <AlertTitle className="text-amber-950 dark:text-amber-100">
-            Važna napomena prije korištenja
-          </AlertTitle>
-          <AlertDescription className="text-amber-950/90 dark:text-amber-50/90 text-base leading-relaxed">
-            Kalkulator je koristan za <strong>orijentaciju</strong> (okvirni bodovi i procjena), ali{" "}
-            <strong>nije 100 % točan</strong> kao službeni natječajni sustav. Obavezno sve provjeri na stranici
-            studentskog centra i u vlastitoj prijavi.
-          </AlertDescription>
-        </Alert>
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, delay: 0.06, ease: [0.22, 1, 0.36, 1] }}
+          role="alert"
+          className="relative mb-6 overflow-hidden rounded-2xl border border-amber-500/35 bg-gradient-to-br from-amber-500/[0.12] via-amber-500/[0.04] to-transparent shadow-sm dark:border-amber-500/25 dark:from-amber-500/10 dark:via-amber-950/20 dark:to-transparent"
+        >
+          <div className="pointer-events-none absolute -right-8 top-0 h-24 w-24 rounded-full bg-amber-400/20 blur-2xl dark:bg-amber-500/10" aria-hidden />
+          <div className="relative flex gap-3 p-4">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-amber-500/20 text-amber-800 shadow-inner ring-1 ring-amber-500/25 dark:bg-amber-500/15 dark:text-amber-200 dark:ring-amber-400/20">
+              <AlertCircle className="h-5 w-5" strokeWidth={2} aria-hidden />
+            </div>
+            <div className="min-w-0 flex-1 space-y-1 text-left">
+              <p className="text-[10px] font-bold uppercase tracking-wide text-amber-800/90 dark:text-amber-200/90 md:text-[11px]">
+                Prije korištenja
+              </p>
+              <h2 className="text-base font-bold leading-snug text-amber-950 dark:text-amber-50 md:text-lg">
+                Važna napomena
+              </h2>
+              <p className="text-xs leading-relaxed text-amber-950/88 dark:text-amber-50/88 md:text-sm">
+                Kalkulator je koristan za <strong className="font-semibold text-amber-950 dark:text-amber-50">orijentaciju</strong>{" "}
+                (okvirni bodovi i procjena), ali{" "}
+                <strong className="font-semibold text-amber-950 dark:text-amber-50">nije 100 % točan</strong> kao službeni
+                natječajni sustav. Obavezno sve provjeri na stranici studentskog centra i u vlastitoj prijavi.
+              </p>
+            </div>
+          </div>
+        </motion.div>
 
         {/* Step progress */}
         <div className="mb-6 space-y-2" aria-label="Napredak kroz korake">

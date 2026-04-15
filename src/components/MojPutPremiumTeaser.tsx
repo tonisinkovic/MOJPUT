@@ -44,8 +44,15 @@ const perks = [
   },
 ];
 
+/** Uključiti kad MojPut Premium bude spreman za korisnike. */
+const SHOW_PREMIUM_TEASER = false;
+
 const MojPutPremiumTeaser = () => {
   const [open, setOpen] = useState(false);
+
+  if (!SHOW_PREMIUM_TEASER) {
+    return null;
+  }
 
   return (
     <>

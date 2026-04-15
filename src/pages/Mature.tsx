@@ -18,12 +18,14 @@ import {
   GraduationCap,
   Languages,
   Library,
+  Lock,
   PenLine,
   Puzzle,
   Search,
   Sparkles,
 } from "lucide-react";
 import { useMemo, useState } from "react";
+import { Link } from "react-router-dom";
 
 const assetUrl = (fileName: string) =>
   `${import.meta.env.BASE_URL}mature/${encodeURIComponent(fileName)}`;
@@ -31,7 +33,10 @@ const assetUrl = (fileName: string) =>
 type QuizSubjectId = "matematika" | "hrvatski";
 type HrvQuizTab = "citanka" | "sazetak" | "esej";
 
-const Mature = () => {
+/** Postaviti na true kad se sekcija Matura pripremi za javni pristup. */
+const MATURE_SECTION_ENABLED = false;
+
+function MatureInner() {
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState<string>("Sve");
   const [activeQuizSubject, setActiveQuizSubject] = useState<QuizSubjectId>("matematika");
@@ -382,4 +387,37 @@ function DocumentCard({ doc, index }: { doc: MatureDocument; index: number }) {
   );
 }
 
-export default Mature;
+function MatureLockedPlaceholder() {
+  return (
+    <Layout>
+      <section className="container relative py-20 md:py-28">
+        <div
+          className="mx-auto max-w-md rounded-2xl border border-dashed border-muted-foreground/35 bg-muted/25 px-6 py-10 text-center"
+          role="status"
+          aria-live="polite"
+        >
+          <div
+            className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full border border-muted-foreground/25 bg-background"
+            aria-hidden
+          >
+            <Lock className="h-6 w-6 text-muted-foreground" strokeWidth={2} />
+          </div>
+          <h1 className="text-2xl font-bold tracking-tight">Matura</h1>
+          <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
+            Ova sekcija još nije dostupna — pripremamo kvizove i materijale. Uskoro ovdje.
+          </p>
+          <Button className="mt-6" asChild>
+            <Link to="/">Natrag na početnu</Link>
+          </Button>
+        </div>
+      </section>
+    </Layout>
+  );
+}
+
+export default function Mature() {
+  if (!MATURE_SECTION_ENABLED) {
+    return <MatureLockedPlaceholder />;
+  }
+  return <MatureInner />;
+}

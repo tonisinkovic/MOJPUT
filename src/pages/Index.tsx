@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import Layout from "@/components/Layout";
+import { HomeThemePicker } from "@/components/HomeThemePicker";
 import { authMe, userFromAuthMe, type AuthUser } from "@/lib/auth";
 import FeatureCard from "@/components/FeatureCard";
 import {
@@ -24,8 +25,17 @@ import {
   Lock,
   User,
 } from "lucide-react";
+import type { ReactNode } from "react";
 
-const features = [
+type HomeFeature = {
+  icon: ReactNode;
+  title: string;
+  description: string;
+  path: string;
+  locked?: boolean;
+};
+
+const features: HomeFeature[] = [
   {
     icon: <Map className="h-6 w-6 text-primary" />,
     title: "Karta fakulteta",
@@ -79,6 +89,7 @@ const features = [
     title: "Matura",
     description: "Kvizovi i PDF materijali za šk. god. 2024/2025. (matematika; ostali predmeti uskoro).",
     path: "/mature",
+    locked: true,
   },
   {
     icon: <Users className="h-6 w-6 text-primary" />,
@@ -129,7 +140,11 @@ const Index = () => {
         <div className="absolute bottom-10 left-10 w-96 h-96 bg-accent/8 rounded-full blur-3xl" />
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-primary/5 rounded-full blur-3xl" />
 
-        <div className="container relative py-24 md:py-36">
+        <div className="container relative px-3 pt-6 pb-4 sm:px-4 md:pt-10 md:pb-8">
+          <HomeThemePicker />
+        </div>
+
+        <div className="container relative pb-20 pt-1 md:pb-36 md:pt-2">
           <div className="max-w-3xl mx-auto text-center">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -283,16 +298,32 @@ const Index = () => {
           </div>
 
           <div className="mx-auto grid max-w-7xl grid-cols-1 gap-5 sm:grid-cols-2 sm:gap-6 lg:grid-cols-4">
-            {features.map((feature, i) => (
-              <Link key={feature.path} to={feature.path} className="block h-full min-h-[11rem] sm:min-h-[12.5rem]">
-                <FeatureCard
-                  icon={feature.icon}
-                  title={feature.title}
-                  description={feature.description}
-                  delay={i * 0.06}
-                />
-              </Link>
-            ))}
+            {features.map((feature, i) =>
+              feature.locked ? (
+                <div
+                  key={feature.path}
+                  className="block h-full min-h-[11rem] select-none sm:min-h-[12.5rem]"
+                  aria-disabled
+                >
+                  <FeatureCard
+                    icon={feature.icon}
+                    title={feature.title}
+                    description={feature.description}
+                    delay={i * 0.06}
+                    locked
+                  />
+                </div>
+              ) : (
+                <Link key={feature.path} to={feature.path} className="block h-full min-h-[11rem] sm:min-h-[12.5rem]">
+                  <FeatureCard
+                    icon={feature.icon}
+                    title={feature.title}
+                    description={feature.description}
+                    delay={i * 0.06}
+                  />
+                </Link>
+              ),
+            )}
           </div>
         </div>
       </section>

@@ -21,6 +21,7 @@ import ParentAssessment from "./pages/ParentAssessment";
 import ParentArticleDetail from "./pages/ParentArticleDetail";
 import Kontakt from "./pages/Kontakt";
 import UvjetiKoristenja from "./pages/UvjetiKoristenja";
+import Privatnost from "./pages/Privatnost";
 import About from "./pages/About";
 import Chatbot from "./pages/Chatbot";
 import NotFound from "./pages/NotFound";
@@ -69,6 +70,7 @@ const App = () => (
           <Route path="/kontakt" element={<Kontakt />} />
           <Route path="/o-nama" element={<About />} />
           <Route path="/uvjeti" element={<UvjetiKoristenja />} />
+          <Route path="/privatnost" element={<Privatnost />} />
           <Route path="/chatbot" element={<Chatbot />} />
           <Route path="/prijava" element={<Prijava />} />
           <Route path="/profil" element={<ProfilDashboard />} />

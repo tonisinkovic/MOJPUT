@@ -1,6 +1,7 @@
 import Layout from "@/components/Layout";
 import { motion } from "framer-motion";
 import { FileText } from "lucide-react";
+import { Link } from "react-router-dom";
 
 const UvjetiKoristenja = () => {
   return (
@@ -77,7 +78,11 @@ const UvjetiKoristenja = () => {
           <section>
             <h2 className="text-xl font-semibold text-foreground">6. Zaštita privatnosti</h2>
             <p>
-              Korištenje osobnih podataka regulirano je našom Politikom privatnosti.
+              Korištenje osobnih podataka regulirano je našom{" "}
+              <Link to="/privatnost" className="font-medium text-primary underline-offset-4 hover:underline">
+                Politikom privatnosti
+              </Link>
+              .
             </p>
           </section>
 

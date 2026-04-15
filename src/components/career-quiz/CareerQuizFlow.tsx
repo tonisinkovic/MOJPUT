@@ -511,9 +511,6 @@ export default function CareerQuizFlow({
                   Upis na fakultet
                 </Badge>
                 <Badge variant="outline" className="border-border/80 bg-background/60 text-xs backdrop-blur-sm sm:text-[0.8125rem]">
-                  HZZ v2 · RIASEC
-                </Badge>
-                <Badge variant="outline" className="border-border/80 bg-background/60 text-xs backdrop-blur-sm sm:text-[0.8125rem]">
                   {interests.length} + {competencies.length} pitanja
                 </Badge>
               </div>

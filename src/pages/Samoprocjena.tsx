@@ -1,6 +1,16 @@
 import Layout from "@/components/Layout";
 import { motion } from "framer-motion";
-import { Target, ArrowRight, CheckCircle2, ExternalLink, Sparkles, MessageCircle, Clock, HelpCircle } from "lucide-react";
+import {
+  Target,
+  ArrowRight,
+  CheckCircle2,
+  ExternalLink,
+  Sparkles,
+  MessageCircle,
+  Clock,
+  HelpCircle,
+  Lock,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { forwardRef, useEffect, useMemo, useRef, useState } from "react";
@@ -43,6 +53,7 @@ import {
   psychotherapyNeedTier,
 } from "@/data/psychotherapyMiniItems";
 import { cn } from "@/lib/utils";
+import { QUIZ_CARDS, QUIZ_TITLES, type QuizId } from "@/lib/samoprocjenaQuizMeta";
 
 const SERENITY_INTAKE_PDF = "https://www.serene.me.uk/intake.pdf";
 const PSIHO_DEPRESSION_TEST = "https://www.psihocentrala.com/testovi/test-za-depresiju/";
@@ -3051,20 +3062,10 @@ function ConfidenceQuiz() {
   );
 }
 
-type QuizId =
-  | "confidence"
-  | "serenity"
-  | "depression"
-  | "empathy"
-  | "innate_iq"
-  | "personality_type"
-  | "ocd_screening"
-  | "bipolar_screening"
-  | "therapy_need";
-
 const quizFrameClass =
   "relative overflow-hidden rounded-2xl border-2 border-border/80 bg-gradient-to-b from-card to-muted/20 shadow-card ring-1 ring-black/5 dark:ring-white/5";
 
+/* Legacy quiz card definitions — replaced by @/lib/samoprocjenaQuizMeta
 const QUIZ_TITLES: Record<QuizId, string> = {
   confidence: "Samopouzdanje",
   serenity: "Test Anksioznosti",
@@ -3077,7 +3078,15 @@ const QUIZ_TITLES: Record<QuizId, string> = {
   therapy_need: "Potreba stručnjaka?",
 };
 
-const QUIZ_CARDS: { id: QuizId; icon: string; title: string; description: string; questionCount: number; minutes: string }[] = [
+const QUIZ_CARDS_LEGACY: {
+  id: QuizId;
+  icon: string;
+  title: string;
+  description: string;
+  questionCount: number;
+  minutes: string;
+  locked?: boolean;
+}[] = [
   {
     id: "confidence",
     icon: "💪",
@@ -3157,18 +3166,34 @@ const QUIZ_CARDS: { id: QuizId; icon: string; title: string; description: string
     questionCount: 12,
     minutes: "~4 min",
   },
-];
+  {
+    id: "innate_iq",
+    icon�",
+    title: "IQ test",
+    description:
+      "16 zadataka iz logike i nizova u duhu „urođene inteligencije“ (IQ-TESTER) — gruba procjena raspona, potpuno privatno.",
+    questionCount: 16,
+    minutes: "~6 min",
+    locked: true,
+  },
+]; */
 
 const Samoprocjena = () => {
   const [selectedQuiz, setSelectedQuiz] = useState<QuizId | null>(null);
   const quizContentRef = useRef<HTMLDivElement>(null);
 
   const openQuiz = (id: QuizId) => {
+    if (QUIZ_CARDS.find((c) => c.id === id)?.locked) return;
     setSelectedQuiz(id);
     requestAnimationFrame(() => {
       quizContentRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
     });
   };
+
+  useEffect(() => {
+    const card = QUIZ_CARDS.find((c) => c.id === selectedQuiz);
+    if (card?.locked) setSelectedQuiz(null);
+  }, [selectedQuiz]);
 
   return (
     <Layout>
@@ -3197,45 +3222,70 @@ const Samoprocjena = () => {
           </div>
         </motion.div>
 
-        <div className="mb-8 grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
-          {QUIZ_CARDS.map((card, i) => (
-            <motion.article
-              key={card.id}
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.3, delay: i * 0.06 }}
-              whileHover={{ y: -3, scale: 1.01 }}
-              className="group flex cursor-default flex-col rounded-2xl border border-border/70 bg-card p-5 shadow-sm transition-all hover:border-primary/30 hover:shadow-md md:p-6"
-            >
-              {/* Icon + meta row */}
-              <div className="mb-4 flex items-start justify-between gap-3">
-                <div className="flex h-14 w-14 items-center justify-center rounded-2xl gradient-hero text-3xl shadow-sm">
-                  {card.icon}
-                </div>
-                <div className="flex flex-col items-end gap-1.5 pt-0.5">
-                  <span className="inline-flex items-center gap-1 rounded-full bg-muted px-2.5 py-0.5 text-[11px] font-medium text-muted-foreground">
-                    <HelpCircle className="h-3 w-3" />
-                    {card.questionCount} pitanja
-                  </span>
-                  <span className="inline-flex items-center gap-1 rounded-full bg-muted px-2.5 py-0.5 text-[11px] font-medium text-muted-foreground">
-                    <Clock className="h-3 w-3" />
-                    {card.minutes}
-                  </span>
-                </div>
-              </div>
-
-              <h4 className="mb-1.5 text-base font-bold text-foreground md:text-lg">{card.title}</h4>
-              <p className="mb-5 flex-1 text-sm leading-relaxed text-muted-foreground">{card.description}</p>
-
-              <button
-                type="button"
-                onClick={() => openQuiz(card.id)}
-                className="w-full rounded-xl gradient-hero px-3 py-2.5 text-sm font-semibold text-primary-foreground shadow-sm transition-all hover:opacity-90 hover:shadow-md"
+               <div className="mb-8 grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
+          {QUIZ_CARDS.map((card, i) => {
+            const locked = Boolean(card.locked);
+            return (
+              <motion.article
+                key={card.id}
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3, delay: i * 0.06 }}
+                whileHover={locked ? undefined : { y: -3, scale: 1.01 }}
+                className={cn(
+                  "group flex flex-col rounded-2xl border bg-card p-5 shadow-sm transition-all md:p-6",
+                  locked
+                    ? "cursor-not-allowed border-dashed border-muted-foreground/40 opacity-[0.97]"
+                    : "cursor-default border-border/70 hover:border-primary/30 hover:shadow-md",
+                )}
               >
-                Riješi kviz →
-              </button>
-            </motion.article>
-          ))}
+                {/* Icon + meta row */}
+                <div className="mb-4 flex items-start justify-between gap-3">
+                  <div
+                    className={cn(
+                      "flex h-14 w-14 items-center justify-center rounded-2xl text-3xl shadow-sm",
+                      locked ? "bg-muted text-2xl grayscale-[0.2]" : "gradient-hero",
+                    )}
+                  >
+                    {card.icon}
+                  </div>
+                  <div className="flex flex-col items-end gap-1.5 pt-0.5">
+                    {locked && (
+                      <span className="inline-flex items-center gap-1 rounded-full border border-muted-foreground/30 bg-muted/60 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-muted-foreground">
+                        <Lock className="h-3 w-3" aria-hidden />
+                        U izradi
+                      </span>
+                    )}
+                    <span className="inline-flex items-center gap-1 rounded-full bg-muted px-2.5 py-0.5 text-[11px] font-medium text-muted-foreground">
+                      <HelpCircle className="h-3 w-3" />
+                      {card.questionCount} pitanja
+                    </span>
+                    <span className="inline-flex items-center gap-1 rounded-full bg-muted px-2.5 py-0.5 text-[11px] font-medium text-muted-foreground">
+                      <Clock className="h-3 w-3" />
+                      {card.minutes}
+                    </span>
+                  </div>
+                </div>
+
+                <h4 className="mb-1.5 text-base font-bold text-foreground md:text-lg">{card.title}</h4>
+                <p className="mb-5 flex-1 text-sm leading-relaxed text-muted-foreground">{card.description}</p>
+
+                <button
+                  type="button"
+                  disabled={locked}
+                  onClick={() => openQuiz(card.id)}
+                  className={cn(
+                    "w-full rounded-xl px-3 py-2.5 text-sm font-semibold shadow-sm transition-all",
+                    locked
+                      ? "cursor-not-allowed border border-border bg-muted/50 text-muted-foreground"
+                      : "gradient-hero text-primary-foreground hover:opacity-90 hover:shadow-md",
+                  )}
+                >
+                  {locked ? "Uskoro dostupno" : "Riješi kviz →"}
+                </button>
+              </motion.article>
+            );
+          })}
         </div>
 
         {selectedQuiz && (

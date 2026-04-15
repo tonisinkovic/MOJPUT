@@ -153,4 +153,11 @@
       radial-gradient(at 80% 0%, hsl(220 60% 55% / 0.06) 0px, transparent 50%),
       radial-gradient(at 0% 50%, hsl(14 90% 62% / 0.04) 0px, transparent 50%);
   }
+
+  .dark .bg-mesh-gradient {
+    background: radial-gradient(at 40% 20%, hsl(174 62% 48% / 0.14) 0px, transparent 52%),
+      radial-gradient(at 80% 0%, hsl(220 60% 55% / 0.1) 0px, transparent 48%),
+      radial-gradient(at 0% 50%, hsl(14 90% 62% / 0.08) 0px, transparent 50%),
+      radial-gradient(at 100% 80%, hsl(190 70% 50% / 0.06) 0px, transparent 45%);
+  }
 }
