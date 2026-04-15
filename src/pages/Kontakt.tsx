@@ -1,12 +1,7 @@
 import Layout from "@/components/Layout";
 import { motion } from "framer-motion";
 import { Mail, MessageSquare, Send, Users } from "lucide-react";
-
-const creators = [
-  { name: "Toni Šinković", role: "Autor i dizajner", initials: "TŠ" },
-  { name: "Ivano Perišić", role: "Developer", initials: "IP" },
-  { name: "Josip Šinković", role: "Developer i UX dizajn", initials: "JŠ" },
-];
+import { teamMembers } from "@/data/team";
 
 const Kontakt = () => {
   return (
@@ -60,20 +55,23 @@ const Kontakt = () => {
               <h2 className="text-xl font-semibold tracking-tight md:text-2xl">Platformu su osmislili</h2>
             </div>
             <p className="mb-5 text-sm text-muted-foreground">
-              Tim koji stoji iza sadržaja i razvoja — isti ljudi kao na stranici O nama.
+              Tim koji stoji iza sadržaja i razvoja — isti ljudi i isti prikaz kao na stranici O nama.
             </p>
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-              {creators.map((person) => (
-                <div
-                  key={person.name}
-                  className="rounded-2xl border bg-background/60 p-4 shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-primary/25 hover:shadow-md"
+            <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 md:gap-5">
+              {teamMembers.map((member) => (
+                <article
+                  key={member.name}
+                  className="rounded-2xl border bg-background/60 p-5 shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-primary/25 hover:shadow-card"
                 >
-                  <div className="flex h-12 w-12 items-center justify-center rounded-xl border bg-gradient-to-br from-primary/20 to-primary/5 text-sm font-bold text-primary">
-                    {person.initials}
-                  </div>
-                  <p className="mt-3 font-semibold leading-snug">{person.name}</p>
-                  <p className="mt-1 text-sm text-primary">{person.role}</p>
-                </div>
+                  <img
+                    src={member.avatar}
+                    alt={member.name}
+                    className="h-16 w-16 rounded-xl border object-cover"
+                  />
+                  <h3 className="mt-4 text-lg font-semibold leading-snug">{member.name}</h3>
+                  <p className="mt-1 text-sm font-medium text-primary">{member.role}</p>
+                  <p className="mt-3 text-sm leading-relaxed text-muted-foreground">{member.bio}</p>
+                </article>
               ))}
             </div>
           </div>

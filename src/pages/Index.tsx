@@ -3,7 +3,6 @@ import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import Layout from "@/components/Layout";
-import { HomeThemePicker } from "@/components/HomeThemePicker";
 import { authMe, userFromAuthMe, type AuthUser } from "@/lib/auth";
 import FeatureCard from "@/components/FeatureCard";
 import {
@@ -140,11 +139,7 @@ const Index = () => {
         <div className="absolute bottom-10 left-10 w-96 h-96 bg-accent/8 rounded-full blur-3xl" />
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-primary/5 rounded-full blur-3xl" />
 
-        <div className="container relative px-3 pt-6 pb-4 sm:px-4 md:pt-10 md:pb-8">
-          <HomeThemePicker />
-        </div>
-
-        <div className="container relative pb-20 pt-1 md:pb-36 md:pt-2">
+        <div className="container relative px-3 pb-20 pt-8 sm:px-4 md:pb-36 md:pt-12">
           <div className="max-w-3xl mx-auto text-center">
             <motion.div
               initial={{ opacity: 0, y: 20 }}

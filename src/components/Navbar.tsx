@@ -20,6 +20,7 @@ import {
   Users,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { HeaderThemeToggle } from "@/components/HeaderThemeToggle";
 import { authLogout, authMe, userFromAuthMe, type AuthUser } from "@/lib/auth";
 import { cn } from "@/lib/utils";
 
@@ -78,16 +79,19 @@ const Navbar = () => {
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 border-b border-border/50 bg-background/80 shadow-sm backdrop-blur-xl supports-[backdrop-filter]:bg-background/70 dark:border-border/40 dark:bg-background/85 dark:shadow-[0_1px_0_0_hsl(var(--border)/0.35)]">
-      <div className="container flex h-16 items-center justify-between gap-3 md:gap-4">
-        <Link
-          to="/"
-          className="group flex shrink-0 items-center gap-2.5 rounded-xl py-1 pr-2 outline-none transition-transform hover:opacity-95 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
-        >
-          <div className="relative flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-primary/85 shadow-md shadow-primary/25 ring-2 ring-primary/20 transition duration-300 group-hover:scale-[1.04] group-hover:shadow-lg group-hover:shadow-primary/30 md:h-10 md:w-10">
-            <Compass className="h-[1.15rem] w-[1.15rem] text-primary-foreground md:h-5 md:w-5" strokeWidth={2.25} />
-          </div>
-          <span className="text-lg font-extrabold tracking-tight text-gradient md:text-xl">MojPut</span>
-        </Link>
+      <div className="container flex h-16 items-center justify-between gap-2 md:gap-4">
+        <div className="flex min-w-0 shrink-0 items-center gap-1.5 sm:gap-2">
+          <Link
+            to="/"
+            className="group flex min-w-0 items-center gap-2 rounded-xl py-1 pr-1 outline-none transition-transform hover:opacity-95 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background sm:gap-2.5 sm:pr-2"
+          >
+            <div className="relative flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-primary/85 shadow-md shadow-primary/25 ring-2 ring-primary/20 transition duration-300 group-hover:scale-[1.04] group-hover:shadow-lg group-hover:shadow-primary/30 md:h-10 md:w-10">
+              <Compass className="h-[1.15rem] w-[1.15rem] text-primary-foreground md:h-5 md:w-5" strokeWidth={2.25} />
+            </div>
+            <span className="truncate text-lg font-extrabold tracking-tight text-gradient md:text-xl">MojPut</span>
+          </Link>
+          <HeaderThemeToggle className="max-[380px]:scale-90" />
+        </div>
 
         {/* Desktop nav — pill traka, centrirano */}
         <nav
@@ -243,6 +247,11 @@ const Navbar = () => {
                     </Link>
                   );
                 })}
+              </div>
+
+              <div className="mt-2 flex items-center justify-between gap-3 rounded-xl border border-border/60 bg-muted/20 px-3 py-2.5">
+                <span className="text-xs font-medium text-muted-foreground">Izgled stranice</span>
+                <HeaderThemeToggle />
               </div>
 
               <div className="mt-2 border-t border-border/60 pt-4">
