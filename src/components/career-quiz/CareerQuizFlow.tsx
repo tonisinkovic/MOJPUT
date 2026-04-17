@@ -441,46 +441,55 @@ export default function CareerQuizFlow({
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -16, transition: { duration: 0.35, ease: [0.4, 0, 0.2, 1] } }}
-            className="relative mx-auto mb-6 max-w-3xl text-center sm:mb-10"
+            className="relative mx-auto mb-5 sm:mb-8"
           >
-            <div className="relative overflow-hidden rounded-2xl border border-border/60 bg-gradient-to-b from-card/95 to-muted/30 px-4 py-8 shadow-card ring-1 ring-black/5 backdrop-blur-md dark:from-card/85 dark:to-muted/20 dark:ring-white/10 sm:rounded-3xl sm:px-8 sm:py-10 md:px-10 md:py-12">
+            <div className="relative overflow-hidden rounded-2xl border-2 border-primary/20 bg-gradient-to-br from-primary/[0.12] via-primary/[0.04] to-card p-4 shadow-card sm:rounded-3xl sm:p-6 md:p-7">
               <div
-                className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_85%_55%_at_50%_-15%,hsl(var(--primary)/0.16),transparent)]"
                 aria-hidden
+                className="pointer-events-none absolute -right-10 -top-10 h-36 w-36 rounded-full bg-primary/15 blur-3xl sm:h-56 sm:w-56"
               />
-              <div className="relative">
+              <div
+                aria-hidden
+                className="pointer-events-none absolute -bottom-14 -left-10 h-32 w-32 rounded-full bg-primary/10 blur-3xl sm:h-52 sm:w-52"
+              />
+
+              <div className="relative flex flex-col gap-4 sm:flex-row sm:items-start sm:gap-5">
                 <motion.div
                   initial={{ scale: 0.88, opacity: 0 }}
                   animate={{ scale: 1, opacity: 1 }}
                   transition={{ delay: 0.08, type: "spring", stiffness: 260, damping: 22 }}
-                  className="mx-auto mb-5 flex h-[4.25rem] w-[4.25rem] items-center justify-center rounded-2xl bg-gradient-to-br from-primary to-primary/80 shadow-lg shadow-primary/20 sm:mb-6 sm:h-24 sm:w-24 sm:rounded-3xl"
+                  className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-primary to-primary/80 text-primary-foreground shadow-md shadow-primary/25 sm:h-14 sm:w-14"
                 >
-                  <GraduationCap className="h-10 w-10 text-primary-foreground sm:h-14 sm:w-14" aria-hidden />
+                  <GraduationCap className="h-6 w-6 sm:h-7 sm:w-7" aria-hidden />
                 </motion.div>
-                <div className="mb-3 inline-flex max-w-[95vw] items-center justify-center gap-1.5 rounded-full border border-primary/20 bg-primary/10 px-3 py-1.5 text-[11px] font-medium leading-tight text-primary sm:text-xs">
-                  <Sparkles className="h-3.5 w-3.5 shrink-0" aria-hidden />
-                  <span>Kviz za maturante · upis na faks</span>
-                </div>
-                <h1 className="text-foreground mb-3 text-[1.65rem] font-bold leading-tight tracking-tight sm:mb-4 sm:text-4xl md:text-[2.5rem] md:leading-tight">
-                  Koji je fakultet za mene?
-                </h1>
-                <p className="text-muted-foreground mx-auto mb-4 max-w-xl text-[0.95rem] leading-relaxed sm:text-lg">
-                  Odgovori na pitanja o tipu studija i vještinama za fakultet.{" "}
-                  <span className="font-medium text-foreground">Okvirno</span> nakon prve faze,{" "}
-                  <span className="font-medium text-foreground">jasnije</span> nakon druge.
-                </p>
-                <div className="text-muted-foreground/90 mx-auto flex max-w-md flex-col items-center justify-center gap-2 text-xs leading-snug sm:flex-row sm:flex-wrap sm:gap-x-3 sm:gap-y-0 sm:text-sm">
-                  <span className="tabular-nums">
-                    {interests.length} + {competencies.length} pitanja
+
+                <div className="min-w-0 flex-1">
+                  <span className="inline-flex items-center gap-1 rounded-full border border-primary/25 bg-primary/10 px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-primary">
+                    <Sparkles className="h-3 w-3" aria-hidden />
+                    <span>Kviz za maturante · upis na faks</span>
                   </span>
-                  <span className="hidden text-border sm:inline" aria-hidden>
-                    ·
-                  </span>
-                  <span>RIASEC profil</span>
-                  <span className="hidden text-border sm:inline" aria-hidden>
-                    ·
-                  </span>
-                  <span className="text-center sm:text-left">Smjerovi i upis u HR</span>
+                  <h1 className="mt-2 text-balance text-2xl font-bold leading-tight tracking-tight sm:text-3xl md:text-4xl">
+                    Koji je fakultet za mene?
+                  </h1>
+                  <p className="mt-1.5 max-w-2xl text-pretty text-sm leading-relaxed text-muted-foreground sm:text-base">
+                    Odgovori na pitanja o tipu studija i vještinama za fakultet.{" "}
+                    <span className="font-medium text-foreground">Okvirno</span> nakon prve faze,{" "}
+                    <span className="font-medium text-foreground">jasnije</span> nakon druge.
+                  </p>
+
+                  <div className="mt-3 flex flex-wrap items-center gap-1.5 sm:mt-4 sm:gap-2">
+                    <span className="inline-flex items-center gap-1 rounded-full border border-primary/25 bg-primary/10 px-2.5 py-1 text-[11px] font-semibold text-primary sm:text-xs">
+                      <span className="tabular-nums">
+                        {interests.length} + {competencies.length} pitanja
+                      </span>
+                    </span>
+                    <span className="inline-flex items-center gap-1 rounded-full border border-border bg-card px-2.5 py-1 text-[11px] font-medium text-muted-foreground sm:text-xs">
+                      RIASEC profil
+                    </span>
+                    <span className="inline-flex items-center gap-1 rounded-full border border-border bg-card px-2.5 py-1 text-[11px] font-medium text-muted-foreground sm:text-xs">
+                      Smjerovi i upis u HR
+                    </span>
+                  </div>
                 </div>
               </div>
             </div>
@@ -495,18 +504,11 @@ export default function CareerQuizFlow({
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10, transition: { duration: 0.3 } }}
-            className="relative overflow-hidden rounded-2xl border-2 border-primary/20 bg-gradient-to-b from-card via-card/95 to-muted/30 p-4 shadow-card ring-1 ring-black/5 dark:border-primary/25 dark:ring-white/10 sm:p-6 md:rounded-3xl md:p-8"
+            className="relative overflow-hidden rounded-2xl border-2 border-border bg-card p-4 shadow-card sm:rounded-3xl sm:p-6 md:p-7"
           >
-            <div
-              className="pointer-events-none absolute -right-24 -top-24 h-64 w-64 rounded-full bg-primary/15 blur-3xl dark:bg-primary/20"
-              aria-hidden
-            />
-            <div
-              className="pointer-events-none absolute -bottom-20 -left-20 h-56 w-56 rounded-full bg-violet-500/10 blur-3xl dark:bg-violet-500/15"
-              aria-hidden
-            />
             <div className="relative space-y-5 sm:space-y-6">
-              <div className="flex flex-wrap items-center justify-center gap-2 sm:justify-start">
+              {/* Status badges */}
+              <div className="flex flex-wrap items-center gap-2">
                 <Badge className="border-primary/25 bg-primary/10 font-medium text-primary hover:bg-primary/15">
                   Upis na fakultet
                 </Badge>
@@ -515,22 +517,23 @@ export default function CareerQuizFlow({
                 </Badge>
               </div>
 
-              <div className="grid grid-cols-1 gap-2 sm:grid-cols-3 sm:gap-3">
-                <div className="flex items-center justify-between gap-3 rounded-xl border border-border/60 bg-muted/30 px-4 py-3 sm:flex-col sm:items-stretch sm:justify-center sm:text-left">
-                  <p className="text-2xl font-bold tabular-nums text-primary">{interests.length}</p>
-                  <p className="text-xs font-medium leading-snug text-muted-foreground sm:text-center sm:leading-tight">
+              {/* Stats grid */}
+              <div className="grid grid-cols-3 gap-2 sm:gap-3">
+                <div className="flex flex-col items-center gap-0.5 rounded-2xl border-2 border-border bg-gradient-to-br from-primary/[0.08] to-transparent px-3 py-3 text-center sm:py-4">
+                  <p className="text-xl font-bold tabular-nums text-primary sm:text-2xl">{interests.length}</p>
+                  <p className="text-[10px] font-medium leading-tight text-muted-foreground sm:text-xs">
                     pitanja o interesima
                   </p>
                 </div>
-                <div className="flex items-center justify-between gap-3 rounded-xl border border-border/60 bg-muted/30 px-4 py-3 sm:flex-col sm:items-stretch sm:justify-center sm:text-left">
-                  <p className="text-2xl font-bold tabular-nums text-primary">{competencies.length}</p>
-                  <p className="text-xs font-medium leading-snug text-muted-foreground sm:text-center sm:leading-tight">
+                <div className="flex flex-col items-center gap-0.5 rounded-2xl border-2 border-border bg-gradient-to-br from-primary/[0.08] to-transparent px-3 py-3 text-center sm:py-4">
+                  <p className="text-xl font-bold tabular-nums text-primary sm:text-2xl">{competencies.length}</p>
+                  <p className="text-[10px] font-medium leading-tight text-muted-foreground sm:text-xs">
                     pitanja o vještinama
                   </p>
                 </div>
-                <div className="flex items-center justify-between gap-3 rounded-xl border border-border/60 bg-muted/30 px-4 py-3 sm:flex-col sm:items-stretch sm:justify-center sm:text-left">
-                  <p className="text-lg font-bold tabular-nums text-foreground sm:text-base">70% / 30%</p>
-                  <p className="text-xs font-medium leading-snug text-muted-foreground sm:text-center sm:leading-tight">
+                <div className="flex flex-col items-center gap-0.5 rounded-2xl border-2 border-border bg-gradient-to-br from-primary/[0.08] to-transparent px-3 py-3 text-center sm:py-4">
+                  <p className="text-base font-bold tabular-nums text-foreground sm:text-lg">70% / 30%</p>
+                  <p className="text-[10px] font-medium leading-tight text-muted-foreground sm:text-xs">
                     interesi · kompetencije
                   </p>
                 </div>
@@ -539,37 +542,61 @@ export default function CareerQuizFlow({
               {showIntroHeading && (
                 <h3 className="text-xl font-semibold tracking-tight md:text-2xl">{introTitle}</h3>
               )}
-              <div className="space-y-3 text-sm leading-relaxed text-muted-foreground sm:text-[0.9375rem]">
-                <p>
-                  <span className="font-semibold text-foreground">1. korak:</span> {interests.length} jasnih pitanja o tome
-                  koji <span className="font-medium text-foreground">tip studija</span> te zanima. Odmah nakon toga vidiš{" "}
-                  <span className="font-medium text-foreground">okvirne preporuke</span> za smjer i fakultete.
-                </p>
-                <p>
-                  <span className="font-semibold text-foreground">2. korak (preporučeno):</span> još {competencies.length}{" "}
-                  pitanja o vještinama za faks — na kraju dobiješ{" "}
-                  <span className="font-medium text-foreground">precizniju sliku</span> (interesi 70% + kompetencije 30%).
-                  Skala je uvijek 1–5. Na pitanjima o konkretnim područjima (npr. pravo, medicina, glazba, gluma,
-                  biljke, životinje) oznaka{" "}
-                  <span className="font-medium text-foreground">1 — Uopće ne</span> može ukloniti usko povezana zanimanja,
-                  a niži odgovori poput 2 i 3 ih osjetno spuštaju, da rezultat bude povezaniji s onim što stvarno želiš.
+
+              {/* Steps */}
+              <div className="space-y-3 sm:space-y-3.5">
+                <div className="relative overflow-hidden rounded-2xl border-2 border-border bg-gradient-to-br from-primary/[0.06] to-transparent p-3.5 sm:p-4">
+                  <div className="flex items-start gap-3">
+                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-primary/80 text-base font-bold text-primary-foreground shadow-sm sm:h-10 sm:w-10">
+                      1
+                    </div>
+                    <p className="pt-0.5 text-sm leading-relaxed text-muted-foreground sm:text-[0.9375rem]">
+                      <span className="font-semibold text-foreground">1. korak:</span> {interests.length} jasnih pitanja o tome
+                      koji <span className="font-medium text-foreground">tip studija</span> te zanima. Odmah nakon toga vidiš{" "}
+                      <span className="font-medium text-foreground">okvirne preporuke</span> za smjer i fakultete.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="relative overflow-hidden rounded-2xl border-2 border-border bg-gradient-to-br from-primary/[0.06] to-transparent p-3.5 sm:p-4">
+                  <div className="flex items-start gap-3">
+                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-primary/80 text-base font-bold text-primary-foreground shadow-sm sm:h-10 sm:w-10">
+                      2
+                    </div>
+                    <p className="pt-0.5 text-sm leading-relaxed text-muted-foreground sm:text-[0.9375rem]">
+                      <span className="font-semibold text-foreground">2. korak (preporučeno):</span> još {competencies.length}{" "}
+                      pitanja o vještinama za faks — na kraju dobiješ{" "}
+                      <span className="font-medium text-foreground">precizniju sliku</span> (interesi 70% + kompetencije 30%).
+                      Skala je uvijek 1–5. Na pitanjima o konkretnim područjima (npr. pravo, medicina, glazba, gluma,
+                      biljke, životinje) oznaka{" "}
+                      <span className="font-medium text-foreground">1 — Uopće ne</span> može ukloniti usko povezana zanimanja,
+                      a niži odgovori poput 2 i 3 ih osjetno spuštaju, da rezultat bude povezaniji s onim što stvarno želiš.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Disclaimer */}
+              <div className="flex items-start gap-2.5 rounded-xl border border-dashed border-border bg-muted/30 px-3 py-2.5">
+                <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground/80" aria-hidden />
+                <p className="text-xs leading-snug text-muted-foreground">
+                  Odgovaraj iskreno u kontekstu upisa. Ovo nije službena procjena niti zamjena za Natječaj za studente ili
+                  stručno savjetovanje.
                 </p>
               </div>
-              <p className="rounded-lg border border-dashed border-border/80 bg-muted/20 px-3 py-2.5 text-xs leading-snug text-muted-foreground">
-                Odgovaraj iskreno u kontekstu upisa. Ovo nije službena procjena niti zamjena za Natječaj za studente ili
-                stručno savjetovanje.
-              </p>
+
+              {/* CTA */}
               <Button
                 type="button"
                 size="lg"
-                className="inline-flex h-14 w-full items-center justify-center rounded-2xl border-0 bg-gradient-to-r from-primary to-primary/90 text-base font-semibold text-primary-foreground shadow-lg shadow-primary/25 transition active:scale-[0.99] sm:mx-auto sm:h-12 sm:max-w-md"
+                className="inline-flex h-14 w-full items-center justify-center gap-2 rounded-2xl border-0 bg-gradient-to-r from-primary to-primary/90 text-base font-semibold text-primary-foreground shadow-lg shadow-primary/25 transition hover:shadow-xl hover:shadow-primary/30 active:scale-[0.99] sm:mx-auto sm:h-12 sm:max-w-md"
                 onClick={() => {
                   setPhase("interests");
                   setIIdx(0);
                 }}
               >
                 Započni prvu fazu
-                <ArrowRight className="ml-2 h-5 w-5" aria-hidden />
+                <ArrowRight className="h-5 w-5" aria-hidden />
               </Button>
             </div>
           </motion.div>

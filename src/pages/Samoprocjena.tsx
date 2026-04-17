@@ -10,6 +10,8 @@ import {
   Clock,
   HelpCircle,
   Lock,
+  ShieldCheck,
+  ListChecks,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
@@ -3195,97 +3197,221 @@ const Samoprocjena = () => {
     if (card?.locked) setSelectedQuiz(null);
   }, [selectedQuiz]);
 
+  const availableCount = useMemo(
+    () => QUIZ_CARDS.filter((c) => !c.locked).length,
+    [],
+  );
+
   return (
     <Layout>
-      <section className="container mx-auto max-w-4xl px-4 py-10 md:py-16">
+      <section className="mx-auto max-w-6xl space-y-5 px-3 pb-10 pt-6 sm:space-y-8 sm:px-4 sm:pb-12 sm:pt-8 md:py-14 md:pb-16 [padding-bottom:max(2.5rem,env(safe-area-inset-bottom))]">
+        {/* Hero */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
-          className="relative mb-10 overflow-hidden rounded-3xl border border-border/60 bg-muted/30 px-6 py-10 text-center backdrop-blur-sm md:px-10 md:py-12"
+          transition={{ duration: 0.3 }}
+          className="relative overflow-hidden rounded-2xl border-2 border-primary/20 bg-gradient-to-br from-primary/[0.12] via-primary/[0.04] to-card p-4 shadow-card sm:rounded-3xl sm:p-5 md:p-6"
         >
-          <div className="absolute inset-0 bg-mesh-gradient opacity-60" aria-hidden />
-          <div className="relative">
-            <div className="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-2xl gradient-hero shadow-lg">
-              <Target className="h-7 w-7 text-primary-foreground" />
+          <div
+            aria-hidden
+            className="pointer-events-none absolute -right-10 -top-10 h-36 w-36 rounded-full bg-primary/15 blur-3xl sm:h-52 sm:w-52"
+          />
+          <div
+            aria-hidden
+            className="pointer-events-none absolute -bottom-14 -left-10 h-32 w-32 rounded-full bg-primary/10 blur-3xl sm:h-48 sm:w-48"
+          />
+
+          <div className="relative flex flex-col gap-4 sm:flex-row sm:items-start sm:gap-5">
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl gradient-hero text-primary-foreground shadow-md sm:h-14 sm:w-14">
+              <Target className="h-6 w-6 sm:h-7 sm:w-7" />
             </div>
-            <h1 className="mb-2 text-3xl font-bold tracking-tight md:text-4xl">Samoprocjena</h1>
-            <p className="mx-auto max-w-xl text-base text-muted-foreground md:text-lg">
-              Upoznaj svoje interese, vrijednosti i sposobnosti
-            </p>
-            <p className="mx-auto mt-2 max-w-lg text-sm text-muted-foreground/90">
-              Odaberi kviz ispod — svaki je u vlastitom okviru. Za upis na fakultet koristi{" "}
-              <Link to="/kviz" className="font-medium text-primary underline-offset-4 hover:underline">
-                Koji je fakultet za mene?
-              </Link>{" "}
-              (zasebna stranica).
-            </p>
+            <div className="min-w-0 flex-1">
+              <span className="inline-flex items-center gap-1 rounded-full border border-primary/25 bg-primary/10 px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-primary">
+                <Sparkles className="h-3 w-3" />
+                Upoznaj sebe
+              </span>
+              <h1 className="mt-2 text-balance text-2xl font-bold leading-tight tracking-tight sm:text-3xl md:text-4xl">
+                Samoprocjena
+              </h1>
+              <p className="mt-1.5 max-w-2xl text-pretty text-sm leading-relaxed text-muted-foreground sm:text-base">
+                Upoznaj svoje interese, vrijednosti i sposobnosti kroz kratke, znanstveno utemeljene kvizove.
+              </p>
+
+              <div className="mt-3 rounded-xl border border-primary/15 bg-card/70 p-3 text-sm leading-relaxed text-muted-foreground backdrop-blur-sm sm:mt-4">
+                <p>
+                  Za upis na fakultet koristi zasebnu stranicu{" "}
+                  <Link
+                    to="/kviz"
+                    className="inline-flex items-center gap-1 font-semibold text-primary underline-offset-4 hover:underline"
+                  >
+                    Koji je fakultet za mene?
+                    <ArrowRight className="h-3.5 w-3.5" />
+                  </Link>
+                </p>
+              </div>
+            </div>
           </div>
         </motion.div>
 
-               <div className="mb-8 grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
-          {QUIZ_CARDS.map((card, i) => {
-            const locked = Boolean(card.locked);
-            return (
-              <motion.article
-                key={card.id}
-                initial={{ opacity: 0, y: 12 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.3, delay: i * 0.06 }}
-                whileHover={locked ? undefined : { y: -3, scale: 1.01 }}
-                className={cn(
-                  "group flex flex-col rounded-2xl border bg-card p-5 shadow-sm transition-all md:p-6",
-                  locked
-                    ? "cursor-not-allowed border-dashed border-muted-foreground/40 opacity-[0.97]"
-                    : "cursor-default border-border/70 hover:border-primary/30 hover:shadow-md",
-                )}
-              >
-                {/* Icon + meta row */}
-                <div className="mb-4 flex items-start justify-between gap-3">
-                  <div
-                    className={cn(
-                      "flex h-14 w-14 items-center justify-center rounded-2xl text-3xl shadow-sm",
-                      locked ? "bg-muted text-2xl grayscale-[0.2]" : "gradient-hero",
-                    )}
-                  >
-                    {card.icon}
-                  </div>
-                  <div className="flex flex-col items-end gap-1.5 pt-0.5">
-                    {locked && (
-                      <span className="inline-flex items-center gap-1 rounded-full border border-muted-foreground/30 bg-muted/60 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-muted-foreground">
-                        <Lock className="h-3 w-3" aria-hidden />
-                        U izradi
-                      </span>
-                    )}
-                    <span className="inline-flex items-center gap-1 rounded-full bg-muted px-2.5 py-0.5 text-[11px] font-medium text-muted-foreground">
-                      <HelpCircle className="h-3 w-3" />
-                      {card.questionCount} pitanja
-                    </span>
-                    <span className="inline-flex items-center gap-1 rounded-full bg-muted px-2.5 py-0.5 text-[11px] font-medium text-muted-foreground">
-                      <Clock className="h-3 w-3" />
-                      {card.minutes}
-                    </span>
-                  </div>
-                </div>
+        {/* Info strip */}
+        <motion.div
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3, delay: 0.05 }}
+          className="grid grid-cols-3 gap-2 sm:gap-3"
+        >
+          <div className="flex items-center gap-2.5 rounded-2xl border-2 border-border bg-card p-3 shadow-card sm:p-4">
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary sm:h-10 sm:w-10">
+              <ListChecks className="h-4 w-4 sm:h-5 sm:w-5" aria-hidden />
+            </div>
+            <div className="min-w-0">
+              <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground sm:text-[11px]">
+                Kvizovi
+              </p>
+              <p className="text-sm font-bold tabular-nums text-foreground sm:text-base">{availableCount}</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2.5 rounded-2xl border-2 border-border bg-card p-3 shadow-card sm:p-4">
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary sm:h-10 sm:w-10">
+              <Clock className="h-4 w-4 sm:h-5 sm:w-5" aria-hidden />
+            </div>
+            <div className="min-w-0">
+              <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground sm:text-[11px]">
+                Trajanje
+              </p>
+              <p className="text-sm font-bold text-foreground sm:text-base">2–10 min</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2.5 rounded-2xl border-2 border-border bg-card p-3 shadow-card sm:p-4">
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary sm:h-10 sm:w-10">
+              <ShieldCheck className="h-4 w-4 sm:h-5 sm:w-5" aria-hidden />
+            </div>
+            <div className="min-w-0">
+              <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground sm:text-[11px]">
+                Privatnost
+              </p>
+              <p className="text-sm font-bold text-foreground sm:text-base">100%</p>
+            </div>
+          </div>
+        </motion.div>
 
-                <h4 className="mb-1.5 text-base font-bold text-foreground md:text-lg">{card.title}</h4>
-                <p className="mb-5 flex-1 text-sm leading-relaxed text-muted-foreground">{card.description}</p>
+        {/* Quiz grid */}
+        <div className="space-y-3 sm:space-y-4">
+          <div className="flex items-center gap-3">
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10 text-primary shadow-sm sm:h-10 sm:w-10">
+              <Sparkles className="h-4 w-4 sm:h-5 sm:w-5" aria-hidden />
+            </div>
+            <div className="min-w-0 flex-1">
+              <h2 className="text-lg font-semibold leading-tight sm:text-xl">Odaberi kviz</h2>
+              <p className="text-xs text-muted-foreground sm:text-sm">
+                Svaki kviz otvara se u vlastitom okviru ispod, bez napuštanja stranice.
+              </p>
+            </div>
+          </div>
 
-                <button
-                  type="button"
-                  disabled={locked}
-                  onClick={() => openQuiz(card.id)}
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            {QUIZ_CARDS.map((card, i) => {
+              const locked = Boolean(card.locked);
+              const isActive = selectedQuiz === card.id;
+              return (
+                <motion.article
+                  key={card.id}
+                  initial={{ opacity: 0, y: 12 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.3, delay: i * 0.04 }}
                   className={cn(
-                    "w-full rounded-xl px-3 py-2.5 text-sm font-semibold shadow-sm transition-all",
+                    "group relative flex flex-col overflow-hidden rounded-2xl border-2 bg-card shadow-card transition-all",
                     locked
-                      ? "cursor-not-allowed border border-border bg-muted/50 text-muted-foreground"
-                      : "gradient-hero text-primary-foreground hover:opacity-90 hover:shadow-md",
+                      ? "cursor-not-allowed border-dashed border-muted-foreground/30 opacity-80"
+                      : isActive
+                        ? "border-primary/60 ring-2 ring-primary/20"
+                        : "border-border/70 sm:hover:-translate-y-0.5 sm:hover:border-primary/30 sm:hover:shadow-card-hover",
                   )}
                 >
-                  {locked ? "Uskoro dostupno" : "Riješi kviz →"}
-                </button>
-              </motion.article>
-            );
-          })}
+                  {/* Accent bar */}
+                  <div
+                    className={cn("h-1 w-full", locked ? "bg-muted-foreground/20" : "gradient-hero")}
+                    aria-hidden
+                  />
+
+                  <div className="flex flex-1 flex-col p-4 sm:p-5">
+                    {/* Icon + status pill */}
+                    <div className="flex items-start justify-between gap-2">
+                      <div
+                        className={cn(
+                          "flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl text-2xl shadow-sm sm:h-14 sm:w-14 sm:text-3xl",
+                          locked ? "bg-muted grayscale" : "gradient-hero",
+                        )}
+                        aria-hidden
+                      >
+                        {card.icon}
+                      </div>
+                      {locked ? (
+                        <span className="inline-flex items-center gap-1 rounded-full border border-muted-foreground/30 bg-muted/60 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-muted-foreground">
+                          <Lock className="h-3 w-3" aria-hidden />
+                          U izradi
+                        </span>
+                      ) : isActive ? (
+                        <span className="inline-flex items-center gap-1 rounded-full bg-primary px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-primary-foreground">
+                          <CheckCircle2 className="h-3 w-3" aria-hidden />
+                          Aktivno
+                        </span>
+                      ) : null}
+                    </div>
+
+                    {/* Title + description */}
+                    <h3 className="mt-3 text-balance text-base font-semibold leading-snug sm:text-lg">
+                      {card.title}
+                    </h3>
+                    <p className="mt-1.5 flex-1 text-pretty text-sm leading-relaxed text-muted-foreground line-clamp-4">
+                      {card.description}
+                    </p>
+
+                    {/* Meta chips */}
+                    <div className="mt-3 flex flex-wrap gap-1.5">
+                      <span className="inline-flex items-center gap-1 rounded-full bg-muted px-2 py-0.5 text-[11px] font-medium text-muted-foreground">
+                        <HelpCircle className="h-3 w-3" aria-hidden />
+                        {card.questionCount} pitanja
+                      </span>
+                      <span className="inline-flex items-center gap-1 rounded-full bg-muted px-2 py-0.5 text-[11px] font-medium text-muted-foreground">
+                        <Clock className="h-3 w-3" aria-hidden />
+                        {card.minutes}
+                      </span>
+                    </div>
+
+                    {/* CTA */}
+                    <button
+                      type="button"
+                      disabled={locked}
+                      onClick={() => openQuiz(card.id)}
+                      className={cn(
+                        "mt-4 inline-flex w-full items-center justify-center gap-1.5 rounded-xl px-3 py-2.5 text-sm font-semibold shadow-sm transition-all",
+                        locked
+                          ? "cursor-not-allowed border border-border bg-muted/50 text-muted-foreground"
+                          : isActive
+                            ? "border border-primary/40 bg-primary/10 text-primary hover:bg-primary/15"
+                            : "gradient-hero text-primary-foreground hover:opacity-90 hover:shadow-md",
+                      )}
+                    >
+                      {locked ? (
+                        "Uskoro dostupno"
+                      ) : isActive ? (
+                        <>
+                          <CheckCircle2 className="h-4 w-4" />
+                          Otvoreno ispod
+                        </>
+                      ) : (
+                        <>
+                          Riješi kviz
+                          <ArrowRight className="h-4 w-4" />
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </motion.article>
+              );
+            })}
+          </div>
         </div>
 
         {selectedQuiz && (
@@ -3296,17 +3422,29 @@ const Samoprocjena = () => {
             className="scroll-mt-24"
           >
             <div className={quizFrameClass}>
-              <div className="flex items-center justify-between border-b border-border/60 bg-muted/30 px-5 py-3 md:px-6">
-                <div className="flex items-center gap-2.5">
-                  <span className="text-lg leading-none">
+              <div className="flex items-center justify-between gap-3 border-b border-border/60 bg-gradient-to-r from-primary/[0.06] to-transparent px-4 py-3 sm:px-5 md:px-6">
+                <div className="flex min-w-0 items-center gap-3">
+                  <div
+                    className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl gradient-hero text-xl shadow-sm sm:h-11 sm:w-11 sm:text-2xl"
+                    aria-hidden
+                  >
                     {QUIZ_CARDS.find((c) => c.id === selectedQuiz)?.icon}
-                  </span>
-                  <div>
-                    <h2 className="text-sm font-semibold text-foreground">{QUIZ_TITLES[selectedQuiz]}</h2>
-                    <p className="text-[11px] text-muted-foreground">
-                      {QUIZ_CARDS.find((c) => c.id === selectedQuiz)?.questionCount} pitanja ·{" "}
-                      {QUIZ_CARDS.find((c) => c.id === selectedQuiz)?.minutes}
-                    </p>
+                  </div>
+                  <div className="min-w-0">
+                    <h2 className="truncate text-sm font-semibold text-foreground sm:text-base">
+                      {QUIZ_TITLES[selectedQuiz]}
+                    </h2>
+                    <div className="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[11px] text-muted-foreground">
+                      <span className="inline-flex items-center gap-1">
+                        <HelpCircle className="h-3 w-3" aria-hidden />
+                        {QUIZ_CARDS.find((c) => c.id === selectedQuiz)?.questionCount} pitanja
+                      </span>
+                      <span aria-hidden>·</span>
+                      <span className="inline-flex items-center gap-1">
+                        <Clock className="h-3 w-3" aria-hidden />
+                        {QUIZ_CARDS.find((c) => c.id === selectedQuiz)?.minutes}
+                      </span>
+                    </div>
                   </div>
                 </div>
                 <Button
@@ -3314,12 +3452,12 @@ const Samoprocjena = () => {
                   variant="ghost"
                   size="sm"
                   onClick={() => setSelectedQuiz(null)}
-                  className="text-muted-foreground hover:text-foreground"
+                  className="shrink-0 rounded-xl text-muted-foreground hover:text-foreground"
                 >
                   Zatvori ×
                 </Button>
               </div>
-              <div className="p-5 md:p-7">
+              <div className="p-4 sm:p-5 md:p-7">
                 {selectedQuiz === "confidence" ? (
                   <ConfidenceQuiz />
                 ) : selectedQuiz === "serenity" ? (

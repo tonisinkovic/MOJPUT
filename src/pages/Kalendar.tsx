@@ -1,6 +1,6 @@
 import Layout from "@/components/Layout";
 import { motion } from "framer-motion";
-import { Bell, ChevronLeft, ChevronRight } from "lucide-react";
+import { Bell, CalendarDays, ChevronLeft, ChevronRight, ListChecks, Sparkles } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -167,22 +167,60 @@ const Kalendar = () => {
   for (let d = 1; d <= daysInMonth; d++) cells.push(d);
   while (cells.length % 7 !== 0) cells.push(null);
 
+  const todayObj = new Date();
+  const isTodayCell = (day: number) =>
+    todayObj.getFullYear() === year && todayObj.getMonth() === month && todayObj.getDate() === day;
+
+  const canPrev = !(year === minYear && month === minMonth);
+  const canNext = !(year === maxYear && month === maxMonth);
+
   return (
     <Layout>
       <section className="container py-12 max-w-6xl">
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="mb-8">
-          <h1 className="text-3xl md:text-4xl font-bold mb-3">
-            <span className="text-gradient">Kalendar</span> važnih datuma
-          </h1>
-          <p className="text-muted-foreground text-lg">Svi rokovi za maturu, prijave i upise</p>
+        {/* Hero header */}
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="relative mb-8 overflow-hidden rounded-2xl border-2 border-primary/20 bg-gradient-to-br from-primary/[0.12] via-primary/[0.04] to-card p-4 shadow-card sm:rounded-3xl sm:p-6 md:p-7"
+        >
+          <div
+            aria-hidden
+            className="pointer-events-none absolute -right-10 -top-10 h-36 w-36 rounded-full bg-primary/15 blur-3xl sm:h-52 sm:w-52"
+          />
+          <div
+            aria-hidden
+            className="pointer-events-none absolute -bottom-14 -left-10 h-32 w-32 rounded-full bg-primary/10 blur-3xl sm:h-48 sm:w-48"
+          />
 
-          <div className="flex flex-wrap gap-4 mt-4">
-            {Object.entries(typeDots).map(([type, dot]) => (
-              <span key={type} className="flex items-center gap-2 text-sm text-muted-foreground">
-                <span className={`w-3 h-3 rounded-full ${dot}`} />
-                {type}
+          <div className="relative flex flex-col gap-4 sm:flex-row sm:items-start sm:gap-5">
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl gradient-hero text-primary-foreground shadow-md sm:h-14 sm:w-14">
+              <CalendarDays className="h-6 w-6 sm:h-7 sm:w-7" strokeWidth={2} aria-hidden />
+            </div>
+            <div className="min-w-0 flex-1">
+              <span className="inline-flex items-center gap-1 rounded-full border border-primary/25 bg-primary/10 px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-primary">
+                <Sparkles className="h-3 w-3" aria-hidden />
+                Matura · upisi · rokovi
               </span>
-            ))}
+              <h1 className="mt-2 text-balance text-2xl font-bold leading-tight tracking-tight sm:text-3xl md:text-4xl">
+                <span className="text-gradient">Kalendar</span> važnih datuma
+              </h1>
+              <p className="mt-1.5 max-w-2xl text-pretty text-sm leading-relaxed text-muted-foreground sm:text-base">
+                Svi rokovi za maturu, prijave i upise
+              </p>
+
+              {/* Legenda */}
+              <div className="mt-4 flex flex-wrap gap-1.5 sm:gap-2">
+                {Object.entries(typeDots).map(([type, dot]) => (
+                  <span
+                    key={type}
+                    className="inline-flex items-center gap-1.5 rounded-full border border-border bg-background/60 px-2.5 py-1 text-xs font-medium text-foreground shadow-sm backdrop-blur"
+                  >
+                    <span className={`h-2.5 w-2.5 rounded-full ${dot}`} aria-hidden />
+                    {type}
+                  </span>
+                ))}
+              </div>
+            </div>
           </div>
         </motion.div>
 
@@ -191,33 +229,39 @@ const Kalendar = () => {
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="bg-card rounded-2xl border shadow-card p-7 h-full flex flex-col overflow-hidden"
+            className="bg-card rounded-2xl border-2 border-border shadow-card p-5 sm:p-7 h-full flex flex-col overflow-hidden"
           >
             {/* Header with navigation */}
             <div className="flex items-center justify-between mb-6">
               <button
                 onClick={prev}
-                disabled={year === minYear && month === minMonth}
-                className="p-2 rounded-xl hover:bg-muted transition-colors disabled:opacity-40 disabled:hover:bg-transparent"
+                disabled={!canPrev}
+                aria-label="Prethodni mjesec"
+                className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-border bg-background/60 text-foreground transition-all hover:border-primary/40 hover:bg-primary/10 hover:text-primary disabled:opacity-40 disabled:hover:border-border disabled:hover:bg-background/60 disabled:hover:text-foreground"
               >
-                <ChevronLeft className="w-6 h-6" />
+                <ChevronLeft className="h-5 w-5" />
               </button>
-              <h3 className="text-xl font-bold">
-                <span className="text-gradient">{croatianMonths[month]}</span> {year}
-              </h3>
+              <div className="inline-flex items-center gap-2 rounded-full border border-primary/25 bg-primary/10 px-3.5 py-1.5 shadow-sm">
+                <CalendarDays className="h-4 w-4 text-primary" aria-hidden />
+                <h3 className="text-base font-bold sm:text-lg">
+                  <span className="text-gradient">{croatianMonths[month]}</span>{" "}
+                  <span className="tabular-nums text-foreground">{year}</span>
+                </h3>
+              </div>
               <button
                 onClick={next}
-                disabled={year === maxYear && month === maxMonth}
-                className="p-2 rounded-xl hover:bg-muted transition-colors disabled:opacity-40 disabled:hover:bg-transparent"
+                disabled={!canNext}
+                aria-label="Sljedeći mjesec"
+                className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-border bg-background/60 text-foreground transition-all hover:border-primary/40 hover:bg-primary/10 hover:text-primary disabled:opacity-40 disabled:hover:border-border disabled:hover:bg-background/60 disabled:hover:text-foreground"
               >
-                <ChevronRight className="w-6 h-6" />
+                <ChevronRight className="h-5 w-5" />
               </button>
             </div>
 
             {/* Day headers */}
-            <div className="grid grid-cols-7 mb-2">
+            <div className="grid grid-cols-7 mb-2 rounded-xl bg-muted/40 py-1">
               {dayNames.map(d => (
-                <div key={d} className="text-center text-sm font-semibold text-muted-foreground py-2">
+                <div key={d} className="text-center text-xs font-semibold uppercase tracking-wide text-muted-foreground py-1.5">
                   {d}
                 </div>
               ))}
@@ -228,22 +272,38 @@ const Kalendar = () => {
               {cells.map((day, idx) => {
                 const dayEvents = day ? monthEvents.filter(e => e.day === day) : [];
                 const hasEvent = dayEvents.length > 0;
+                const isToday = day ? isTodayCell(day) : false;
                 return (
                   <div
                     key={idx}
-                    className={`aspect-square flex flex-col items-center justify-start pt-3 rounded-xl
-                      ${hasEvent ? "bg-primary/10 ring-1 ring-primary/30" : ""}
-                    `}
+                    className={[
+                      "aspect-square flex flex-col items-center justify-start pt-2.5 rounded-xl transition-colors",
+                      day === null
+                        ? ""
+                        : hasEvent
+                          ? "bg-primary/10 ring-1 ring-primary/30 hover:bg-primary/15"
+                          : "hover:bg-muted/50",
+                      isToday ? "ring-2 ring-primary/70 shadow-sm" : "",
+                    ].join(" ")}
                   >
                     {day && (
                       <>
-                        <span className={`text-base leading-none ${hasEvent ? "font-bold text-primary" : "text-foreground"}`}>
+                        <span
+                          className={[
+                            "text-sm sm:text-base leading-none",
+                            hasEvent ? "font-bold text-primary" : "text-foreground",
+                            isToday ? "font-extrabold text-primary" : "",
+                          ].join(" ")}
+                        >
                           {day}
                         </span>
                         {hasEvent && (
-                          <div className="flex gap-0.5 mt-2 flex-wrap justify-center">
+                          <div className="flex gap-0.5 mt-1.5 flex-wrap justify-center">
                             {dayEvents.map((e, i) => (
-                              <span key={i} className={`w-2.5 h-2.5 rounded-full ${typeDots[e.type] ?? "bg-primary"}`} />
+                              <span
+                                key={i}
+                                className={`w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full ring-1 ring-background ${typeDots[e.type] ?? "bg-primary"}`}
+                              />
                             ))}
                           </div>
                         )}
@@ -259,36 +319,69 @@ const Kalendar = () => {
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="bg-card rounded-2xl border shadow-card p-7 h-full flex flex-col overflow-hidden"
+            className="bg-card rounded-2xl border-2 border-border shadow-card p-5 sm:p-7 h-full flex flex-col overflow-hidden"
           >
-            <div className="mb-4 flex items-baseline justify-between gap-4">
-              <div>
-                <h3 className="text-xl font-bold">
-                  <span className="text-gradient">Matura</span>, upisi & rokovi
-                </h3>
-                <p className="text-muted-foreground text-sm">Za {croatianMonths[month]} {year}</p>
+            <div className="mb-4 flex items-start justify-between gap-3">
+              <div className="flex items-start gap-3 min-w-0">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary shadow-inner ring-1 ring-primary/20">
+                  <ListChecks className="h-5 w-5" aria-hidden />
+                </div>
+                <div className="min-w-0">
+                  <h3 className="text-lg sm:text-xl font-bold leading-tight">
+                    <span className="text-gradient">Matura</span>, upisi &amp; rokovi
+                  </h3>
+                  <p className="text-muted-foreground text-sm mt-0.5">Za {croatianMonths[month]} {year}</p>
+                </div>
               </div>
+              <span className="shrink-0 rounded-full border border-primary/25 bg-primary/10 px-2.5 py-1 text-[11px] font-bold uppercase tracking-wide text-primary tabular-nums">
+                {monthEvents.length} {monthEvents.length === 1 ? "stavka" : "stavki"}
+              </span>
             </div>
 
             {monthEvents.length > 0 && (
-              <div className="flex-1 overflow-y-auto pr-2 space-y-2.5">
+              <div className="flex-1 overflow-y-auto pr-1 space-y-2.5 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-border hover:[&::-webkit-scrollbar-thumb]:bg-muted-foreground/40">
                 {monthEvents.map((e, i) => {
                   const key = `${e.year}-${e.month}-${e.day}-${e.title}`;
                   const isReminded = reminders.has(key);
                   return (
                     <div
                       key={i}
-                      className={`flex items-center gap-3 px-4 py-3.5 rounded-xl border text-base font-medium ${typeColors[e.type] ?? ""}`}
+                      className={`group flex items-stretch gap-3 rounded-xl border text-base font-medium transition-all hover:shadow-sm ${typeColors[e.type] ?? ""}`}
                     >
-                      <span className="font-bold shrink-0 w-7">{e.day}.</span>
-                      <span className="flex-1 leading-tight">{e.title}</span>
-                      <button
-                        onClick={() => toggleReminder(e)}
-                        title={isReminded ? "Ukloni podsjetnik" : "Postavi podsjetnik"}
-                        className={`shrink-0 p-1 rounded-lg transition-colors hover:opacity-80 ${isReminded ? "text-primary" : "text-muted-foreground"}`}
-                      >
-                        <Bell className={`w-4 h-4 ${isReminded ? "fill-primary" : ""}`} />
-                      </button>
+                      <div className="flex shrink-0 flex-col items-center justify-center px-3.5 py-3 border-r border-current/15">
+                        <span className="text-lg font-extrabold leading-none tabular-nums">{e.day}.</span>
+                        <span className="mt-1 text-[10px] font-semibold uppercase tracking-wide opacity-80">
+                          {croatianMonths[month].slice(0, 3)}
+                        </span>
+                      </div>
+                      <div className="flex flex-1 min-w-0 items-center gap-2 py-3 pr-3">
+                        <div className="min-w-0 flex-1">
+                          <div className="mb-1 flex flex-wrap items-center gap-1.5">
+                            <span className="inline-flex items-center gap-1 rounded-full border border-current/25 bg-white/50 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide dark:bg-black/20">
+                              <span className={`h-1.5 w-1.5 rounded-full ${typeDots[e.type] ?? "bg-primary"}`} aria-hidden />
+                              {e.type}
+                            </span>
+                            {e.urgent && (
+                              <span className="inline-flex items-center rounded-full border border-red-400/50 bg-red-500/15 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-red-700 dark:text-red-300">
+                                Hitno
+                              </span>
+                            )}
+                          </div>
+                          <p className="leading-snug text-sm sm:text-[15px]">{e.title}</p>
+                        </div>
+                        <button
+                          onClick={() => toggleReminder(e)}
+                          title={isReminded ? "Ukloni podsjetnik" : "Postavi podsjetnik"}
+                          aria-label={isReminded ? "Ukloni podsjetnik" : "Postavi podsjetnik"}
+                          className={`shrink-0 inline-flex h-9 w-9 items-center justify-center rounded-full border transition-all ${
+                            isReminded
+                              ? "border-primary/40 bg-primary/15 text-primary shadow-sm"
+                              : "border-current/20 bg-white/40 text-current/70 hover:border-primary/40 hover:bg-primary/10 hover:text-primary dark:bg-black/20"
+                          }`}
+                        >
+                          <Bell className={`h-4 w-4 ${isReminded ? "fill-primary" : ""}`} />
+                        </button>
+                      </div>
                     </div>
                   );
                 })}
@@ -297,7 +390,13 @@ const Kalendar = () => {
 
             {monthEvents.length === 0 && (
               <div className="flex-1 flex items-center justify-center px-2">
-                <p className="text-center text-sm text-muted-foreground">Nema važnih datuma ovaj mjesec.</p>
+                <div className="text-center">
+                  <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-2xl bg-muted text-muted-foreground">
+                    <CalendarDays className="h-6 w-6" aria-hidden />
+                  </div>
+                  <p className="text-sm font-medium text-foreground">Nema važnih datuma</p>
+                  <p className="mt-1 text-sm text-muted-foreground">ovaj mjesec.</p>
+                </div>
               </div>
             )}
           </motion.div>

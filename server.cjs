@@ -1599,7 +1599,27 @@ async function main() {
 
       const existingUser = db.prepare("SELECT id FROM users WHERE email = ?").get(cleanEmail);
       if (existingUser) {
-        return res.status(409).json({ success: false, message: "Email je već registriran." });
+        return res.status(409).json({
+          success: false,
+          code: "email_already_registered",
+          message: "Ovaj email je već registriran. Prijavi se umjesto toga.",
+        });
+      }
+
+      const existingPending = db
+        .prepare("SELECT email, expires_at FROM pending_registrations WHERE email = ?")
+        .get(cleanEmail);
+      if (existingPending) {
+        const exp = existingPending.expires_at ? new Date(existingPending.expires_at).getTime() : 0;
+        if (Number.isFinite(exp) && exp > Date.now()) {
+          return res.status(409).json({
+            success: false,
+            code: "pending_verification",
+            email: cleanEmail,
+            message:
+              "Za ovaj email već postoji registracija koja čeka potvrdu. Upiši kod iz emaila ili zatraži novi kod.",
+          });
+        }
       }
 
       const passwordHash = bcrypt.hashSync(cleanPassword, 12);

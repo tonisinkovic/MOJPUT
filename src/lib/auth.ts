@@ -68,6 +68,7 @@ export async function authRegister(params: {
       email?: string;
       verification_required?: boolean;
       email_preview_url?: string;
+      code?: "email_already_registered" | "pending_verification" | string;
     }>
   > {
   return apiPost<{
@@ -75,6 +76,7 @@ export async function authRegister(params: {
     email?: string;
     verification_required?: boolean;
     email_preview_url?: string;
+    code?: "email_already_registered" | "pending_verification" | string;
   }>(
     "/api/auth/register",
     params,

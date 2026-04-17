@@ -62,6 +62,14 @@ const Prijava = () => {
     const verifiedFlag = searchParams.get("verified");
     const verifyErr = searchParams.get("verify_error");
     const pwdResetOk = searchParams.get("reset") === "ok";
+    const prefEmail = searchParams.get("email");
+
+    if (prefEmail) {
+      setLoginData((prev) => (prev.email ? prev : { ...prev, email: prefEmail }));
+      const next = new URLSearchParams(searchParams);
+      next.delete("email");
+      setSearchParams(next, { replace: true });
+    }
 
     if (verifiedFlag === "1") {
       setEmailVerifyUi({

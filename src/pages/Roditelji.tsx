@@ -3,7 +3,21 @@ import { Button } from "@/components/ui/button";
 import { parentArticles, type ParentArticle } from "@/data/parentHub";
 import { getTotalViews, readParentHubState, setLastVisited, toggleFavorite } from "@/lib/parentHubStore";
 import { motion } from "framer-motion";
-import { BarChart3, BookOpen, ChevronRight, Heart, MessageSquare, Search, Star } from "lucide-react";
+import {
+  ArrowRight,
+  BarChart3,
+  BookmarkCheck,
+  BookOpen,
+  ChevronRight,
+  Eye,
+  Heart,
+  MessageSquare,
+  Search,
+  Sparkles,
+  Star,
+  Users,
+  X,
+} from "lucide-react";
 import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 
@@ -115,189 +129,234 @@ const Roditelji = () => {
   return (
     <Layout>
       <section className="mx-auto max-w-6xl space-y-5 px-3 pb-10 pt-6 sm:space-y-8 sm:px-4 sm:pb-12 sm:pt-8 md:py-14 md:pb-16 [padding-bottom:max(2.5rem,env(safe-area-inset-bottom))]">
+        {/* Hero */}
         <motion.div
-          initial={{ opacity: 0, y: 10 }}
+          initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
-          className="overflow-hidden rounded-2xl border-2 bg-card shadow-card sm:rounded-3xl"
+          transition={{ duration: 0.3 }}
+          className="relative overflow-hidden rounded-2xl border-2 border-primary/20 bg-gradient-to-br from-primary/[0.12] via-primary/[0.04] to-card p-4 shadow-card sm:rounded-3xl sm:p-5 md:p-6"
         >
-          <div className="h-1.5 w-full gradient-hero sm:h-2" aria-hidden />
-          <div className="bg-gradient-to-b from-primary/[0.07] to-transparent px-4 pb-5 pt-5 sm:px-6 sm:pb-6 sm:pt-6 md:px-8 md:pb-8 md:pt-7">
-            <p className="text-xs font-semibold uppercase tracking-wider text-primary sm:text-[0.7rem]">
-              <span className="mr-1.5" aria-hidden>
-                👨‍👩‍👧
-              </span>
-              Za roditelje maturanata
-            </p>
-            <h1 className="mt-2 text-balance text-2xl font-bold leading-tight tracking-tight sm:text-3xl md:text-4xl">
-              Roditeljski kutak{" "}
-              <span className="inline-block select-none" aria-hidden>
-                🏠
-              </span>
-            </h1>
-            <p className="mt-2.5 max-w-2xl text-pretty text-sm leading-relaxed text-muted-foreground sm:mt-3 sm:text-base">
-              <span className="mr-1" aria-hidden>
-                📚
-              </span>
-              Vodiči, mentalno zdravlje, forum i zajednička procjena — sve na jednom mjestu.
-            </p>
-          </div>
+          <div
+            aria-hidden
+            className="pointer-events-none absolute -right-10 -top-10 h-36 w-36 rounded-full bg-primary/15 blur-3xl sm:h-52 sm:w-52"
+          />
+          <div
+            aria-hidden
+            className="pointer-events-none absolute -bottom-14 -left-10 h-32 w-32 rounded-full bg-primary/10 blur-3xl sm:h-48 sm:w-48"
+          />
 
-          <div className="space-y-4 border-t border-border/60 bg-muted/15 px-4 py-4 sm:px-6 sm:py-5 md:px-8">
-            <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-stretch">
-              <div className="relative min-w-0">
-                <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                <input
-                  value={query}
-                  onChange={(e) => setQuery(e.target.value)}
-                  placeholder="🔍 Pretraži sadržaj…"
-                  className="h-11 w-full min-h-[44px] rounded-xl border-2 border-input bg-background pl-10 pr-3 text-base shadow-sm placeholder:text-muted-foreground/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:h-10 sm:min-h-0 sm:text-sm"
-                  enterKeyHint="search"
-                  inputMode="search"
-                />
-              </div>
-              <div className="flex h-11 min-h-[44px] items-center justify-between gap-3 rounded-xl border-2 border-border bg-card px-4 text-sm shadow-sm sm:h-10 sm:min-h-0 sm:min-w-[8.25rem]">
-                <span className="text-muted-foreground">
-                  <span className="mr-1" aria-hidden>
-                    ⭐
-                  </span>
-                  Favoriti
-                </span>
-                <span className="text-lg font-bold tabular-nums text-foreground sm:text-base">{state.favorites.length}</span>
-              </div>
+          <div className="relative flex flex-col gap-4 sm:flex-row sm:items-start sm:gap-5">
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl gradient-hero text-primary-foreground shadow-md sm:h-14 sm:w-14">
+              <Users className="h-6 w-6 sm:h-7 sm:w-7" />
+            </div>
+            <div className="min-w-0 flex-1">
+              <span className="inline-flex items-center gap-1 rounded-full border border-primary/25 bg-primary/10 px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-primary">
+                <Sparkles className="h-3 w-3" />
+                Za roditelje maturanata
+              </span>
+              <h1 className="mt-2 text-balance text-2xl font-bold leading-tight tracking-tight sm:text-3xl md:text-4xl">
+                Roditeljski kutak
+              </h1>
+              <p className="mt-1.5 max-w-2xl text-pretty text-sm leading-relaxed text-muted-foreground sm:text-base">
+                Vodiči, mentalno zdravlje, forum i zajednička procjena — sve na jednom mjestu.
+              </p>
+            </div>
+          </div>
+        </motion.div>
+
+        {/* Toolbar: pretraga + favoriti + kategorije + nastavi */}
+        <motion.div
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3, delay: 0.05 }}
+          className="rounded-2xl border-2 border-border bg-card p-3 shadow-card sm:p-4"
+        >
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+            <div className="relative min-w-0 flex-1">
+              <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <input
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder="Pretraži članke i savjete…"
+                aria-label="Pretraži sadržaj"
+                className="h-11 w-full min-h-[44px] rounded-xl border-2 border-input bg-background pl-10 pr-10 text-base shadow-sm placeholder:text-muted-foreground/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:h-10 sm:min-h-0 sm:text-sm"
+                enterKeyHint="search"
+                inputMode="search"
+              />
+              {query && (
+                <button
+                  type="button"
+                  onClick={() => setQuery("")}
+                  aria-label="Obriši pretragu"
+                  className="absolute right-2 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              )}
             </div>
 
-            <div>
-              <p className="mb-2 text-xs font-medium text-muted-foreground sm:sr-only">
-                <span className="mr-1" aria-hidden>
-                  🏷️
-                </span>
-                Kategorija
-              </p>
-              <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap">
-                {filterChips.map((item) => (
+            <div className="inline-flex h-11 min-h-[44px] shrink-0 items-center gap-2 rounded-xl border border-primary/25 bg-primary/[0.06] px-3 text-sm sm:h-10 sm:min-h-0">
+              <Star className="h-4 w-4 text-primary" aria-hidden />
+              <span className="text-muted-foreground">Favoriti</span>
+              <span className="ml-0.5 inline-flex h-6 min-w-[24px] items-center justify-center rounded-full bg-primary px-1.5 text-xs font-bold tabular-nums text-primary-foreground">
+                {state.favorites.length}
+              </span>
+            </div>
+          </div>
+
+          <div className="mt-3 -mx-1 sm:mt-4 sm:mx-0">
+            <p className="sr-only">Filtriraj po kategoriji</p>
+            <div
+              role="tablist"
+              aria-label="Kategorije"
+              className="flex gap-2 overflow-x-auto px-1 pb-1 sm:flex-wrap sm:px-0 sm:pb-0 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+            >
+              {filterChips.map((item) => {
+                const active = category === item.id;
+                return (
                   <Button
                     key={item.id}
-                    variant={category === item.id ? "default" : "outline"}
+                    variant={active ? "default" : "outline"}
                     size="sm"
+                    role="tab"
+                    aria-selected={active}
                     onClick={() => setCategory(item.id)}
-                    className="h-auto min-h-11 w-full touch-manipulation gap-1.5 px-2 py-2.5 text-xs font-medium sm:min-h-9 sm:w-auto sm:px-3 sm:text-sm"
+                    className="h-auto min-h-11 shrink-0 touch-manipulation gap-1.5 rounded-full px-4 py-2 text-xs font-semibold sm:min-h-9 sm:py-1.5 sm:text-sm"
                   >
                     <span aria-hidden>{item.emoji}</span>
                     <span className="sm:hidden">{item.label}</span>
                     <span className="hidden sm:inline">{item.labelMd}</span>
                   </Button>
-                ))}
-              </div>
+                );
+              })}
             </div>
-
-            {state.lastVisited && (
-              <Button variant="secondary" className="h-11 w-full touch-manipulation gap-2 sm:h-10 sm:w-auto" asChild>
-                <Link to={state.lastVisited}>
-                  <span aria-hidden>🔖</span>
-                  Nastavi gdje si stao
-                </Link>
-              </Button>
-            )}
           </div>
+
+          {state.lastVisited && (
+            <Button
+              variant="secondary"
+              className="mt-3 h-11 w-full touch-manipulation gap-2 rounded-xl sm:mt-4 sm:h-10 sm:w-auto"
+              asChild
+            >
+              <Link to={state.lastVisited}>
+                <BookmarkCheck className="h-4 w-4" />
+                Nastavi gdje si stao
+                <ArrowRight className="h-4 w-4" />
+              </Link>
+            </Button>
+          )}
         </motion.div>
 
-        <div className="rounded-2xl border-2 bg-card p-4 shadow-card sm:p-6">
-          <div className="mb-4 flex items-center gap-3 sm:mb-5">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-lg shadow-sm sm:h-11 sm:w-11" aria-hidden>
-              ✨
+        {/* Preporučeno za vas */}
+        <section aria-labelledby="preporuceno-heading" className="space-y-3 sm:space-y-4">
+          <div className="flex items-center gap-3">
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10 text-primary shadow-sm sm:h-10 sm:w-10">
+              <Sparkles className="h-4 w-4 sm:h-5 sm:w-5" aria-hidden />
             </div>
-            <div className="min-w-0">
-              <h2 className="text-lg font-semibold leading-tight sm:text-xl">
+            <div className="min-w-0 flex-1">
+              <h2 id="preporuceno-heading" className="text-lg font-semibold leading-tight sm:text-xl">
                 Preporučeno za vas
               </h2>
               <p className="text-xs text-muted-foreground sm:text-sm">
-                <span className="mr-1" aria-hidden>
-                  ⚡
-                </span>
-                Odabrane teme s konkretnim savjetima koje možete odmah primijeniti
+                Odabrane teme s konkretnim savjetima koje možete odmah primijeniti.
               </p>
             </div>
           </div>
+
           <motion.div
             className="grid grid-cols-1 gap-3 md:grid-cols-3 md:gap-4"
             variants={listStagger}
             initial="hidden"
             animate="show"
           >
-            {recommended.map((item) => (
-              <motion.div key={item.id} variants={listItem}>
-                <Link
-                  to={`/roditeljski-kutak/preporuceni-clanak/${item.slug}`}
-                  onClick={() => setLastVisited(`/roditeljski-kutak/preporuceni-clanak/${item.slug}`)}
-                  className="group relative flex h-full flex-col rounded-2xl border-2 border-border/70 bg-background p-4 shadow-card transition-all active:scale-[0.99] sm:p-5 sm:hover:-translate-y-0.5 sm:hover:border-primary/30 sm:hover:shadow-card-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                >
-                  <div className="absolute inset-x-0 top-0 h-1 rounded-t-2xl gradient-hero opacity-80" aria-hidden />
-                  <div className="flex items-start justify-between gap-2">
-                    <span className="inline-flex w-fit items-center gap-1 rounded-full bg-muted px-2.5 py-0.5 text-[11px] font-medium text-muted-foreground sm:text-xs">
-                      <span aria-hidden>{categoryEmoji[item.category]}</span>
-                      {categoryLabels[item.category]}
-                    </span>
-                    <button
-                      type="button"
-                      aria-label="Spremi u favorite"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        toggleFavorite(item.slug);
-                        setState(readParentHubState());
-                      }}
-                      className="-m-2 shrink-0 rounded-lg p-2.5 text-muted-foreground transition-colors hover:bg-muted hover:text-primary"
-                    >
-                      <Star className={`h-5 w-5 sm:h-4 sm:w-4 ${state.favorites.includes(item.slug) ? "fill-primary text-primary" : ""}`} />
-                    </button>
-                  </div>
-                  <h3 className="mt-3 text-balance text-base font-semibold leading-snug group-hover:text-primary sm:min-h-[3.25rem]">
-                    {item.title}
-                  </h3>
-                  <p className="mt-2 text-pretty text-sm leading-relaxed text-muted-foreground line-clamp-3">
-                    {item.excerpt}
-                  </p>
-                  <div className="mt-4 rounded-xl border border-primary/15 bg-primary/[0.04] p-3">
-                    <p className="text-[11px] font-semibold uppercase tracking-wide text-primary">
-                      {recommendedInsights[item.slug]?.label ?? "Savjet"}
-                    </p>
-                    <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
-                      {recommendedInsights[item.slug]?.advice ?? item.description}
-                    </p>
-                  </div>
-                  <div className="mt-4 flex flex-wrap items-center justify-between gap-2 border-t border-border/50 pt-3 text-xs text-muted-foreground">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <span className="tabular-nums">
-                        <span className="mr-0.5" aria-hidden>
-                          👀
-                        </span>
-                        {getTotalViews(item.slug, item.views)} pregleda
-                      </span>
-                      {item.isNew && (
-                        <span className="rounded-full bg-primary/15 px-2 py-0.5 font-medium text-primary">
-                          <span className="mr-0.5" aria-hidden>
-                            🆕
-                          </span>
-                          Novo
-                        </span>
-                      )}
-                    </div>
-                    <span className="font-medium text-primary">
-                      Otvori članak <span aria-hidden>→</span>
-                    </span>
-                  </div>
-                </Link>
-              </motion.div>
-            ))}
-          </motion.div>
-        </div>
+            {recommended.map((item) => {
+              const isFav = state.favorites.includes(item.slug);
+              return (
+                <motion.div key={item.id} variants={listItem}>
+                  <Link
+                    to={`/roditeljski-kutak/preporuceni-clanak/${item.slug}`}
+                    onClick={() => setLastVisited(`/roditeljski-kutak/preporuceni-clanak/${item.slug}`)}
+                    className="group relative flex h-full flex-col overflow-hidden rounded-2xl border-2 border-border/70 bg-card shadow-card transition-all active:scale-[0.99] sm:hover:-translate-y-0.5 sm:hover:border-primary/30 sm:hover:shadow-card-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  >
+                    <div className="h-1 w-full gradient-hero" aria-hidden />
 
-        <div>
-          <h2 className="mb-3 px-0.5 text-sm font-semibold text-muted-foreground sm:mb-4 sm:text-base sm:text-foreground">
-            <span className="mr-1.5" aria-hidden>
-              🧭
-            </span>
-            Glavni odjeljci
-          </h2>
+                    <div className="flex flex-1 flex-col p-4 sm:p-5">
+                      <div className="flex items-start justify-between gap-2">
+                        <span className="inline-flex items-center gap-1 rounded-full bg-muted px-2.5 py-1 text-[11px] font-medium text-muted-foreground">
+                          <span aria-hidden>{categoryEmoji[item.category]}</span>
+                          {categoryLabels[item.category]}
+                        </span>
+                        <div className="flex items-center gap-1">
+                          {item.isNew && (
+                            <span className="rounded-full bg-primary/15 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-primary">
+                              Novo
+                            </span>
+                          )}
+                          <button
+                            type="button"
+                            aria-label={isFav ? "Ukloni iz favorita" : "Spremi u favorite"}
+                            onClick={(e) => {
+                              e.preventDefault();
+                              toggleFavorite(item.slug);
+                              setState(readParentHubState());
+                            }}
+                            className="-m-1 shrink-0 rounded-lg p-2 text-muted-foreground transition-colors hover:bg-muted hover:text-primary"
+                          >
+                            <Star className={`h-5 w-5 sm:h-4 sm:w-4 ${isFav ? "fill-primary text-primary" : ""}`} />
+                          </button>
+                        </div>
+                      </div>
+
+                      <h3 className="mt-3 text-balance text-base font-semibold leading-snug group-hover:text-primary sm:text-[1.05rem]">
+                        {item.title}
+                      </h3>
+                      <p className="mt-1.5 text-pretty text-sm leading-relaxed text-muted-foreground line-clamp-3">
+                        {item.excerpt}
+                      </p>
+
+                      <div className="mt-3 rounded-xl border-l-4 border-primary/60 bg-primary/[0.05] px-3 py-2.5">
+                        <p className="text-[10px] font-bold uppercase tracking-wide text-primary">
+                          {recommendedInsights[item.slug]?.label ?? "Savjet"}
+                        </p>
+                        <p className="mt-0.5 text-sm leading-relaxed text-foreground/85">
+                          {recommendedInsights[item.slug]?.advice ?? item.description}
+                        </p>
+                      </div>
+
+                      <div className="mt-auto flex items-center justify-between gap-2 pt-3 text-xs text-muted-foreground">
+                        <span className="inline-flex items-center gap-1 tabular-nums">
+                          <Eye className="h-3.5 w-3.5" aria-hidden />
+                          {getTotalViews(item.slug, item.views)}
+                        </span>
+                        <span className="inline-flex items-center gap-1 font-semibold text-primary transition-transform group-hover:translate-x-0.5">
+                          Otvori članak
+                          <ArrowRight className="h-3.5 w-3.5" />
+                        </span>
+                      </div>
+                    </div>
+                  </Link>
+                </motion.div>
+              );
+            })}
+          </motion.div>
+        </section>
+
+        {/* Glavni odjeljci */}
+        <section aria-labelledby="odjeljci-heading" className="space-y-3 sm:space-y-4">
+          <div className="flex items-center gap-3">
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10 text-primary shadow-sm sm:h-10 sm:w-10">
+              <BookOpen className="h-4 w-4 sm:h-5 sm:w-5" aria-hidden />
+            </div>
+            <div className="min-w-0 flex-1">
+              <h2 id="odjeljci-heading" className="text-lg font-semibold leading-tight sm:text-xl">
+                Glavni odjeljci
+              </h2>
+              <p className="text-xs text-muted-foreground sm:text-sm">
+                Četiri brzo dostupna kutka za roditelje maturanata.
+              </p>
+            </div>
+          </div>
+
           <motion.div
             className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4"
             variants={listStagger}
@@ -312,102 +371,134 @@ const Roditelji = () => {
                   <Link
                     to={section.href}
                     onClick={() => setLastVisited(section.href)}
-                    className="flex h-full flex-col rounded-2xl border-2 border-border/70 bg-card p-4 shadow-card transition-all active:bg-muted/30 sm:p-6 sm:hover:-translate-y-0.5 sm:hover:border-primary/30 sm:hover:shadow-card-hover"
+                    className="group flex h-full flex-col rounded-2xl border-2 border-border/70 bg-card p-4 shadow-card transition-all active:bg-muted/30 sm:p-5 sm:hover:-translate-y-0.5 sm:hover:border-primary/30 sm:hover:shadow-card-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   >
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="flex h-12 w-12 shrink-0 flex-col items-center justify-center gap-0.5 rounded-2xl bg-primary/10 text-primary shadow-sm sm:h-[3.25rem] sm:w-[3.25rem]">
-                        <span className="text-[1.35rem] leading-none" aria-hidden>
+                    <div className="flex items-start gap-3 sm:gap-4">
+                      <div className="relative flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-primary/15 to-primary/5 text-primary shadow-sm sm:h-16 sm:w-16">
+                        <span className="text-2xl leading-none sm:text-[1.6rem]" aria-hidden>
                           {section.emoji}
                         </span>
-                        <Icon className="h-3.5 w-3.5 opacity-70" />
+                        <span
+                          className="absolute -bottom-1 -right-1 flex h-6 w-6 items-center justify-center rounded-full border-2 border-card bg-primary text-primary-foreground shadow-sm"
+                          aria-hidden
+                        >
+                          <Icon className="h-3.5 w-3.5" />
+                        </span>
                       </div>
-                      <span className="rounded-full border border-border/60 bg-muted/40 px-2.5 py-1 text-[11px] font-medium text-muted-foreground">
-                        Sekcija
-                      </span>
-                    </div>
-                    <div className="mt-4 min-w-0 flex-1">
-                      <h3 className="font-semibold leading-snug sm:text-lg">{section.title}</h3>
-                      <p className="mt-1.5 text-pretty text-sm leading-relaxed text-muted-foreground">{section.description}</p>
-                      <div className="mt-4 rounded-xl border border-border/60 bg-background/80 p-3">
-                        <p className="text-[11px] font-semibold uppercase tracking-wide text-primary">
-                          Profesionalna preporuka
+                      <div className="min-w-0 flex-1">
+                        <h3 className="text-base font-semibold leading-snug group-hover:text-primary sm:text-lg">
+                          {section.title}
+                        </h3>
+                        <p className="mt-1 text-pretty text-sm leading-relaxed text-muted-foreground">
+                          {section.description}
                         </p>
-                        <p className="mt-1 text-sm leading-relaxed text-muted-foreground">{section.advice}</p>
                       </div>
                     </div>
-                    <div className="mt-4 flex items-center justify-between border-t border-border/50 pt-3">
-                      <span className="text-sm font-medium text-primary">
-                        Saznaj više <span aria-hidden>→</span>
+
+                    <div className="mt-3 rounded-xl border-l-4 border-primary/60 bg-primary/[0.05] px-3 py-2.5 sm:mt-4">
+                      <p className="text-[10px] font-bold uppercase tracking-wide text-primary">
+                        Profesionalna preporuka
+                      </p>
+                      <p className="mt-0.5 text-sm leading-relaxed text-foreground/85">{section.advice}</p>
+                    </div>
+
+                    <div className="mt-auto flex items-center justify-between pt-3 text-sm">
+                      <span className="inline-flex items-center gap-1 font-semibold text-primary transition-transform group-hover:translate-x-0.5">
+                        Saznaj više
+                        <ArrowRight className="h-4 w-4" />
                       </span>
-                      <ChevronRight className="h-5 w-5 shrink-0 text-muted-foreground/45" aria-hidden />
+                      <ChevronRight className="h-5 w-5 shrink-0 text-muted-foreground/40" aria-hidden />
                     </div>
                   </Link>
                 </motion.div>
               );
             })}
           </motion.div>
-        </div>
+        </section>
 
-        <div className="rounded-2xl border-2 bg-card p-4 shadow-card sm:p-6">
-          <div className="mb-3 flex flex-col gap-1 sm:mb-4 sm:flex-row sm:items-end sm:justify-between sm:gap-3">
-            <h2 className="text-lg font-semibold sm:text-xl">
-              <span className="mr-1.5" aria-hidden>
-                📰
-              </span>
-              Svi članci
-            </h2>
-            <span className="text-xs text-muted-foreground sm:text-sm">
-              <span className="mr-0.5" aria-hidden>
-                📋
-              </span>
-              {filtered.length} rezultata
+        {/* Svi članci */}
+        <section aria-labelledby="clanci-heading" className="space-y-3 sm:space-y-4">
+          <div className="flex items-center gap-3">
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10 text-primary shadow-sm sm:h-10 sm:w-10">
+              <BookOpen className="h-4 w-4 sm:h-5 sm:w-5" aria-hidden />
+            </div>
+            <div className="min-w-0 flex-1">
+              <h2 id="clanci-heading" className="text-lg font-semibold leading-tight sm:text-xl">
+                Svi članci
+              </h2>
+              <p className="text-xs text-muted-foreground sm:text-sm">
+                Pregled svih materijala filtriranih po trenutnom izboru.
+              </p>
+            </div>
+            <span className="inline-flex shrink-0 items-center gap-1 rounded-full border border-border bg-muted/50 px-2.5 py-1 text-[11px] font-semibold text-muted-foreground sm:text-xs">
+              <span className="tabular-nums text-foreground">{filtered.length}</span>
+              <span className="hidden sm:inline">rezultata</span>
             </span>
           </div>
-          <div className="flex flex-col gap-2 sm:gap-3">
+
+          <div className="flex flex-col gap-2">
             {filtered.length === 0 ? (
-              <p className="rounded-xl border-2 border-dashed border-border bg-muted/25 px-4 py-10 text-center text-sm text-muted-foreground">
-                <span className="mb-2 block text-2xl" aria-hidden>
-                  🔍
-                </span>
-                Nema rezultata za ovu pretragu ili kategoriju. Pokušaj drugi pojam ili odaberi „Sve”.
-              </p>
+              <div className="rounded-2xl border-2 border-dashed border-border bg-muted/20 px-4 py-10 text-center">
+                <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-muted text-muted-foreground">
+                  <Search className="h-5 w-5" aria-hidden />
+                </div>
+                <p className="text-sm font-medium text-foreground">Nema rezultata</p>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  Pokušaj s drugim pojmom ili odaberi kategoriju „Sve”.
+                </p>
+                {(query || category !== "sve") && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="mt-4 h-10 rounded-xl"
+                    onClick={() => {
+                      setQuery("");
+                      setCategory("sve");
+                    }}
+                  >
+                    <X className="h-4 w-4" />
+                    Očisti filtre
+                  </Button>
+                )}
+              </div>
             ) : (
               filtered.map((article) => (
                 <Link
                   key={article.id}
                   to={`/roditeljski-kutak/preporuceni-clanak/${article.slug}`}
                   onClick={() => setLastVisited(`/roditeljski-kutak/preporuceni-clanak/${article.slug}`)}
-                  className="flex min-h-[4.25rem] items-center gap-3 rounded-xl border-2 border-border/70 bg-background/90 p-3.5 transition-colors active:bg-muted/50 sm:min-h-0 sm:p-4 sm:hover:bg-muted/40 sm:hover:shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  className="group flex min-h-[4.25rem] items-center gap-3 rounded-2xl border-2 border-border/70 bg-card p-3 shadow-card transition-colors active:bg-muted/50 sm:min-h-0 sm:p-4 sm:hover:border-primary/30 sm:hover:shadow-card-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 >
                   <div
-                    className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-muted/50 text-lg shadow-sm sm:h-10 sm:w-10"
+                    className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-primary/10 to-primary/5 text-xl shadow-sm sm:h-11 sm:w-11"
                     aria-hidden
                   >
                     {categoryEmoji[article.category]}
                   </div>
                   <div className="min-w-0 flex-1">
-                    <div className="flex flex-wrap items-center gap-2 gap-y-1">
-                      <h3 className="font-medium leading-snug">{article.title}</h3>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="inline-flex items-center rounded-full bg-muted px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-muted-foreground">
+                        {categoryLabels[article.category]}
+                      </span>
                       {article.isNew && (
-                        <span className="shrink-0 rounded-full bg-primary/15 px-2 py-0.5 text-[11px] font-medium text-primary">
-                          <span className="mr-0.5" aria-hidden>
-                            🆕
-                          </span>
+                        <span className="inline-flex items-center rounded-full bg-primary/15 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-primary">
                           Novo
                         </span>
                       )}
                     </div>
-                    <p className="mt-1 text-pretty text-sm leading-relaxed text-muted-foreground line-clamp-2">{article.excerpt}</p>
-                    <span className="mt-1.5 text-[11px] font-medium text-muted-foreground/90 sm:text-xs">
-                      {categoryLabels[article.category]}
-                    </span>
+                    <h3 className="mt-1 text-pretty font-semibold leading-snug group-hover:text-primary">
+                      {article.title}
+                    </h3>
+                    <p className="mt-0.5 text-pretty text-sm leading-relaxed text-muted-foreground line-clamp-2">
+                      {article.excerpt}
+                    </p>
                   </div>
-                  <ChevronRight className="h-5 w-5 shrink-0 text-muted-foreground/50" aria-hidden />
+                  <ChevronRight className="h-5 w-5 shrink-0 text-muted-foreground/50 transition-transform group-hover:translate-x-0.5 group-hover:text-primary" aria-hidden />
                 </Link>
               ))
             )}
           </div>
-        </div>
+        </section>
       </section>
     </Layout>
   );

@@ -43,6 +43,65 @@ function makeId(name: string, city: string) {
   return `${name}__${city}`.toLowerCase();
 }
 
+// Poznati hrvatski gradovi u kojima se nalaze fakulteti/veleučilišta.
+// Koristi se za filtriranje neispravnih/parsing greška iz izvornog JSON-a
+// (npr. fragmenti naziva programa koji su završili u "city" polju).
+const VALID_CITIES: ReadonlySet<string> = new Set(
+  [
+    "Biograd na Moru",
+    "Bjelovar",
+    "Čakovec",
+    "Dubrovnik",
+    "Đakovo",
+    "Đurđevac",
+    "Gospić",
+    "Ivanić-Grad",
+    "Karlovac",
+    "Knin",
+    "Koprivnica",
+    "Krapina",
+    "Križevci",
+    "Kutina",
+    "Makarska",
+    "Nova Gradiška",
+    "Opatija",
+    "Orahovica",
+    "Osijek",
+    "Pazin",
+    "Petrinja",
+    "Poreč",
+    "Požega",
+    "Pregrada",
+    "Pula",
+    "Rijeka",
+    "Sisak",
+    "Slatina",
+    "Slavonski Brod",
+    "Split",
+    "Šibenik",
+    "Varaždin",
+    "Velika Gorica",
+    "Vinkovci",
+    "Virovitica",
+    "Vukovar",
+    "Zabok",
+    "Zadar",
+    "Zagreb",
+    "Zaprešić",
+  ].map((c) => c.toLowerCase()),
+);
+
+function normalizeCity(raw: string): string {
+  const c = raw.trim();
+  // Ujednači varijante istog grada.
+  if (c.toLowerCase() === "ivanić grad") return "Ivanić-Grad";
+  return c;
+}
+
+function isValidCity(city: string): boolean {
+  return VALID_CITIES.has(city.trim().toLowerCase());
+}
+
 export function getLatestCutoffYear(cutoffByYear: ProgramCutoffs | undefined): string | null {
   if (!cutoffByYear) return null;
   const years = Object.keys(cutoffByYear)
@@ -62,18 +121,23 @@ export function getCutoffForYear(cutoffByYear: ProgramCutoffs | undefined, year:
 
 export const facultyInstitutions: FacultyInstitution[] = (raw as RawInstitution[])
   .filter((x) => x && typeof x.name === "string" && typeof x.city === "string")
-  .map((x) => ({
-    id: makeId(x.name, x.city),
-    name: x.name.trim(),
-    city: x.city.trim(),
-    provider: x.provider?.trim(),
-    institutionType: normalizeInstitutionType(x.institutionType),
-    programs: (x.programs ?? [])
-      .filter((p) => p && typeof p.name === "string")
-      .map((p) => ({
-        name: p.name.trim(),
-        cutoffByYear: p.cutoffByYear ?? {},
-      })),
-  }))
+  .map((x) => {
+    const city = normalizeCity(x.city);
+    return {
+      id: makeId(x.name.trim(), city),
+      name: x.name.trim(),
+      city,
+      provider: x.provider?.trim(),
+      institutionType: normalizeInstitutionType(x.institutionType),
+      programs: (x.programs ?? [])
+        .filter((p) => p && typeof p.name === "string")
+        .map((p) => ({
+          name: p.name.trim(),
+          cutoffByYear: p.cutoffByYear ?? {},
+        })),
+    };
+  })
+  // Izbaci ustanove s neispravnim gradom (fragmenti imena programa i sl.).
+  .filter((x) => isValidCity(x.city))
   .sort((a, b) => a.name.localeCompare(b.name, "hr"));
 

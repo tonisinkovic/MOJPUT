@@ -6,13 +6,16 @@ import {
   LogOut,
   LogIn,
   MessageCircle,
+  MessagesSquare,
   Plus,
   Reply,
   Search,
   Send,
+  Sparkles,
   ThumbsUp,
   Trash2,
   TrendingUp,
+  Users,
   X,
 } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -210,7 +213,8 @@ const Forum = () => {
   const [replyingTo, setReplyingTo] = useState<ForumMessage | null>(null);
   const [sendingMessage, setSendingMessage] = useState(false);
   const [deletingMessageId, setDeletingMessageId] = useState<number | null>(null);
-  const messagesEndRef = useRef<HTMLDivElement | null>(null);
+  /** Skrolani kontejner poruka — skrolamo samo njega da se ne pomiče cijela stranica. */
+  const messagesScrollRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     let alive = true;
@@ -391,9 +395,12 @@ const Forum = () => {
   }, []);
 
   useEffect(() => {
-    if (selectedConversation?.messages.length) {
-      messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-    }
+    if (!selectedConversation?.messages.length) return;
+    const el = messagesScrollRef.current;
+    if (!el) return;
+    // NE koristimo scrollIntoView jer on skrola i `window`, pa cijela stranica
+    // skoči prema dolje kad se otvori razgovor ili stigne nova poruka.
+    el.scrollTop = el.scrollHeight;
   }, [selectedConversation?.messages]);
 
   const handleLogout = async () => {
@@ -657,6 +664,13 @@ const Forum = () => {
     return copy;
   }, [conversations, searchTerm, sortMode]);
 
+  const forumStats = useMemo(() => {
+    const totalConversations = conversations.length;
+    const totalMessages = conversations.reduce((sum, c) => sum + (c.messageCount ?? 0), 0);
+    const uniqueAuthors = new Set(conversations.map((c) => c.creator).filter(Boolean)).size;
+    return { totalConversations, totalMessages, uniqueAuthors };
+  }, [conversations]);
+
   return (
     <Layout>
       <section className="container py-4 sm:py-8 md:py-12 max-w-6xl mx-auto px-3 sm:px-4 pb-[max(1rem,env(safe-area-inset-bottom))]">
@@ -665,30 +679,90 @@ const Forum = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3 }}
           className={cn(
-            "mb-4 rounded-2xl border-2 border-primary/15 bg-gradient-to-br from-primary/[0.08] via-card to-card p-4 shadow-sm md:mb-6 md:p-5",
+            "relative mb-4 overflow-hidden rounded-2xl border-2 border-primary/20 bg-gradient-to-br from-primary/[0.12] via-primary/[0.04] to-card p-4 shadow-card sm:p-5 md:mb-6 md:p-6",
             selectedConversation && "max-md:hidden",
           )}
         >
-          <h1 className="text-balance text-xl font-bold tracking-tight text-foreground sm:text-2xl md:text-3xl">
-            Forum za učenike
-          </h1>
-          <p className="mt-1.5 text-pretty text-sm leading-relaxed text-muted-foreground md:text-base">
-            Razmijeni iskustva i postavi pitanja o maturi, fakultetima i studentskom životu — sve jasno poredano, brzo za pronalazak.
-          </p>
+          <div
+            aria-hidden
+            className="pointer-events-none absolute -right-10 -top-10 h-40 w-40 rounded-full bg-primary/15 blur-3xl sm:h-52 sm:w-52"
+          />
+          <div
+            aria-hidden
+            className="pointer-events-none absolute -bottom-14 -left-10 h-36 w-36 rounded-full bg-primary/10 blur-3xl sm:h-48 sm:w-48"
+          />
+
+          <div className="relative flex flex-col gap-4 sm:flex-row sm:items-start sm:gap-5">
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl gradient-hero text-primary-foreground shadow-md sm:h-14 sm:w-14">
+              <MessagesSquare className="h-6 w-6 sm:h-7 sm:w-7" />
+            </div>
+            <div className="min-w-0 flex-1">
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="inline-flex items-center gap-1 rounded-full border border-primary/25 bg-primary/10 px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-primary">
+                  <Sparkles className="h-3 w-3" />
+                  Zajednica
+                </span>
+              </div>
+              <h1 className="mt-2 text-balance text-2xl font-bold tracking-tight text-foreground sm:text-3xl md:text-4xl">
+                Forum za učenike
+              </h1>
+              <p className="mt-1.5 max-w-2xl text-pretty text-sm leading-relaxed text-muted-foreground sm:text-base">
+                Razmijeni iskustva i postavi pitanja o maturi, fakultetima i studentskom životu — sve jasno poredano, brzo za pronalazak.
+              </p>
+
+              <div className="mt-4 grid grid-cols-3 gap-2 sm:max-w-lg sm:gap-3">
+                <div className="rounded-xl border border-border/60 bg-background/70 px-3 py-2 backdrop-blur-sm">
+                  <div className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+                    <MessageCircle className="h-3.5 w-3.5 text-primary" />
+                    Teme
+                  </div>
+                  <p className="mt-0.5 text-lg font-bold leading-none text-foreground sm:text-xl">
+                    {forumStats.totalConversations}
+                  </p>
+                </div>
+                <div className="rounded-xl border border-border/60 bg-background/70 px-3 py-2 backdrop-blur-sm">
+                  <div className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+                    <TrendingUp className="h-3.5 w-3.5 text-primary" />
+                    Poruke
+                  </div>
+                  <p className="mt-0.5 text-lg font-bold leading-none text-foreground sm:text-xl">
+                    {forumStats.totalMessages}
+                  </p>
+                </div>
+                <div className="rounded-xl border border-border/60 bg-background/70 px-3 py-2 backdrop-blur-sm">
+                  <div className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+                    <Users className="h-3.5 w-3.5 text-primary" />
+                    Članovi
+                  </div>
+                  <p className="mt-0.5 text-lg font-bold leading-none text-foreground sm:text-xl">
+                    {forumStats.uniqueAuthors}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
         </motion.div>
 
         {!canUseForum && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className="mb-4 rounded-2xl border-2 border-border bg-muted/40 p-4 shadow-sm md:mb-6 md:p-5"
+            className={cn(
+              "mb-4 rounded-2xl border-2 border-primary/15 bg-primary/[0.04] p-3 shadow-sm md:mb-6 md:p-4",
+              selectedConversation && "max-md:hidden",
+            )}
           >
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-              <div>
-                <p className="text-sm font-semibold text-foreground">Samo pregled poruka</p>
-                <p className="mt-0.5 text-xs leading-relaxed text-muted-foreground">
-                  Možeš čitati razgovore, ali za slanje poruka, lajkanje i kreiranje tema potrebna je prijava.
-                </p>
+              <div className="flex items-start gap-3">
+                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                  <LogIn className="h-4 w-4" />
+                </div>
+                <div className="min-w-0">
+                  <p className="text-sm font-semibold text-foreground">Samo pregled poruka</p>
+                  <p className="mt-0.5 text-xs leading-relaxed text-muted-foreground">
+                    Čitanje je slobodno — za slanje poruka, lajkanje i nove teme prijavi se.
+                  </p>
+                </div>
               </div>
               <Link
                 to="/prijava"
@@ -707,7 +781,16 @@ const Forum = () => {
           transition={{ duration: 0.3, delay: 0.05 }}
           className="overflow-hidden rounded-2xl border-2 border-border bg-card shadow-card"
         >
-          <div className="flex h-[min(calc(100dvh-11rem),720px)] min-h-0 flex-col sm:h-[min(78dvh,680px)] md:h-[580px] md:flex-row">
+          <div
+            className={cn(
+              "flex min-h-0 flex-col md:h-[620px] md:flex-row",
+              // On mobile, when a conversation is selected, use near-full viewport height so the
+              // chat is comfortable to read; otherwise let the list flow naturally on the page.
+              selectedConversation
+                ? "h-[calc(100dvh-8rem)] max-md:min-h-[520px]"
+                : "max-md:h-auto",
+            )}
+          >
             {/* Sidebar */}
             <div
               className={cn(
@@ -716,7 +799,7 @@ const Forum = () => {
               )}
             >
               <div className="flex items-center gap-3 border-b border-border p-3 sm:p-4">
-                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-gradient-hero text-sm font-bold text-primary-foreground shadow-md">
+                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl gradient-hero text-sm font-bold text-primary-foreground shadow-md">
                   {(currentUser?.username?.[0] || "G").toUpperCase()}
                 </div>
                 <div className="min-w-0 flex-1">
@@ -809,7 +892,7 @@ const Forum = () => {
                 </div>
               </div>
 
-              <div className="min-h-0 flex-1 overflow-y-auto">
+              <div className="min-h-0 flex-1 md:overflow-y-auto">
                 {loadingConversations ? (
                   <div className="p-8 text-center">
                     <div className="inline-block h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
@@ -824,37 +907,65 @@ const Forum = () => {
                   </div>
                 ) : (
                   <div className="space-y-1.5 p-2">
-                    {sortedConversations.map((conv) => (
-                      <button
-                        key={conv.id}
-                        type="button"
-                        onClick={async () => {
-                          setSelectedConversation(conv);
-                          if (conv.messages.length === 0) await loadMessages(conv.id);
-                        }}
-                        className={cn(
-                          "w-full rounded-xl border-2 px-3 py-3 text-left transition-all duration-200 touch-manipulation sm:px-4 sm:py-3",
-                          selectedConversation?.id === conv.id
-                            ? "border-primary/40 bg-primary/10 shadow-sm"
-                            : "border-transparent hover:border-border hover:bg-muted/60 active:scale-[0.99]",
-                        )}
-                      >
-                        <p className="line-clamp-2 text-sm font-semibold leading-snug text-foreground">{conv.title}</p>
-                        <p className="mt-1 line-clamp-1 text-xs text-muted-foreground">{conv.description || "Bez opisa"}</p>
-                        <div className="mt-2 flex flex-wrap items-center gap-x-2 gap-y-1 text-[11px] text-muted-foreground">
-                          <span className="rounded-full bg-primary/15 px-2 py-0.5 font-semibold text-primary">
-                            {conv.messageCount} {porukeOznaka(conv.messageCount)}
-                          </span>
-                          <span>
-                            {conv.createdAt.toLocaleDateString("hr-HR", {
-                              day: "numeric",
-                              month: "short",
-                            })}
-                          </span>
-                          <span className="truncate">· {conv.creator || "Anonim"}</span>
-                        </div>
-                      </button>
-                    ))}
+                    {sortedConversations.map((conv) => {
+                      const isActive = selectedConversation?.id === conv.id;
+                      const initial = (conv.creator?.[0] || "?").toUpperCase();
+                      return (
+                        <button
+                          key={conv.id}
+                          type="button"
+                          onClick={async () => {
+                            setSelectedConversation(conv);
+                            if (conv.messages.length === 0) await loadMessages(conv.id);
+                          }}
+                          className={cn(
+                            "group flex w-full items-start gap-3 rounded-xl border-2 px-3 py-3 text-left transition-all duration-200 touch-manipulation sm:px-3.5",
+                            isActive
+                              ? "border-primary/40 bg-primary/10 shadow-sm"
+                              : "border-transparent hover:border-border hover:bg-muted/60 active:scale-[0.99]",
+                          )}
+                        >
+                          <div
+                            className={cn(
+                              "flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-sm font-bold transition-colors",
+                              isActive
+                                ? "gradient-hero text-primary-foreground shadow-sm"
+                                : "bg-muted text-muted-foreground group-hover:bg-primary/15 group-hover:text-primary",
+                            )}
+                          >
+                            {initial}
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <p className="line-clamp-2 text-sm font-semibold leading-snug text-foreground">
+                              {conv.title}
+                            </p>
+                            <p className="mt-0.5 line-clamp-1 text-xs text-muted-foreground">
+                              {conv.description || "Bez opisa"}
+                            </p>
+                            <div className="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-[11px] text-muted-foreground">
+                              <span
+                                className={cn(
+                                  "inline-flex items-center gap-1 rounded-full px-2 py-0.5 font-semibold",
+                                  isActive
+                                    ? "bg-primary text-primary-foreground"
+                                    : "bg-primary/15 text-primary",
+                                )}
+                              >
+                                <MessageCircle className="h-3 w-3" />
+                                {conv.messageCount}
+                              </span>
+                              <span className="truncate">
+                                {conv.createdAt.toLocaleDateString("hr-HR", {
+                                  day: "numeric",
+                                  month: "short",
+                                })}
+                              </span>
+                              <span className="truncate">· {conv.creator || "Anonim"}</span>
+                            </div>
+                          </div>
+                        </button>
+                      );
+                    })}
                   </div>
                 )}
               </div>
@@ -876,7 +987,7 @@ const Forum = () => {
                     exit={{ opacity: 0 }}
                     className="flex h-full flex-col"
                   >
-                    <div className="shrink-0 border-b border-border bg-muted/20 p-3 sm:p-4">
+                    <div className="shrink-0 border-b border-border bg-gradient-to-r from-primary/[0.08] via-muted/20 to-muted/20 p-3 sm:p-4">
                       <button
                         type="button"
                         onClick={() => setSelectedConversation(null)}
@@ -885,11 +996,35 @@ const Forum = () => {
                         <ArrowLeft className="h-5 w-5 shrink-0" />
                         Popis razgovora
                       </button>
-                      <h2 className="text-pretty text-lg font-bold text-foreground">{selectedConversation.title}</h2>
-                      <p className="mt-1 text-xs text-muted-foreground">{selectedConversation.description || "Bez opisa"}</p>
+                      <div className="flex items-start gap-3">
+                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl gradient-hero text-sm font-bold text-primary-foreground shadow-sm sm:h-11 sm:w-11">
+                          {(selectedConversation.creator?.[0] || "?").toUpperCase()}
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <h2 className="text-pretty text-base font-bold leading-tight text-foreground sm:text-lg">
+                            {selectedConversation.title}
+                          </h2>
+                          <p className="mt-0.5 line-clamp-2 text-xs text-muted-foreground sm:text-sm">
+                            {selectedConversation.description || "Bez opisa"}
+                          </p>
+                          <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-muted-foreground">
+                            <span className="inline-flex items-center gap-1 rounded-full bg-primary/15 px-2 py-0.5 font-semibold text-primary">
+                              <MessageCircle className="h-3 w-3" />
+                              {selectedConversation.messageCount}{" "}
+                              {porukeOznaka(selectedConversation.messageCount)}
+                            </span>
+                            <span className="truncate">
+                              Autor: {selectedConversation.creator || "Anonim"}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
                     </div>
 
-                    <div className="flex-1 space-y-4 overflow-y-auto overflow-x-hidden p-3 sm:p-4 [scrollbar-gutter:stable]">
+                    <div
+                      ref={messagesScrollRef}
+                      className="flex-1 space-y-4 overflow-y-auto overflow-x-hidden p-3 sm:p-4 [scrollbar-gutter:stable] [overscroll-behavior:contain]"
+                    >
                       {loadingMessages ? (
                         <div className="flex h-full items-center justify-center">
                           <div className="text-center">
@@ -1015,7 +1150,6 @@ const Forum = () => {
                           </motion.div>
                         ))
                       )}
-                      <div ref={messagesEndRef} />
                     </div>
 
                     {canUseForum ? (

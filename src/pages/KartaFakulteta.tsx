@@ -1,6 +1,19 @@
 import Layout from "@/components/Layout";
 import { motion } from "framer-motion";
-import { MapPin, Search, X, ExternalLink, Filter, ChevronDown, ChevronUp } from "lucide-react";
+import {
+  ArrowRight,
+  BookOpen,
+  Building2,
+  ChevronDown,
+  ChevronUp,
+  ExternalLink,
+  Filter,
+  GraduationCap,
+  MapPin,
+  Search,
+  Sparkles,
+  X,
+} from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { useMemo, useState } from "react";
@@ -79,6 +92,22 @@ const KartaFakulteta = () => {
     });
   }, [filterCity, filterType, search]);
 
+  const totalStats = useMemo(() => {
+    const institutions = faculties.length;
+    const citiesCount = cities.length;
+    const programs = faculties.reduce((sum, f) => sum + f.programs.length, 0);
+    return { institutions, citiesCount, programs };
+  }, [cities.length]);
+
+  const activeFilterCount =
+    (filterCity ? 1 : 0) + (filterType ? 1 : 0) + (search.trim() ? 1 : 0);
+
+  const resetAllFilters = () => {
+    setSearch("");
+    setFilterCity(null);
+    setFilterType(null);
+  };
+
   const selectedFaculty = useMemo(
     () => (selectedFacultyId ? faculties.find((f) => f.id === selectedFacultyId) ?? null : null),
     [selectedFacultyId],
@@ -100,50 +129,127 @@ const KartaFakulteta = () => {
     return scored.slice(0, max);
   };
 
-  const [filtersOpen, setFiltersOpen] = useState(true); // open by default; collapsible on mobile
+  // Na `lg+` uvijek su otvoreni (bočna traka); na mobitelu se otvaraju pritiskom
+  // na pločicu "Filtriraj" iznad liste.
+  const isDesktop =
+    typeof window !== "undefined" &&
+    typeof window.matchMedia === "function" &&
+    window.matchMedia("(min-width: 1024px)").matches;
+  const [filtersOpen, setFiltersOpen] = useState(isDesktop);
 
   return (
     <Layout>
-      <section className="container py-8 md:py-12">
+      <section className="container max-w-7xl mx-auto px-3 sm:px-4 py-4 sm:py-8 md:py-12 pb-[max(1.5rem,env(safe-area-inset-bottom))]">
+        {/* Hero */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
-          className="mb-8 md:mb-10"
+          transition={{ duration: 0.3 }}
+          className="relative mb-5 overflow-hidden rounded-2xl border-2 border-primary/20 bg-gradient-to-br from-primary/[0.12] via-primary/[0.04] to-card p-4 shadow-card sm:mb-7 sm:p-5 md:mb-8 md:p-6"
         >
-          <h1 className="text-3xl md:text-4xl font-bold mb-2 tracking-tight">
-            <span className="text-gradient">Karta</span> fakulteta
-          </h1>
-          <p className="text-muted-foreground text-base md:text-lg max-w-2xl">
-            Istraži sve fakultete u Hrvatskoj i pronađi onaj pravi za tebe.
-          </p>
+          <div
+            aria-hidden
+            className="pointer-events-none absolute -right-10 -top-10 h-36 w-36 rounded-full bg-primary/15 blur-3xl sm:h-52 sm:w-52"
+          />
+          <div
+            aria-hidden
+            className="pointer-events-none absolute -bottom-14 -left-10 h-32 w-32 rounded-full bg-primary/10 blur-3xl sm:h-48 sm:w-48"
+          />
+
+          <div className="relative flex flex-col gap-4 sm:flex-row sm:items-start sm:gap-5">
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl gradient-hero text-primary-foreground shadow-md sm:h-14 sm:w-14">
+              <MapPin className="h-6 w-6 sm:h-7 sm:w-7" />
+            </div>
+            <div className="min-w-0 flex-1">
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="inline-flex items-center gap-1 rounded-full border border-primary/25 bg-primary/10 px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-primary">
+                  <Sparkles className="h-3 w-3" />
+                  Pronađi svoj fakultet
+                </span>
+              </div>
+              <h1 className="mt-2 text-balance text-2xl font-bold tracking-tight text-foreground sm:text-3xl md:text-4xl">
+                <span className="text-gradient">Karta</span> fakulteta
+              </h1>
+              <p className="mt-1.5 max-w-2xl text-pretty text-sm leading-relaxed text-muted-foreground sm:text-base">
+                Istraži sve fakultete u Hrvatskoj, usporedi studijske programe i bodovne pragove — sve na jednom mjestu.
+              </p>
+
+              <div className="mt-4 grid grid-cols-3 gap-2 sm:max-w-lg sm:gap-3">
+                <div className="rounded-xl border border-border/60 bg-background/70 px-3 py-2 backdrop-blur-sm">
+                  <div className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+                    <Building2 className="h-3.5 w-3.5 text-primary" />
+                    Ustanove
+                  </div>
+                  <p className="mt-0.5 text-lg font-bold leading-none text-foreground sm:text-xl">
+                    {totalStats.institutions}
+                  </p>
+                </div>
+                <div className="rounded-xl border border-border/60 bg-background/70 px-3 py-2 backdrop-blur-sm">
+                  <div className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+                    <MapPin className="h-3.5 w-3.5 text-primary" />
+                    Gradovi
+                  </div>
+                  <p className="mt-0.5 text-lg font-bold leading-none text-foreground sm:text-xl">
+                    {totalStats.citiesCount}
+                  </p>
+                </div>
+                <div className="rounded-xl border border-border/60 bg-background/70 px-3 py-2 backdrop-blur-sm">
+                  <div className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+                    <BookOpen className="h-3.5 w-3.5 text-primary" />
+                    Programi
+                  </div>
+                  <p className="mt-0.5 text-lg font-bold leading-none text-foreground sm:text-xl">
+                    {totalStats.programs}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
         </motion.div>
 
-        <div className="flex flex-col lg:flex-row gap-6 lg:gap-8">
-          {/* Left: Filter sidebar - sticky on desktop */}
+        <div className="flex flex-col gap-5 lg:flex-row lg:gap-8">
+          {/* Left: Filter sidebar - sticky on desktop, collapsible chip on mobile */}
           <aside className="lg:w-72 shrink-0 lg:sticky lg:top-24 lg:self-start">
             <Collapsible open={filtersOpen} onOpenChange={setFiltersOpen}>
-              <div className="rounded-2xl border-2 bg-card shadow-card overflow-hidden">
+              <div className="rounded-2xl border-2 border-border bg-card shadow-card overflow-hidden">
                 <CollapsibleTrigger asChild className="lg:hidden w-full">
                   <button
                     type="button"
-                    className="flex items-center justify-between w-full px-5 py-4 text-left font-semibold hover:bg-muted/50 transition-colors"
+                    className="flex items-center justify-between w-full gap-3 px-4 py-3.5 text-left font-semibold hover:bg-muted/40 transition-colors touch-manipulation min-h-[56px]"
                   >
-                    <span className="flex items-center gap-2">
-                      <Filter className="w-5 h-5 text-primary" />
-                      Filtriraj
+                    <span className="flex items-center gap-2.5">
+                      <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                        <Filter className="h-4 w-4" />
+                      </span>
+                      <span className="flex flex-col">
+                        <span className="text-sm font-semibold">Filtriraj</span>
+                        <span className="text-[11px] font-normal text-muted-foreground">
+                          {filtered.length} {filtered.length === 1 ? "rezultat" : "rezultata"}
+                          {activeFilterCount > 0 ? ` · ${activeFilterCount} aktivno` : ""}
+                        </span>
+                      </span>
                     </span>
-                    {filtersOpen ? (
-                      <ChevronUp className="w-5 h-5 text-muted-foreground" />
-                    ) : (
-                      <ChevronDown className="w-5 h-5 text-muted-foreground" />
-                    )}
+                    <span className="flex items-center gap-2">
+                      {activeFilterCount > 0 && (
+                        <span className="inline-flex h-6 min-w-[24px] items-center justify-center rounded-full bg-primary px-1.5 text-[11px] font-bold text-primary-foreground">
+                          {activeFilterCount}
+                        </span>
+                      )}
+                      {filtersOpen ? (
+                        <ChevronUp className="h-5 w-5 text-muted-foreground" />
+                      ) : (
+                        <ChevronDown className="h-5 w-5 text-muted-foreground" />
+                      )}
+                    </span>
                   </button>
                 </CollapsibleTrigger>
                 <CollapsibleContent>
-                  <div className="p-5 space-y-5 border-t border-border lg:border-t-0">
+                  <div className="p-4 space-y-4 border-t border-border lg:border-t-0 lg:p-5 lg:space-y-5">
                     <div className="hidden lg:block">
                       <h2 className="flex items-center gap-2 font-semibold text-lg">
-                        <Filter className="w-5 h-5 text-primary" />
+                        <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                          <Filter className="h-4 w-4" />
+                        </span>
                         Filtriraj
                       </h2>
                       <p className="text-sm text-muted-foreground mt-1">
@@ -152,25 +258,35 @@ const KartaFakulteta = () => {
                     </div>
 
                     <div className="relative">
-                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                      <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                       <Input
-                        placeholder="Pretraži fakultete..."
+                        placeholder="Pretraži fakultete…"
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
-                        className="pl-10 rounded-xl border-2 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                        className="h-11 rounded-xl border-2 pl-10 pr-10 text-base focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all lg:h-10 lg:text-sm"
                       />
+                      {search && (
+                        <button
+                          type="button"
+                          onClick={() => setSearch("")}
+                          aria-label="Obriši pretragu"
+                          className="absolute right-2 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                        >
+                          <X className="h-4 w-4" />
+                        </button>
+                      )}
                     </div>
 
                     <div className="space-y-4">
                       <div className="space-y-2">
-                        <label className="text-sm font-medium text-foreground block">
+                        <label className="text-xs font-semibold uppercase tracking-wide text-muted-foreground block">
                           Grad
                         </label>
                         <Select
                           value={filterCity ?? "svi"}
                           onValueChange={(v) => setFilterCity(v === "svi" ? null : v)}
                         >
-                          <SelectTrigger className="w-full rounded-xl border-2 hover:border-primary/30 focus:ring-2 focus:ring-primary/20 transition-all">
+                          <SelectTrigger className="h-11 w-full rounded-xl border-2 text-base hover:border-primary/40 focus:ring-2 focus:ring-primary/20 transition-all lg:h-10 lg:text-sm">
                             <SelectValue placeholder="Svi gradovi" />
                           </SelectTrigger>
                           <SelectContent className="max-h-[280px] rounded-xl">
@@ -185,7 +301,7 @@ const KartaFakulteta = () => {
                       </div>
 
                       <div className="space-y-2">
-                        <label className="text-sm font-medium text-foreground block">
+                        <label className="text-xs font-semibold uppercase tracking-wide text-muted-foreground block">
                           Vrsta institucije
                         </label>
                         <Select
@@ -194,7 +310,7 @@ const KartaFakulteta = () => {
                             setFilterType(v === "svi" ? null : (v as FacultyItem["institutionType"]))
                           }
                         >
-                          <SelectTrigger className="w-full rounded-xl border-2 hover:border-primary/30 focus:ring-2 focus:ring-primary/20 transition-all">
+                          <SelectTrigger className="h-11 w-full rounded-xl border-2 text-base hover:border-primary/40 focus:ring-2 focus:ring-primary/20 transition-all lg:h-10 lg:text-sm">
                             <SelectValue placeholder="Sve vrste" />
                           </SelectTrigger>
                           <SelectContent className="rounded-xl">
@@ -209,7 +325,7 @@ const KartaFakulteta = () => {
                       </div>
 
                       <div className="space-y-2">
-                        <label className="text-sm font-medium text-foreground block">
+                        <label className="text-xs font-semibold uppercase tracking-wide text-muted-foreground block">
                           Fakultet / ustanova
                         </label>
                         <Select
@@ -233,7 +349,7 @@ const KartaFakulteta = () => {
                             }
                           }}
                         >
-                          <SelectTrigger className="w-full rounded-xl border-2 hover:border-primary/30 focus:ring-2 focus:ring-primary/20 transition-all">
+                          <SelectTrigger className="h-11 w-full rounded-xl border-2 text-base hover:border-primary/40 focus:ring-2 focus:ring-primary/20 transition-all lg:h-10 lg:text-sm">
                             <SelectValue placeholder="Svi fakulteti" />
                           </SelectTrigger>
                           <SelectContent className="max-h-[280px] rounded-xl">
@@ -257,20 +373,19 @@ const KartaFakulteta = () => {
                             })}
                           </SelectContent>
                         </Select>
-                        {(filterCity || search) && (
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setSearch("");
-                              setFilterCity(null);
-                            }}
-                            className="text-xs text-primary hover:underline font-medium"
-                          >
-                            Poništi pretragu
-                          </button>
-                        )}
                       </div>
                     </div>
+
+                    {activeFilterCount > 0 && (
+                      <button
+                        type="button"
+                        onClick={resetAllFilters}
+                        className="inline-flex min-h-[44px] w-full items-center justify-center gap-2 rounded-xl border-2 border-border bg-background px-3 py-2.5 text-sm font-semibold text-foreground transition-colors hover:bg-muted touch-manipulation lg:min-h-0 lg:py-2"
+                      >
+                        <X className="h-4 w-4" />
+                        Poništi filtre ({activeFilterCount})
+                      </button>
+                    )}
                   </div>
                 </CollapsibleContent>
               </div>
@@ -278,25 +393,34 @@ const KartaFakulteta = () => {
           </aside>
 
           {/* Main: Map + List */}
-          <div className="flex-1 min-w-0 flex flex-col gap-6">
+          <div className="flex-1 min-w-0 flex flex-col gap-5 sm:gap-6">
             {/* Map card */}
             <motion.div
               initial={{ opacity: 0, scale: 0.98 }}
               animate={{ opacity: 1, scale: 1 }}
-              className="rounded-2xl overflow-hidden border-2 bg-card shadow-card"
+              transition={{ duration: 0.3, delay: 0.05 }}
+              className="rounded-2xl overflow-hidden border-2 border-border bg-card shadow-card"
             >
               <div className="relative">
-                <div className="absolute inset-0 z-10 flex items-end pointer-events-none">
-                  <div className="w-full bg-gradient-to-t from-black/70 via-black/20 to-transparent px-5 py-6">
-                    <h2 className="text-xl md:text-2xl font-bold text-white drop-shadow-lg">
+                <div className="pointer-events-none absolute inset-0 z-10 flex items-end">
+                  <div className="w-full bg-gradient-to-t from-black/75 via-black/35 to-transparent px-4 py-4 sm:px-5 sm:py-6">
+                    <div className="flex items-center gap-2 text-white/90">
+                      <span className="inline-flex h-7 w-7 items-center justify-center rounded-lg bg-white/15 backdrop-blur-sm">
+                        <MapPin className="h-4 w-4" />
+                      </span>
+                      <p className="text-[11px] font-semibold uppercase tracking-wider drop-shadow">
+                        Interaktivna karta
+                      </p>
+                    </div>
+                    <h2 className="mt-1.5 text-lg font-bold text-white drop-shadow-lg sm:text-xl md:text-2xl">
                       Istraži fakultete na karti
                     </h2>
-                    <p className="text-sm text-white/90 mt-0.5">
-                      Markerima su označeni svi fakulteti u Hrvatskoj
+                    <p className="mt-0.5 hidden text-sm text-white/90 drop-shadow sm:block">
+                      Markerima su označene sve visokoškolske ustanove u Hrvatskoj.
                     </p>
                   </div>
                 </div>
-                <div className="h-64 md:h-80 w-full">
+                <div className="h-56 w-full sm:h-72 md:h-80">
                   <iframe
                     title="Karta fakulteta – Google My Maps"
                     src="https://www.google.com/maps/d/embed?mid=1hfnNynhIABrOthygSpdz0RnzAtJdHAU"
@@ -307,110 +431,163 @@ const KartaFakulteta = () => {
                   />
                 </div>
               </div>
-              <div className="px-4 py-3 border-t border-border bg-muted/30">
+              <div className="flex flex-col gap-2 border-t border-border bg-muted/30 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
                 <p className="text-xs text-muted-foreground">
-                  Koristi odabir grada i fakulteta u filterima za pretragu liste.{" "}
-                  <a
-                    href="https://www.google.com/maps/d/viewer?mid=1hfnNynhIABrOthygSpdz0RnzAtJdHAU"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-primary hover:underline inline-flex items-center gap-1 font-medium"
-                  >
-                    Otvori punu kartu (Google My Maps)
-                    <ExternalLink className="h-3 w-3" />
-                  </a>
+                  Filteri lijevo sužavaju listu ispod karte.
                 </p>
+                <a
+                  href="https://www.google.com/maps/d/viewer?mid=1hfnNynhIABrOthygSpdz0RnzAtJdHAU"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1 text-xs font-semibold text-primary hover:underline"
+                >
+                  Otvori punu kartu
+                  <ExternalLink className="h-3 w-3" />
+                </a>
               </div>
             </motion.div>
 
             {/* Faculty list */}
             <div className="flex-1 min-h-0">
-              <h3 className="text-lg font-semibold mb-4">
-                Fakulteti
-                <span className="text-muted-foreground font-normal ml-2">
-                  ({filtered.length} rezultata)
+              <div className="mb-3 flex items-baseline justify-between gap-3 sm:mb-4">
+                <h3 className="flex items-center gap-2 text-base font-bold text-foreground sm:text-lg">
+                  <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                    <GraduationCap className="h-4 w-4" />
+                  </span>
+                  Fakulteti
+                </h3>
+                <span className="rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-bold text-primary">
+                  {filtered.length} {filtered.length === 1 ? "rezultat" : "rezultata"}
                 </span>
-              </h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 md:gap-5">
-          {filtered.map((faculty, i) => (
-            <motion.div
-              key={faculty.id}
-              initial={{ opacity: 0, y: 16 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: Math.min(i * 0.03, 0.3) }}
-              className="group p-5 rounded-2xl bg-card border-2 shadow-card hover:shadow-card-hover hover:border-primary/20 transition-all duration-300 flex flex-col cursor-pointer hover:-translate-y-0.5"
-              onClick={() => setSelectedFacultyId(faculty.id)}
-            >
-              <div className="flex items-start justify-between gap-3 mb-3">
-                <div className="min-w-0 flex-1">
-                  <h3 className="font-semibold text-base leading-snug group-hover:text-primary transition-colors">
-                    {faculty.name}
-                  </h3>
-                  {faculty.provider && faculty.provider !== faculty.name && (
-                    <p className="mt-0.5 text-xs text-muted-foreground truncate">{faculty.provider}</p>
+              </div>
+
+              {filtered.length === 0 ? (
+                <div className="rounded-2xl border border-dashed border-border bg-muted/30 px-4 py-12 text-center">
+                  <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-2xl bg-muted text-muted-foreground">
+                    <Search className="h-6 w-6" />
+                  </div>
+                  <p className="text-sm font-semibold text-foreground sm:text-base">
+                    Nema rezultata za zadanu pretragu.
+                  </p>
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    Probaj drugi grad, vrstu ustanove ili očisti filtre.
+                  </p>
+                  {activeFilterCount > 0 && (
+                    <button
+                      type="button"
+                      onClick={resetAllFilters}
+                      className="mt-4 inline-flex min-h-[40px] items-center gap-1.5 rounded-xl border-2 border-border bg-background px-3 py-2 text-xs font-semibold text-foreground hover:bg-muted"
+                    >
+                      <X className="h-3.5 w-3.5" />
+                      Očisti filtre
+                    </button>
                   )}
                 </div>
-                <Badge
-                  variant="secondary"
-                  className="shrink-0 rounded-lg px-2.5 py-0.5 text-xs font-medium"
-                >
-                  {faculty.institutionType}
-                </Badge>
-              </div>
+              ) : (
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-5 xl:grid-cols-3">
+                  {filtered.map((faculty, i) => {
+                    const topPrograms = getTopPrograms(faculty.programs, 5).slice(0, 5);
+                    const initial = faculty.name.trim().charAt(0).toUpperCase() || "?";
+                    return (
+                      <motion.div
+                        key={faculty.id}
+                        initial={{ opacity: 0, y: 16 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true }}
+                        transition={{ delay: Math.min(i * 0.03, 0.3) }}
+                        className="group relative flex cursor-pointer flex-col overflow-hidden rounded-2xl border-2 border-border bg-card p-4 shadow-card transition-all duration-300 hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-card-hover sm:p-5"
+                        onClick={() => setSelectedFacultyId(faculty.id)}
+                      >
+                        <div className="mb-3 flex items-start gap-3">
+                          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-sm font-bold text-primary transition-colors group-hover:bg-primary group-hover:text-primary-foreground">
+                            {initial}
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <h3 className="line-clamp-2 text-sm font-bold leading-snug text-foreground transition-colors group-hover:text-primary sm:text-base">
+                              {faculty.name}
+                            </h3>
+                            <div className="mt-1 flex flex-wrap items-center gap-1.5 text-xs text-muted-foreground">
+                              <span className="inline-flex items-center gap-1">
+                                <MapPin className="h-3 w-3 text-primary/70" />
+                                {faculty.city}
+                              </span>
+                              <span aria-hidden>·</span>
+                              <Badge
+                                variant="secondary"
+                                className="rounded-md px-1.5 py-0 text-[10px] font-semibold"
+                              >
+                                {faculty.institutionType}
+                              </Badge>
+                            </div>
+                            {faculty.provider && faculty.provider !== faculty.name && (
+                              <p className="mt-1 truncate text-[11px] text-muted-foreground">
+                                {faculty.provider}
+                              </p>
+                            )}
+                          </div>
+                        </div>
 
-              <div className="flex items-center gap-2 text-sm text-muted-foreground mb-4">
-                <MapPin className="w-4 h-4 shrink-0 text-primary/70" />
-                <span>{faculty.city}</span>
-              </div>
+                        <div className="flex-1 rounded-xl bg-muted/40 p-3">
+                          <div className="mb-2 flex items-center justify-between gap-2">
+                            <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+                              Top programi
+                            </p>
+                            <span className="text-[11px] text-muted-foreground">
+                              {faculty.programs.length}{" "}
+                              {faculty.programs.length === 1 ? "program" : "programa"}
+                            </span>
+                          </div>
+                          {topPrograms.length === 0 ? (
+                            <p className="text-xs text-muted-foreground">Nema podataka o programima.</p>
+                          ) : (
+                            <ul className="space-y-1.5 text-sm">
+                              {topPrograms.map(({ p, latestYear, cutoff }) => (
+                                <li
+                                  key={p.name}
+                                  className="flex items-start justify-between gap-3"
+                                >
+                                  <span className="line-clamp-2 text-xs leading-snug text-foreground/90 sm:text-sm">
+                                    {p.name}
+                                  </span>
+                                  {cutoff !== null && latestYear ? (
+                                    <Badge
+                                      variant="outline"
+                                      className="shrink-0 rounded-md border-primary/30 bg-primary/5 text-[11px] tabular-nums text-primary"
+                                      title={`Prag u ${latestYear}.`}
+                                    >
+                                      {cutoff.toFixed(1)}
+                                    </Badge>
+                                  ) : (
+                                    <span className="shrink-0 text-[11px] text-muted-foreground">
+                                      —
+                                    </span>
+                                  )}
+                                </li>
+                              ))}
+                            </ul>
+                          )}
+                        </div>
 
-              <div className="flex-1 min-h-0">
-                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2">
-                  Studiji (top 5)
-                </p>
-                <ul className="space-y-2 text-sm">
-                  {getTopPrograms(faculty.programs, 5).slice(0, 5).map(({ p, latestYear, cutoff }) => (
-                    <li key={p.name} className="flex items-start justify-between gap-3">
-                      <span className="line-clamp-2 text-foreground/90">{p.name}</span>
-                      {cutoff !== null && latestYear ? (
-                        <Badge variant="outline" className="shrink-0 text-xs tabular-nums rounded-md">
-                          {cutoff.toFixed(1)}
-                        </Badge>
-                      ) : (
-                        <span className="shrink-0 text-xs text-muted-foreground">—</span>
-                      )}
-                    </li>
-                  ))}
-                  {faculty.programs.length === 0 && (
-                    <li className="text-xs text-muted-foreground">Nema podataka o programima.</li>
-                  )}
-                </ul>
-              </div>
-
-              <div className="pt-4 mt-auto">
-                <Button
-                  type="button"
-                  variant="secondary"
-                  className="w-full rounded-xl font-medium hover:bg-primary hover:text-primary-foreground transition-colors"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setSelectedFacultyId(faculty.id);
-                  }}
-                >
-                  Pogledaj studije
-                </Button>
-              </div>
-            </motion.div>
-          ))}
-        </div>
-
-        {filtered.length === 0 && (
-          <div className="text-center py-16 text-muted-foreground">
-            <p className="text-lg">Nema rezultata za zadanu pretragu.</p>
+                        <div className="mt-4">
+                          <Button
+                            type="button"
+                            className="inline-flex min-h-[44px] w-full items-center justify-center gap-1.5 rounded-xl bg-primary font-semibold text-primary-foreground shadow-sm transition-all hover:bg-primary/90 hover:shadow-md active:scale-[0.98] touch-manipulation sm:min-h-0"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setSelectedFacultyId(faculty.id);
+                            }}
+                          >
+                            Pogledaj studije
+                            <ArrowRight className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </motion.div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
           </div>
-        )}
-        </div>
-        </div>
         </div>
 
         <Dialog

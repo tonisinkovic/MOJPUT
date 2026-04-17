@@ -2,7 +2,17 @@ import Layout from "@/components/Layout";
 import VideoCard from "@/components/VideoCard";
 import { VIDEOS, CATEGORIES, featuredYouTubeVideoId } from "@/data/videos";
 import { motion, AnimatePresence } from "framer-motion";
-import { Search, Radio, PlayCircle, TrendingUp, Clock, X } from "lucide-react";
+import {
+  Clock,
+  Film,
+  PlayCircle,
+  Radio,
+  Search,
+  Sparkles,
+  TrendingUp,
+  Video,
+  X,
+} from "lucide-react";
 import { useState, useMemo, useEffect } from "react";
 
 type SortOption = "popularnost" | "najnovije";
@@ -170,56 +180,110 @@ const VideoPage = () => {
     return { upcoming, past };
   }, [now]);
 
+  const totalVideos = VIDEOS.length;
+  const upcomingCount = eventsByState.upcoming.length;
+
   return (
     <Layout>
-      <section className="container py-8 md:py-12 max-w-7xl mx-auto px-4">
-        {/* Header */}
+      <section className="container max-w-7xl mx-auto px-3 sm:px-4 py-4 sm:py-8 md:py-12 pb-[max(1.5rem,env(safe-area-inset-bottom))]">
+        {/* Hero */}
         <motion.div
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3 }}
-          className="mb-8"
+          className="relative mb-5 overflow-hidden rounded-2xl border border-violet-200/60 bg-gradient-to-br from-violet-500/[0.12] via-violet-500/[0.04] to-transparent p-4 shadow-sm sm:mb-7 sm:p-5 md:mb-8 md:p-6 dark:border-violet-500/20 dark:from-violet-500/[0.18] dark:via-violet-500/[0.06]"
         >
-          <h1 className="text-2xl md:text-4xl font-bold text-slate-900 dark:text-slate-50 tracking-tight">
-            {contentView === "predavanja" ? "Online predavanja" : "Video sadržaji"}
-          </h1>
-          <p className="text-slate-600 dark:text-slate-400 text-sm md:text-base mt-1">
-            {contentView === "predavanja"
-              ? "Uživo predavanja, Q&A i paneli na jednom mjestu"
-              : "Predavanja, iskustva studenata i edukativni materijali"}
-          </p>
-        </motion.div>
+          <div
+            aria-hidden
+            className="pointer-events-none absolute -right-10 -top-10 h-36 w-36 rounded-full bg-violet-500/20 blur-3xl sm:h-48 sm:w-48"
+          />
+          <div
+            aria-hidden
+            className="pointer-events-none absolute -bottom-12 -left-10 h-32 w-32 rounded-full bg-violet-500/10 blur-3xl sm:h-44 sm:w-44"
+          />
 
-        {/* Glavna podjela sadržaja */}
-        <motion.div
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.3, delay: 0.03 }}
-          className="mb-7"
-        >
-          <div className="inline-flex w-full sm:w-auto rounded-2xl bg-slate-100 dark:bg-slate-800 p-1.5 gap-1">
-            <button
-              type="button"
-              onClick={() => setContentView("videozapisi")}
-              className={`flex-1 sm:flex-none px-4 py-2 rounded-xl text-sm font-semibold transition-colors ${
-                contentView === "videozapisi"
-                  ? "bg-violet-600 text-white"
-                  : "text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-slate-100"
-              }`}
+          <div className="relative flex flex-col gap-4 sm:flex-row sm:items-start sm:gap-5">
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-violet-500 to-violet-700 text-white shadow-lg shadow-violet-500/30 sm:h-14 sm:w-14">
+              {contentView === "predavanja" ? (
+                <Radio className="h-6 w-6 sm:h-7 sm:w-7" />
+              ) : (
+                <Video className="h-6 w-6 sm:h-7 sm:w-7" />
+              )}
+            </div>
+            <div className="min-w-0 flex-1">
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="inline-flex items-center gap-1 rounded-full border border-violet-300/60 bg-violet-500/10 px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-violet-700 dark:border-violet-400/40 dark:text-violet-300">
+                  <Sparkles className="h-3 w-3" />
+                  {contentView === "predavanja" ? "Uživo" : "Knjižnica"}
+                </span>
+              </div>
+              <h1 className="mt-2 text-balance text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl md:text-4xl dark:text-slate-50">
+                {contentView === "predavanja" ? "Online predavanja" : "Video sadržaji"}
+              </h1>
+              <p className="mt-1.5 max-w-2xl text-pretty text-sm leading-relaxed text-slate-600 sm:text-base dark:text-slate-400">
+                {contentView === "predavanja"
+                  ? "Uživo predavanja, Q&A i paneli — jasan raspored i jedan klik do Zoom sobe."
+                  : "Predavanja, iskustva studenata i edukativni materijali — brzo se filtrira, lako pronalazi."}
+              </p>
+            </div>
+          </div>
+
+          {/* View switcher */}
+          <div className="relative mt-4 sm:mt-5">
+            <div
+              role="tablist"
+              aria-label="Vrsta sadržaja"
+              className="grid grid-cols-2 gap-1.5 rounded-2xl border border-slate-200/70 bg-white/70 p-1.5 shadow-sm backdrop-blur-sm sm:inline-grid sm:w-auto dark:border-slate-700/60 dark:bg-slate-900/60"
             >
-              Videozapisi
-            </button>
-            <button
-              type="button"
-              onClick={() => setContentView("predavanja")}
-              className={`flex-1 sm:flex-none px-4 py-2 rounded-xl text-sm font-semibold transition-colors ${
-                contentView === "predavanja"
-                  ? "bg-violet-600 text-white"
-                  : "text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-slate-100"
-              }`}
-            >
-              Online predavanja
-            </button>
+              <button
+                type="button"
+                role="tab"
+                aria-selected={contentView === "videozapisi"}
+                onClick={() => setContentView("videozapisi")}
+                className={`inline-flex min-h-[44px] items-center justify-center gap-2 rounded-xl px-3 py-2 text-sm font-semibold transition-all touch-manipulation sm:px-5 ${
+                  contentView === "videozapisi"
+                    ? "bg-gradient-to-r from-violet-600 to-violet-700 text-white shadow-md shadow-violet-500/25"
+                    : "text-slate-700 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800"
+                }`}
+              >
+                <Film className="h-4 w-4" />
+                <span>Videozapisi</span>
+                <span
+                  className={`ml-0.5 rounded-full px-1.5 py-0.5 text-[10px] font-bold ${
+                    contentView === "videozapisi"
+                      ? "bg-white/20 text-white"
+                      : "bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-200"
+                  }`}
+                >
+                  {totalVideos}
+                </span>
+              </button>
+              <button
+                type="button"
+                role="tab"
+                aria-selected={contentView === "predavanja"}
+                onClick={() => setContentView("predavanja")}
+                className={`inline-flex min-h-[44px] items-center justify-center gap-2 rounded-xl px-3 py-2 text-sm font-semibold transition-all touch-manipulation sm:px-5 ${
+                  contentView === "predavanja"
+                    ? "bg-gradient-to-r from-violet-600 to-violet-700 text-white shadow-md shadow-violet-500/25"
+                    : "text-slate-700 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800"
+                }`}
+              >
+                <Radio className="h-4 w-4" />
+                <span>Predavanja</span>
+                {upcomingCount > 0 && (
+                  <span
+                    className={`ml-0.5 rounded-full px-1.5 py-0.5 text-[10px] font-bold ${
+                      contentView === "predavanja"
+                        ? "bg-white/20 text-white"
+                        : "bg-violet-500/15 text-violet-700 dark:text-violet-300"
+                    }`}
+                  >
+                    {upcomingCount}
+                  </span>
+                )}
+              </button>
+            </div>
           </div>
         </motion.div>
 
@@ -232,24 +296,29 @@ const VideoPage = () => {
           transition={{ duration: 0.3, delay: 0.05 }}
           className="mb-10"
         >
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-5">
+          <div className="mb-4 flex flex-col gap-3 sm:mb-5 md:flex-row md:items-center md:justify-between">
             <div className="flex items-center gap-2">
-              <Radio className="w-5 h-5 text-violet-600 dark:text-violet-400" />
-              <h2 className="text-lg font-bold text-slate-900 dark:text-slate-100">Predavanja</h2>
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-violet-500/10 text-violet-600 dark:text-violet-400">
+                <Radio className="h-4 w-4" />
+              </div>
+              <h2 className="text-base font-bold text-slate-900 sm:text-lg dark:text-slate-100">
+                Raspored predavanja
+              </h2>
             </div>
-            <div className="inline-flex rounded-xl bg-slate-100 dark:bg-slate-800 p-1 w-full md:w-auto">
+            <div className="inline-flex w-full rounded-xl border border-slate-200 bg-slate-50 p-1 md:w-auto dark:border-slate-700 dark:bg-slate-800/50">
               {[
-                { key: "sva", label: "Sva predavanja" },
+                { key: "sva", label: "Sva" },
                 { key: "nadolazeca", label: "Nadolazeća" },
                 { key: "prosla", label: "Prošla" },
               ].map((filter) => (
                 <button
                   key={filter.key}
+                  type="button"
                   onClick={() => setEventFilter(filter.key as EventFilter)}
-                  className={`flex-1 md:flex-none px-3 py-1.5 rounded-lg text-xs md:text-sm font-semibold transition-colors ${
+                  className={`inline-flex min-h-[40px] flex-1 items-center justify-center rounded-lg px-3 py-1.5 text-xs font-semibold transition-all touch-manipulation md:flex-none md:text-sm ${
                     eventFilter === filter.key
-                      ? "bg-violet-600 text-white"
-                      : "text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-slate-100"
+                      ? "bg-white text-violet-700 shadow-sm dark:bg-slate-900 dark:text-violet-300"
+                      : "text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100"
                   }`}
                 >
                   {filter.label}
@@ -260,187 +329,256 @@ const VideoPage = () => {
 
           {(eventFilter === "sva" || eventFilter === "nadolazeca") && (
             <div className="mb-8">
-              <h3 className="text-base md:text-lg font-semibold text-slate-900 dark:text-slate-100 mb-1">
-                Nadolazeća predavanja
-              </h3>
-              <p className="text-sm text-slate-600 dark:text-slate-400 mb-4">
-                {"Uskoro \u0107e ovdje biti zakazana predavanja — prati najave na MojPutu."}
-              </p>
-              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-                {eventsByState.upcoming.map((event, i) => {
-                  const status = getEventStatus(event, now);
-                  const isJoinEnabled = status === "Uživo";
-
-                  return (
-                    <motion.article
-                      key={event.id}
-                      initial={{ opacity: 0, y: 12 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.3, delay: i * 0.06 }}
-                      whileHover={{ y: -3, scale: 1.01 }}
-                      onClick={() => setSelectedEvent(event)}
-                      className="cursor-pointer rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-4 md:p-5 shadow-sm hover:shadow-lg transition-all"
-                    >
-                      <div className="flex items-start justify-between gap-2 mb-2">
-                        <h4 className="font-bold text-slate-900 dark:text-slate-100 text-sm md:text-base leading-snug">
-                          {event.title}
-                        </h4>
-                        <span
-                          className={`shrink-0 inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider ${
-                            status === "Uživo"
-                              ? "bg-red-500 text-white"
-                              : status === "Danas"
-                                ? "bg-amber-500 text-white"
-                                : "bg-violet-100 text-violet-700 dark:bg-violet-500/20 dark:text-violet-300"
-                          }`}
-                        >
-                          {status === "Uživo" && <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />}
-                          {status}
-                        </span>
-                      </div>
-                      <p className="text-sm text-slate-600 dark:text-slate-400 mb-3 line-clamp-2">
-                        {event.shortDescription}
-                      </p>
-                      <div className="space-y-1.5 text-xs md:text-sm text-slate-600 dark:text-slate-300 mb-3">
-                        <p>{formatDateTime(event.startAt)}</p>
-                        <p>Trajanje: {event.durationMinutes} min</p>
-                        <p className="font-semibold text-violet-600 dark:text-violet-400">
-                          Počinje za: {getCountdownLabel(event, now)}
-                        </p>
-                      </div>
-                      <div className="flex flex-wrap gap-2">
-                        <button
-                          type="button"
-                          title="Predavanje se otvara putem Zooma"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setSelectedEvent(event);
-                          }}
-                          disabled={!isJoinEnabled}
-                          className={`px-3 py-2 rounded-xl text-xs font-semibold transition-colors ${
-                            isJoinEnabled
-                              ? "bg-violet-600 text-white hover:bg-violet-700"
-                              : "bg-slate-200 dark:bg-slate-700 text-slate-500 dark:text-slate-300 cursor-not-allowed"
-                          }`}
-                        >
-                          Pridruži se predavanju
-                        </button>
-                        <button
-                          type="button"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setRemindedEvents((prev) => ({ ...prev, [event.id]: true }));
-                          }}
-                          className="px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-600 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
-                        >
-                          {remindedEvents[event.id] ? "Podsjetnik postavljen" : "Podsjeti me"}
-                        </button>
-                      </div>
-                      <p className="mt-2 text-[11px] text-slate-500 dark:text-slate-400">
-                        Predavanje se otvara putem Zooma.
-                      </p>
-                    </motion.article>
-                  );
-                })}
+              <div className="mb-3 flex items-baseline justify-between gap-3 sm:mb-4">
+                <h3 className="text-sm font-semibold uppercase tracking-wide text-slate-700 sm:text-base sm:normal-case dark:text-slate-200">
+                  Nadolazeća predavanja
+                </h3>
+                <span className="rounded-full bg-violet-500/10 px-2 py-0.5 text-[11px] font-bold text-violet-700 dark:text-violet-300">
+                  {eventsByState.upcoming.length}
+                </span>
               </div>
+              {eventsByState.upcoming.length === 0 ? (
+                <div className="rounded-2xl border border-dashed border-slate-200 bg-slate-50/60 px-4 py-8 text-center dark:border-slate-700 dark:bg-slate-900/40">
+                  <p className="text-sm text-slate-600 dark:text-slate-400">
+                    Trenutačno nema zakazanih predavanja — prati najave na MojPutu.
+                  </p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 gap-3 sm:gap-4 md:grid-cols-2 xl:grid-cols-3">
+                  {eventsByState.upcoming.map((event, i) => {
+                    const status = getEventStatus(event, now);
+                    const isJoinEnabled = status === "Uživo";
+                    const eventDate = new Date(event.startAt);
+                    const dayNum = eventDate.toLocaleDateString("hr-HR", { day: "2-digit" });
+                    const monthShort = eventDate
+                      .toLocaleDateString("hr-HR", { month: "short" })
+                      .replace(".", "");
+                    const timeStr = eventDate.toLocaleTimeString("hr-HR", {
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    });
+
+                    return (
+                      <motion.article
+                        key={event.id}
+                        initial={{ opacity: 0, y: 12 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.3, delay: i * 0.06 }}
+                        whileHover={{ y: -3 }}
+                        onClick={() => setSelectedEvent(event)}
+                        className="group relative cursor-pointer overflow-hidden rounded-2xl border border-slate-200 bg-white p-4 shadow-sm transition-all hover:shadow-lg hover:shadow-violet-500/10 sm:p-5 dark:border-slate-700 dark:bg-slate-900"
+                      >
+                        <div className="flex items-start gap-3">
+                          {/* Date block */}
+                          <div className="flex h-16 w-14 shrink-0 flex-col items-center justify-center rounded-xl bg-gradient-to-br from-violet-500 to-violet-700 text-white shadow-md shadow-violet-500/20 sm:h-[68px] sm:w-16">
+                            <span className="text-[10px] font-bold uppercase tracking-wider opacity-90">
+                              {monthShort}
+                            </span>
+                            <span className="text-xl font-bold leading-none sm:text-2xl">{dayNum}</span>
+                            <span className="mt-0.5 text-[10px] font-semibold opacity-90">{timeStr}</span>
+                          </div>
+
+                          <div className="min-w-0 flex-1">
+                            <div className="mb-1.5 flex items-start justify-between gap-2">
+                              <span
+                                className={`inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider ${
+                                  status === "Uživo"
+                                    ? "bg-red-500 text-white"
+                                    : status === "Danas"
+                                      ? "bg-amber-500 text-white"
+                                      : "bg-violet-100 text-violet-700 dark:bg-violet-500/20 dark:text-violet-300"
+                                }`}
+                              >
+                                {status === "Uživo" && (
+                                  <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-white" />
+                                )}
+                                {status}
+                              </span>
+                              <span className="text-xl" aria-hidden>
+                                {event.thumbnail}
+                              </span>
+                            </div>
+                            <h4 className="line-clamp-2 text-sm font-bold leading-snug text-slate-900 sm:text-base dark:text-slate-100">
+                              {event.title}
+                            </h4>
+                          </div>
+                        </div>
+
+                        <p className="mt-3 line-clamp-2 text-sm leading-relaxed text-slate-600 dark:text-slate-400">
+                          {event.shortDescription}
+                        </p>
+
+                        <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-slate-600 dark:text-slate-300">
+                          <span className="inline-flex items-center gap-1">
+                            <Clock className="h-3.5 w-3.5 opacity-70" />
+                            {event.durationMinutes} min
+                          </span>
+                          <span className="font-semibold text-violet-600 dark:text-violet-400">
+                            Počinje za {getCountdownLabel(event, now)}
+                          </span>
+                        </div>
+
+                        <div className="mt-4 flex flex-col gap-2 sm:flex-row">
+                          <button
+                            type="button"
+                            title="Predavanje se otvara putem Zooma"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setSelectedEvent(event);
+                            }}
+                            disabled={!isJoinEnabled}
+                            className={`inline-flex min-h-[44px] flex-1 items-center justify-center gap-1.5 rounded-xl px-3 py-2 text-xs font-semibold transition-all touch-manipulation ${
+                              isJoinEnabled
+                                ? "bg-gradient-to-r from-violet-600 to-violet-700 text-white shadow-md shadow-violet-500/25 hover:from-violet-700 hover:to-violet-800"
+                                : "cursor-not-allowed bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400"
+                            }`}
+                          >
+                            <PlayCircle className="h-4 w-4" />
+                            Pridruži se
+                          </button>
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setRemindedEvents((prev) => ({ ...prev, [event.id]: true }));
+                            }}
+                            className={`inline-flex min-h-[44px] flex-1 items-center justify-center gap-1.5 rounded-xl border px-3 py-2 text-xs font-semibold transition-colors touch-manipulation ${
+                              remindedEvents[event.id]
+                                ? "border-emerald-300 bg-emerald-50 text-emerald-700 dark:border-emerald-500/30 dark:bg-emerald-500/10 dark:text-emerald-300"
+                                : "border-slate-200 text-slate-700 hover:bg-slate-50 dark:border-slate-600 dark:text-slate-200 dark:hover:bg-slate-800"
+                            }`}
+                          >
+                            {remindedEvents[event.id] ? "Podsjetnik postavljen" : "Podsjeti me"}
+                          </button>
+                        </div>
+                        <p className="mt-2 text-[11px] text-slate-500 dark:text-slate-400">
+                          Otvara se putem Zooma.
+                        </p>
+                      </motion.article>
+                    );
+                  })}
+                </div>
+              )}
             </div>
           )}
 
           {(eventFilter === "sva" || eventFilter === "prosla") && (
             <div>
-              <h3 className="text-base md:text-lg font-semibold text-slate-900 dark:text-slate-100 mb-3">
-                Prošla predavanja
-              </h3>
-              <div className="rounded-2xl border border-dashed border-slate-200 bg-slate-50/80 px-4 py-10 text-center dark:border-slate-700 dark:bg-slate-900/40 sm:px-8">
-                <p className="text-sm text-slate-600 dark:text-slate-400 md:text-base">
-                  {
-                    "Trenuta\u010Dno nema pro\u0161lih predavanja u arhivi. Snimke \u0107e se ovdje pojaviti nakon odr\u017Eanih termina."
-                  }
+              <div className="mb-3 flex items-baseline gap-3">
+                <h3 className="text-sm font-semibold uppercase tracking-wide text-slate-700 sm:text-base sm:normal-case dark:text-slate-200">
+                  Prošla predavanja
+                </h3>
+              </div>
+              <div className="rounded-2xl border border-dashed border-slate-200 bg-slate-50/60 px-4 py-10 text-center dark:border-slate-700 dark:bg-slate-900/40 sm:px-8">
+                <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-200/70 text-slate-500 dark:bg-slate-800 dark:text-slate-400">
+                  <Film className="h-6 w-6" />
+                </div>
+                <p className="text-sm text-slate-600 sm:text-base dark:text-slate-400">
+                  Trenutačno nema prošlih predavanja u arhivi.
+                </p>
+                <p className="mt-1 text-xs text-slate-500 dark:text-slate-500">
+                  Snimke će se pojaviti nakon održanih termina.
                 </p>
               </div>
             </div>
           )}
 
-          {selectedEvent && (
-            <div
-              className="fixed inset-0 z-[70] bg-slate-900/60 backdrop-blur-sm p-4 flex items-center justify-center"
-              onClick={() => setSelectedEvent(null)}
-            >
+          <AnimatePresence>
+            {selectedEvent && (
               <motion.div
-                initial={{ opacity: 0, y: 16 }}
-                animate={{ opacity: 1, y: 0 }}
-                onClick={(e) => e.stopPropagation()}
-                className="w-full max-w-2xl rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-5 md:p-6 shadow-2xl"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="fixed inset-0 z-[70] flex items-end justify-center bg-slate-900/60 p-0 backdrop-blur-sm sm:items-center sm:p-4"
+                onClick={() => setSelectedEvent(null)}
               >
-                <div className="flex items-start justify-between gap-3 mb-4">
-                  <div>
-                    <h3 className="text-xl md:text-2xl font-bold text-slate-900 dark:text-slate-100">
-                      {selectedEvent.title}
-                    </h3>
-                    <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
-                      {formatDateTime(selectedEvent.startAt)} · {selectedEvent.durationMinutes} min
-                    </p>
+                <motion.div
+                  initial={{ opacity: 0, y: 24, scale: 0.98 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: 24, scale: 0.98 }}
+                  transition={{ duration: 0.25 }}
+                  onClick={(e) => e.stopPropagation()}
+                  className="max-h-[90dvh] w-full max-w-2xl overflow-y-auto rounded-t-2xl border border-slate-200 bg-white p-5 shadow-2xl sm:rounded-2xl md:p-6 dark:border-slate-700 dark:bg-slate-900"
+                >
+                  <div className="mb-4 flex items-start justify-between gap-3">
+                    <div className="min-w-0 flex-1">
+                      <span
+                        className={`mb-2 inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider ${
+                          getEventStatus(selectedEvent, now) === "Uživo"
+                            ? "bg-red-500 text-white"
+                            : getEventStatus(selectedEvent, now) === "Danas"
+                              ? "bg-amber-500 text-white"
+                              : "bg-violet-100 text-violet-700 dark:bg-violet-500/20 dark:text-violet-300"
+                        }`}
+                      >
+                        {getEventStatus(selectedEvent, now) === "Uživo" && (
+                          <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-white" />
+                        )}
+                        {getEventStatus(selectedEvent, now)}
+                      </span>
+                      <h3 className="text-lg font-bold text-slate-900 sm:text-xl md:text-2xl dark:text-slate-100">
+                        {selectedEvent.title}
+                      </h3>
+                      <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+                        {formatDateTime(selectedEvent.startAt)} · {selectedEvent.durationMinutes} min
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setSelectedEvent(null)}
+                      aria-label="Zatvori"
+                      className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-slate-500 transition-colors hover:bg-slate-100 dark:hover:bg-slate-800"
+                    >
+                      <X className="h-5 w-5" />
+                    </button>
                   </div>
-                  <button
-                    type="button"
-                    onClick={() => setSelectedEvent(null)}
-                    className="inline-flex items-center justify-center rounded-lg p-2 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800"
-                  >
-                    <X className="w-4 h-4" />
-                  </button>
-                </div>
 
-                <div className="mb-4">
-                  <span
-                    className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider ${
+                  <p className="mb-4 text-sm leading-relaxed text-slate-700 md:text-base dark:text-slate-300">
+                    {selectedEvent.longDescription}
+                  </p>
+
+                  <div className="mb-4 rounded-xl border border-slate-200 bg-slate-50/60 p-4 dark:border-slate-700 dark:bg-slate-800/40">
+                    <p className="mb-2 text-sm font-semibold text-slate-900 dark:text-slate-100">
+                      Što ćeš naučiti:
+                    </p>
+                    <ul className="space-y-1.5 text-sm text-slate-700 dark:text-slate-300">
+                      {selectedEvent.learnPoints.map((point) => (
+                        <li key={point} className="flex items-start gap-2">
+                          <span
+                            aria-hidden
+                            className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-violet-500"
+                          />
+                          <span>{point}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+
+                  <p className="mb-5 text-sm text-slate-600 dark:text-slate-400">
+                    {selectedEvent.speaker}
+                  </p>
+
+                  <a
+                    href={selectedEvent.zoomLink}
+                    target="_blank"
+                    rel="noreferrer"
+                    title="Predavanje se otvara putem Zooma"
+                    className={`inline-flex w-full min-h-[48px] items-center justify-center gap-2 rounded-xl px-4 py-3 text-sm font-semibold transition-colors sm:w-auto ${
                       getEventStatus(selectedEvent, now) === "Uživo"
-                        ? "bg-red-500 text-white"
-                        : "bg-violet-100 text-violet-700 dark:bg-violet-500/20 dark:text-violet-300"
+                        ? "bg-gradient-to-r from-violet-600 to-violet-700 text-white shadow-md shadow-violet-500/25 hover:from-violet-700 hover:to-violet-800"
+                        : "pointer-events-none bg-slate-200 text-slate-500 dark:bg-slate-700 dark:text-slate-300"
                     }`}
                   >
-                    {getEventStatus(selectedEvent, now) === "Uživo" && (
-                      <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
-                    )}
-                    {getEventStatus(selectedEvent, now)}
-                  </span>
-                </div>
-
-                <p className="text-sm md:text-base text-slate-700 dark:text-slate-300 mb-4">
-                  {selectedEvent.longDescription}
-                </p>
-
-                <div className="mb-4">
-                  <p className="text-sm font-semibold text-slate-900 dark:text-slate-100 mb-2">
-                    Što ćeš naučiti:
+                    <PlayCircle className="h-4 w-4" />
+                    Pridruži se predavanju
+                  </a>
+                  <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">
+                    Predavanje se otvara putem Zooma.
                   </p>
-                  <ul className="space-y-1 text-sm text-slate-700 dark:text-slate-300 list-disc pl-5">
-                    {selectedEvent.learnPoints.map((point) => (
-                      <li key={point}>{point}</li>
-                    ))}
-                  </ul>
-                </div>
-
-                <p className="text-sm text-slate-600 dark:text-slate-400 mb-5">{selectedEvent.speaker}</p>
-
-                <a
-                  href={selectedEvent.zoomLink}
-                  target="_blank"
-                  rel="noreferrer"
-                  title="Predavanje se otvara putem Zooma"
-                  className={`inline-flex items-center justify-center px-4 py-2.5 rounded-xl text-sm font-semibold transition-colors ${
-                    getEventStatus(selectedEvent, now) === "Uživo"
-                      ? "bg-violet-600 hover:bg-violet-700 text-white"
-                      : "bg-slate-200 dark:bg-slate-700 text-slate-500 dark:text-slate-300 pointer-events-none"
-                  }`}
-                >
-                  Pridruži se predavanju
-                </a>
-                <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">
-                  Predavanje se otvara putem Zooma.
-                </p>
+                </motion.div>
               </motion.div>
-            </div>
-          )}
+            )}
+          </AnimatePresence>
         </motion.div>
           </>
         )}
@@ -453,15 +591,20 @@ const VideoPage = () => {
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3, delay: 0.1 }}
-            className="mb-10"
+            className="mb-8 sm:mb-10"
           >
-            <div className="flex items-center gap-2 mb-4">
-              <PlayCircle className="w-5 h-5 text-teal-600 dark:text-teal-400" />
-              <h2 className="text-lg font-bold text-slate-900 dark:text-slate-100">
+            <div className="mb-3 flex items-center gap-2 sm:mb-4">
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-teal-500/10 text-teal-600 dark:text-teal-400">
+                <PlayCircle className="h-4 w-4" />
+              </div>
+              <h2 className="text-base font-bold text-slate-900 sm:text-lg dark:text-slate-100">
                 Nastavi gledati
               </h2>
+              <span className="rounded-full bg-teal-500/10 px-2 py-0.5 text-[11px] font-bold text-teal-700 dark:text-teal-300">
+                {continueWatching.length}
+              </span>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3 xl:grid-cols-4">
               {continueWatching.map((video) => (
                 <VideoCard
                   key={video.id}
@@ -485,68 +628,95 @@ const VideoPage = () => {
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3, delay: 0.15 }}
-          className="mb-6 space-y-4"
+          className="mb-5 space-y-3 sm:mb-6 sm:space-y-4"
         >
-          <div className="flex flex-col sm:flex-row gap-3">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-              <input
-                type="text"
-                placeholder="Pretraži videe..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-violet-500/50 focus:border-violet-500 text-sm"
-              />
-            </div>
-            <div className="flex gap-2">
+          {/* Search */}
+          <div className="relative">
+            <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+            <input
+              type="text"
+              placeholder="Pretraži videe…"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full rounded-xl border border-slate-200 bg-white py-3 pl-10 pr-10 text-base text-slate-900 placeholder:text-slate-400 focus:border-violet-500 focus:outline-none focus:ring-2 focus:ring-violet-500/30 sm:py-2.5 sm:text-sm dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
+            />
+            {searchQuery && (
               <button
+                type="button"
+                onClick={() => setSearchQuery("")}
+                aria-label="Obriši pretragu"
+                className="absolute right-2 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-lg text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-800 dark:hover:text-slate-200"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            )}
+          </div>
+
+          {/* Sort segmented control */}
+          <div className="flex items-center justify-between gap-3">
+            <p className="hidden text-xs font-semibold uppercase tracking-wide text-slate-500 sm:block dark:text-slate-400">
+              Poredaj
+            </p>
+            <div className="inline-flex w-full rounded-xl border border-slate-200 bg-slate-50 p-1 sm:w-auto dark:border-slate-700 dark:bg-slate-800/50">
+              <button
+                type="button"
                 onClick={() => setSortBy("popularnost")}
-                className={`inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-sm font-semibold transition-colors ${
+                className={`inline-flex min-h-[40px] flex-1 items-center justify-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold transition-all sm:flex-none sm:text-sm ${
                   sortBy === "popularnost"
-                    ? "bg-violet-600 text-white"
-                    : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700"
+                    ? "bg-white text-violet-700 shadow-sm dark:bg-slate-900 dark:text-violet-300"
+                    : "text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100"
                 }`}
               >
-                <TrendingUp className="w-4 h-4" />
-                Popularnost
+                <TrendingUp className="h-4 w-4" />
+                Popularno
               </button>
               <button
+                type="button"
                 onClick={() => setSortBy("najnovije")}
-                className={`inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-sm font-semibold transition-colors ${
+                className={`inline-flex min-h-[40px] flex-1 items-center justify-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold transition-all sm:flex-none sm:text-sm ${
                   sortBy === "najnovije"
-                    ? "bg-violet-600 text-white"
-                    : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700"
+                    ? "bg-white text-violet-700 shadow-sm dark:bg-slate-900 dark:text-violet-300"
+                    : "text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100"
                 }`}
               >
-                <Clock className="w-4 h-4" />
+                <Clock className="h-4 w-4" />
                 Najnovije
               </button>
             </div>
           </div>
 
-          {/* Category tabs */}
-          <div className="flex flex-wrap gap-1 border-b border-slate-200 dark:border-slate-700 pb-2">
-            {CATEGORIES.map((cat) => (
-              <button
-                key={cat}
-                onClick={() => setActiveCategory(cat)}
-                className={`relative px-4 py-2 rounded-lg text-sm font-semibold transition-colors ${
-                  activeCategory === cat
-                    ? "text-violet-600 dark:text-violet-400"
-                    : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100"
-                }`}
-              >
-                {cat}
-                {activeCategory === cat && (
-                  <motion.span
-                    layoutId="activeTab"
-                    className="absolute bottom-0 left-0 right-0 h-0.5 bg-violet-600 dark:bg-violet-400 rounded-full"
-                    transition={{ type: "spring", bounce: 0.2, duration: 0.4 }}
-                  />
-                )}
-              </button>
-            ))}
+          {/* Category chips (scrollable on mobile) */}
+          <div className="-mx-3 sm:-mx-4">
+            <div
+              className="flex gap-2 overflow-x-auto px-3 pb-1 sm:px-4 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+              role="tablist"
+              aria-label="Kategorije videa"
+            >
+              {CATEGORIES.map((cat) => (
+                <button
+                  key={cat}
+                  type="button"
+                  role="tab"
+                  aria-selected={activeCategory === cat}
+                  onClick={() => setActiveCategory(cat)}
+                  className={`inline-flex shrink-0 items-center rounded-full border px-3.5 py-2 text-xs font-semibold transition-all touch-manipulation sm:text-sm ${
+                    activeCategory === cat
+                      ? "border-violet-600 bg-violet-600 text-white shadow-md shadow-violet-500/25"
+                      : "border-slate-200 bg-white text-slate-700 hover:border-slate-300 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300 dark:hover:border-slate-600 dark:hover:bg-slate-800"
+                  }`}
+                >
+                  {cat}
+                </button>
+              ))}
+            </div>
           </div>
+
+          {/* Result count */}
+          <p className="text-xs text-slate-500 dark:text-slate-400">
+            {filteredVideos.length === 0
+              ? "Nema rezultata"
+              : `${filteredVideos.length} ${filteredVideos.length === 1 ? "video" : "videa"}${activeCategory !== "Sve" ? ` u kategoriji "${activeCategory}"` : ""}`}
+          </p>
         </motion.div>
 
         {/* Video grid */}
@@ -561,16 +731,35 @@ const VideoPage = () => {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                className="py-16 text-center"
+                className="rounded-2xl border border-dashed border-slate-200 bg-slate-50/60 px-4 py-12 text-center dark:border-slate-700 dark:bg-slate-900/40"
               >
-                <p className="text-slate-500 dark:text-slate-400">
+                <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-200/70 text-slate-500 dark:bg-slate-800 dark:text-slate-400">
+                  <Search className="h-6 w-6" />
+                </div>
+                <p className="text-sm font-semibold text-slate-700 sm:text-base dark:text-slate-200">
                   Nema videa koji odgovaraju pretrazi.
                 </p>
+                <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+                  Probaj drugu kategoriju ili ključnu riječ.
+                </p>
+                {(searchQuery || activeCategory !== "Sve") && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSearchQuery("");
+                      setActiveCategory("Sve");
+                    }}
+                    className="mt-4 inline-flex min-h-[40px] items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
+                  >
+                    <X className="h-3.5 w-3.5" />
+                    Očisti filtre
+                  </button>
+                )}
               </motion.div>
             ) : (
               <motion.div
                 layout
-                className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 md:gap-6"
+                className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-5 lg:grid-cols-3 md:gap-6 xl:grid-cols-4"
               >
                 {filteredVideos.map((video, i) => (
                   <motion.div

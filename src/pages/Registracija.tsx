@@ -41,6 +41,10 @@ const Registracija = () => {
   const [resendLoading, setResendLoading] = useState(false);
   const [resendInfo, setResendInfo] = useState("");
   const [error, setError] = useState("");
+  const [errorKind, setErrorKind] = useState<
+    "email_already_registered" | "pending_verification" | null
+  >(null);
+  const [existingEmail, setExistingEmail] = useState<string>("");
   const [showPw, setShowPw] = useState(false);
   const [showConfirmPw, setShowConfirmPw] = useState(false);
 
@@ -55,20 +59,28 @@ const Registracija = () => {
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError("");
+    setErrorKind(null);
+    setExistingEmail("");
     if (formData.password !== formData.confirmPassword) {
       setError("Lozinke se ne poklapaju.");
       return;
     }
 
     const username = `${formData.firstName} ${formData.lastName}`.trim();
+    const submittedEmail = formData.email.trim();
     const res = await authRegister({
-      username: username || formData.email.split("@")[0],
-      email: formData.email,
+      username: username || submittedEmail.split("@")[0],
+      email: submittedEmail,
       password: formData.password,
     });
 
     if (!res.success) {
       setError(res.message);
+      const code = res.code;
+      if (code === "email_already_registered" || code === "pending_verification") {
+        setErrorKind(code);
+        setExistingEmail(submittedEmail);
+      }
       return;
     }
 
@@ -488,7 +500,7 @@ const Registracija = () => {
                       </div>
                     </div>
 
-                    {error && (
+                    {error && !errorKind && (
                       <motion.div
                         initial={{ opacity: 0, y: -6 }}
                         animate={{ opacity: 1, y: 0 }}
@@ -499,6 +511,99 @@ const Registracija = () => {
                           !
                         </span>
                         <span>{error}</span>
+                      </motion.div>
+                    )}
+
+                    {errorKind === "email_already_registered" && (
+                      <motion.div
+                        initial={{ opacity: 0, y: -6 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="rounded-xl border border-primary/30 bg-primary/5 px-4 py-3.5 text-[13px] text-foreground"
+                        role="alert"
+                      >
+                        <div className="flex items-start gap-2.5">
+                          <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-primary/15 text-primary">
+                            <MailCheck className="h-3 w-3" />
+                          </span>
+                          <div className="min-w-0 flex-1">
+                            <p className="font-semibold text-foreground">
+                              Ovaj email je već registriran.
+                            </p>
+                            <p className="mt-0.5 text-muted-foreground">
+                              Jedan email — jedna registracija. Prijavi se sa svojim postojećim računom.
+                            </p>
+                            <div className="mt-3 flex flex-wrap gap-2">
+                              <Link
+                                to={`/prijava${existingEmail ? `?email=${encodeURIComponent(existingEmail)}` : ""}`}
+                                className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-3 py-1.5 text-xs font-semibold text-primary-foreground hover:bg-primary/90 transition"
+                              >
+                                Prijavi se
+                                <ArrowRight className="h-3.5 w-3.5" />
+                              </Link>
+                              <Link
+                                to="/zaboravljena-lozinka"
+                                className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-background px-3 py-1.5 text-xs font-semibold text-foreground hover:border-primary/40 hover:text-primary transition"
+                              >
+                                Zaboravio/la sam lozinku
+                              </Link>
+                            </div>
+                          </div>
+                        </div>
+                      </motion.div>
+                    )}
+
+                    {errorKind === "pending_verification" && (
+                      <motion.div
+                        initial={{ opacity: 0, y: -6 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="rounded-xl border border-primary/30 bg-primary/5 px-4 py-3.5 text-[13px] text-foreground"
+                        role="alert"
+                      >
+                        <div className="flex items-start gap-2.5">
+                          <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-primary/15 text-primary">
+                            <KeyRound className="h-3 w-3" />
+                          </span>
+                          <div className="min-w-0 flex-1">
+                            <p className="font-semibold text-foreground">
+                              Registracija već postoji i čeka potvrdu.
+                            </p>
+                            <p className="mt-0.5 text-muted-foreground">
+                              Već smo poslali 6-znamenkasti kod na <strong>{existingEmail}</strong>. Upiši ga na stranici za potvrdu ili zatraži novi kod.
+                            </p>
+                            <div className="mt-3 flex flex-wrap gap-2">
+                              <Link
+                                to={`/verify${existingEmail ? `?email=${encodeURIComponent(existingEmail)}` : ""}`}
+                                className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-3 py-1.5 text-xs font-semibold text-primary-foreground hover:bg-primary/90 transition"
+                              >
+                                <KeyRound className="h-3.5 w-3.5" />
+                                Upiši kod za potvrdu
+                              </Link>
+                              <button
+                                type="button"
+                                disabled={resendLoading}
+                                onClick={async () => {
+                                  if (!existingEmail) return;
+                                  setResendInfo("");
+                                  setResendLoading(true);
+                                  const r = await authResendVerification(existingEmail);
+                                  setResendLoading(false);
+                                  if (r.success) {
+                                    setResendInfo("Poslan je novi kod na tvoj email.");
+                                  } else {
+                                    setResendInfo(r.message);
+                                  }
+                                }}
+                                className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-background px-3 py-1.5 text-xs font-semibold text-foreground hover:border-primary/40 hover:text-primary transition disabled:opacity-60"
+                              >
+                                <RefreshCw className={`h-3.5 w-3.5 ${resendLoading ? "animate-spin" : ""}`} />
+                                {resendLoading ? "Šaljem…" : "Pošalji novi kod"}
+                              </button>
+                            </div>
+                            {resendInfo && (
+                              <p className="mt-2 text-xs text-muted-foreground">{resendInfo}</p>
+                            )}
+                          </div>
+                        </div>
                       </motion.div>
                     )}
 

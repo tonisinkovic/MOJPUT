@@ -20,7 +20,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Progress } from "@/components/ui/progress";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
@@ -254,53 +254,56 @@ export default function KalkulatorDoma() {
 
   return (
     <Layout>
-      <div className="max-w-lg mx-auto px-4 pb-10 pt-6 md:pt-10 md:max-w-3xl">
-        {/* Header */}
+      <div className="mx-auto max-w-lg px-4 pb-10 pt-6 md:max-w-3xl md:pt-10 [padding-bottom:max(2.5rem,env(safe-area-inset-bottom))]">
+        {/* Hero header */}
         <motion.header
           initial={{ opacity: 0, y: 14 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
-          className="relative mb-5 overflow-hidden rounded-2xl border border-primary/15 bg-gradient-to-b from-primary/[0.07] via-card/80 to-card px-4 py-5 shadow-sm md:px-6 md:py-5"
+          className="relative mb-5 overflow-hidden rounded-2xl border-2 border-primary/20 bg-gradient-to-br from-primary/[0.12] via-primary/[0.04] to-card p-4 shadow-card sm:rounded-3xl sm:p-5 md:p-6"
         >
           <div
-            className="pointer-events-none absolute -right-16 -top-16 h-36 w-36 rounded-full bg-primary/[0.12] blur-3xl dark:bg-primary/20"
             aria-hidden
+            className="pointer-events-none absolute -right-10 -top-10 h-36 w-36 rounded-full bg-primary/15 blur-3xl sm:h-52 sm:w-52"
           />
           <div
-            className="pointer-events-none absolute -bottom-14 -left-14 h-32 w-32 rounded-full bg-accent/[0.08] blur-3xl dark:bg-accent/15"
             aria-hidden
+            className="pointer-events-none absolute -bottom-14 -left-10 h-32 w-32 rounded-full bg-primary/10 blur-3xl sm:h-48 sm:w-48"
           />
-          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_-20%,hsl(var(--primary)/0.08),transparent)] dark:bg-[radial-gradient(ellipse_80%_50%_at_50%_-20%,hsl(var(--primary)/0.12),transparent)]" aria-hidden />
-          <div className="relative text-center">
-            <div className="mx-auto mb-2.5 flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-primary/85 shadow-md shadow-primary/25 ring-2 ring-primary/10 dark:ring-primary/20">
-              <Home className="h-6 w-6 text-primary-foreground" strokeWidth={2} aria-hidden />
+
+          <div className="relative flex flex-col gap-4 sm:flex-row sm:items-start sm:gap-5">
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl gradient-hero text-primary-foreground shadow-md sm:h-14 sm:w-14">
+              <Home className="h-6 w-6 sm:h-7 sm:w-7" strokeWidth={2} aria-hidden />
             </div>
-            <p className="mb-2 inline-flex items-center gap-1 rounded-full border border-primary/20 bg-primary/10 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-primary shadow-sm md:text-[11px]">
-              <Sparkles className="h-3 w-3" aria-hidden />
-              Natječaj · studentski smještaj
-            </p>
-            <h1 className="text-balance text-xl font-extrabold tracking-tight md:text-2xl lg:text-3xl">
-              Kalkulator bodova za{" "}
-              <span className="text-gradient">studentske domove</span>
-            </h1>
-            <p className="mx-auto mt-2 max-w-2xl text-pretty text-sm leading-snug text-muted-foreground md:text-[15px]">
-              Okvirni broj bodova za natječaj. Za Zagreb usporedba s objavljenim pragom; za ostale gradove procjena
-              šanse bez službenog praga u aplikaciji.
-            </p>
+            <div className="min-w-0 flex-1">
+              <span className="inline-flex items-center gap-1 rounded-full border border-primary/25 bg-primary/10 px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-primary">
+                <Sparkles className="h-3 w-3" aria-hidden />
+                Natječaj · studentski smještaj
+              </span>
+              <h1 className="mt-2 text-balance text-2xl font-bold leading-tight tracking-tight sm:text-3xl md:text-4xl">
+                Kalkulator bodova za{" "}
+                <span className="text-gradient">studentske domove</span>
+              </h1>
+              <p className="mt-1.5 max-w-2xl text-pretty text-sm leading-relaxed text-muted-foreground sm:text-base">
+                Okvirni broj bodova za natječaj. Za Zagreb usporedba s objavljenim pragom; za ostale gradove procjena
+                šanse bez službenog praga u aplikaciji.
+              </p>
+            </div>
           </div>
         </motion.header>
 
+        {/* Važna napomena */}
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4, delay: 0.06, ease: [0.22, 1, 0.36, 1] }}
           role="alert"
-          className="relative mb-6 overflow-hidden rounded-2xl border border-amber-500/35 bg-gradient-to-br from-amber-500/[0.12] via-amber-500/[0.04] to-transparent shadow-sm dark:border-amber-500/25 dark:from-amber-500/10 dark:via-amber-950/20 dark:to-transparent"
+          className="relative mb-6 overflow-hidden rounded-2xl border-2 border-amber-500/40 bg-gradient-to-br from-amber-500/[0.14] via-amber-500/[0.04] to-transparent shadow-card dark:border-amber-500/30 dark:from-amber-500/10 dark:via-amber-950/20 dark:to-transparent"
         >
-          <div className="pointer-events-none absolute -right-8 top-0 h-24 w-24 rounded-full bg-amber-400/20 blur-2xl dark:bg-amber-500/10" aria-hidden />
+          <div className="pointer-events-none absolute -right-8 top-0 h-24 w-24 rounded-full bg-amber-400/25 blur-2xl dark:bg-amber-500/10" aria-hidden />
           <div className="relative flex gap-3 p-4">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-amber-500/20 text-amber-800 shadow-inner ring-1 ring-amber-500/25 dark:bg-amber-500/15 dark:text-amber-200 dark:ring-amber-400/20">
-              <AlertCircle className="h-5 w-5" strokeWidth={2} aria-hidden />
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-amber-500/25 text-amber-800 shadow-inner ring-1 ring-amber-500/30 dark:bg-amber-500/15 dark:text-amber-200 dark:ring-amber-400/25">
+              <AlertCircle className="h-5 w-5" strokeWidth={2.2} aria-hidden />
             </div>
             <div className="min-w-0 flex-1 space-y-1 text-left">
               <p className="text-[10px] font-bold uppercase tracking-wide text-amber-800/90 dark:text-amber-200/90 md:text-[11px]">
@@ -320,50 +323,103 @@ export default function KalkulatorDoma() {
         </motion.div>
 
         {/* Step progress */}
-        <div className="mb-6 space-y-2" aria-label="Napredak kroz korake">
-          <div className="flex justify-between text-xs font-medium text-muted-foreground">
-            <span>
-              Korak {step + 1} / {STEPS.length}: {STEPS[step].label}
+        <div
+          className="mb-6 rounded-2xl border-2 border-border bg-card p-4 shadow-card sm:p-5"
+          aria-label="Napredak kroz korake"
+        >
+          <div className="mb-3 flex items-start justify-between gap-3">
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center gap-2">
+                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                  <Calculator className="h-4 w-4" aria-hidden />
+                </div>
+                <p className="truncate text-sm font-semibold text-foreground sm:text-base">
+                  {STEPS[step].label}
+                  <span className="ml-1.5 font-normal text-muted-foreground">— {STEPS[step].desc}</span>
+                </p>
+              </div>
+            </div>
+            <span className="shrink-0 rounded-full border border-primary/25 bg-primary/10 px-2.5 py-1 text-[11px] font-bold uppercase tracking-wide text-primary sm:text-xs">
+              Korak <span className="tabular-nums">{step + 1} / {STEPS.length}</span>
             </span>
-            <span>{Math.round(progressPct)}%</span>
           </div>
-          <Progress value={progressPct} className="h-2.5" />
-          <div className="flex gap-1 overflow-x-auto pb-1">
-            {STEPS.map((s, i) => (
-              <button
-                key={s.id}
-                type="button"
-                onClick={() => setStep(i)}
-                className={cn(
-                  "shrink-0 rounded-full px-3 py-2 text-xs font-medium min-h-[44px] transition-colors",
-                  i === step
-                    ? "bg-primary text-primary-foreground"
-                    : i < step
-                      ? "bg-primary/15 text-primary"
-                      : "bg-muted text-muted-foreground",
-                )}
-              >
-                {s.label}
-              </button>
-            ))}
+
+          <div className="mb-3 flex items-center gap-3">
+            <Progress value={progressPct} className="h-2.5 flex-1" />
+            <span className="shrink-0 text-xs font-bold tabular-nums text-primary">{Math.round(progressPct)}%</span>
+          </div>
+
+          <div
+            className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-0.5 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+            role="tablist"
+            aria-label="Koraci"
+          >
+            {STEPS.map((s, i) => {
+              const isActive = i === step;
+              const isDone = i < step;
+              return (
+                <button
+                  key={s.id}
+                  type="button"
+                  role="tab"
+                  aria-selected={isActive}
+                  onClick={() => setStep(i)}
+                  className={cn(
+                    "shrink-0 inline-flex items-center gap-1.5 rounded-full border-2 px-3.5 py-2 text-xs font-semibold min-h-[40px] transition-all",
+                    isActive && "gradient-hero border-transparent text-primary-foreground shadow-sm",
+                    isDone && !isActive && "border-primary/30 bg-primary/10 text-primary",
+                    !isActive && !isDone && "border-border bg-muted/40 text-muted-foreground hover:border-border hover:bg-muted/60",
+                  )}
+                >
+                  <span
+                    className={cn(
+                      "inline-flex h-5 w-5 items-center justify-center rounded-full text-[10px] font-bold",
+                      isActive && "bg-white/20 text-primary-foreground",
+                      isDone && !isActive && "bg-primary/20 text-primary",
+                      !isActive && !isDone && "bg-background text-muted-foreground",
+                    )}
+                  >
+                    {isDone ? <CheckCircle2 className="h-3.5 w-3.5" strokeWidth={3} /> : i + 1}
+                  </span>
+                  {s.label}
+                </button>
+              );
+            })}
           </div>
         </div>
 
-        <Alert className="mb-6 border-primary/20 bg-primary/5 text-base">
-          <Scale className="h-5 w-5 min-w-[44px]" />
-          <AlertTitle>Referentni iznosi za prinos (2025.)</AlertTitle>
-          <AlertDescription>
-            Pri odabiru najvišeg raspona prihoda koristi se okvirno 100 % ={" "}
-            {PRORACUNSKA_OSNOVICA_EUR_2025.toLocaleString("hr-HR")} € · 60 % ={" "}
-            {PCT_60_PO_EUR_2025.toLocaleString("hr-HR")} € (provjeri točan broj u natječaju).
-          </AlertDescription>
-        </Alert>
+        <div className="mb-6 rounded-2xl border-2 border-primary/25 bg-gradient-to-br from-primary/[0.08] via-primary/[0.02] to-transparent p-4 shadow-card sm:p-5">
+          <div className="flex gap-3">
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-primary/15 text-primary shadow-inner ring-1 ring-primary/25">
+              <Scale className="h-5 w-5" strokeWidth={2.2} aria-hidden />
+            </div>
+            <div className="min-w-0 flex-1 space-y-1">
+              <p className="text-[10px] font-bold uppercase tracking-wide text-primary md:text-[11px]">Referenca 2025.</p>
+              <h3 className="text-base font-bold leading-snug text-foreground md:text-lg">
+                Referentni iznosi za prinos (2025.)
+              </h3>
+              <p className="text-xs leading-relaxed text-muted-foreground md:text-sm">
+                Pri odabiru najvišeg raspona prihoda koristi se okvirno{" "}
+                <strong className="font-semibold text-foreground tabular-nums">
+                  100 % = {PRORACUNSKA_OSNOVICA_EUR_2025.toLocaleString("hr-HR")} €
+                </strong>{" "}
+                ·{" "}
+                <strong className="font-semibold text-foreground tabular-nums">
+                  60 % = {PCT_60_PO_EUR_2025.toLocaleString("hr-HR")} €
+                </strong>{" "}
+                (provjeri točan broj u natječaju).
+              </p>
+            </div>
+          </div>
+        </div>
 
         {/* Step panels */}
-        <Card className="rounded-2xl border-2 shadow-sm mb-6">
+        <Card className="rounded-2xl border-2 shadow-card mb-6">
           <CardHeader className="pb-2">
             <CardTitle className="text-xl flex items-center gap-2">
-              <Calculator className="w-5 h-5 text-primary shrink-0" />
+              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                <Calculator className="w-4 h-4" />
+              </span>
               {STEPS[step].desc}
             </CardTitle>
             <CardDescription className="text-base">

@@ -191,8 +191,8 @@ const Index = () => {
                 className="eyebrow mb-5 sm:mb-6 justify-center lg:justify-start"
                 aria-hidden
               >
-                <span className="hidden sm:inline">Za maturante · srednjoškolce · studente</span>
-                <span className="sm:hidden">Za maturante i studente</span>
+                <span className="hidden sm:inline">Za srednjoškolce · maturante · studente · roditelje</span>
+                <span className="sm:hidden">Za srednjoškolce, maturante i roditelje</span>
               </motion.div>
 
               <motion.div
@@ -658,7 +658,7 @@ const Index = () => {
           initial={{ opacity: 0, y: 10 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          className="eyebrow mb-5 sm:mb-7 justify-center"
+          className="eyebrow mx-auto w-fit mb-5 sm:mb-7"
           aria-hidden
         >
           <span>Sljedeći korak</span>

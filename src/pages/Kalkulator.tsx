@@ -473,45 +473,68 @@ const Kalkulator = () => {
           <motion.div
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
-            className="relative space-y-8"
+            className="relative space-y-6 sm:space-y-8"
           >
-            {/* Header */}
-            <div className="mx-auto max-w-2xl space-y-4 text-center">
-              <div className="inline-flex items-center gap-2 rounded-full border border-primary/25 bg-primary/[0.07] px-4 py-1.5 text-sm font-medium text-primary shadow-sm">
-                <CalcIcon className="h-3.5 w-3.5 shrink-0" />
-                <span>{PROGRAM_OPTIONS.length} programa · bodovne formule 2025.</span>
+            {/* Hero header */}
+            <div className="relative overflow-hidden rounded-2xl border-2 border-primary/20 bg-gradient-to-br from-primary/[0.12] via-primary/[0.04] to-card p-4 shadow-card sm:rounded-3xl sm:p-6 md:p-7">
+              <div
+                aria-hidden
+                className="pointer-events-none absolute -right-10 -top-10 h-36 w-36 rounded-full bg-primary/15 blur-3xl sm:h-52 sm:w-52"
+              />
+              <div
+                aria-hidden
+                className="pointer-events-none absolute -bottom-14 -left-10 h-32 w-32 rounded-full bg-primary/10 blur-3xl sm:h-48 sm:w-48"
+              />
+
+              <div className="relative flex flex-col gap-4 sm:flex-row sm:items-start sm:gap-5">
+                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl gradient-hero text-primary-foreground shadow-md sm:h-14 sm:w-14">
+                  <CalcIcon className="h-6 w-6 sm:h-7 sm:w-7" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <span className="inline-flex items-center gap-1 rounded-full border border-primary/25 bg-primary/10 px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-primary">
+                    <Sparkles className="h-3 w-3" />
+                    <span className="tabular-nums">{PROGRAM_OPTIONS.length} programa · bodovne formule 2025.</span>
+                  </span>
+                  <h1 className="mt-2 text-balance text-2xl font-bold leading-tight tracking-tight sm:text-3xl md:text-4xl">
+                    Kalkulator <span className="text-gradient">bodova</span>
+                  </h1>
+                  <p className="mt-1.5 max-w-2xl text-pretty text-sm leading-relaxed text-muted-foreground sm:text-base">
+                    Unesi ocjene i rezultate mature — formula se prilagođava odabranom smjeru, korak po korak.
+                  </p>
+                </div>
               </div>
-              <h1 className="text-balance text-4xl font-extrabold tracking-tight md:text-5xl">
-                Kalkulator <span className="text-gradient">bodova</span>
-              </h1>
-              <p className="mx-auto max-w-md text-pretty text-base text-muted-foreground">
-                Unesi ocjene i rezultate mature — formula se prilagođava odabranom smjeru, korak po korak.
-              </p>
             </div>
 
-            {/* Koraci — pregled */}
-            <div className="mx-auto max-w-3xl rounded-2xl border border-border/60 bg-card/90 px-5 py-5 shadow-sm backdrop-blur-sm sm:px-8 sm:py-6">
+            {/* Stepper — wizard progress */}
+            <div className="rounded-2xl border-2 border-border bg-card p-4 shadow-card sm:p-5 md:p-6">
               {/* Meta row */}
-              <div className="mb-6 flex items-center justify-between gap-3">
-                <div className="min-w-0">
-                  <p className="truncate text-sm font-semibold text-foreground">
-                    {WIZARD_STEPS[wizardStep]?.label}
-                    <span className="ml-1.5 font-normal text-muted-foreground">
-                      — {WIZARD_STEPS[wizardStep]?.sub}
-                    </span>
+              <div className="mb-5 flex items-start justify-between gap-3 sm:mb-6">
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-2">
+                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                      <CalcIcon className="h-4 w-4" aria-hidden />
+                    </div>
+                    <p className="truncate text-sm font-semibold text-foreground sm:text-base">
+                      {WIZARD_STEPS[wizardStep]?.label}
+                      <span className="ml-1.5 font-normal text-muted-foreground">
+                        — {WIZARD_STEPS[wizardStep]?.sub}
+                      </span>
+                    </p>
+                  </div>
+                  <p className="ml-10 mt-1 text-xs text-muted-foreground">
+                    Možeš se uvijek vratiti i prilagoditi unos.
                   </p>
-                  <p className="mt-0.5 text-xs text-muted-foreground">Možeš se uvijek vratiti i prilagoditi unos.</p>
                 </div>
-                <span className="shrink-0 rounded-full border border-border/60 bg-muted/50 px-3 py-1 text-xs font-medium tabular-nums text-muted-foreground">
-                  Korak {wizardStep + 1} / 5
+                <span className="shrink-0 rounded-full border border-primary/25 bg-primary/10 px-2.5 py-1 text-[11px] font-bold uppercase tracking-wide text-primary sm:text-xs">
+                  Korak <span className="tabular-nums">{wizardStep + 1} / 5</span>
                 </span>
               </div>
 
               {/* Connected-dot stepper */}
               <div className="relative">
-                {/* Track line — sits at vertical center of the circles (h-8 → top-4) */}
+                {/* Track line — sits at vertical center of the circles (h-9 → top-[18px]) */}
                 <div
-                  className="pointer-events-none absolute left-[10%] right-[10%] top-4 h-0.5 -translate-y-1/2 overflow-hidden rounded-full bg-border/50"
+                  className="pointer-events-none absolute left-[10%] right-[10%] top-[18px] h-[3px] -translate-y-1/2 overflow-hidden rounded-full bg-border/60"
                   aria-hidden
                 >
                   <motion.div
@@ -527,17 +550,17 @@ const Kalkulator = () => {
                     const active = wizardStep === s.step;
                     const done = wizardStep > s.step;
                     return (
-                      <li key={s.step} className="flex flex-col items-center gap-2">
+                      <li key={s.step} className="flex flex-col items-center gap-1.5 sm:gap-2">
                         <span
                           className={cn(
-                            "relative z-10 flex h-8 w-8 items-center justify-center rounded-full text-xs font-bold transition-all duration-300",
-                            done && "bg-primary text-primary-foreground shadow-sm",
+                            "relative z-10 flex h-9 w-9 items-center justify-center rounded-full text-xs font-bold transition-all duration-300",
+                            done && "gradient-hero text-primary-foreground shadow-sm",
                             active &&
-                              "border-2 border-primary bg-background text-primary shadow-md ring-4 ring-primary/20",
-                            !active && !done && "border border-border/70 bg-muted/70 text-muted-foreground",
+                              "border-2 border-primary bg-card text-primary shadow-md ring-4 ring-primary/20",
+                            !active && !done && "border-2 border-border bg-muted/50 text-muted-foreground",
                           )}
                         >
-                          {done ? <Check className="h-3.5 w-3.5" strokeWidth={3} /> : s.step + 1}
+                          {done ? <Check className="h-4 w-4" strokeWidth={3} /> : s.step + 1}
                         </span>
                         <span
                           className={cn(
