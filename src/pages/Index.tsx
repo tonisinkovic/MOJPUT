@@ -176,11 +176,11 @@ const Index = () => {
           className="absolute inset-0 bg-grid-pattern opacity-[0.28] sm:opacity-[0.32] [mask-image:radial-gradient(ellipse_at_center,black_30%,transparent_78%)]"
           aria-hidden
         />
-        <div className="aurora-orb top-[-8rem] right-[-6rem] h-[28rem] w-[28rem] sm:h-[32rem] sm:w-[32rem]" aria-hidden />
-        <div className="aurora-orb bottom-[-10rem] left-[-8rem] h-[26rem] w-[26rem] opacity-40" aria-hidden />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[520px] sm:w-[640px] h-[520px] sm:h-[640px] bg-primary/5 rounded-full blur-3xl pointer-events-none" aria-hidden />
+        <div className="aurora-orb top-[-8rem] right-[-6rem] h-[20rem] w-[20rem] sm:h-[32rem] sm:w-[32rem]" aria-hidden />
+        <div className="aurora-orb bottom-[-10rem] left-[-8rem] h-[18rem] w-[18rem] sm:h-[26rem] sm:w-[26rem] opacity-40" aria-hidden />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[320px] sm:w-[640px] h-[320px] sm:h-[640px] bg-primary/5 rounded-full blur-3xl pointer-events-none" aria-hidden />
 
-        <div className="container relative px-4 pb-14 pt-10 sm:px-6 sm:pb-24 sm:pt-14 md:pb-36 md:pt-20 lg:pt-24">
+        <div className="container relative pb-10 pt-8 sm:pb-24 sm:pt-14 md:pb-36 md:pt-20 lg:pt-24">
           <div className="grid grid-cols-1 items-center gap-10 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)] lg:gap-14">
             {/* Copy column */}
             <div className="max-w-2xl mx-auto text-center lg:mx-0 lg:text-left">
@@ -214,7 +214,7 @@ const Index = () => {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: 0.1 }}
-                className="text-balance text-[2.125rem] leading-[1.08] sm:text-5xl md:text-6xl lg:text-[4.25rem] xl:text-[4.75rem] font-extrabold tracking-[-0.03em] md:leading-[1.02] mb-4 sm:mb-6"
+                className="text-balance text-[1.75rem] leading-[1.1] xs:text-[2rem] sm:text-5xl md:text-6xl lg:text-[4.25rem] xl:text-[4.75rem] font-extrabold tracking-[-0.025em] md:leading-[1.02] mb-4 sm:mb-6 break-words"
               >
                 Pronađi svoj{" "}
                 <span className="relative inline-block align-baseline">
@@ -231,10 +231,10 @@ const Index = () => {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: 0.2 }}
-                className="text-pretty text-[14.5px] sm:text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto lg:mx-0 mb-6 sm:mb-10 leading-[1.55] sm:leading-[1.6]"
+                className="text-pretty text-[14px] sm:text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto lg:mx-0 mb-6 sm:mb-10 leading-[1.55] sm:leading-[1.6] break-words"
               >
                 <span className="hidden sm:inline">MojPut ti pomaže istražiti fakultete, otkriti svoje talente i donijeti informiranu odluku o budućoj karijeri — sve na jednom mjestu.</span>
-                <span className="sm:hidden">Istraži fakultete, otkrij svoje talente i donesi pravu odluku — sve na jednom mjestu.</span>
+                <span className="sm:hidden">Istraži fakultete, otkrij talente i donesi pravu odluku.</span>
               </motion.p>
 
               <motion.div
@@ -242,14 +242,14 @@ const Index = () => {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: 0.3 }}
-                className="flex flex-col sm:flex-row items-stretch sm:items-center justify-center lg:justify-start gap-2.5 sm:gap-4"
+                className="flex flex-col sm:flex-row items-stretch sm:items-center justify-center lg:justify-start gap-2.5 sm:gap-4 w-full"
               >
                 <Button
                   size="lg"
-                  className="group btn-primary-premium touch-tap border-0 rounded-xl px-6 sm:px-8 h-[3.25rem] sm:h-[3.25rem] text-[15px] sm:text-base font-semibold w-full sm:w-auto"
+                  className="group btn-primary-premium touch-tap border-0 rounded-xl px-5 sm:px-8 h-[3rem] sm:h-[3.25rem] text-[15px] sm:text-base font-semibold w-full sm:w-auto"
                   asChild
                 >
-                  <Link to="/kviz">
+                  <Link to="/kviz" className="inline-flex items-center justify-center">
                     Započni kviz
                     <ArrowRight className="w-4 h-4 ml-2 transition-transform duration-300 group-hover:translate-x-1" />
                   </Link>
@@ -257,14 +257,14 @@ const Index = () => {
                 <Button
                   size="lg"
                   variant="outline"
-                  className="btn-secondary-premium touch-tap rounded-xl px-6 sm:px-8 h-12 sm:h-[3.25rem] text-[15px] sm:text-base font-semibold w-full sm:w-auto"
+                  className="btn-secondary-premium touch-tap rounded-xl px-5 sm:px-8 h-[3rem] sm:h-[3.25rem] text-[15px] sm:text-base font-semibold w-full sm:w-auto"
                   asChild
                 >
-                  <Link to="/karta">Istraži fakultete</Link>
+                  <Link to="/karta" className="inline-flex items-center justify-center">Istraži fakultete</Link>
                 </Button>
               </motion.div>
 
-              {/* Mobile quick actions — hidden on desktop (tamo je hero preview blok) */}
+              {/* Mobile quick actions — vertikalno prilagođena 3×2 mreža (bez horizontalnog scrolla) */}
               <motion.div
                 initial={{ opacity: 0, y: 16 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -283,28 +283,26 @@ const Index = () => {
                     Svi alati →
                   </Link>
                 </div>
-                <div className="-mx-4 overflow-x-auto no-scrollbar snap-row px-4 pb-2">
-                  <div className="flex gap-2">
-                    {[
-                      { to: "/kviz", label: "Kviz", Icon: GraduationCap },
-                      { to: "/karta", label: "Karta", Icon: Map },
-                      { to: "/kalkulator", label: "Bodovi", Icon: Calculator },
-                      { to: "/samoprocjena", label: "Samoprocjena", Icon: Target },
-                      { to: "/kalendar", label: "Kalendar", Icon: Calendar },
-                      { to: "/video", label: "Video", Icon: Video },
-                    ].map(({ to, label, Icon }) => (
-                      <Link
-                        key={to}
-                        to={to}
-                        className="quick-pill touch-tap shrink-0"
-                      >
-                        <span className="quick-pill-icon">
-                          <Icon className="h-4 w-4" aria-hidden />
-                        </span>
-                        <span className="quick-pill-label">{label}</span>
-                      </Link>
-                    ))}
-                  </div>
+                <div className="grid grid-cols-3 gap-2">
+                  {[
+                    { to: "/kviz", label: "Kviz", Icon: GraduationCap },
+                    { to: "/karta", label: "Karta", Icon: Map },
+                    { to: "/kalkulator", label: "Bodovi", Icon: Calculator },
+                    { to: "/samoprocjena", label: "Profil", Icon: Target },
+                    { to: "/kalendar", label: "Kalendar", Icon: Calendar },
+                    { to: "/video", label: "Video", Icon: Video },
+                  ].map(({ to, label, Icon }) => (
+                    <Link
+                      key={to}
+                      to={to}
+                      className="quick-pill quick-pill--grid touch-tap"
+                    >
+                      <span className="quick-pill-icon">
+                        <Icon className="h-4 w-4" aria-hidden />
+                      </span>
+                      <span className="quick-pill-label">{label}</span>
+                    </Link>
+                  ))}
                 </div>
               </motion.div>
 
@@ -312,19 +310,19 @@ const Index = () => {
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: 0.45 }}
-                className="mt-6 sm:mt-9 flex flex-wrap items-center justify-center lg:justify-start gap-2 sm:gap-2.5"
+                className="mt-6 sm:mt-9 flex flex-wrap items-center justify-center lg:justify-start gap-1.5 sm:gap-2.5"
                 aria-hidden
               >
-                <span className="inline-flex items-center gap-1.5 rounded-full border border-border/70 bg-background/75 backdrop-blur-sm px-3 py-1.5 text-[11px] font-semibold text-muted-foreground shadow-soft transition-all hover:border-primary/30 hover:text-foreground">
-                  <ShieldCheck className="h-3.5 w-3.5 text-primary" />
+                <span className="inline-flex items-center gap-1.5 rounded-full border border-border/70 bg-background/75 backdrop-blur-sm px-2.5 sm:px-3 py-1 sm:py-1.5 text-[10.5px] sm:text-[11px] font-semibold text-muted-foreground shadow-soft transition-all hover:border-primary/30 hover:text-foreground whitespace-nowrap">
+                  <ShieldCheck className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-primary" />
                   Bez registracije
                 </span>
-                <span className="inline-flex items-center gap-1.5 rounded-full border border-border/70 bg-background/75 backdrop-blur-sm px-3 py-1.5 text-[11px] font-semibold text-muted-foreground shadow-soft transition-all hover:border-primary/30 hover:text-foreground">
-                  <Sparkles className="h-3.5 w-3.5 text-primary" />
+                <span className="inline-flex items-center gap-1.5 rounded-full border border-border/70 bg-background/75 backdrop-blur-sm px-2.5 sm:px-3 py-1 sm:py-1.5 text-[10.5px] sm:text-[11px] font-semibold text-muted-foreground shadow-soft transition-all hover:border-primary/30 hover:text-foreground whitespace-nowrap">
+                  <Sparkles className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-primary" />
                   100% besplatno
                 </span>
-                <span className="inline-flex items-center gap-1.5 rounded-full border border-border/70 bg-background/75 backdrop-blur-sm px-3 py-1.5 text-[11px] font-semibold text-muted-foreground shadow-soft transition-all hover:border-primary/30 hover:text-foreground">
-                  <Users className="h-3.5 w-3.5 text-primary" />
+                <span className="inline-flex items-center gap-1.5 rounded-full border border-border/70 bg-background/75 backdrop-blur-sm px-2.5 sm:px-3 py-1 sm:py-1.5 text-[10.5px] sm:text-[11px] font-semibold text-muted-foreground shadow-soft transition-all hover:border-primary/30 hover:text-foreground whitespace-nowrap">
+                  <Users className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-primary" />
                   500+ maturanata
                 </span>
               </motion.div>
