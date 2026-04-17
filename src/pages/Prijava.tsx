@@ -1,7 +1,26 @@
 import React, { useEffect, useState } from "react";
 import { Link, useSearchParams, useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
 import Layout from "@/components/Layout";
-import { Mail, Lock, LogIn, Loader2, CheckCircle2, AlertCircle } from "lucide-react";
+import {
+  Mail,
+  Lock,
+  LogIn,
+  Loader2,
+  CheckCircle2,
+  AlertCircle,
+  Eye,
+  EyeOff,
+  ArrowRight,
+  Sparkles,
+  KeyRound,
+  RefreshCw,
+  ShieldCheck,
+  Info,
+  ChevronDown,
+  User,
+  LogOut,
+} from "lucide-react";
 import { authLogin, authLogout, authMe, authResendVerification, type AuthUser } from "@/lib/auth";
 import {
   Dialog,
@@ -34,6 +53,9 @@ const Prijava = () => {
   const [emailVerifyUi, setEmailVerifyUi] = useState<EmailVerifyUi>({ kind: "closed" });
   const [needsVerification, setNeedsVerification] = useState(false);
   const [resendLoading, setResendLoading] = useState(false);
+  const [showPw, setShowPw] = useState(false);
+  const [capsOn, setCapsOn] = useState(false);
+  const [noteOpen, setNoteOpen] = useState(false);
 
   useEffect(() => {
     let alive = true;
@@ -85,6 +107,12 @@ const Prijava = () => {
       ...prev,
       [name]: value,
     }));
+  };
+
+  const handlePasswordKey = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (typeof e.getModifierState === "function") {
+      setCapsOn(e.getModifierState("CapsLock"));
+    }
   };
 
   const handleLoginSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -155,6 +183,7 @@ const Prijava = () => {
   };
 
   const displayName = loggedUser?.username || "";
+  const profileInitial = displayName?.trim()?.charAt(0)?.toUpperCase() || "?";
 
   const verifyOpen = emailVerifyUi.kind !== "closed";
 
@@ -245,148 +274,348 @@ const Prijava = () => {
       </Dialog>
       ) : null}
 
-      <section className="container py-16 max-w-md mx-auto">
-        {!loggedUser ? (
-          <div className="bg-white rounded-2xl shadow-xl p-6 md:p-8 border border-slate-100">
-            <div className="flex items-center gap-3 mb-6">
-              <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-                <LogIn className="w-5 h-5 text-primary" />
-              </div>
-              <div>
-                <h1 className="text-xl md:text-2xl font-bold text-slate-900">
-                  Prijava
-                </h1>
-                <p className="text-xs md:text-sm text-slate-500">
-                  Unesi svoje podatke za prijavu na MojPut.
-                </p>
-              </div>
-            </div>
+      <section className="auth-shell relative overflow-hidden bg-mesh-gradient">
+        <div
+          className="pointer-events-none absolute inset-0 bg-grid-pattern opacity-[0.22] [mask-image:radial-gradient(ellipse_at_center,black_20%,transparent_75%)]"
+          aria-hidden
+        />
+        <div className="aurora-orb top-[-10rem] right-[-8rem] h-[24rem] w-[24rem] opacity-40" aria-hidden />
+        <div className="aurora-orb bottom-[-12rem] left-[-8rem] h-[22rem] w-[22rem] opacity-30" aria-hidden />
 
-            {loading && (
-              <div className="p-3 bg-slate-50 border border-slate-200 rounded-lg text-sm text-slate-700 font-medium mb-4">
-                Provjeravam prijavu...
-              </div>
-            )}
-
-            {info && (
-              <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg text-sm text-blue-800 font-medium mb-4">
-                {info}
-              </div>
-            )}
-
-            <form onSubmit={handleLoginSubmit} className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2 flex items-center gap-2">
-                  <Mail size={16} />
-                  Email
-                </label>
-                <input
-                  type="email"
-                  name="email"
-                  value={loginData.email}
-                  onChange={handleLoginChange}
-                  required
-                  placeholder="tvoj@email.com"
-                  className="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-900 focus:border-transparent text-sm"
+        <div className="container relative px-4 py-10 sm:py-14 md:py-20 max-w-md mx-auto">
+          {!loggedUser ? (
+            <motion.div
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+              className="relative"
+            >
+              {/* Soft glow wash behind card */}
+              <div
+                className="pointer-events-none absolute -inset-3 rounded-[1.75rem] bg-[var(--hero-gradient-soft)] opacity-70 blur-2xl"
+                aria-hidden
+              />
+              <div className="hero-preview-frame relative overflow-hidden rounded-[1.5rem] border border-white/60 dark:border-white/10 p-6 sm:p-8">
+                <div
+                  className="pointer-events-none absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-transparent via-primary/60 to-transparent"
+                  aria-hidden
                 />
-              </div>
 
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2 flex items-center gap-2">
-                  <Lock size={16} />
-                  Lozinka
-                </label>
-                <input
-                  type="password"
-                  name="password"
-                  value={loginData.password}
-                  onChange={handleLoginChange}
-                  required
-                  placeholder="Unesi lozinku"
-                  className="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-900 focus:border-transparent text-sm"
-                />
-                <div className="mt-2 text-right">
-                  <Link
-                    to="/zaboravljena-lozinka"
-                    className="text-xs font-semibold text-primary hover:underline"
+                {/* Header */}
+                <div className="mb-6 flex items-start gap-3.5">
+                  <div
+                    className="shrink-0 flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-primary/20 to-primary/5 text-primary ring-1 ring-primary/20 shadow-inner"
+                    aria-hidden
                   >
-                    Zaboravljena lozinka?
-                  </Link>
+                    <LogIn className="h-[1.25rem] w-[1.25rem]" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <div className="eyebrow mb-2 justify-start" aria-hidden>
+                      <span>Prijava</span>
+                    </div>
+                    <h1 className="text-balance text-[1.625rem] sm:text-[1.75rem] font-extrabold tracking-[-0.02em] leading-[1.15]">
+                      Dobrodošao natrag
+                    </h1>
+                    <p className="mt-1 text-[13.5px] sm:text-sm text-muted-foreground leading-snug">
+                      Prijavi se i nastavi gdje si stao.
+                    </p>
+                  </div>
                 </div>
-              </div>
 
-              {loginError && (
-                <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700 font-medium">
-                  {loginError}
-                </div>
-              )}
+                {/* Transient alerts */}
+                {loading && (
+                  <div className="mb-4 flex items-center gap-2.5 rounded-xl border border-border/70 bg-muted/40 px-3.5 py-2.5 text-[13px] font-medium text-muted-foreground">
+                    <Loader2 className="h-4 w-4 animate-spin text-primary" aria-hidden />
+                    Provjeravam prijavu…
+                  </div>
+                )}
 
-              {needsVerification && (
-                <div className="space-y-2">
-                  <Link
-                    to={
-                      loginData.email.trim()
-                        ? `/verify?email=${encodeURIComponent(loginData.email.trim().toLowerCase())}`
-                        : "/verify"
-                    }
-                    className="block w-full py-2.5 text-center rounded-lg bg-slate-900 text-white text-sm font-semibold hover:bg-slate-800 transition"
+                {info && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -4 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="mb-4 flex items-start gap-2.5 rounded-xl border border-primary/25 bg-primary/8 px-3.5 py-2.5 text-[13px] font-medium text-primary"
+                    role="status"
                   >
-                    Upiši kod za potvrdu
+                    <Info className="mt-0.5 h-4 w-4 shrink-0" aria-hidden />
+                    <span>{info}</span>
+                  </motion.div>
+                )}
+
+                <form onSubmit={handleLoginSubmit} className="space-y-4">
+                  {/* Email */}
+                  <div>
+                    <label htmlFor="email" className="auth-label">
+                      <Mail className="h-3.5 w-3.5 auth-label-icon" aria-hidden />
+                      Email
+                    </label>
+                    <div className="relative">
+                      <Mail
+                        className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground"
+                        aria-hidden
+                      />
+                      <input
+                        id="email"
+                        type="email"
+                        name="email"
+                        value={loginData.email}
+                        onChange={handleLoginChange}
+                        required
+                        autoComplete="email"
+                        inputMode="email"
+                        placeholder="tvoj@email.com"
+                        className="auth-input"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Password */}
+                  <div>
+                    <div className="mb-2 flex items-center justify-between gap-2">
+                      <label htmlFor="password" className="auth-label mb-0">
+                        <Lock className="h-3.5 w-3.5 auth-label-icon" aria-hidden />
+                        Lozinka
+                      </label>
+                      <Link
+                        to="/zaboravljena-lozinka"
+                        className="text-[11.5px] font-semibold text-primary hover:underline underline-offset-4"
+                      >
+                        Zaboravljena?
+                      </Link>
+                    </div>
+                    <div className="relative">
+                      <Lock
+                        className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground"
+                        aria-hidden
+                      />
+                      <input
+                        id="password"
+                        type={showPw ? "text" : "password"}
+                        name="password"
+                        value={loginData.password}
+                        onChange={handleLoginChange}
+                        onKeyUp={handlePasswordKey}
+                        onKeyDown={handlePasswordKey}
+                        required
+                        autoComplete="current-password"
+                        placeholder="Unesi lozinku"
+                        className="auth-input pr-11"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPw((v) => !v)}
+                        className="absolute right-2 top-1/2 -translate-y-1/2 flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition"
+                        aria-label={showPw ? "Sakrij lozinku" : "Prikaži lozinku"}
+                        tabIndex={-1}
+                      >
+                        {showPw ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                      </button>
+                    </div>
+                    {capsOn && (
+                      <p className="mt-2 inline-flex items-center gap-1.5 rounded-lg bg-[hsl(38_90%_55%/0.1)] px-2.5 py-1 text-[11px] font-semibold text-[hsl(38_90%_38%)] dark:text-[hsl(38_90%_65%)]">
+                        <AlertCircle className="h-3 w-3" />
+                        Caps Lock je uključen
+                      </p>
+                    )}
+                  </div>
+
+                  {/* Login error */}
+                  {loginError && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -4 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="flex items-start gap-2.5 rounded-xl border border-destructive/30 bg-destructive/5 px-3.5 py-2.5 text-[13px] font-medium text-destructive"
+                      role="alert"
+                    >
+                      <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" aria-hidden />
+                      <span>{loginError}</span>
+                    </motion.div>
+                  )}
+
+                  {/* Needs verification */}
+                  {needsVerification && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -4 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="space-y-2 rounded-xl border border-[hsl(38_90%_55%/0.35)] bg-[hsl(38_90%_55%/0.08)] p-3"
+                    >
+                      <p className="flex items-start gap-2 text-[12.5px] font-semibold text-[hsl(38_90%_38%)] dark:text-[hsl(38_90%_65%)]">
+                        <AlertCircle className="mt-0.5 h-3.5 w-3.5 shrink-0" aria-hidden />
+                        Email nije potvrđen. Upiši 6-znamenkasti kod da aktiviraš račun.
+                      </p>
+                      <div className="flex flex-col gap-2 sm:flex-row">
+                        <Link
+                          to={
+                            loginData.email.trim()
+                              ? `/verify?email=${encodeURIComponent(loginData.email.trim().toLowerCase())}`
+                              : "/verify"
+                          }
+                          className="group inline-flex flex-1 items-center justify-center gap-1.5 rounded-xl bg-foreground text-background h-11 text-[13px] font-semibold transition hover:opacity-90"
+                        >
+                          <KeyRound className="h-4 w-4" />
+                          Upiši kod
+                          <ArrowRight className="h-3.5 w-3.5 transition-transform duration-300 group-hover:translate-x-0.5" />
+                        </Link>
+                        <button
+                          type="button"
+                          onClick={handleResend}
+                          disabled={resendLoading}
+                          className="inline-flex flex-1 items-center justify-center gap-1.5 rounded-xl border border-border/80 bg-background/70 h-11 text-[13px] font-semibold text-foreground backdrop-blur-sm transition hover:border-primary/35 hover:text-primary hover:bg-primary/5 disabled:opacity-60"
+                        >
+                          <RefreshCw className={`h-3.5 w-3.5 ${resendLoading ? "animate-spin" : ""}`} />
+                          {resendLoading ? "Šaljem…" : "Pošalji novi kod"}
+                        </button>
+                      </div>
+                    </motion.div>
+                  )}
+
+                  {/* Submit */}
+                  <button
+                    type="submit"
+                    disabled={loading}
+                    className="group btn-primary-premium border-0 rounded-xl h-12 w-full text-[15px] font-semibold inline-flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
+                  >
+                    {loading ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <>
+                        Prijavi se
+                        <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
+                      </>
+                    )}
+                  </button>
+
+                  {/* Divider */}
+                  <div className="flex items-center gap-3 pt-1">
+                    <div className="h-px flex-1 bg-border" />
+                    <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                      Nemaš račun?
+                    </span>
+                    <div className="h-px flex-1 bg-border" />
+                  </div>
+
+                  {/* Register link */}
+                  <Link
+                    to="/registracija"
+                    className="btn-secondary-premium rounded-xl h-12 w-full text-[15px] font-semibold inline-flex items-center justify-center gap-1.5"
+                  >
+                    Kreiraj besplatni račun
                   </Link>
+                </form>
+
+                {/* Collapsible note */}
+                <div className="mt-5 border-t border-border/60 pt-4">
                   <button
                     type="button"
-                    onClick={handleResend}
-                    disabled={resendLoading}
-                    className="w-full py-2.5 border border-slate-300 rounded-lg hover:bg-slate-50 transition text-sm font-semibold text-slate-900"
+                    onClick={() => setNoteOpen((v) => !v)}
+                    className="flex w-full items-center justify-between gap-2 rounded-lg px-1 py-1 text-left text-[12px] font-semibold text-muted-foreground transition hover:text-foreground"
+                    aria-expanded={noteOpen}
                   >
-                    {resendLoading ? "Šaljem…" : "Pošalji novi kod na email"}
+                    <span className="inline-flex items-center gap-1.5">
+                      <Info className="h-3.5 w-3.5" aria-hidden />
+                      Prijava ne uspijeva?
+                    </span>
+                    <ChevronDown
+                      className={`h-3.5 w-3.5 transition-transform duration-300 ${noteOpen ? "rotate-180" : ""}`}
+                      aria-hidden
+                    />
+                  </button>
+                  {noteOpen && (
+                    <motion.p
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: "auto" }}
+                      exit={{ opacity: 0, height: 0 }}
+                      className="mt-2 text-[11.5px] text-muted-foreground leading-relaxed"
+                    >
+                      Račun s weba i račun s lokalnog testa nisu isti (različita baza). Email mora biti
+                      potvrđen 6-znamenkastim kodom iz pisma. Ako te stranica ne drži prijavljenim nakon osvježenja,
+                      osvježi deploy API-ja (session cookie za GitHub Pages).
+                    </motion.p>
+                  )}
+                </div>
+              </div>
+
+              {/* Trust chips (mobile too) */}
+              <div className="mt-5 flex flex-wrap items-center justify-center gap-2" aria-hidden>
+                <span className="inline-flex items-center gap-1.5 rounded-full border border-border/70 bg-background/75 backdrop-blur-sm px-3 py-1.5 text-[11px] font-semibold text-muted-foreground shadow-soft">
+                  <ShieldCheck className="h-3.5 w-3.5 text-primary" />
+                  Siguran pristup
+                </span>
+                <span className="inline-flex items-center gap-1.5 rounded-full border border-border/70 bg-background/75 backdrop-blur-sm px-3 py-1.5 text-[11px] font-semibold text-muted-foreground shadow-soft">
+                  <Sparkles className="h-3.5 w-3.5 text-primary" />
+                  Bez reklama
+                </span>
+              </div>
+            </motion.div>
+          ) : (
+            // ===== LOGGED-IN STATE =====
+            <motion.div
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+              className="relative"
+            >
+              <div
+                className="pointer-events-none absolute -inset-3 rounded-[1.75rem] bg-[var(--hero-gradient-soft)] opacity-80 blur-2xl"
+                aria-hidden
+              />
+              <div className="hero-preview-frame relative overflow-hidden rounded-[1.5rem] border border-white/60 dark:border-white/10 p-6 sm:p-8 text-center">
+                <div
+                  className="pointer-events-none absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-transparent via-primary/60 to-transparent"
+                  aria-hidden
+                />
+
+                {/* Avatar */}
+                <motion.div
+                  initial={{ scale: 0.5, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  transition={{ type: "spring", stiffness: 250, damping: 18 }}
+                  className="relative mx-auto mb-4 flex h-20 w-20 items-center justify-center"
+                >
+                  <span
+                    className="absolute inset-0 rounded-full bg-gradient-to-br from-primary/30 to-primary/5 blur-lg"
+                    aria-hidden
+                  />
+                  <span className="relative flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-primary to-[hsl(205_82%_54%)] text-primary-foreground text-2xl font-extrabold shadow-[0_16px_32px_-10px_hsl(205_82%_54%/0.5)] ring-4 ring-background">
+                    {profileInitial}
+                  </span>
+                </motion.div>
+
+                <h1 className="text-balance text-xl sm:text-2xl font-extrabold tracking-[-0.02em]">
+                  Bok, {displayName || "korisniče"}!
+                </h1>
+                <p className="mt-2 text-[13.5px] sm:text-sm text-muted-foreground leading-relaxed">
+                  Već si prijavljen/a kao
+                </p>
+                <div className="mx-auto mt-2 mb-6 inline-flex max-w-full items-center gap-2 rounded-full border border-primary/25 bg-primary/8 px-3 py-1.5 text-[13px] font-semibold text-primary backdrop-blur-sm">
+                  <Mail className="h-3.5 w-3.5 shrink-0" />
+                  <span className="truncate break-all">{loggedUser.email}</span>
+                </div>
+
+                <div className="flex flex-col gap-2.5 sm:flex-row">
+                  <Link
+                    to="/profil"
+                    className="group btn-primary-premium border-0 rounded-xl h-12 flex-1 text-[14.5px] font-semibold inline-flex items-center justify-center gap-2"
+                  >
+                    <User className="h-4 w-4" />
+                    Moj profil
+                    <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
+                  </Link>
+                  <button
+                    onClick={handleLogout}
+                    className="btn-secondary-premium rounded-xl h-12 flex-1 text-[14.5px] font-semibold inline-flex items-center justify-center gap-2 text-foreground hover:text-destructive hover:border-destructive/40 hover:bg-destructive/5"
+                  >
+                    <LogOut className="h-4 w-4" />
+                    Odjava
                   </button>
                 </div>
-              )}
-
-              <button
-                type="submit"
-                disabled={loading}
-                className="w-full py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-all duration-300 transform hover:scale-[1.01] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 mt-2 text-sm"
-              >
-                Prijavi se
-              </button>
-
-              <p className="text-center text-xs text-slate-600 mt-2">Nemaš račun?</p>
-              <Link
-                to="/registracija"
-                className="mt-2 flex w-full items-center justify-center rounded-lg border border-slate-300 bg-white py-2.5 text-sm font-semibold text-slate-900 shadow-sm transition hover:bg-slate-50 focus-visible:outline focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
-              >
-                Registracija
-              </Link>
-              <p className="text-center text-[11px] text-slate-500 mt-3 leading-snug">
-                Račun s weba i račun s lokalnog testa nisu isti (različita baza). Email mora biti
-                potvrđen 6-znamenkastim kodom iz pisma. Ako te stranica ne drži prijavljenim nakon osvježenja,
-                osvježi deploy API-ja (session cookie za GitHub Pages).
-              </p>
-            </form>
-          </div>
-        ) : (
-          <div className="bg-white rounded-2xl shadow-xl p-6 md:p-8 border border-slate-100 text-center space-y-4">
-            <h1 className="text-2xl font-bold text-slate-900">
-              Dobrodošao, {displayName || "korisniče"}!
-            </h1>
-            <p className="text-slate-600 text-sm">
-              Trenutačno si prijavljen s adresom{" "}
-              <span className="font-medium">{loggedUser.email}</span>.
-            </p>
-            <button
-              onClick={handleLogout}
-              className="px-6 py-2 bg-red-600 text-white text-sm font-semibold rounded-lg hover:bg-red-700 transition-all"
-            >
-              Odjava
-            </button>
-          </div>
-        )}
+              </div>
+            </motion.div>
+          )}
+        </div>
       </section>
     </Layout>
   );
 };
 
 export default Prijava;
-
