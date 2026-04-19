@@ -1472,17 +1472,17 @@ const Kalkulator = () => {
                     className="mt-4 rounded-2xl border border-border/80 bg-card/95 px-3 py-3 shadow-sm backdrop-blur-[2px]"
                     aria-label="Koraci kalkulatora bodova"
                   >
-                    <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                    <div className="flex flex-col gap-2.5 md:flex-row md:items-center md:justify-between">
                       <Button
                         type="button"
                         variant="outline"
                         disabled={wizardStep === 0}
                         onClick={() => setWizardStep((s) => Math.max(0, s - 1))}
-                        className="order-2 min-h-11 rounded-xl sm:order-1 touch-manipulation"
+                        className="min-h-11 w-full rounded-xl touch-manipulation md:w-auto"
                       >
                         Natrag
                       </Button>
-                      <div className="order-1 text-center sm:order-2">
+                      <div className="text-center md:text-left">
                         <p className="text-sm font-medium text-foreground">
                           {WIZARD_STEPS[wizardStep]?.label}
                         </p>
@@ -1499,7 +1499,7 @@ const Kalkulator = () => {
                         type="button"
                         disabled={!canWizardNext}
                         onClick={() => setWizardStep((s) => Math.min(4, s + 1))}
-                        className="order-3 min-h-11 rounded-xl border-0 bg-primary font-semibold text-primary-foreground shadow-md transition-all hover:bg-primary/90 hover:shadow-lg disabled:opacity-50 touch-manipulation sm:min-w-[7.5rem]"
+                        className="min-h-11 w-full rounded-xl border-0 bg-primary font-semibold text-primary-foreground shadow-md transition-all hover:bg-primary/90 hover:shadow-lg disabled:opacity-50 touch-manipulation md:w-auto md:min-w-[7.5rem]"
                       >
                         Dalje
                       </Button>

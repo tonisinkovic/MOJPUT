@@ -194,6 +194,39 @@ const writeLocalConversations = (conversations: ForumConversation[]) => {
   localStorage.setItem(FORUM_LOCAL_KEY, JSON.stringify(conversations));
 };
 
+/** Cache poruka po ID-u razgovora (server ili lokalno) — pamti poruke kad API nakratko zakaže ili nakon slanja. */
+const FORUM_MSG_CACHE_PREFIX = "mojput_forum_conv_msgs:";
+
+type ForumMessageStored = Omit<ForumMessage, "timestamp"> & { timestamp: string };
+
+function readForumMessagesCache(conversationId: number): ForumMessage[] | null {
+  try {
+    const raw = localStorage.getItem(`${FORUM_MSG_CACHE_PREFIX}${conversationId}`);
+    if (!raw) return null;
+    const arr = JSON.parse(raw) as ForumMessageStored[];
+    if (!Array.isArray(arr) || arr.length === 0) return null;
+    return arr.map((m) => ({ ...m, timestamp: new Date(m.timestamp) }));
+  } catch {
+    return null;
+  }
+}
+
+function writeForumMessagesCache(conversationId: number, messages: ForumMessage[]) {
+  try {
+    localStorage.setItem(
+      `${FORUM_MSG_CACHE_PREFIX}${conversationId}`,
+      JSON.stringify(
+        messages.map((m) => ({
+          ...m,
+          timestamp: m.timestamp.toISOString(),
+        })),
+      ),
+    );
+  } catch {
+    /* kvota / privatni način */
+  }
+}
+
 const Forum = () => {
   const location = useLocation();
   const [currentUser, setCurrentUser] = useState<AuthUser | null>(null);
@@ -290,8 +323,21 @@ const Forum = () => {
     }
   };
 
-  const loadMessages = async (conversationId: number) => {
-    setLoadingMessages(true);
+  const applyMessagesToConversation = (conversationId: number, messages: ForumMessage[]) => {
+    setConversations((prev) =>
+      prev.map((c) =>
+        c.id === conversationId ? { ...c, messages, messageCount: messages.length } : c,
+      ),
+    );
+    setSelectedConversation((prev) => {
+      if (!prev || prev.id !== conversationId) return prev;
+      return { ...prev, messages, messageCount: messages.length };
+    });
+    writeForumMessagesCache(conversationId, messages);
+  };
+
+  const loadMessages = async (conversationId: number, options?: { silent?: boolean }) => {
+    if (!options?.silent) setLoadingMessages(true);
     try {
       const res = await apiGet<{ data: unknown }>(`/api/forum/conversations/${conversationId}/messages`);
       if (res.success) {
@@ -314,79 +360,43 @@ const Forum = () => {
           reply_to_username?: string | null;
           reply_to_snippet?: string | null;
         }>).map((m) => ({
-          id: m.id,
-          userId: m.user_id,
-          username: m.username,
+          id: Number(m.id),
+          userId: Number(m.user_id),
+          username: String(m.username ?? ""),
           text: m.text ?? "",
-          timestamp: new Date(m.created_at),
-          likeCount: m.like_count ?? 0,
-          userLiked: m.user_liked ?? false,
+          timestamp: new Date(m.created_at as string),
+          likeCount: Number(m.like_count ?? 0),
+          userLiked: Boolean(m.user_liked),
           replyToId: m.reply_to_id ?? null,
           replyToUsername: m.reply_to_username ?? null,
           replyToSnippet: m.reply_to_snippet ?? null,
           deletedByUser: Boolean(m.deleted_by_user_at),
         }));
 
-        setConversations((prev) =>
-          prev.map((c) =>
-            c.id === conversationId
-              ? { ...c, messages, messageCount: messages.length }
-              : c,
-          ),
-        );
-        setSelectedConversation((prev) => {
-          if (!prev || prev.id !== conversationId) return prev;
-          return { ...prev, messages, messageCount: messages.length };
-        });
+        applyMessagesToConversation(conversationId, messages);
       } else {
-        const fallbackConv = FALLBACK_CONVERSATIONS.find((c) => c.id === conversationId);
-        if (fallbackConv) {
-          setConversations((prev) =>
-            prev.map((c) =>
-              c.id === conversationId
-                ? {
-                    ...c,
-                    messages: fallbackConv.messages,
-                    messageCount: fallbackConv.messages.length,
-                  }
-                : c,
-            ),
-          );
-          setSelectedConversation((prev) => {
-            if (!prev || prev.id !== conversationId) return prev;
-            return {
-              ...prev,
-              messages: fallbackConv.messages,
-              messageCount: fallbackConv.messages.length,
-            };
-          });
+        const cached = readForumMessagesCache(conversationId);
+        if (cached?.length) {
+          applyMessagesToConversation(conversationId, cached);
+        } else {
+          const fallbackConv = FALLBACK_CONVERSATIONS.find((c) => c.id === conversationId);
+          if (fallbackConv) {
+            applyMessagesToConversation(conversationId, fallbackConv.messages);
+          }
         }
       }
     } catch {
-      const fallbackConv = FALLBACK_CONVERSATIONS.find((c) => c.id === conversationId);
-      if (fallbackConv) {
-        setConversations((prev) =>
-          prev.map((c) =>
-            c.id === conversationId
-              ? {
-                  ...c,
-                  messages: fallbackConv.messages,
-                  messageCount: fallbackConv.messages.length,
-                }
-              : c,
-          ),
-        );
-        setSelectedConversation((prev) => {
-          if (!prev || prev.id !== conversationId) return prev;
-          return {
-            ...prev,
-            messages: fallbackConv.messages,
-            messageCount: fallbackConv.messages.length,
-          };
-        });
+      const cached = readForumMessagesCache(conversationId);
+      if (cached?.length) {
+        applyMessagesToConversation(conversationId, cached);
+      } else {
+        const fallbackConv = FALLBACK_CONVERSATIONS.find((c) => c.id === conversationId);
+        if (fallbackConv) {
+          applyMessagesToConversation(conversationId, fallbackConv.messages);
+        }
       }
     } finally {
-      setLoadingMessages(false);
+      if (!options?.silent) setLoadingMessages(false);
     }
   };
 
@@ -404,7 +414,7 @@ const Forum = () => {
   }, [selectedConversation?.messages]);
 
   const handleLogout = async () => {
-    await authLogout();
+    await authLogout(currentUser?.email);
     setCurrentUser(null);
     setSelectedConversation(null);
   };
@@ -463,7 +473,10 @@ const Forum = () => {
     if (!currentUser || !selectedConversation || !messageInput.trim()) return;
 
     const replyId = replyingTo?.id;
+    const convId = selectedConversation.id;
+    const textTrim = messageInput.trim();
     setSendingMessage(true);
+
     const res = await apiPost<{
       data?: {
         id: number;
@@ -477,85 +490,65 @@ const Forum = () => {
         reply_to_username?: string | null;
         reply_to_snippet?: string | null;
       };
-    }>(`/api/forum/conversations/${selectedConversation.id}/messages`, {
-      text: messageInput.trim(),
+    }>(`/api/forum/conversations/${convId}/messages`, {
+      text: textTrim,
       ...(replyId != null && !isLocalForumConversationId(replyId) ? { reply_to_id: replyId } : {}),
     });
-    setSendingMessage(false);
-    let newMessage: ForumMessage | null = null;
+
     if (res.success) {
-      const payload = (res as { data?: Record<string, unknown> }).data as
-        | {
-            id: number;
-            user_id: number;
-            username: string;
-            text: string;
-            created_at: string;
-            like_count: number;
-            user_liked: boolean;
-            reply_to_id?: number | null;
-            reply_to_username?: string | null;
-            reply_to_snippet?: string | null;
-          }
-        | undefined;
-      if (payload) {
-        newMessage = {
-          id: payload.id,
-          userId: payload.user_id,
-          username: payload.username,
-          text: payload.text,
-          timestamp: new Date(payload.created_at),
-          likeCount: payload.like_count ?? 0,
-          userLiked: payload.user_liked ?? false,
-          replyToId: payload.reply_to_id ?? null,
-          replyToUsername: payload.reply_to_username ?? null,
-          replyToSnippet: payload.reply_to_snippet ?? null,
-          deletedByUser: false,
-        };
-      }
-    } else {
-      // Backend fallback: keep forum interactive for logged-in users.
-      newMessage = {
-        id: Date.now(),
-        userId: currentUser.id,
-        username: currentUser.username,
-        text: messageInput.trim(),
-        timestamp: new Date(),
-        likeCount: 0,
-        userLiked: false,
-        replyToId: replyingTo?.id,
-        replyToUsername: replyingTo?.username,
-        replyToSnippet: replyingTo
-          ? replyingTo.deletedByUser
-            ? "(poruka uklonjena od autora)"
-            : (replyingTo.text || "").slice(0, 120)
-          : undefined,
-        deletedByUser: false,
-      };
+      setMessageInput("");
+      setReplyingTo(null);
+      await loadMessages(convId, { silent: true });
+      setSendingMessage(false);
+      return;
     }
-    if (!newMessage) return;
+
+    // Backend nedostupan — spremi poruku lokalno da ostane nakon osvježavanja stranice
+    const newMessage: ForumMessage = {
+      id: Date.now(),
+      userId: currentUser.id,
+      username: currentUser.username,
+      text: textTrim,
+      timestamp: new Date(),
+      likeCount: 0,
+      userLiked: false,
+      replyToId: replyingTo?.id,
+      replyToUsername: replyingTo?.username,
+      replyToSnippet: replyingTo
+        ? replyingTo.deletedByUser
+          ? "(poruka uklonjena od autora)"
+          : (replyingTo.text || "").slice(0, 120)
+        : undefined,
+      deletedByUser: false,
+    };
+
+    const nextMessages = [...selectedConversation.messages, newMessage];
+    writeForumMessagesCache(convId, nextMessages);
 
     setConversations((prev) =>
       prev.map((conv) =>
-        conv.id === selectedConversation.id
-          ? { ...conv, messages: [...conv.messages, newMessage], messageCount: conv.messageCount + 1 }
+        conv.id === convId
+          ? { ...conv, messages: nextMessages, messageCount: nextMessages.length }
           : conv,
       ),
     );
     setSelectedConversation((prev) =>
-      prev ? { ...prev, messages: [...prev.messages, newMessage], messageCount: prev.messageCount + 1 } : prev,
+      prev && prev.id === convId
+        ? { ...prev, messages: nextMessages, messageCount: nextMessages.length }
+        : prev,
     );
-    if (isLocalForumConversationId(selectedConversation.id)) {
+
+    if (isLocalForumConversationId(convId)) {
       const localConvs = readLocalConversations();
       const updatedLocal = localConvs.map((conv) =>
-        conv.id === selectedConversation.id
-          ? { ...conv, messages: [...conv.messages, newMessage!], messageCount: conv.messageCount + 1 }
-          : conv,
+        conv.id === convId ? { ...conv, messages: nextMessages, messageCount: nextMessages.length } : conv,
       );
       writeLocalConversations(updatedLocal);
     }
+
     setMessageInput("");
     setReplyingTo(null);
+    setSendingMessage(false);
   };
 
   const handleSoftDeleteMessage = async (msg: ForumMessage) => {
@@ -565,6 +558,8 @@ const Forum = () => {
     if (isLocalForumConversationId(msg.id)) {
       const mark = (m: ForumMessage) =>
         m.id === msg.id ? { ...m, text: "", deletedByUser: true, replyToSnippet: m.replyToSnippet } : m;
+      const nextMsgs = selectedConversation.messages.map(mark);
+      writeForumMessagesCache(selectedConversation.id, nextMsgs);
       setConversations((prev) =>
         prev.map((c) =>
           c.id === selectedConversation.id
@@ -591,6 +586,8 @@ const Forum = () => {
       if (res.success) {
         const mark = (m: ForumMessage) =>
           m.id === msg.id ? { ...m, text: "", deletedByUser: true } : m;
+        const nextMsgs = selectedConversation.messages.map(mark);
+        writeForumMessagesCache(selectedConversation.id, nextMsgs);
         setConversations((prev) =>
           prev.map((c) =>
             c.id === selectedConversation.id ? { ...c, messages: c.messages.map(mark) } : c,
@@ -622,6 +619,9 @@ const Forum = () => {
     }
     const updateMsg = (m: ForumMessage) =>
       m.id === messageId ? { ...m, likeCount: like_count, userLiked: liked } : m;
+
+    const nextMsgs = selectedConversation.messages.map(updateMsg);
+    writeForumMessagesCache(selectedConversation.id, nextMsgs);
 
     setConversations((prev) =>
       prev.map((conv) =>

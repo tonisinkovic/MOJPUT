@@ -1,4 +1,10 @@
-import { apiGet, apiPost, setStoredAuthToken, type ApiResponse } from "@/lib/api";
+import {
+  apiGet,
+  apiPost,
+  setStoredAuthToken,
+  setStoredLastLoginEmail,
+  type ApiResponse,
+} from "@/lib/api";
 
 const AUTH_CHANGED = "mojput-auth-changed";
 
@@ -53,6 +59,8 @@ export async function authLogin(params: {
   if (res.success) {
     const t = typeof (res as { token?: string }).token === "string" ? (res as { token?: string }).token : "";
     if (t) setStoredAuthToken(t);
+    const em = String(params.email || "").trim().toLowerCase();
+    if (em) setStoredLastLoginEmail(em);
     notifyAuthChanged();
   }
   return res;
@@ -83,9 +91,12 @@ export async function authRegister(params: {
   );
 }
 
-export async function authLogout(): Promise<ApiResponse<unknown>> {
+/** `rememberAccountEmail` — nakon odjave ostaje predispunjen email na /prijava (bez lozinke). */
+export async function authLogout(rememberAccountEmail?: string | null): Promise<ApiResponse<unknown>> {
   const res = await apiPost<unknown>("/api/auth/logout", {});
   setStoredAuthToken(null);
+  const em = String(rememberAccountEmail || "").trim().toLowerCase();
+  if (em) setStoredLastLoginEmail(em);
   if (res.success) notifyAuthChanged();
   return res;
 }

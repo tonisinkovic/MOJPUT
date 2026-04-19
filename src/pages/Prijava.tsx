@@ -22,6 +22,7 @@ import {
   LogOut,
 } from "lucide-react";
 import { authLogin, authLogout, authMe, authResendVerification, type AuthUser } from "@/lib/auth";
+import { getStoredLastLoginEmail } from "@/lib/api";
 import {
   Dialog,
   DialogContent,
@@ -42,10 +43,10 @@ type EmailVerifyUi =
 const Prijava = () => {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
-  const [loginData, setLoginData] = useState({
-    email: "",
+  const [loginData, setLoginData] = useState(() => ({
+    email: getStoredLastLoginEmail() || "",
     password: "",
-  });
+  }));
   const [loginError, setLoginError] = useState("");
   const [loggedUser, setLoggedUser] = useState<AuthUser | null>(null);
   const [loading, setLoading] = useState(true);
@@ -184,9 +185,10 @@ const Prijava = () => {
   };
 
   const handleLogout = async () => {
-    await authLogout();
+    const em = loggedUser?.email;
+    await authLogout(em);
     setLoggedUser(null);
-    setLoginData({ email: "", password: "" });
+    setLoginData({ email: getStoredLastLoginEmail() || em || "", password: "" });
     setLoginError("");
   };
 

@@ -21,3 +21,5 @@ services:
         value: https://tonisinkovic.github.io
       # U dashboardu još: JWT_SECRET + RESEND_API_KEY (+ opcionalno RESEND_FROM; prazno = onboarding@resend.dev) ili SMTP_*
       # Ako mijenjaš URL servisa, prilagodi API_PUBLIC_URL i VITE_API_URL u buildu.
+      # Trajni korisnici: na Renderu (besplatno) dodaj MOJPUT_DATABASE_URL = Neon ili Supabase PostgreSQL connection string.
+      # Alternativa: plaćeni Persistent Disk + MOJPUT_DATA_DIR (SQLite datoteka).

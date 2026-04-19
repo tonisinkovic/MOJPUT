@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import Layout from "@/components/Layout";
+import { setStoredLastLoginEmail } from "@/lib/api";
 import { authResendVerification, authVerifyCode } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -40,6 +41,7 @@ const Verify = () => {
     setPhase("loading");
     const res = await authVerifyCode({ email: clean, code });
     if (res.success) {
+      setStoredLastLoginEmail(clean);
       setPhase("success");
       return;
     }
@@ -152,7 +154,14 @@ const Verify = () => {
               <p className="text-center text-sm text-slate-700">
                 Možeš se prijaviti s emailom i lozinkom.
               </p>
-              <Button type="button" className="w-full" onClick={() => navigate("/prijava?verified=1")}>
+              <Button
+                type="button"
+                className="w-full"
+                onClick={() => {
+                  const q = email.trim().toLowerCase();
+                  navigate(q ? `/prijava?verified=1&email=${encodeURIComponent(q)}` : "/prijava?verified=1");
+                }}
+              >
                 Na prijavu
               </Button>
             </>

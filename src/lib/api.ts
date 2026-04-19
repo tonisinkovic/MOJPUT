@@ -5,6 +5,29 @@ export type ApiErr = { success: false; message: string; code?: string };
 export type ApiResponse<T> = ApiOk<T> | ApiErr;
 
 const AUTH_TOKEN_KEY = "mojput_bearer_token";
+const LAST_LOGIN_EMAIL_KEY = "mojput_last_account_email";
+
+export function getStoredLastLoginEmail(): string | null {
+  if (typeof window === "undefined") return null;
+  try {
+    const t = localStorage.getItem(LAST_LOGIN_EMAIL_KEY)?.trim().toLowerCase();
+    return t || null;
+  } catch {
+    return null;
+  }
+}
+
+/** Zadnji uspješno korišten email (bez lozinke) — predispunjavanje stranice za prijavu. */
+export function setStoredLastLoginEmail(email: string | null): void {
+  if (typeof window === "undefined") return;
+  try {
+    const n = email?.trim().toLowerCase();
+    if (n) localStorage.setItem(LAST_LOGIN_EMAIL_KEY, n);
+    else localStorage.removeItem(LAST_LOGIN_EMAIL_KEY);
+  } catch {
+    /* ignore */
+  }
+}
 
 export function getStoredAuthToken(): string | null {
   if (typeof window === "undefined") return null;

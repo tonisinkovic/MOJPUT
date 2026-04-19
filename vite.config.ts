@@ -3,6 +3,7 @@ import fs from "node:fs";
 import { defineConfig, type Plugin } from "vite";
 import react from "@vitejs/plugin-react-swc";
 import path from "path";
+import { VitePWA } from "vite-plugin-pwa";
 import { componentTagger } from "lovable-tagger";
 
 /**
@@ -70,41 +71,120 @@ function publicBasePath(): string {
   return raw.endsWith("/") ? raw : `${raw}/`;
 }
 
+/** Workbox SPA fallback — usklađeno s `base` (npr. `/MOJPUT/index.html`). */
+function spaNavigateFallback(base: string): string {
+  if (base === "/") return "/index.html";
+  return `${base.replace(/\/$/, "")}/index.html`;
+}
+
 // https://vitejs.dev/config/
-export default defineConfig(({ mode }) => ({
-  base: publicBasePath(),
-  server: {
-    host: "::",
-    port: 8080,
-    hmr: {
-      overlay: false,
-    },
-    proxy: {
-      "/api": {
-        target: "http://127.0.0.1:3000",
-        changeOrigin: true,
+export default defineConfig(({ mode }) => {
+  const base = publicBasePath();
+
+  return {
+    base,
+    server: {
+      host: "::",
+      port: 8080,
+      hmr: {
+        overlay: false,
+      },
+      proxy: {
+        "/api": {
+          target: "http://127.0.0.1:3000",
+          changeOrigin: true,
+        },
       },
     },
-  },
-  /** Isto kao dev — `vite preview` inače vraća HTML 404 za /api/* umjesto JSON-a s node servera. */
-  preview: {
-    port: 4173,
-    proxy: {
-      "/api": {
-        target: "http://127.0.0.1:3000",
-        changeOrigin: true,
+    /** Isto kao dev — `vite preview` inače vraća HTML 404 za /api/* umjesto JSON-a s node servera. */
+    preview: {
+      port: 4173,
+      proxy: {
+        "/api": {
+          target: "http://127.0.0.1:3000",
+          changeOrigin: true,
+        },
       },
     },
-  },
-  plugins: [
-    react(),
-    injectDeployMetaPlugin(),
-    mode === "development" && writeDevFrontendOriginPlugin(),
-    mode === "development" && componentTagger(),
-  ].filter(Boolean),
-  resolve: {
-    alias: {
-      "@": path.resolve(__dirname, "./src"),
+    plugins: [
+      react(),
+      VitePWA({
+        registerType: "autoUpdate",
+        injectRegister: null,
+        includeAssets: ["mojput-logo.png", "favicon.ico", "robots.txt"],
+        manifest: {
+          name: "MojPut",
+          short_name: "MojPut",
+          description: "Karijerni usmjerivač — alati za školu, fakultet i karijeru.",
+          theme_color: "#1f9b8e",
+          background_color: "#f4f8fb",
+          display: "standalone",
+          display_override: ["standalone", "browser"],
+          orientation: "any",
+          scope: base,
+          start_url: base,
+          lang: "hr",
+          categories: ["education", "productivity"],
+          icons: [
+            {
+              src: "mojput-logo.png",
+              sizes: "192x192",
+              type: "image/png",
+              purpose: "any",
+            },
+            {
+              src: "mojput-logo.png",
+              sizes: "512x512",
+              type: "image/png",
+              purpose: "any",
+            },
+            {
+              src: "mojput-logo.png",
+              sizes: "512x512",
+              type: "image/png",
+              purpose: "maskable",
+            },
+          ],
+        },
+        workbox: {
+          globPatterns: ["**/*.{js,css,html,ico,png,svg,woff2,woff,ttf,webp}"],
+          globIgnores: ["**/*.pdf"],
+          maximumFileSizeToCacheInBytes: 4 * 1024 * 1024,
+          navigateFallback: spaNavigateFallback(base),
+          navigateFallbackDenylist: [/^\/api\//],
+          runtimeCaching: [
+            {
+              urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,
+              handler: "StaleWhileRevalidate",
+              options: {
+                cacheName: "google-fonts-stylesheets",
+              },
+            },
+            {
+              urlPattern: /^https:\/\/fonts\.gstatic\.com\/.*/i,
+              handler: "CacheFirst",
+              options: {
+                cacheName: "google-fonts-webfonts",
+                expiration: {
+                  maxEntries: 24,
+                  maxAgeSeconds: 60 * 60 * 24 * 365,
+                },
+              },
+            },
+          ],
+        },
+        devOptions: {
+          enabled: false,
+        },
+      }),
+      injectDeployMetaPlugin(),
+      mode === "development" && writeDevFrontendOriginPlugin(),
+      mode === "development" && componentTagger(),
+    ].filter(Boolean),
+    resolve: {
+      alias: {
+        "@": path.resolve(__dirname, "./src"),
+      },
     },
-  },
-}));
+  };
+});

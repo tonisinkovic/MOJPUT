@@ -203,7 +203,7 @@ export default function ProfilDashboard() {
   }, [lastQuiz]);
 
   const handleLogout = async () => {
-    await authLogout();
+    await authLogout(authUser?.email);
     setAuthUser(null);
   };
 

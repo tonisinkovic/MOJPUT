@@ -23,7 +23,7 @@ const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
 const crypto = require("crypto");
 const nodemailer = require("nodemailer");
-const Database = require("better-sqlite3");
+const { createAppDb, finalizePendingRegistration, seedForum } = require(path.join(__dirname, "server", "appDb.cjs"));
 const { fromZonedTime, toZonedTime } = require("date-fns-tz");
 const { addDays, startOfDay } = require("date-fns");
 
@@ -448,279 +448,12 @@ if (isDeployedOnPaaS() && !String(process.env.API_PUBLIC_URL || "").trim() && !r
   console.warn("[config] API_PUBLIC_URL nije u env — koristi se zadani:", DEFAULT_PUBLIC_API_BASE);
 }
 
-function ensureDir(dirPath) {
-  if (!fs.existsSync(dirPath)) fs.mkdirSync(dirPath, { recursive: true });
-}
-
-function openDb() {
-  const dataDir = path.join(__dirname, "data");
-  ensureDir(dataDir);
-  const dbPath = path.join(dataDir, "mojput.db");
-  const db = new Database(dbPath);
-  db.pragma("journal_mode = WAL");
-  db.pragma("foreign_keys = ON");
-  return db;
-}
-
-/** Jedan limit po kalendarskom danu u Europe/Zagreb (isti ključ za sve upite). */
-function getChatDayKey() {
-  const parts = new Intl.DateTimeFormat("en-CA", {
-    timeZone: "Europe/Zagreb",
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-  }).formatToParts(new Date());
-  const y = parts.find((p) => p.type === "year")?.value;
-  const m = parts.find((p) => p.type === "month")?.value;
-  const d = parts.find((p) => p.type === "day")?.value;
-  return `${y}-${m}-${d}`;
-}
-
 /** ISO trenutak sljedeće ponoći u Europe/Zagreb (reset dnevnog limita poruka). */
 function getNextZagrebMidnightIso() {
   const now = new Date();
   const z = toZonedTime(now, "Europe/Zagreb");
   const next = addDays(startOfDay(z), 1);
   return fromZonedTime(next, "Europe/Zagreb").toISOString();
-}
-
-function migrate(db) {
-  db.exec(`
-    CREATE TABLE IF NOT EXISTS users (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      username TEXT NOT NULL,
-      email TEXT NOT NULL UNIQUE,
-      password_hash TEXT NOT NULL,
-      email_verified INTEGER NOT NULL DEFAULT 0,
-      email_verify_token TEXT,
-      email_verify_expires_at TEXT,
-      created_at TEXT NOT NULL DEFAULT (datetime('now'))
-    );
-
-    CREATE TABLE IF NOT EXISTS forum_conversations (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      title TEXT NOT NULL,
-      description TEXT,
-      creator_user_id INTEGER NOT NULL,
-      created_at TEXT NOT NULL DEFAULT (datetime('now')),
-      FOREIGN KEY (creator_user_id) REFERENCES users(id)
-    );
-
-    CREATE TABLE IF NOT EXISTS forum_messages (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      conversation_id INTEGER NOT NULL,
-      user_id INTEGER NOT NULL,
-      text TEXT NOT NULL,
-      created_at TEXT NOT NULL DEFAULT (datetime('now')),
-      FOREIGN KEY (conversation_id) REFERENCES forum_conversations(id),
-      FOREIGN KEY (user_id) REFERENCES users(id)
-    );
-
-    CREATE TABLE IF NOT EXISTS forum_likes (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      user_id INTEGER NOT NULL,
-      message_id INTEGER NOT NULL,
-      created_at TEXT NOT NULL DEFAULT (datetime('now')),
-      UNIQUE(user_id, message_id),
-      FOREIGN KEY (user_id) REFERENCES users(id),
-      FOREIGN KEY (message_id) REFERENCES forum_messages(id)
-    );
-
-    CREATE TABLE IF NOT EXISTS pending_registrations (
-      email TEXT PRIMARY KEY,
-      username TEXT NOT NULL,
-      password_hash TEXT NOT NULL,
-      verify_token TEXT NOT NULL UNIQUE,
-      expires_at TEXT NOT NULL,
-      created_at TEXT NOT NULL DEFAULT (datetime('now')),
-      app_base_url TEXT
-    );
-
-    CREATE TABLE IF NOT EXISTS app_meta (
-      key TEXT PRIMARY KEY,
-      value TEXT NOT NULL
-    );
-
-    CREATE TABLE IF NOT EXISTS site_feedback (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      user_id INTEGER NOT NULL,
-      message TEXT NOT NULL,
-      page_path TEXT,
-      created_at TEXT NOT NULL DEFAULT (datetime('now')),
-      FOREIGN KEY (user_id) REFERENCES users(id)
-    );
-  `);
-
-  // Lightweight migration for existing DBs (SQLite doesn't add columns automatically)
-  const cols = db.prepare("PRAGMA table_info(users)").all().map((c) => c.name);
-  if (!cols.includes("email_verified")) db.exec("ALTER TABLE users ADD COLUMN email_verified INTEGER NOT NULL DEFAULT 0");
-  if (!cols.includes("email_verify_token")) db.exec("ALTER TABLE users ADD COLUMN email_verify_token TEXT");
-  if (!cols.includes("email_verify_expires_at")) db.exec("ALTER TABLE users ADD COLUMN email_verify_expires_at TEXT");
-  try {
-    db.prepare("SELECT 1 FROM forum_likes LIMIT 1").get();
-  } catch {
-    db.exec(`
-      CREATE TABLE forum_likes (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        user_id INTEGER NOT NULL,
-        message_id INTEGER NOT NULL,
-        created_at TEXT NOT NULL DEFAULT (datetime('now')),
-        UNIQUE(user_id, message_id),
-        FOREIGN KEY (user_id) REFERENCES users(id),
-        FOREIGN KEY (message_id) REFERENCES forum_messages(id)
-      )
-    `);
-  }
-
-  try {
-    db.prepare("SELECT 1 FROM pending_registrations LIMIT 1").get();
-  } catch {
-    db.exec(`
-      CREATE TABLE pending_registrations (
-        email TEXT PRIMARY KEY,
-        username TEXT NOT NULL,
-        password_hash TEXT NOT NULL,
-        verify_token TEXT NOT NULL UNIQUE,
-        expires_at TEXT NOT NULL,
-        created_at TEXT NOT NULL DEFAULT (datetime('now')),
-        app_base_url TEXT
-      )
-    `);
-  }
-
-  const pendingCols = db.prepare("PRAGMA table_info(pending_registrations)").all().map((c) => c.name);
-  if (pendingCols.length && !pendingCols.includes("app_base_url")) {
-    db.exec("ALTER TABLE pending_registrations ADD COLUMN app_base_url TEXT");
-  }
-  if (pendingCols.length && !pendingCols.includes("verify_code_hash")) {
-    db.exec("ALTER TABLE pending_registrations ADD COLUMN verify_code_hash TEXT");
-  }
-
-  try {
-    db.prepare("SELECT 1 FROM app_meta LIMIT 1").get();
-  } catch {
-    db.exec(`CREATE TABLE app_meta (key TEXT PRIMARY KEY, value TEXT NOT NULL)`);
-  }
-
-  try {
-    db.prepare("SELECT 1 FROM career_quiz_results LIMIT 1").get();
-  } catch {
-    db.exec(`
-      CREATE TABLE career_quiz_results (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        user_id INTEGER NOT NULL,
-        created_at TEXT NOT NULL DEFAULT (datetime('now')),
-        payload TEXT NOT NULL,
-        FOREIGN KEY (user_id) REFERENCES users(id)
-      )
-    `);
-  }
-
-  const userCols = db.prepare("PRAGMA table_info(users)").all().map((c) => c.name);
-  if (!userCols.includes("user_type")) {
-    db.exec("ALTER TABLE users ADD COLUMN user_type TEXT DEFAULT 'srednjoskolac'");
-  }
-  if (!userCols.includes("last_login_at")) {
-    db.exec("ALTER TABLE users ADD COLUMN last_login_at TEXT");
-  }
-  if (!userCols.includes("password_reset_token_hash")) {
-    db.exec("ALTER TABLE users ADD COLUMN password_reset_token_hash TEXT");
-  }
-  if (!userCols.includes("password_reset_expires_at")) {
-    db.exec("ALTER TABLE users ADD COLUMN password_reset_expires_at TEXT");
-  }
-
-  const forumMsgCols = db.prepare("PRAGMA table_info(forum_messages)").all().map((c) => c.name);
-  if (!forumMsgCols.includes("reply_to_id")) {
-    db.exec("ALTER TABLE forum_messages ADD COLUMN reply_to_id INTEGER REFERENCES forum_messages(id)");
-  }
-  if (!forumMsgCols.includes("deleted_by_user_at")) {
-    db.exec("ALTER TABLE forum_messages ADD COLUMN deleted_by_user_at TEXT");
-  }
-
-  try {
-    db.prepare("SELECT 1 FROM user_saved_faculties LIMIT 1").get();
-  } catch {
-    db.exec(`
-      CREATE TABLE user_saved_faculties (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        user_id INTEGER NOT NULL,
-        faculty_id TEXT NOT NULL,
-        label TEXT NOT NULL,
-        city TEXT,
-        excerpt TEXT,
-        created_at TEXT NOT NULL DEFAULT (datetime('now')),
-        FOREIGN KEY (user_id) REFERENCES users(id),
-        UNIQUE(user_id, faculty_id)
-      )
-    `);
-  }
-
-  try {
-    db.prepare("SELECT 1 FROM chatbot_daily_usage LIMIT 1").get();
-  } catch {
-    db.exec(`
-      CREATE TABLE chatbot_daily_usage (
-        user_id INTEGER NOT NULL,
-        day TEXT NOT NULL,
-        message_count INTEGER NOT NULL DEFAULT 0,
-        PRIMARY KEY (user_id, day),
-        FOREIGN KEY (user_id) REFERENCES users(id)
-      )
-    `);
-  }
-
-  const migrated = db.prepare("SELECT 1 FROM app_meta WHERE key = 'pending_registration_flow_v1'").get();
-  if (!migrated) {
-    db.exec("PRAGMA foreign_keys = OFF");
-    db.exec("DELETE FROM forum_likes");
-    db.exec("DELETE FROM forum_messages");
-    db.exec("DELETE FROM forum_conversations");
-    db.exec("DELETE FROM users");
-    try {
-      db.exec("DELETE FROM pending_registrations");
-    } catch {
-      /* ignore */
-    }
-    db.exec("PRAGMA foreign_keys = ON");
-    db.prepare("INSERT INTO app_meta (key, value) VALUES ('pending_registration_flow_v1', '1')").run();
-    console.log("[migrate] Jednokratno očišćeni korisnici i nepotvrđene prijave (račun nastaje tek nakon klika u mailu).");
-  }
-
-  const otpMigrated = db.prepare("SELECT 1 FROM app_meta WHERE key = 'email_verify_otp_v1'").get();
-  if (!otpMigrated) {
-    db.exec("PRAGMA foreign_keys = OFF");
-    db.exec("DELETE FROM forum_likes");
-    db.exec("DELETE FROM forum_messages");
-    db.exec("DELETE FROM forum_conversations");
-    db.exec("DELETE FROM users");
-    try {
-      db.exec("DELETE FROM pending_registrations");
-    } catch {
-      /* ignore */
-    }
-    db.exec("PRAGMA foreign_keys = ON");
-    db.prepare("INSERT INTO app_meta (key, value) VALUES ('email_verify_otp_v1', '1')").run();
-    console.log("[migrate] Potvrda računa 6-znamenkastim kodom — jednokratno očišćeni korisnici i nepotvrđene prijave.");
-  }
-}
-
-function seedForum(db) {
-  const count = db.prepare("SELECT COUNT(*) as c FROM forum_conversations").get().c;
-  if (count > 0) return;
-
-  const anyUser = db.prepare("SELECT id FROM users ORDER BY id ASC LIMIT 1").get();
-  if (!anyUser) return;
-
-  const insertConv = db.prepare(
-    "INSERT INTO forum_conversations (title, description, creator_user_id) VALUES (?, ?, ?)",
-  );
-  insertConv.run(
-    "Najbolji fakulteti za informatiku",
-    "Diskusija o fakultetima sa najboljim IT programima",
-    anyUser.id,
-  );
-  insertConv.run("Iskustva sa maturom", "Savjeti i trikovi za maturu", anyUser.id);
 }
 
 function generateSixDigitCode() {
@@ -771,20 +504,6 @@ function forgotPasswordRateLimitOk(emailKey) {
 
 function hashPasswordResetToken(token) {
   return crypto.createHash("sha256").update(String(token || ""), "utf8").digest("hex");
-}
-
-function finalizePendingRegistration(db, pending) {
-  const already = db.prepare("SELECT id FROM users WHERE email = ?").get(pending.email);
-  if (already) {
-    db.prepare("DELETE FROM pending_registrations WHERE email = ?").run(pending.email);
-    return { alreadyUser: true };
-  }
-  db.prepare(
-    "INSERT INTO users (username, email, password_hash, email_verified, email_verify_token, email_verify_expires_at) VALUES (?, ?, ?, 1, NULL, NULL)",
-  ).run(pending.username, pending.email, pending.password_hash);
-  db.prepare("DELETE FROM pending_registrations WHERE email = ?").run(pending.email);
-  seedForum(db);
-  return { alreadyUser: false };
 }
 
 function signToken(payload) {
@@ -853,13 +572,13 @@ function clearAuthCookie(res, req) {
 }
 
 function authMiddleware(db) {
-  return (req, res, next) => {
+  return async (req, res, next) => {
     const token = getAuthTokenFromRequest(req);
     if (!token) return res.status(401).json({ success: false, message: "Nisi prijavljen." });
 
     try {
       const decoded = jwt.verify(token, JWT_SECRET);
-      const user = db
+      const user = await db
         .prepare(
           "SELECT id, username, email, created_at, email_verified, user_type, last_login_at FROM users WHERE id = ?",
         )
@@ -881,13 +600,13 @@ function authMiddleware(db) {
 }
 
 function optionalAuthMiddleware(db) {
-  return (req, res, next) => {
+  return async (req, res, next) => {
     req.user = null;
     const token = getAuthTokenFromRequest(req);
     if (!token) return next();
     try {
       const decoded = jwt.verify(token, JWT_SECRET);
-      const user = db
+      const user = await db
         .prepare(
           "SELECT id, username, email, created_at, email_verified, user_type, last_login_at FROM users WHERE id = ?",
         )
@@ -1494,44 +1213,28 @@ async function main() {
   app.get("/", (_req, res) => res.status(200).type("text/plain").send("ok"));
   app.get("/api/health", (_req, res) => res.status(200).json({ success: true }));
 
-  const db = openDb();
-  migrate(db);
+  const db = await createAppDb();
+  await db.migrate();
   await loadUniversitiesData(); // ensures file exists on first run
 
   /** Besplatne poruke chata po korisniku i danu (Europe/Zagreb). */
   const CHAT_FREE_DAILY_LIMIT = Math.min(500, Math.max(1, Number(process.env.CHAT_FREE_DAILY_LIMIT || 12) || 12));
 
-  function getChatUsageToday(userId) {
-    const day = getChatDayKey();
-    const row = db.prepare("SELECT message_count FROM chatbot_daily_usage WHERE user_id = ? AND day = ?").get(userId, day);
-    return row ? row.message_count : 0;
+  async function getChatUsageToday(userId) {
+    return db.getChatUsageToday(userId);
   }
 
   /**
    * Atomski: u jednoj transakciji provjeri limit i povećaj brojač (sprječava paralelne zahtjeve koji zaobiđu 12).
    * Vraća false ako je limit već iscrpljen.
    */
-  function reserveChatSlot(userId) {
-    const day = getChatDayKey();
-    const run = db.transaction(() => {
-      const row = db.prepare("SELECT message_count FROM chatbot_daily_usage WHERE user_id = ? AND day = ?").get(userId, day);
-      const used = row ? row.message_count : 0;
-      if (used >= CHAT_FREE_DAILY_LIMIT) return false;
-      db.prepare(
-        `INSERT INTO chatbot_daily_usage (user_id, day, message_count) VALUES (?, ?, 1)
-         ON CONFLICT(user_id, day) DO UPDATE SET message_count = message_count + 1`,
-      ).run(userId, day);
-      return true;
-    });
-    return run();
+  async function reserveChatSlot(userId) {
+    return db.reserveChatSlot(userId, CHAT_FREE_DAILY_LIMIT);
   }
 
   /** Ako AI poziv padne nakon rezervacije, vrati jedno mjesto (ne naplaćuj neuspjeli pokušaj). */
-  function refundChatSlot(userId) {
-    const day = getChatDayKey();
-    db.prepare(
-      "UPDATE chatbot_daily_usage SET message_count = message_count - 1 WHERE user_id = ? AND day = ? AND message_count > 0",
-    ).run(userId, day);
+  async function refundChatSlot(userId) {
+    return db.refundChatSlot(userId);
   }
 
   /**
@@ -1597,7 +1300,7 @@ async function main() {
         return res.status(400).json({ success: false, message: "Lozinka mora imati barem 6 znakova." });
       }
 
-      const existingUser = db.prepare("SELECT id FROM users WHERE email = ?").get(cleanEmail);
+      const existingUser = await db.prepare("SELECT id FROM users WHERE email = ?").get(cleanEmail);
       if (existingUser) {
         return res.status(409).json({
           success: false,
@@ -1606,7 +1309,7 @@ async function main() {
         });
       }
 
-      const existingPending = db
+      const existingPending = await db
         .prepare("SELECT email, expires_at FROM pending_registrations WHERE email = ?")
         .get(cleanEmail);
       if (existingPending) {
@@ -1628,16 +1331,16 @@ async function main() {
       const verifyCodeHash = hashVerifyCode(plainCode);
       const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
 
-      db.prepare("DELETE FROM pending_registrations WHERE email = ?").run(cleanEmail);
+      await db.prepare("DELETE FROM pending_registrations WHERE email = ?").run(cleanEmail);
       const appBase = appOriginForLinks();
-      db.prepare(
+      await db.prepare(
         "INSERT INTO pending_registrations (email, username, password_hash, verify_token, verify_code_hash, expires_at, app_base_url) VALUES (?, ?, ?, ?, ?, ?, ?)",
       ).run(cleanEmail, cleanUsername, passwordHash, verifyToken, verifyCodeHash, expiresAt, appBase);
 
       const mail = await sendVerificationEmail({ to: cleanEmail, username: cleanUsername, code: plainCode });
 
       if (!mail.sent) {
-        db.prepare("DELETE FROM pending_registrations WHERE email = ?").run(cleanEmail);
+        await db.prepare("DELETE FROM pending_registrations WHERE email = ?").run(cleanEmail);
         return res.status(502).json({
           success: false,
           message:
@@ -1671,7 +1374,7 @@ async function main() {
     });
   });
 
-  app.post("/api/auth/verify-code", (req, res) => {
+  app.post("/api/auth/verify-code", async (req, res) => {
     try {
       const { email, code } = req.body || {};
       const cleanEmail = String(email || "").trim().toLowerCase();
@@ -1691,7 +1394,7 @@ async function main() {
         });
       }
 
-      const pending = db
+      const pending = await db
         .prepare(
           "SELECT email, username, password_hash, expires_at, verify_code_hash FROM pending_registrations WHERE email = ?",
         )
@@ -1707,7 +1410,7 @@ async function main() {
       if (pending.expires_at) {
         const exp = new Date(pending.expires_at).getTime();
         if (Number.isFinite(exp) && exp < Date.now()) {
-          db.prepare("DELETE FROM pending_registrations WHERE email = ?").run(cleanEmail);
+          await db.prepare("DELETE FROM pending_registrations WHERE email = ?").run(cleanEmail);
           return res.status(400).json({
             success: false,
             message: "Kod je istekao. Registriraj se ponovno ili zatraži novi email.",
@@ -1719,7 +1422,7 @@ async function main() {
         return res.status(400).json({ success: false, message: "Kod nije točan." });
       }
 
-      finalizePendingRegistration(db, pending);
+      await finalizePendingRegistration(db, pending);
       return res.json({ success: true });
     } catch (err) {
       console.error("[auth/verify-code]", err?.message || err);
@@ -1734,12 +1437,12 @@ async function main() {
       return res.status(400).json({ success: false, message: "Unesi valjanu email adresu." });
     }
 
-    const userRow = db.prepare("SELECT id FROM users WHERE email = ?").get(cleanEmail);
+    const userRow = await db.prepare("SELECT id FROM users WHERE email = ?").get(cleanEmail);
     if (userRow) {
       return res.json({ success: true });
     }
 
-    const pending = db.prepare("SELECT username FROM pending_registrations WHERE email = ?").get(cleanEmail);
+    const pending = await db.prepare("SELECT username FROM pending_registrations WHERE email = ?").get(cleanEmail);
     if (!pending) {
       return res.json({ success: true });
     }
@@ -1749,7 +1452,7 @@ async function main() {
     const verifyCodeHash = hashVerifyCode(plainCode);
     const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
 
-    db.prepare(
+    await db.prepare(
       "UPDATE pending_registrations SET verify_token = ?, verify_code_hash = ?, expires_at = ?, app_base_url = ? WHERE email = ?",
     ).run(verifyToken, verifyCodeHash, expiresAt, appOriginForLinks(), cleanEmail);
 
@@ -1786,7 +1489,7 @@ async function main() {
         });
       }
 
-      const userRow = db
+      const userRow = await db
         .prepare("SELECT id, username, email_verified FROM users WHERE email = ?")
         .get(cleanEmail);
 
@@ -1798,7 +1501,7 @@ async function main() {
       const tokenHash = hashPasswordResetToken(rawToken);
       const expiresAt = new Date(Date.now() + 60 * 60 * 1000).toISOString();
 
-      db.prepare(
+      await db.prepare(
         "UPDATE users SET password_reset_token_hash = ?, password_reset_expires_at = ? WHERE id = ?",
       ).run(tokenHash, expiresAt, userRow.id);
 
@@ -1810,7 +1513,7 @@ async function main() {
       });
 
       if (!mail.sent) {
-        db.prepare(
+        await db.prepare(
           "UPDATE users SET password_reset_token_hash = NULL, password_reset_expires_at = NULL WHERE id = ?",
         ).run(userRow.id);
         return res.status(502).json({
@@ -1828,7 +1531,7 @@ async function main() {
     }
   });
 
-  app.post("/api/auth/reset-password", (req, res) => {
+  app.post("/api/auth/reset-password", async (req, res) => {
     try {
       const { token, password } = req.body || {};
       const rawToken = String(token || "").trim();
@@ -1842,7 +1545,7 @@ async function main() {
       }
 
       const tokenHash = hashPasswordResetToken(rawToken);
-      const row = db
+      const row = await db
         .prepare("SELECT id, password_reset_expires_at FROM users WHERE password_reset_token_hash = ?")
         .get(tokenHash);
 
@@ -1855,7 +1558,7 @@ async function main() {
 
       const exp = row.password_reset_expires_at ? new Date(row.password_reset_expires_at).getTime() : 0;
       if (!exp || Number.isNaN(exp) || exp < Date.now()) {
-        db.prepare(
+        await db.prepare(
           "UPDATE users SET password_reset_token_hash = NULL, password_reset_expires_at = NULL WHERE id = ?",
         ).run(row.id);
         return res.status(400).json({
@@ -1865,7 +1568,7 @@ async function main() {
       }
 
       const passwordHash = bcrypt.hashSync(cleanPassword, 12);
-      db.prepare(
+      await db.prepare(
         "UPDATE users SET password_hash = ?, password_reset_token_hash = NULL, password_reset_expires_at = NULL WHERE id = ?",
       ).run(passwordHash, row.id);
 
@@ -1876,7 +1579,7 @@ async function main() {
     }
   });
 
-  app.post("/api/auth/login", (req, res) => {
+  app.post("/api/auth/login", async (req, res) => {
     try {
       const { email, password } = req.body || {};
       const cleanEmail = String(email || "").trim().toLowerCase();
@@ -1889,13 +1592,13 @@ async function main() {
         return res.status(400).json({ success: false, message: "Unesi valjanu email adresu." });
       }
 
-      const row = db
+      const row = await db
         .prepare(
           "SELECT id, username, email, password_hash, created_at, email_verified, user_type, last_login_at FROM users WHERE email = ?",
         )
         .get(cleanEmail);
       if (!row) {
-        const pend = db
+        const pend = await db
           .prepare("SELECT password_hash FROM pending_registrations WHERE email = ?")
           .get(cleanEmail);
         if (pend && bcrypt.compareSync(cleanPassword, pend.password_hash)) {
@@ -1924,8 +1627,8 @@ async function main() {
       const ok = bcrypt.compareSync(cleanPassword, row.password_hash);
       if (!ok) return res.status(401).json({ success: false, message: "Neispravan email ili lozinka." });
 
-      db.prepare("UPDATE users SET last_login_at = datetime('now') WHERE id = ?").run(row.id);
-      const fresh = db
+      await db.prepare("UPDATE users SET last_login_at = datetime('now') WHERE id = ?").run(row.id);
+      const fresh = await db
         .prepare(
           "SELECT id, username, email, created_at, email_verified, user_type, last_login_at FROM users WHERE id = ?",
         )
@@ -1951,7 +1654,7 @@ async function main() {
   });
 
   /** Rezultat karijernog kviza (2×50) — samo vlasnik računa. */
-  app.post("/api/career-quiz/save", authMiddleware(db), (req, res) => {
+  app.post("/api/career-quiz/save", authMiddleware(db), async (req, res) => {
     try {
       const payload = req.body?.payload;
       if (payload === undefined || payload === null || typeof payload !== "object") {
@@ -1961,7 +1664,7 @@ async function main() {
       if (str.length > 600000) {
         return res.status(400).json({ success: false, message: "Podaci su predugački." });
       }
-      const info = db.prepare("INSERT INTO career_quiz_results (user_id, payload) VALUES (?, ?)").run(req.user.id, str);
+      const info = await db.prepare("INSERT INTO career_quiz_results (user_id, payload) VALUES (?, ?)").run(req.user.id, str);
       return res.json({ success: true, id: Number(info.lastInsertRowid) });
     } catch (err) {
       console.error("[career-quiz/save]", err?.message || err);
@@ -1969,9 +1672,9 @@ async function main() {
     }
   });
 
-  app.get("/api/career-quiz/latest", authMiddleware(db), (req, res) => {
+  app.get("/api/career-quiz/latest", authMiddleware(db), async (req, res) => {
     try {
-      const row = db
+      const row = await db
         .prepare(
           "SELECT id, created_at, payload FROM career_quiz_results WHERE user_id = ? ORDER BY id DESC LIMIT 1",
         )
@@ -1993,9 +1696,9 @@ async function main() {
     }
   });
 
-  app.get("/api/career-quiz/history", authMiddleware(db), (req, res) => {
+  app.get("/api/career-quiz/history", authMiddleware(db), async (req, res) => {
     try {
-      const rows = db
+      const rows = await db
         .prepare(
           "SELECT id, created_at, payload FROM career_quiz_results WHERE user_id = ? ORDER BY id DESC LIMIT 50",
         )
@@ -2012,19 +1715,21 @@ async function main() {
     }
   });
 
-  app.get("/api/me/dashboard", authMiddleware(db), (req, res) => {
+  app.get("/api/me/dashboard", authMiddleware(db), async (req, res) => {
     try {
       const uid = req.user.id;
       const forumThreads = Number(
-        db.prepare("SELECT COUNT(*) as c FROM forum_conversations WHERE creator_user_id = ?").get(uid).c,
+        (await db.prepare("SELECT COUNT(*) as c FROM forum_conversations WHERE creator_user_id = ?").get(uid))?.c ?? 0,
       );
-      const forumMessages = Number(db.prepare("SELECT COUNT(*) as c FROM forum_messages WHERE user_id = ?").get(uid).c);
-      const savedRows = db
+      const forumMessages = Number(
+        (await db.prepare("SELECT COUNT(*) as c FROM forum_messages WHERE user_id = ?").get(uid))?.c ?? 0,
+      );
+      const savedRows = await db
         .prepare(
           "SELECT id, faculty_id, label, city, excerpt, created_at FROM user_saved_faculties WHERE user_id = ? ORDER BY id DESC LIMIT 50",
         )
         .all(uid);
-      const quizRows = db
+      const quizRows = await db
         .prepare(
           "SELECT id, created_at, payload FROM career_quiz_results WHERE user_id = ? ORDER BY id DESC LIMIT 30",
         )
@@ -2034,7 +1739,7 @@ async function main() {
         created_at: r.created_at,
         payload: JSON.parse(r.payload),
       }));
-      const u = db
+      const u = await db
         .prepare("SELECT id, username, email, created_at, email_verified, user_type, last_login_at FROM users WHERE id = ?")
         .get(uid);
       let profilePercent = 25;
@@ -2061,11 +1766,11 @@ async function main() {
     }
   });
 
-  app.patch("/api/me/profile", authMiddleware(db), (req, res) => {
+  app.patch("/api/me/profile", authMiddleware(db), async (req, res) => {
     try {
       const uid = req.user.id;
       const { username, user_type, current_password, new_password } = req.body || {};
-      const row = db.prepare("SELECT id, password_hash FROM users WHERE id = ?").get(uid);
+      const row = await db.prepare("SELECT id, password_hash FROM users WHERE id = ?").get(uid);
       if (!row) return res.status(404).json({ success: false, message: "Korisnik nije pronađen." });
 
       if (typeof new_password === "string" && new_password.length > 0) {
@@ -2077,17 +1782,17 @@ async function main() {
           return res.status(400).json({ success: false, message: "Nova lozinka mora imati barem 8 znakova." });
         }
         const hash = bcrypt.hashSync(new_password, 10);
-        db.prepare("UPDATE users SET password_hash = ? WHERE id = ?").run(hash, uid);
+        await db.prepare("UPDATE users SET password_hash = ? WHERE id = ?").run(hash, uid);
       }
 
       if (typeof username === "string" && username.trim().length >= 2) {
-        db.prepare("UPDATE users SET username = ? WHERE id = ?").run(username.trim().slice(0, 120), uid);
+        await db.prepare("UPDATE users SET username = ? WHERE id = ?").run(username.trim().slice(0, 120), uid);
       }
       if (typeof user_type === "string" && ALLOWED_USER_TYPES.has(user_type)) {
-        db.prepare("UPDATE users SET user_type = ? WHERE id = ?").run(user_type, uid);
+        await db.prepare("UPDATE users SET user_type = ? WHERE id = ?").run(user_type, uid);
       }
 
-      const u = db
+      const u = await db
         .prepare("SELECT id, username, email, created_at, email_verified, user_type, last_login_at FROM users WHERE id = ?")
         .get(uid);
       return res.json({ success: true, user: userPayloadWithAdminFlag(u) });
@@ -2097,13 +1802,13 @@ async function main() {
     }
   });
 
-  app.post("/api/me/saved-faculties", authMiddleware(db), (req, res) => {
+  app.post("/api/me/saved-faculties", authMiddleware(db), async (req, res) => {
     try {
       const { faculty_id, label, city, excerpt } = req.body || {};
       const fid = String(faculty_id || "").trim().slice(0, 200);
       const lab = String(label || "").trim().slice(0, 300);
       if (!fid || !lab) return res.status(400).json({ success: false, message: "Nedostaje fakultet." });
-      const info = db
+      const info = await db
         .prepare(
           "INSERT INTO user_saved_faculties (user_id, faculty_id, label, city, excerpt) VALUES (?, ?, ?, ?, ?)",
         )
@@ -2114,7 +1819,7 @@ async function main() {
           String(city || "").trim().slice(0, 120) || null,
           String(excerpt || "").trim().slice(0, 500) || null,
         );
-      const row = db
+      const row = await db
         .prepare("SELECT id, faculty_id, label, city, excerpt, created_at FROM user_saved_faculties WHERE id = ?")
         .get(info.lastInsertRowid);
       return res.json({ success: true, data: row });
@@ -2127,10 +1832,10 @@ async function main() {
     }
   });
 
-  app.delete("/api/me/saved-faculties/:id", authMiddleware(db), (req, res) => {
+  app.delete("/api/me/saved-faculties/:id", authMiddleware(db), async (req, res) => {
     try {
       const id = Number(req.params.id);
-      const r = db.prepare("DELETE FROM user_saved_faculties WHERE id = ? AND user_id = ?").run(id, req.user.id);
+      const r = await db.prepare("DELETE FROM user_saved_faculties WHERE id = ? AND user_id = ?").run(id, req.user.id);
       if (r.changes === 0) return res.status(404).json({ success: false, message: "Nije pronađeno." });
       return res.json({ success: true });
     } catch (err) {
@@ -2140,22 +1845,23 @@ async function main() {
   });
 
   /** Sažetak za tim održavanja (samo ADMIN_EMAILS). */
-  app.get("/api/admin/stats", adminMiddleware(db), (_req, res) => {
+  app.get("/api/admin/stats", adminMiddleware(db), async (_req, res) => {
     try {
-      const one = (sql) => Number(db.prepare(sql).get()?.c ?? 0);
+      const one = async (sql) => Number((await db.prepare(sql).get())?.c ?? 0);
+      const sql7 = db.isPostgres
+        ? "SELECT COUNT(*) as c FROM users WHERE created_at >= NOW() - INTERVAL '7 days'"
+        : "SELECT COUNT(*) as c FROM users WHERE datetime(created_at) >= datetime('now', '-7 days')";
       return res.json({
         success: true,
         data: {
-          users_total: one("SELECT COUNT(*) as c FROM users"),
-          users_verified: one("SELECT COUNT(*) as c FROM users WHERE email_verified = 1"),
-          pending_registrations: one("SELECT COUNT(*) as c FROM pending_registrations"),
-          site_feedback: one("SELECT COUNT(*) as c FROM site_feedback"),
-          forum_conversations: one("SELECT COUNT(*) as c FROM forum_conversations"),
-          forum_messages: one("SELECT COUNT(*) as c FROM forum_messages"),
-          forum_likes: one("SELECT COUNT(*) as c FROM forum_likes"),
-          registrations_last_7_days: one(
-            "SELECT COUNT(*) as c FROM users WHERE datetime(created_at) >= datetime('now', '-7 days')",
-          ),
+          users_total: await one("SELECT COUNT(*) as c FROM users"),
+          users_verified: await one("SELECT COUNT(*) as c FROM users WHERE email_verified = 1"),
+          pending_registrations: await one("SELECT COUNT(*) as c FROM pending_registrations"),
+          site_feedback: await one("SELECT COUNT(*) as c FROM site_feedback"),
+          forum_conversations: await one("SELECT COUNT(*) as c FROM forum_conversations"),
+          forum_messages: await one("SELECT COUNT(*) as c FROM forum_messages"),
+          forum_likes: await one("SELECT COUNT(*) as c FROM forum_likes"),
+          registrations_last_7_days: await one(sql7),
         },
       });
     } catch (err) {
@@ -2165,7 +1871,7 @@ async function main() {
   });
 
   /** Povratne informacije — samo za prijavljene; nema javnog popisa (samo u bazi za održavanje). */
-  app.post("/api/feedback", authMiddleware(db), (req, res) => {
+  app.post("/api/feedback", authMiddleware(db), async (req, res) => {
     try {
       const raw = String((req.body || {}).message || "").trim();
       const pageRaw = String((req.body || {}).pagePath || "").trim();
@@ -2176,7 +1882,7 @@ async function main() {
         return res.status(400).json({ success: false, message: "Poruka je predugačka (najviše 4000 znakova)." });
       }
       const pagePath = pageRaw.length > 500 ? pageRaw.slice(0, 500) : pageRaw;
-      const insertInfo = db
+      const insertInfo = await db
         .prepare("INSERT INTO site_feedback (user_id, message, page_path) VALUES (?, ?, ?)")
         .run(req.user.id, raw, pagePath || null);
       const feedbackId = Number(insertInfo.lastInsertRowid);
@@ -2201,8 +1907,8 @@ async function main() {
   });
 
   // Forum
-  app.get("/api/forum/conversations", (_req, res) => {
-    const rows = db
+  app.get("/api/forum/conversations", async (_req, res) => {
+    const rows = await db
       .prepare(
         `
         SELECT c.id, c.title, c.description, c.created_at, u.username as creator_username,
@@ -2216,17 +1922,17 @@ async function main() {
     return res.json({ success: true, data: rows });
   });
 
-  app.post("/api/forum/conversations", authMiddleware(db), (req, res) => {
+  app.post("/api/forum/conversations", authMiddleware(db), async (req, res) => {
     const { title, description } = req.body || {};
     const cleanTitle = String(title || "").trim();
     const cleanDescription = String(description || "").trim();
     if (!cleanTitle) return res.status(400).json({ success: false, message: "Unesi naziv razgovora!" });
 
-    const info = db
+    const info = await db
       .prepare("INSERT INTO forum_conversations (title, description, creator_user_id) VALUES (?, ?, ?)")
       .run(cleanTitle, cleanDescription, req.user.id);
 
-    const conv = db
+    const conv = await db
       .prepare(
         `
         SELECT c.id, c.title, c.description, c.created_at, u.username as creator_username,
@@ -2241,11 +1947,11 @@ async function main() {
     return res.json({ success: true, data: conv });
   });
 
-  app.get("/api/forum/conversations/:id/messages", optionalAuthMiddleware(db), (req, res) => {
+  app.get("/api/forum/conversations/:id/messages", optionalAuthMiddleware(db), async (req, res) => {
     const convId = Number(req.params.id);
     if (!Number.isFinite(convId)) return res.status(400).json({ success: false, message: "Neispravan ID." });
 
-    const rows = db
+    const rows = await db
       .prepare(
         `
         SELECT
@@ -2274,24 +1980,25 @@ async function main() {
       .all(convId);
 
     const userId = req.user?.id;
-    const withLiked = rows.map((r) => {
+    const withLiked = [];
+    for (const r of rows) {
       let userLiked = false;
       if (userId) {
-        const like = db.prepare("SELECT 1 FROM forum_likes WHERE user_id = ? AND message_id = ?").get(userId, r.id);
+        const like = await db.prepare("SELECT 1 FROM forum_likes WHERE user_id = ? AND message_id = ?").get(userId, r.id);
         userLiked = !!like;
       }
-      return {
+      withLiked.push({
         ...r,
         user_liked: userLiked,
         reply_to_username: r.reply_to_username || null,
         reply_to_snippet: r.reply_to_snippet || null,
-      };
-    });
+      });
+    }
 
     return res.json({ success: true, data: withLiked });
   });
 
-  app.post("/api/forum/conversations/:id/messages", authMiddleware(db), (req, res) => {
+  app.post("/api/forum/conversations/:id/messages", authMiddleware(db), async (req, res) => {
     const convId = Number(req.params.id);
     const { text, reply_to_id: replyToRaw } = req.body || {};
     const cleanText = String(text || "").trim();
@@ -2302,11 +2009,11 @@ async function main() {
     if (!Number.isFinite(convId)) return res.status(400).json({ success: false, message: "Neispravan ID." });
     if (!cleanText) return res.status(400).json({ success: false, message: "Poruka ne može biti prazna." });
 
-    const conv = db.prepare("SELECT id FROM forum_conversations WHERE id = ?").get(convId);
+    const conv = await db.prepare("SELECT id FROM forum_conversations WHERE id = ?").get(convId);
     if (!conv) return res.status(404).json({ success: false, message: "Razgovor ne postoji." });
 
     if (replyToId != null && Number.isFinite(replyToId)) {
-      const parent = db
+      const parent = await db
         .prepare("SELECT id, conversation_id FROM forum_messages WHERE id = ?")
         .get(Math.floor(replyToId));
       if (!parent || parent.conversation_id !== convId) {
@@ -2316,13 +2023,13 @@ async function main() {
       return res.status(400).json({ success: false, message: "Neispravan ID poruke za odgovor." });
     }
 
-    const info = db
+    const info = await db
       .prepare(
         "INSERT INTO forum_messages (conversation_id, user_id, text, reply_to_id) VALUES (?, ?, ?, ?)",
       )
       .run(convId, req.user.id, cleanText, replyToId != null && Number.isFinite(replyToId) ? Math.floor(replyToId) : null);
 
-    const msg = db
+    const msg = await db
       .prepare(
         `
         SELECT
@@ -2349,6 +2056,11 @@ async function main() {
       )
       .get(info.lastInsertRowid);
 
+    if (!msg || msg.id == null) {
+      console.error("[forum/messages] INSERT ok ali SELECT nije vratio poruku, lastInsertRowid=", info.lastInsertRowid);
+      return res.status(500).json({ success: false, message: "Poruka je spremljena, ali dohvat nije uspio. Osvježi stranicu." });
+    }
+
     return res.json({
       success: true,
       data: {
@@ -2361,11 +2073,11 @@ async function main() {
   });
 
   /** Autor može ukloniti poruku s javnog prikaza; red ostaje u bazi (soft delete). */
-  app.post("/api/forum/messages/:id/soft-delete", authMiddleware(db), (req, res) => {
+  app.post("/api/forum/messages/:id/soft-delete", authMiddleware(db), async (req, res) => {
     const msgId = Number(req.params.id);
     if (!Number.isFinite(msgId)) return res.status(400).json({ success: false, message: "Neispravan ID." });
 
-    const row = db.prepare("SELECT id, user_id, deleted_by_user_at FROM forum_messages WHERE id = ?").get(msgId);
+    const row = await db.prepare("SELECT id, user_id, deleted_by_user_at FROM forum_messages WHERE id = ?").get(msgId);
     if (!row) return res.status(404).json({ success: false, message: "Poruka ne postoji." });
     if (row.user_id !== req.user.id) {
       return res.status(403).json({ success: false, message: "Možeš ukloniti samo vlastite poruke." });
@@ -2374,29 +2086,31 @@ async function main() {
       return res.json({ success: true, already: true });
     }
 
-    db.prepare("UPDATE forum_messages SET deleted_by_user_at = datetime('now') WHERE id = ?").run(msgId);
+    await db.prepare("UPDATE forum_messages SET deleted_by_user_at = datetime('now') WHERE id = ?").run(msgId);
     return res.json({ success: true });
   });
 
-  app.post("/api/forum/messages/:id/like", authMiddleware(db), (req, res) => {
+  app.post("/api/forum/messages/:id/like", authMiddleware(db), async (req, res) => {
     const msgId = Number(req.params.id);
     if (!Number.isFinite(msgId)) return res.status(400).json({ success: false, message: "Neispravan ID." });
 
-    const msg = db.prepare("SELECT id, conversation_id FROM forum_messages WHERE id = ?").get(msgId);
+    const msg = await db.prepare("SELECT id, conversation_id FROM forum_messages WHERE id = ?").get(msgId);
     if (!msg) return res.status(404).json({ success: false, message: "Poruka ne postoji." });
 
-    const existing = db.prepare("SELECT id FROM forum_likes WHERE user_id = ? AND message_id = ?").get(req.user.id, msgId);
+    const existing = await db.prepare("SELECT id FROM forum_likes WHERE user_id = ? AND message_id = ?").get(req.user.id, msgId);
     if (existing) {
-      db.prepare("DELETE FROM forum_likes WHERE id = ?").run(existing.id);
-      const count = db.prepare("SELECT COUNT(*) as c FROM forum_likes WHERE message_id = ?").get(msgId).c;
+      await db.prepare("DELETE FROM forum_likes WHERE id = ?").run(existing.id);
+      const countRow = await db.prepare("SELECT COUNT(*) as c FROM forum_likes WHERE message_id = ?").get(msgId);
+      const count = Number(countRow?.c ?? 0);
       return res.json({ success: true, liked: false, like_count: count });
     }
-    db.prepare("INSERT INTO forum_likes (user_id, message_id) VALUES (?, ?)").run(req.user.id, msgId);
-    const count = db.prepare("SELECT COUNT(*) as c FROM forum_likes WHERE message_id = ?").get(msgId).c;
+    await db.prepare("INSERT INTO forum_likes (user_id, message_id) VALUES (?, ?)").run(req.user.id, msgId);
+    const countRow2 = await db.prepare("SELECT COUNT(*) as c FROM forum_likes WHERE message_id = ?").get(msgId);
+    const count = Number(countRow2?.c ?? 0);
     return res.json({ success: true, liked: true, like_count: count });
   });
 
-  app.get("/api/chat/quota", optionalAuthMiddleware(db), (req, res) => {
+  app.get("/api/chat/quota", optionalAuthMiddleware(db), async (req, res) => {
     const limit = CHAT_FREE_DAILY_LIMIT;
     if (!req.user) {
       return res.json({
@@ -2407,7 +2121,7 @@ async function main() {
         remaining: 0,
       });
     }
-    const used = getChatUsageToday(req.user.id);
+    const used = await getChatUsageToday(req.user.id);
     let resetsAt = null;
     try {
       resetsAt = getNextZagrebMidnightIso();
@@ -2481,8 +2195,8 @@ async function main() {
         return res.status(400).json({ success: false, message: "Potrebna je poruka." });
       }
 
-      if (!reserveChatSlot(req.user.id)) {
-        const used = getChatUsageToday(req.user.id);
+      if (!(await reserveChatSlot(req.user.id))) {
+        const used = await getChatUsageToday(req.user.id);
         return res.status(403).json({
           success: false,
           code: "CHAT_DAILY_LIMIT",
@@ -2497,7 +2211,7 @@ async function main() {
         const response = await chatService.chatLocal(messages);
         res.json({ success: true, content: response });
       } catch (err) {
-        refundChatSlot(req.user.id);
+        await refundChatSlot(req.user.id);
         console.error("[api/chat]", err);
         res.status(500).json({
           success: false,

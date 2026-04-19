@@ -5,10 +5,11 @@ import type { LucideIcon } from "lucide-react";
 import {
   Menu,
   X,
-  Compass,
+  LogIn,
   LogOut,
   BarChart3,
   User,
+  UserPlus,
   Map,
   HelpCircle,
   Target,
@@ -70,7 +71,7 @@ const Navbar = () => {
   }, []);
 
   const handleLogout = async () => {
-    await authLogout();
+    await authLogout(user?.email);
     setUser(null);
     setOpen(false);
   };
@@ -85,8 +86,15 @@ const Navbar = () => {
             to="/"
             className="group flex min-w-0 items-center gap-2 rounded-xl py-1 pr-1 outline-none transition-transform hover:opacity-95 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background sm:gap-2.5 sm:pr-2"
           >
-            <div className="relative flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-primary/85 shadow-md shadow-primary/25 ring-2 ring-primary/20 transition duration-300 group-hover:scale-[1.04] group-hover:shadow-lg group-hover:shadow-primary/30 md:h-10 md:w-10">
-              <Compass className="h-[1.15rem] w-[1.15rem] text-primary-foreground md:h-5 md:w-5" strokeWidth={2.25} />
+            <div className="relative flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-background shadow-md shadow-primary/20 ring-2 ring-primary/20 transition duration-300 group-hover:scale-[1.04] group-hover:shadow-lg group-hover:shadow-primary/25 md:h-10 md:w-10">
+              <img
+                src={`${import.meta.env.BASE_URL}mojput-logo.png`}
+                alt=""
+                width={40}
+                height={40}
+                className="h-full w-full object-contain p-0.5"
+                decoding="async"
+              />
             </div>
             <span className="truncate text-lg font-extrabold tracking-tight text-gradient md:text-xl">MojPut</span>
           </Link>
@@ -218,7 +226,37 @@ const Navbar = () => {
             transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
             className="lg:hidden overflow-hidden border-t border-border/50 bg-card/95 shadow-[inset_0_1px_0_0_hsl(var(--border)/0.3)] backdrop-blur-lg dark:bg-card/90"
           >
-            <nav className="container flex max-h-[calc(100vh-4rem)] flex-col gap-2 overflow-y-auto overscroll-contain py-4" aria-label="Mobilna navigacija">
+            <nav
+              className={cn(
+                "container flex max-h-[calc(100vh-4rem)] flex-col gap-2 overflow-y-auto overscroll-contain py-4",
+                !user && "pb-28",
+              )}
+              aria-label="Mobilna navigacija"
+            >
+              {!user && (
+                <div className="grid grid-cols-2 gap-2">
+                  <Button
+                    variant="outline"
+                    className="h-12 w-full justify-center gap-2 rounded-xl text-sm font-semibold shadow-sm touch-manipulation"
+                    asChild
+                  >
+                    <Link to="/prijava" onClick={() => setOpen(false)}>
+                      <LogIn className="h-4 w-4" />
+                      Prijava
+                    </Link>
+                  </Button>
+                  <Button
+                    className="h-12 w-full justify-center gap-2 rounded-xl border-0 bg-gradient-to-r from-primary to-primary/90 text-sm font-semibold text-primary-foreground shadow-md shadow-primary/25 touch-manipulation"
+                    asChild
+                  >
+                    <Link to="/registracija" onClick={() => setOpen(false)}>
+                      <UserPlus className="h-4 w-4" />
+                      Registracija
+                    </Link>
+                  </Button>
+                </div>
+              )}
+
               <div className="grid gap-1.5">
                 {navItems.map((item) => {
                   const Icon = item.icon;
@@ -254,8 +292,8 @@ const Navbar = () => {
                 <HeaderThemeToggle />
               </div>
 
-              <div className="mt-2 border-t border-border/60 pt-4">
-                {user ? (
+              {user && (
+                <div className="mt-2 border-t border-border/60 pt-4">
                   <div className="flex flex-col gap-3">
                     <Link
                       to="/profil"
@@ -296,25 +334,29 @@ const Navbar = () => {
                       Odjava
                     </Button>
                   </div>
-                ) : (
-                  <div className="flex flex-col gap-2 sm:flex-row">
-                    <Button variant="outline" className="h-11 flex-1 rounded-xl font-semibold shadow-sm" asChild>
-                      <Link to="/prijava" onClick={() => setOpen(false)}>
-                        Prijava
-                      </Link>
-                    </Button>
-                    <Button
-                      className="h-11 flex-1 rounded-xl border-0 bg-gradient-to-r from-primary to-primary/90 font-semibold text-primary-foreground shadow-md shadow-primary/25"
-                      asChild
-                    >
-                      <Link to="/registracija" onClick={() => setOpen(false)}>
-                        Registracija
-                      </Link>
-                    </Button>
-                  </div>
-                )}
-              </div>
+                </div>
+              )}
             </nav>
+
+            {!user && (
+              <div className="lg:hidden border-t border-border/70 bg-card/95 px-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-2 backdrop-blur supports-[backdrop-filter]:bg-card/80">
+                <div className="container flex gap-2">
+                  <Button variant="outline" className="h-11 flex-1 rounded-xl font-semibold shadow-sm" asChild>
+                    <Link to="/prijava" onClick={() => setOpen(false)}>
+                      Prijava
+                    </Link>
+                  </Button>
+                  <Button
+                    className="h-11 flex-1 rounded-xl border-0 bg-gradient-to-r from-primary to-primary/90 font-semibold text-primary-foreground shadow-md shadow-primary/25"
+                    asChild
+                  >
+                    <Link to="/registracija" onClick={() => setOpen(false)}>
+                      Registracija
+                    </Link>
+                  </Button>
+                </div>
+              </div>
+            )}
           </motion.div>
         )}
       </AnimatePresence>

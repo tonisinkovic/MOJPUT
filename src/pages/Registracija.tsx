@@ -23,6 +23,7 @@ import {
   ExternalLink,
 } from "lucide-react";
 import { authRegister, authResendVerification } from "@/lib/auth";
+import { setStoredLastLoginEmail } from "@/lib/api";
 
 const Registracija = () => {
   const [verifyInfo, setVerifyInfo] = useState<{
@@ -90,6 +91,7 @@ const Registracija = () => {
       email_preview_url?: string;
     };
     const sentTo = data.email?.trim() || data.user?.email?.trim() || formData.email.trim();
+    if (sentTo) setStoredLastLoginEmail(sentTo);
     setRegisteredEmail(sentTo || null);
     setResendInfo("");
     setVerifyInfo({
