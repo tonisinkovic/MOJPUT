@@ -1469,24 +1469,24 @@ const Kalkulator = () => {
 
                 {wizardStep < 4 && (
                   <nav
-                    className="mt-4 rounded-2xl border border-border/80 bg-card/95 px-3 py-3 shadow-sm backdrop-blur-[2px]"
+                    className="mt-4 w-full max-w-full overflow-hidden rounded-2xl border border-border/80 bg-card/95 px-2 py-2.5 shadow-sm backdrop-blur-[2px] sm:px-3 sm:py-3"
                     aria-label="Koraci kalkulatora bodova"
                   >
-                    <div className="flex flex-col gap-2.5 md:flex-row md:items-center md:justify-between">
+                    <div className="flex w-full min-w-0 flex-row items-center justify-between gap-2 md:gap-3">
                       <Button
                         type="button"
                         variant="outline"
                         disabled={wizardStep === 0}
                         onClick={() => setWizardStep((s) => Math.max(0, s - 1))}
-                        className="min-h-11 w-full rounded-xl touch-manipulation md:w-auto"
+                        className="min-h-10 shrink-0 rounded-xl px-3 text-sm touch-manipulation md:min-h-11 md:px-4"
                       >
                         Natrag
                       </Button>
-                      <div className="text-center md:text-left">
-                        <p className="text-sm font-medium text-foreground">
+                      <div className="min-w-0 flex-1 px-1 text-center">
+                        <p className="truncate text-[13px] font-medium text-foreground sm:text-sm">
                           {WIZARD_STEPS[wizardStep]?.label}
                         </p>
-                        <p className="text-xs text-muted-foreground">
+                        <p className="truncate text-[11px] text-muted-foreground sm:text-xs">
                           {(() => {
                             const r = 4 - wizardStep;
                             if (r === 1) return "Još 1 korak do rezultata";
@@ -1499,7 +1499,7 @@ const Kalkulator = () => {
                         type="button"
                         disabled={!canWizardNext}
                         onClick={() => setWizardStep((s) => Math.min(4, s + 1))}
-                        className="min-h-11 w-full rounded-xl border-0 bg-primary font-semibold text-primary-foreground shadow-md transition-all hover:bg-primary/90 hover:shadow-lg disabled:opacity-50 touch-manipulation md:w-auto md:min-w-[7.5rem]"
+                        className="min-h-10 shrink-0 rounded-xl border-0 bg-primary px-3 text-sm font-semibold text-primary-foreground shadow-md transition-all hover:bg-primary/90 hover:shadow-lg disabled:opacity-50 touch-manipulation md:min-h-11 md:min-w-[7.5rem] md:px-4"
                       >
                         Dalje
                       </Button>
