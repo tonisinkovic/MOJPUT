@@ -719,17 +719,17 @@ const Kalkulator = () => {
                           variant="outline"
                           role="combobox"
                           aria-expanded={facultyOpen}
-                          className="h-12 w-full justify-between rounded-xl border-2 border-input bg-background font-normal shadow-sm transition-all hover:border-primary/30 hover:bg-muted/30"
+                          className="h-12 w-full min-w-0 justify-between rounded-xl border-2 border-input bg-background font-normal shadow-sm transition-all hover:border-primary/30 hover:bg-muted/30"
                         >
                           {selectedProgram ? (
-                            <span className="truncate">
+                            <span className="min-w-0 flex-1 truncate text-left">
                               {selectedProgram.formula.program}{" "}
                               <span className="text-muted-foreground">
                                 – {selectedProgram.formula.fakultet} ({selectedProgram.formula.grad})
                               </span>
                             </span>
                           ) : (
-                            <span className="text-muted-foreground flex items-center gap-2">
+                            <span className="min-w-0 flex items-center gap-2 text-muted-foreground">
                               <Search className="w-4 h-4" />
                               Pretraži ili odaberi program...
                             </span>

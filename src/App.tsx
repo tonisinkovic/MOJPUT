@@ -36,6 +36,7 @@ import FacultyDashboard from "./pages/FacultyDashboard";
 import TimDashboard from "./pages/TimDashboard";
 import ProfilDashboard from "./pages/ProfilDashboard";
 import ScrollToTop from "./components/ScrollToTop";
+import PwaInstallPrompt from "./components/PwaInstallPrompt";
 
 const queryClient = new QueryClient();
 
@@ -48,6 +49,7 @@ const App = () => (
     <TooltipProvider>
       <Toaster />
       <Sonner />
+      <PwaInstallPrompt />
       <BrowserRouter basename={routerBasename}>
         <ScrollToTop />
         <Routes>
