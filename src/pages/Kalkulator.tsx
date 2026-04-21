@@ -1472,38 +1472,74 @@ const Kalkulator = () => {
                     className="mt-4 w-full max-w-full overflow-hidden rounded-2xl border border-border/80 bg-card/95 px-2 py-2.5 shadow-sm backdrop-blur-[2px] sm:px-3 sm:py-3"
                     aria-label="Koraci kalkulatora bodova"
                   >
-                    <div className="flex w-full min-w-0 flex-row items-center justify-between gap-2 md:gap-3">
-                      <Button
-                        type="button"
-                        variant="outline"
-                        disabled={wizardStep === 0}
-                        onClick={() => setWizardStep((s) => Math.max(0, s - 1))}
-                        className="min-h-10 shrink-0 rounded-xl px-3 text-sm touch-manipulation md:min-h-11 md:px-4"
-                      >
-                        Natrag
-                      </Button>
-                      <div className="min-w-0 flex-1 px-1 text-center">
-                        <p className="truncate text-[13px] font-medium text-foreground sm:text-sm">
-                          {WIZARD_STEPS[wizardStep]?.label}
-                        </p>
-                        <p className="truncate text-[11px] text-muted-foreground sm:text-xs">
-                          {(() => {
-                            const r = 4 - wizardStep;
-                            if (r === 1) return "Još 1 korak do rezultata";
-                            if (r >= 2) return `Još ${r} koraka do rezultata`;
-                            return "";
-                          })()}
-                        </p>
+                    <>
+                      <div className="flex w-full min-w-0 flex-col gap-3 sm:hidden">
+                        <div className="min-w-0 px-0 text-center">
+                          <p className="text-[13px] font-medium text-foreground">
+                            {WIZARD_STEPS[wizardStep]?.label}
+                          </p>
+                          <p className="text-[11px] text-muted-foreground">
+                            {(() => {
+                              const r = 4 - wizardStep;
+                              if (r === 1) return "Još 1 korak do rezultata";
+                              if (r >= 2) return `Još ${r} koraka do rezultata`;
+                              return "";
+                            })()}
+                          </p>
+                        </div>
+                        <div className="grid w-full grid-cols-2 gap-2">
+                          <Button
+                            type="button"
+                            variant="outline"
+                            disabled={wizardStep === 0}
+                            onClick={() => setWizardStep((s) => Math.max(0, s - 1))}
+                            className="min-h-10 w-full rounded-xl px-3 text-sm touch-manipulation"
+                          >
+                            Natrag
+                          </Button>
+                          <Button
+                            type="button"
+                            disabled={!canWizardNext}
+                            onClick={() => setWizardStep((s) => Math.min(4, s + 1))}
+                            className="min-h-10 w-full rounded-xl border-0 bg-primary px-3 text-sm font-semibold text-primary-foreground shadow-md transition-all hover:bg-primary/90 hover:shadow-lg disabled:opacity-50 touch-manipulation"
+                          >
+                            Dalje
+                          </Button>
+                        </div>
                       </div>
-                      <Button
-                        type="button"
-                        disabled={!canWizardNext}
-                        onClick={() => setWizardStep((s) => Math.min(4, s + 1))}
-                        className="min-h-10 shrink-0 rounded-xl border-0 bg-primary px-3 text-sm font-semibold text-primary-foreground shadow-md transition-all hover:bg-primary/90 hover:shadow-lg disabled:opacity-50 touch-manipulation md:min-h-11 md:min-w-[7.5rem] md:px-4"
-                      >
-                        Dalje
-                      </Button>
-                    </div>
+                      <div className="hidden w-full min-w-0 flex-row items-center justify-between gap-2 md:gap-3 sm:flex">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          disabled={wizardStep === 0}
+                          onClick={() => setWizardStep((s) => Math.max(0, s - 1))}
+                          className="min-h-10 shrink-0 rounded-xl px-3 text-sm touch-manipulation md:min-h-11 md:px-4"
+                        >
+                          Natrag
+                        </Button>
+                        <div className="min-w-0 flex-1 px-1 text-center">
+                          <p className="truncate text-[13px] font-medium text-foreground sm:text-sm">
+                            {WIZARD_STEPS[wizardStep]?.label}
+                          </p>
+                          <p className="truncate text-[11px] text-muted-foreground sm:text-xs">
+                            {(() => {
+                              const r = 4 - wizardStep;
+                              if (r === 1) return "Još 1 korak do rezultata";
+                              if (r >= 2) return `Još ${r} koraka do rezultata`;
+                              return "";
+                            })()}
+                          </p>
+                        </div>
+                        <Button
+                          type="button"
+                          disabled={!canWizardNext}
+                          onClick={() => setWizardStep((s) => Math.min(4, s + 1))}
+                          className="min-h-10 shrink-0 rounded-xl border-0 bg-primary px-3 text-sm font-semibold text-primary-foreground shadow-md transition-all hover:bg-primary/90 hover:shadow-lg disabled:opacity-50 touch-manipulation md:min-h-11 md:min-w-[7.5rem] md:px-4"
+                        >
+                          Dalje
+                        </Button>
+                      </div>
+                    </>
                   </nav>
                 )}
                 {wizardStep === 4 && (
