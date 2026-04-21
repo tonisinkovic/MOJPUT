@@ -24,6 +24,7 @@ import {
 } from "lucide-react";
 import { authRegister, authResendVerification } from "@/lib/auth";
 import { setStoredLastLoginEmail } from "@/lib/api";
+import { trackEvent } from "@/lib/analytics";
 
 const Registracija = () => {
   const [verifyInfo, setVerifyInfo] = useState<{
@@ -48,8 +49,36 @@ const Registracija = () => {
   const [existingEmail, setExistingEmail] = useState<string>("");
   const [showPw, setShowPw] = useState(false);
   const [showConfirmPw, setShowConfirmPw] = useState(false);
+  const [hasInteracted, setHasInteracted] = useState(false);
+
+  React.useEffect(() => {
+    trackEvent("signup_step_viewed", {
+      step_name: submitted ? "verification_prompt" : "registration_form",
+      step_number: submitted ? 2 : 1,
+      page_path: window.location.pathname,
+      method: "email",
+    });
+  }, [submitted]);
+
+  React.useEffect(() => {
+    const onAbandon = () => {
+      if (!hasInteracted || submitted) return;
+      trackEvent("signup_abandoned", {
+        step_name: "registration_form",
+        step_number: 1,
+        page_path: window.location.pathname,
+        method: "email",
+      });
+    };
+    window.addEventListener("pagehide", onAbandon);
+    return () => {
+      onAbandon();
+      window.removeEventListener("pagehide", onAbandon);
+    };
+  }, [hasInteracted, submitted]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!hasInteracted) setHasInteracted(true);
     const { name, value } = e.target;
     setFormData((prev) => ({
       ...prev,
@@ -69,6 +98,10 @@ const Registracija = () => {
 
     const username = `${formData.firstName} ${formData.lastName}`.trim();
     const submittedEmail = formData.email.trim();
+    trackEvent("sign_up_started", {
+      method: "email",
+      page_path: window.location.pathname,
+    });
     const res = await authRegister({
       username: username || submittedEmail.split("@")[0],
       email: submittedEmail,
@@ -98,6 +131,10 @@ const Registracija = () => {
       emailPreviewUrl: data.email_preview_url || undefined,
     });
     setSubmitted(true);
+    trackEvent("sign_up_completed", {
+      method: "email",
+      page_path: window.location.pathname,
+    });
     setFormData({
       firstName: "",
       lastName: "",

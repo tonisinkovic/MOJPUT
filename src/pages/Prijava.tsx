@@ -32,6 +32,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { trackEvent } from "@/lib/analytics";
 
 /** Skočni prozor nakon redirecta s API-ja (npr. verified=1). */
 type EmailVerifyUi =
@@ -135,11 +136,20 @@ const Prijava = () => {
       return;
     }
 
+    trackEvent("login_started", {
+      method: "email",
+      page_path: window.location.pathname,
+    });
     const res = await authLogin({
       email: loginData.email,
       password: loginData.password,
     });
     if (!res.success) {
+      trackEvent("login_failed", {
+        method: "email",
+        page_path: window.location.pathname,
+        error_type: String((res as any).code || "invalid_credentials"),
+      });
       setLoginError(res.message || "Prijava nije uspjela.");
       if (
         (res as any).code === "EMAIL_NOT_VERIFIED" ||
@@ -152,11 +162,20 @@ const Prijava = () => {
     }
     const user = (res as any).user ?? (res as any).data?.user ?? null;
     if (!user) {
+      trackEvent("login_failed", {
+        method: "email",
+        page_path: window.location.pathname,
+        error_type: "missing_user_payload",
+      });
       setLoginError(
         "Server je odgovorio bez podataka o korisniku. Osvježi stranicu i pokušaj ponovno; ako se ponavlja, provjeri deploy API-ja.",
       );
       return;
     }
+    trackEvent("login_completed", {
+      method: "email",
+      page_path: window.location.pathname,
+    });
     setLoggedUser(user);
     setLoginData({ email: "", password: "" });
     const nextPath = searchParams.get("next");

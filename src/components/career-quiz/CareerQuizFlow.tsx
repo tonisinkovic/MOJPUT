@@ -61,6 +61,7 @@ import {
 import interestsJson from "@/data/career-quiz/questions-interests.json";
 import competenciesJson from "@/data/career-quiz/questions-competencies.json";
 import careersJson from "@/data/career-quiz/careers-database.json";
+import { trackEvent } from "@/lib/analytics";
 
 /**
  * Skala 1–5. Na uskim ekranima kratke oznake za lakše dodirivanje i čitanje.
@@ -230,6 +231,8 @@ export default function CareerQuizFlow({
   const restoredRef = useRef(false);
   const postedResultHashRef = useRef<string | null>(null);
   const guestPromptedHashRef = useRef<string | null>(null);
+  const quizStartedRef = useRef(false);
+  const quizCompletedRef = useRef(false);
 
   useEffect(() => {
     if (restoredRef.current) return;
@@ -268,6 +271,35 @@ export default function CareerQuizFlow({
     onPhaseChange?.(phase);
   }, [phase, onPhaseChange]);
 
+  useEffect(() => {
+    if (phase === "intro") return;
+    if (!quizStartedRef.current) quizStartedRef.current = true;
+
+    let stepName = phase;
+    let stepNumber = 0;
+    if (phase === "interests") {
+      stepName = "interests_question";
+      stepNumber = iIdx + 1;
+    } else if (phase === "competencies") {
+      stepName = "competencies_question";
+      stepNumber = cIdx + 1;
+    } else if (phase === "interestResults") {
+      stepName = "interest_results";
+      stepNumber = interests.length + 1;
+    } else if (phase === "results") {
+      stepName = "final_results";
+      stepNumber = interests.length + competencies.length + 2;
+    }
+
+    trackEvent("quiz_step_viewed", {
+      quiz_id: "career_quiz",
+      quiz_name: "Koji je fakultet za mene?",
+      step_name: stepName,
+      step_number: stepNumber,
+      page_path: window.location.pathname,
+    });
+  }, [phase, iIdx, cIdx]);
+
   const analysis = useMemo(() => {
     if (phase !== "results") return null;
     return analyzeHzzMojIzborV2(interests, competencies, interestAnswers, competencyAnswers, careers, QUIZ_TOP_CAREERS);
@@ -291,6 +323,29 @@ export default function CareerQuizFlow({
 
   useEffect(() => {
     if (phase !== "results" || !analysis) return;
+    if (!quizCompletedRef.current) {
+      const topScore = analysis.recommended[0]?.matchPercentage ?? 0;
+      const passed = topScore >= 60;
+      quizCompletedRef.current = true;
+      trackEvent("quiz_completed", {
+        quiz_id: "career_quiz",
+        quiz_name: "Koji je fakultet za mene?",
+        total_questions: interests.length + competencies.length,
+        score: topScore,
+        percentage_score: topScore,
+        passed,
+        page_path: window.location.pathname,
+      });
+      trackEvent(passed ? "quiz_passed" : "quiz_failed", {
+        quiz_id: "career_quiz",
+        quiz_name: "Koji je fakultet za mene?",
+        total_questions: interests.length + competencies.length,
+        score: topScore,
+        percentage_score: topScore,
+        passed,
+        page_path: window.location.pathname,
+      });
+    }
     const hash = `${interestAnswers.join(",")}|${competencyAnswers.join(",")}`;
     const traits = computeHolisticTraits(analysis.interestScoresNormalized, analysis.competencyScoresNormalized);
     const top5 = topTraits(traits, 5);
@@ -341,6 +396,25 @@ export default function CareerQuizFlow({
   }, [phase, analysis, interestAnswers, competencyAnswers]);
 
   useEffect(() => {
+    const reportAbandonment = () => {
+      if (!quizStartedRef.current || quizCompletedRef.current || phase === "intro") return;
+      trackEvent("quiz_abandoned", {
+        quiz_id: "career_quiz",
+        quiz_name: "Koji je fakultet za mene?",
+        step_name: phase,
+        step_number: phase === "interests" ? iIdx + 1 : phase === "competencies" ? cIdx + 1 : 0,
+        total_questions: interests.length + competencies.length,
+        page_path: window.location.pathname,
+      });
+    };
+    window.addEventListener("pagehide", reportAbandonment);
+    return () => {
+      reportAbandonment();
+      window.removeEventListener("pagehide", reportAbandonment);
+    };
+  }, [phase, iIdx, cIdx]);
+
+  useEffect(() => {
     const uploadPendingAfterLogin = () => {
       const raw = sessionStorage.getItem(PENDING_CAREER_QUIZ_STORAGE_KEY);
       if (!raw) return;
@@ -379,6 +453,8 @@ export default function CareerQuizFlow({
     setSaveStatus("idle");
     postedResultHashRef.current = null;
     guestPromptedHashRef.current = null;
+    quizStartedRef.current = false;
+    quizCompletedRef.current = false;
     try {
       sessionStorage.removeItem(QUIZ_RESTORE_STORAGE_KEY);
       sessionStorage.removeItem(PENDING_CAREER_QUIZ_STORAGE_KEY);
@@ -403,6 +479,15 @@ export default function CareerQuizFlow({
       next[iIdx] = score;
       return next;
     });
+    trackEvent("quiz_question_answered", {
+      quiz_id: "career_quiz",
+      quiz_name: "Koji je fakultet za mene?",
+      question_id: `interest_${iIdx + 1}`,
+      question_number: iIdx + 1,
+      total_questions: interests.length + competencies.length,
+      step_name: "interests",
+      page_path: window.location.pathname,
+    });
   };
 
   const setCompetencyScore = (score: number) => {
@@ -410,6 +495,15 @@ export default function CareerQuizFlow({
       const next = [...prev];
       next[cIdx] = score;
       return next;
+    });
+    trackEvent("quiz_question_answered", {
+      quiz_id: "career_quiz",
+      quiz_name: "Koji je fakultet za mene?",
+      question_id: `competency_${cIdx + 1}`,
+      question_number: interests.length + cIdx + 1,
+      total_questions: interests.length + competencies.length,
+      step_name: "competencies",
+      page_path: window.location.pathname,
     });
   };
 
@@ -591,6 +685,12 @@ export default function CareerQuizFlow({
                 size="lg"
                 className="inline-flex h-14 w-full items-center justify-center gap-2 rounded-2xl border-0 bg-gradient-to-r from-primary to-primary/90 text-base font-semibold text-primary-foreground shadow-lg shadow-primary/25 transition hover:shadow-xl hover:shadow-primary/30 active:scale-[0.99] sm:mx-auto sm:h-12 sm:max-w-md"
                 onClick={() => {
+                  trackEvent("quiz_started", {
+                    quiz_id: "career_quiz",
+                    quiz_name: "Koji je fakultet za mene?",
+                    total_questions: interests.length + competencies.length,
+                    page_path: window.location.pathname,
+                  });
                   setPhase("interests");
                   setIIdx(0);
                 }}

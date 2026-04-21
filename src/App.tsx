@@ -2,7 +2,8 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { useEffect } from "react";
+import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import Index from "./pages/Index";
 import KartaFakulteta from "./pages/KartaFakulteta";
 import Kviz from "./pages/Kviz";
@@ -37,12 +38,24 @@ import TimDashboard from "./pages/TimDashboard";
 import ProfilDashboard from "./pages/ProfilDashboard";
 import ScrollToTop from "./components/ScrollToTop";
 import PwaInstallPrompt from "./components/PwaInstallPrompt";
+import { trackPageView } from "./lib/analytics";
 
 const queryClient = new QueryClient();
 
 /** Usklađeno s `base` u vite.config (`import.meta.env.BASE_URL`). */
 const routerBasename =
   import.meta.env.BASE_URL === "/" ? undefined : import.meta.env.BASE_URL.replace(/\/$/, "");
+
+const AnalyticsPageTracker = () => {
+  const location = useLocation();
+
+  useEffect(() => {
+    const fullPath = `${location.pathname}${location.search}${location.hash}`;
+    trackPageView(fullPath);
+  }, [location.pathname, location.search, location.hash]);
+
+  return null;
+};
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
@@ -52,6 +65,7 @@ const App = () => (
       <PwaInstallPrompt />
       <BrowserRouter basename={routerBasename}>
         <ScrollToTop />
+        <AnalyticsPageTracker />
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/karta" element={<KartaFakulteta />} />
