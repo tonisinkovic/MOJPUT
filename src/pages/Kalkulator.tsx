@@ -459,7 +459,7 @@ const Kalkulator = () => {
       <TooltipProvider delayDuration={300}>
         <section
           className={cn(
-            "container relative mx-auto max-w-6xl overflow-x-hidden px-3 py-4 sm:px-4 sm:py-10 md:py-14",
+            "container relative mx-auto max-w-6xl overflow-x-hidden px-3 py-5 sm:px-4 sm:py-10 md:py-14",
             wizardStep < 4 &&
               "pb-[max(6.5rem,calc(5rem+env(safe-area-inset-bottom)))] sm:pb-14",
             wizardStep >= 4 && "pb-10 sm:pb-14",
@@ -477,7 +477,7 @@ const Kalkulator = () => {
             className="relative min-w-0 w-full space-y-2 sm:space-y-6 md:space-y-8"
           >
             {/* Hero header — na mobitelu minimalno da ostane mjesta za korake i unos */}
-            <div className="relative overflow-hidden rounded-xl border-2 border-primary/20 bg-gradient-to-br from-primary/[0.12] via-primary/[0.04] to-card p-2.5 shadow-card sm:rounded-3xl sm:p-6 md:p-7">
+            <div className="relative overflow-hidden rounded-xl border-2 border-primary/20 bg-gradient-to-br from-primary/[0.12] via-primary/[0.04] to-card p-3 shadow-card sm:rounded-3xl sm:p-6 md:p-7">
               <div
                 aria-hidden
                 className="pointer-events-none absolute -right-10 -top-10 h-36 w-36 rounded-full bg-primary/15 blur-3xl sm:h-52 sm:w-52"
@@ -496,10 +496,10 @@ const Kalkulator = () => {
                     <Sparkles className="h-3 w-3" />
                     <span className="tabular-nums">{PROGRAM_OPTIONS.length} programa · bodovne formule 2025.</span>
                   </span>
-                  <h1 className="mt-0 text-balance text-lg font-bold leading-tight tracking-tight sm:mt-2 sm:text-3xl md:text-4xl">
+                  <h1 className="mt-0 text-balance text-xl font-bold leading-tight tracking-tight sm:mt-2 sm:text-3xl md:text-4xl">
                     Kalkulator <span className="text-gradient">bodova</span>
                   </h1>
-                  <p className="mt-1 hidden max-w-2xl text-pretty text-sm leading-relaxed text-muted-foreground sm:mt-1.5 sm:block sm:text-base">
+                  <p className="mt-1 max-w-2xl text-pretty text-xs leading-relaxed text-muted-foreground sm:mt-1.5 sm:text-base">
                     Unesi ocjene i rezultate mature — formula se prilagođava odabranom smjeru, korak po korak.
                   </p>
                 </div>
@@ -507,15 +507,15 @@ const Kalkulator = () => {
             </div>
 
             {/* Stepper — ista kompaktna traka na svim širinama (vertikalni popis uklonjen — štedi ~60% visine na mobitelu) */}
-            <div className="rounded-xl border-2 border-border bg-card p-2.5 shadow-card sm:rounded-2xl sm:p-5 md:p-6">
+            <div className="rounded-xl border-2 border-border bg-card p-3 shadow-card sm:rounded-2xl sm:p-5 md:p-6">
               {/* Meta row */}
               <div className="mb-2 flex flex-col gap-1.5 sm:mb-6 sm:flex-row sm:items-start sm:justify-between sm:gap-3">
                 <div className="min-w-0 flex-1">
                   <div className="flex items-start gap-1.5 sm:items-center sm:gap-2">
-                    <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary sm:h-8 sm:rounded-xl">
-                      <CalcIcon className="h-3.5 w-3.5 sm:h-4 sm:w-4" aria-hidden />
+                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary sm:h-8 sm:rounded-xl">
+                      <CalcIcon className="h-4 w-4 sm:h-4 sm:w-4" aria-hidden />
                     </div>
-                    <p className="min-w-0 text-xs font-semibold leading-snug text-foreground sm:text-base">
+                    <p className="min-w-0 text-sm font-semibold leading-snug text-foreground sm:text-base">
                       {WIZARD_STEPS[wizardStep]?.label}
                       <span className="font-normal text-muted-foreground">
                         {" "}
@@ -523,18 +523,18 @@ const Kalkulator = () => {
                       </span>
                     </p>
                   </div>
-                  <p className="mt-0.5 text-[11px] text-muted-foreground sm:ml-10 sm:mt-1 sm:text-xs">
+                  <p className="mt-0.5 text-xs text-muted-foreground sm:ml-10 sm:mt-1 sm:text-xs">
                     Možeš se uvijek vratiti i prilagoditi unos.
                   </p>
                 </div>
-                <span className="shrink-0 self-start rounded-full border border-primary/25 bg-primary/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-primary sm:px-2.5 sm:py-1 sm:text-xs">
+                <span className="shrink-0 self-start rounded-full border border-primary/25 bg-primary/10 px-2 py-0.5 text-[11px] font-bold uppercase tracking-wide text-primary sm:px-2.5 sm:py-1 sm:text-xs">
                   Korak <span className="tabular-nums">{wizardStep + 1} / 5</span>
                 </span>
               </div>
 
               <div className="relative">
                 <div
-                  className="pointer-events-none absolute left-[8%] right-[8%] top-[14px] h-[2px] -translate-y-1/2 overflow-hidden rounded-full bg-border/60 sm:left-[10%] sm:right-[10%] sm:top-[18px] sm:h-[3px]"
+                  className="pointer-events-none absolute left-[8%] right-[8%] top-[15px] h-[2px] -translate-y-1/2 overflow-hidden rounded-full bg-border/60 sm:left-[10%] sm:right-[10%] sm:top-[18px] sm:h-[3px]"
                   aria-hidden
                 >
                   <motion.div
@@ -553,18 +553,18 @@ const Kalkulator = () => {
                       <li key={s.step} className="flex flex-col items-center gap-0.5 sm:gap-2">
                         <span
                           className={cn(
-                            "relative z-10 flex h-7 w-7 items-center justify-center rounded-full text-[10px] font-bold transition-all duration-300 sm:h-9 sm:w-9 sm:text-xs",
+                            "relative z-10 flex h-8 w-8 items-center justify-center rounded-full text-[11px] font-bold transition-all duration-300 sm:h-9 sm:w-9 sm:text-xs",
                             done && "gradient-hero text-primary-foreground shadow-sm",
                             active &&
                               "border-2 border-primary bg-card text-primary shadow-md ring-2 ring-primary/20 sm:ring-4",
                             !active && !done && "border border-border bg-muted/50 text-muted-foreground sm:border-2",
                           )}
                         >
-                          {done ? <Check className="h-3 w-3 sm:h-4 sm:w-4" strokeWidth={3} /> : s.step + 1}
+                          {done ? <Check className="h-3.5 w-3.5 sm:h-4 sm:w-4" strokeWidth={3} /> : s.step + 1}
                         </span>
                         <span
                           className={cn(
-                            "max-w-[4.5rem] text-center text-[9px] font-semibold leading-tight sm:max-w-none sm:text-[10px] md:text-[11px]",
+                            "max-w-[5rem] text-center text-[10px] font-semibold leading-tight sm:max-w-none sm:text-[10px] md:text-[11px]",
                             active ? "text-foreground" : done ? "text-primary" : "text-muted-foreground",
                           )}
                         >
@@ -611,22 +611,22 @@ const Kalkulator = () => {
                     <div className="flex items-start justify-between gap-2">
                       <div className="flex min-w-0 items-start gap-1.5 sm:items-center sm:gap-2">
                         <GraduationCap className="h-5 w-5 shrink-0 text-primary max-lg:h-4 max-lg:w-4" />
-                        <CardTitle className="text-base leading-tight sm:text-lg max-lg:text-sm max-lg:leading-snug">
+                        <CardTitle className="text-base leading-tight sm:text-lg max-lg:text-[15px] max-lg:leading-snug">
                           Odabir fakulteta i smjera
                         </CardTitle>
                       </div>
-                      <Badge variant="secondary" className="shrink-0 text-[11px] sm:text-xs max-lg:px-1.5 max-lg:py-0 max-lg:text-[10px]">
+                      <Badge variant="secondary" className="shrink-0 text-[11px] sm:text-xs max-lg:px-2 max-lg:py-0.5 max-lg:text-[11px]">
                         {preFilteredPrograms.length} programa
                       </Badge>
                     </div>
-                    <CardDescription className="max-lg:text-xs max-lg:leading-snug">
+                    <CardDescription className="max-lg:text-[13px] max-lg:leading-snug">
                       Filtriraj po gradu ili vrsti, pa pretraži
                     </CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-4 max-lg:space-y-3 max-lg:px-3 max-lg:pb-3">
                     {/* ── City filter chips ── */}
                     <div className="space-y-2 max-lg:space-y-1">
-                      <div className="flex items-center gap-1 text-[11px] font-medium text-muted-foreground sm:gap-1.5 sm:text-xs">
+                      <div className="flex items-center gap-1 text-xs font-medium text-muted-foreground sm:gap-1.5 sm:text-xs">
                         <MapPin className="h-3 w-3 shrink-0 sm:h-3.5 sm:w-3.5" />
                         Grad
                       </div>
@@ -636,7 +636,7 @@ const Kalkulator = () => {
                             key={city}
                             onClick={() => setSelectedCity(selectedCity === city ? null : city)}
                             className={cn(
-                              "inline-flex items-center gap-0.5 rounded-md px-2 py-0.5 text-[11px] font-medium transition-colors sm:gap-1 sm:rounded-lg sm:px-2.5 sm:py-1 sm:text-xs",
+                              "inline-flex items-center gap-0.5 rounded-md px-2 py-0.5 text-xs font-medium transition-colors sm:gap-1 sm:rounded-lg sm:px-2.5 sm:py-1 sm:text-xs",
                               selectedCity === city
                                 ? "bg-primary text-primary-foreground shadow-sm"
                                 : "bg-secondary text-secondary-foreground hover:bg-secondary/80"
@@ -654,7 +654,7 @@ const Kalkulator = () => {
                         {!showAllCities && ALL_CITIES.length > 7 && (
                           <button
                             onClick={() => setShowAllCities(true)}
-                            className="inline-flex items-center rounded-md px-2 py-0.5 text-[11px] font-medium text-muted-foreground transition-colors hover:bg-secondary/80 hover:text-foreground sm:rounded-lg sm:px-2.5 sm:py-1 sm:text-xs"
+                            className="inline-flex items-center rounded-md px-2 py-0.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-secondary/80 hover:text-foreground sm:rounded-lg sm:px-2.5 sm:py-1 sm:text-xs"
                           >
                             +{ALL_CITIES.length - 7} gradova
                           </button>
@@ -662,7 +662,7 @@ const Kalkulator = () => {
                         {showAllCities && (
                           <button
                             onClick={() => setShowAllCities(false)}
-                            className="inline-flex items-center rounded-md px-2 py-0.5 text-[11px] font-medium text-muted-foreground transition-colors hover:bg-secondary/80 hover:text-foreground sm:rounded-lg sm:px-2.5 sm:py-1 sm:text-xs"
+                            className="inline-flex items-center rounded-md px-2 py-0.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-secondary/80 hover:text-foreground sm:rounded-lg sm:px-2.5 sm:py-1 sm:text-xs"
                           >
                             Manje
                           </button>
@@ -672,7 +672,7 @@ const Kalkulator = () => {
 
                     {/* ── Institution type toggle ── */}
                     <div className="space-y-2 max-lg:space-y-1">
-                      <div className="flex items-center gap-1 text-[11px] font-medium text-muted-foreground sm:gap-1.5 sm:text-xs">
+                      <div className="flex items-center gap-1 text-xs font-medium text-muted-foreground sm:gap-1.5 sm:text-xs">
                         <Building2 className="h-3 w-3 shrink-0 sm:h-3.5 sm:w-3.5" />
                         Vrsta ustanove
                       </div>
@@ -686,7 +686,7 @@ const Kalkulator = () => {
                             key={opt.value}
                             onClick={() => setInstitutionType(opt.value)}
                             className={cn(
-                              "rounded-md px-2 py-0.5 text-[10px] font-medium leading-tight transition-colors sm:rounded-lg sm:px-2.5 sm:py-1 sm:text-xs",
+                              "rounded-md px-2 py-0.5 text-[11px] font-medium leading-tight transition-colors sm:rounded-lg sm:px-2.5 sm:py-1 sm:text-xs",
                               institutionType === opt.value
                                 ? "bg-primary text-primary-foreground shadow-sm"
                                 : "bg-secondary text-secondary-foreground hover:bg-secondary/80"
@@ -727,14 +727,14 @@ const Kalkulator = () => {
                           className="h-12 w-full min-w-0 justify-between rounded-xl border-2 border-input bg-background font-normal shadow-sm transition-all hover:border-primary/30 hover:bg-muted/30 max-lg:h-auto max-lg:min-h-10 max-lg:items-start max-lg:rounded-lg max-lg:px-2.5 max-lg:py-2 max-lg:text-sm"
                         >
                           {selectedProgram ? (
-                            <span className="min-w-0 flex-1 text-left max-lg:line-clamp-2 max-lg:break-words max-lg:text-[13px] max-lg:leading-snug max-lg:whitespace-normal sm:truncate sm:whitespace-nowrap sm:text-base">
+                            <span className="min-w-0 flex-1 text-left max-lg:line-clamp-2 max-lg:break-words max-lg:text-[14px] max-lg:leading-snug max-lg:whitespace-normal sm:truncate sm:whitespace-nowrap sm:text-base">
                               {selectedProgram.formula.program}{" "}
                               <span className="text-muted-foreground">
                                 – {selectedProgram.formula.fakultet} ({selectedProgram.formula.grad})
                               </span>
                             </span>
                           ) : (
-                            <span className="min-w-0 flex items-center gap-1.5 text-muted-foreground max-lg:text-[13px] sm:gap-2">
+                            <span className="min-w-0 flex items-center gap-1.5 text-muted-foreground max-lg:text-sm sm:gap-2">
                               <Search className="h-3.5 w-3.5 shrink-0 sm:h-4 sm:w-4" />
                               Pretraži ili odaberi program...
                             </span>
@@ -1480,12 +1480,12 @@ const Kalkulator = () => {
                     <>
                       {/* Ispod lg: jedan red koraka + gumbi u 2 stupca — minimalna visina */}
                       <div className="flex w-full min-w-0 flex-col gap-2 lg:hidden">
-                        <div className="flex items-start justify-between gap-2 rounded-lg border border-border/50 bg-muted/35 px-2.5 py-2">
+                        <div className="flex items-start justify-between gap-2 rounded-lg border border-border/50 bg-muted/35 px-2.5 py-2.5">
                           <div className="min-w-0 flex-1">
-                            <p className="text-sm font-semibold leading-tight text-foreground">
+                            <p className="text-base font-semibold leading-tight text-foreground">
                               {WIZARD_STEPS[wizardStep]?.label}
                             </p>
-                            <p className="mt-0.5 text-[11px] leading-snug text-muted-foreground">
+                            <p className="mt-0.5 text-xs leading-snug text-muted-foreground">
                               {(() => {
                                 const r = 4 - wizardStep;
                                 if (r === 1) return "Još 1 korak do rezultata";
@@ -1494,7 +1494,7 @@ const Kalkulator = () => {
                               })()}
                             </p>
                           </div>
-                          <span className="shrink-0 rounded-full border border-primary/20 bg-primary/10 px-1.5 py-0.5 text-[10px] font-bold tabular-nums text-primary">
+                          <span className="shrink-0 rounded-full border border-primary/20 bg-primary/10 px-2 py-0.5 text-[11px] font-bold tabular-nums text-primary">
                             {wizardStep + 1}/5
                           </span>
                         </div>
@@ -1504,7 +1504,7 @@ const Kalkulator = () => {
                             variant="outline"
                             disabled={wizardStep === 0}
                             onClick={() => setWizardStep((s) => Math.max(0, s - 1))}
-                            className="h-9 min-h-9 w-full shrink-0 rounded-lg px-2 text-[13px] font-semibold leading-none touch-manipulation"
+                            className="h-10 min-h-10 w-full shrink-0 rounded-lg px-2 text-sm font-semibold leading-none touch-manipulation"
                           >
                             Natrag
                           </Button>
@@ -1512,7 +1512,7 @@ const Kalkulator = () => {
                             type="button"
                             disabled={!canWizardNext}
                             onClick={() => setWizardStep((s) => Math.min(4, s + 1))}
-                            className="h-9 min-h-9 w-full shrink-0 rounded-lg border-0 bg-primary px-2 text-[13px] font-semibold leading-none text-primary-foreground shadow-sm transition-all hover:bg-primary/90 hover:shadow-md disabled:opacity-50 touch-manipulation"
+                            className="h-10 min-h-10 w-full shrink-0 rounded-lg border-0 bg-primary px-2 text-sm font-semibold leading-none text-primary-foreground shadow-sm transition-all hover:bg-primary/90 hover:shadow-md disabled:opacity-50 touch-manipulation"
                           >
                             Dalje
                           </Button>
