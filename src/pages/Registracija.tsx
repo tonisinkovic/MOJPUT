@@ -106,6 +106,7 @@ const Registracija = () => {
       username: username || submittedEmail.split("@")[0],
       email: submittedEmail,
       password: formData.password,
+      user_type: formData.status || "srednjoskolac",
     });
 
     if (!res.success) {

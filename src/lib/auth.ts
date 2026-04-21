@@ -70,6 +70,7 @@ export async function authRegister(params: {
   username: string;
   email: string;
   password: string;
+  user_type?: UserTypeId | string;
 }): Promise<
     ApiResponse<{
       user?: AuthUser;

@@ -737,6 +737,12 @@ function isValidEmail(email) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(s);
 }
 
+function normalizeUserType(raw) {
+  const v = String(raw || "").trim().toLowerCase();
+  if (v === "student" || v === "profesor" || v === "roditelj" || v === "srednjoskolac") return v;
+  return "srednjoskolac";
+}
+
 function escapeHtml(s) {
   return String(s ?? "")
     .replace(/&/g, "&amp;")
@@ -1285,10 +1291,11 @@ async function main() {
   // Auth
   app.post("/api/auth/register", async (req, res) => {
     try {
-      const { username, email, password } = req.body || {};
+      const { username, email, password, user_type } = req.body || {};
       const cleanUsername = String(username || "").trim();
       const cleanEmail = String(email || "").trim().toLowerCase();
       const cleanPassword = String(password || "");
+      const cleanUserType = normalizeUserType(user_type);
 
       if (!cleanUsername || !cleanEmail || !cleanPassword) {
         return res.status(400).json({ success: false, message: "Molimo ispuni sva polja." });
@@ -1334,8 +1341,8 @@ async function main() {
       await db.prepare("DELETE FROM pending_registrations WHERE email = ?").run(cleanEmail);
       const appBase = appOriginForLinks();
       await db.prepare(
-        "INSERT INTO pending_registrations (email, username, password_hash, verify_token, verify_code_hash, expires_at, app_base_url) VALUES (?, ?, ?, ?, ?, ?, ?)",
-      ).run(cleanEmail, cleanUsername, passwordHash, verifyToken, verifyCodeHash, expiresAt, appBase);
+        "INSERT INTO pending_registrations (email, username, password_hash, user_type, verify_token, verify_code_hash, expires_at, app_base_url) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+      ).run(cleanEmail, cleanUsername, passwordHash, cleanUserType, verifyToken, verifyCodeHash, expiresAt, appBase);
 
       const mail = await sendVerificationEmail({ to: cleanEmail, username: cleanUsername, code: plainCode });
 
@@ -1396,7 +1403,7 @@ async function main() {
 
       const pending = await db
         .prepare(
-          "SELECT email, username, password_hash, expires_at, verify_code_hash FROM pending_registrations WHERE email = ?",
+          "SELECT email, username, password_hash, user_type, expires_at, verify_code_hash FROM pending_registrations WHERE email = ?",
         )
         .get(cleanEmail);
 
@@ -1453,7 +1460,7 @@ async function main() {
     const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
 
     await db.prepare(
-      "UPDATE pending_registrations SET verify_token = ?, verify_code_hash = ?, expires_at = ?, app_base_url = ? WHERE email = ?",
+      "UPDATE pending_registrations SET verify_token = ?, verify_code_hash = ?, expires_at = ?, app_base_url = ?, user_type = COALESCE(user_type, 'srednjoskolac') WHERE email = ?",
     ).run(verifyToken, verifyCodeHash, expiresAt, appOriginForLinks(), cleanEmail);
 
     try {

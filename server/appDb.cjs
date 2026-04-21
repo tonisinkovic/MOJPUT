@@ -123,6 +123,7 @@ function migrateSqlite(db) {
       email TEXT PRIMARY KEY,
       username TEXT NOT NULL,
       password_hash TEXT NOT NULL,
+      user_type TEXT DEFAULT 'srednjoskolac',
       verify_token TEXT NOT NULL UNIQUE,
       expires_at TEXT NOT NULL,
       created_at TEXT NOT NULL DEFAULT (datetime('now')),
@@ -172,6 +173,7 @@ function migrateSqlite(db) {
         email TEXT PRIMARY KEY,
         username TEXT NOT NULL,
         password_hash TEXT NOT NULL,
+        user_type TEXT DEFAULT 'srednjoskolac',
         verify_token TEXT NOT NULL UNIQUE,
         expires_at TEXT NOT NULL,
         created_at TEXT NOT NULL DEFAULT (datetime('now')),
@@ -186,6 +188,9 @@ function migrateSqlite(db) {
   }
   if (pendingCols.length && !pendingCols.includes("verify_code_hash")) {
     db.exec("ALTER TABLE pending_registrations ADD COLUMN verify_code_hash TEXT");
+  }
+  if (pendingCols.length && !pendingCols.includes("user_type")) {
+    db.exec("ALTER TABLE pending_registrations ADD COLUMN user_type TEXT DEFAULT 'srednjoskolac'");
   }
 
   try {
@@ -344,6 +349,7 @@ async function migratePg(pool) {
       email TEXT PRIMARY KEY,
       username TEXT NOT NULL,
       password_hash TEXT NOT NULL,
+      user_type TEXT DEFAULT 'srednjoskolac',
       verify_token TEXT NOT NULL UNIQUE,
       verify_code_hash TEXT,
       expires_at TEXT NOT NULL,
@@ -385,6 +391,8 @@ async function migratePg(pool) {
     )`,
   ];
   for (const sql of ddl) await run(sql);
+  await run("ALTER TABLE users ADD COLUMN IF NOT EXISTS user_type TEXT DEFAULT 'srednjoskolac'");
+  await run("ALTER TABLE pending_registrations ADD COLUMN IF NOT EXISTS user_type TEXT DEFAULT 'srednjoskolac'");
 
   const wipeUserData = async () => {
     await run("DELETE FROM forum_likes");
@@ -631,9 +639,9 @@ async function finalizePendingRegistration(db, pending) {
   }
   await db
     .prepare(
-      "INSERT INTO users (username, email, password_hash, email_verified, email_verify_token, email_verify_expires_at) VALUES (?, ?, ?, 1, NULL, NULL)",
+      "INSERT INTO users (username, email, password_hash, user_type, email_verified, email_verify_token, email_verify_expires_at) VALUES (?, ?, ?, ?, 1, NULL, NULL)",
     )
-    .run(pending.username, pending.email, pending.password_hash);
+    .run(pending.username, pending.email, pending.password_hash, pending.user_type || "srednjoskolac");
   await db.prepare("DELETE FROM pending_registrations WHERE email = ?").run(pending.email);
   await seedForum(db);
   return { alreadyUser: false };
