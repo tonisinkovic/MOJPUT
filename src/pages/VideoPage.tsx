@@ -160,11 +160,6 @@ const VideoPage = () => {
     return list;
   }, [activeCategory, searchQuery, sortBy]);
 
-  const continueWatching = useMemo(
-    () => VIDEOS.filter((v) => v.watchedProgress && v.watchedProgress > 0 && v.watchedProgress < 100),
-    [],
-  );
-
   const eventsByState = useMemo(() => {
     const withMeta = EVENT_TEMPLATES.map((event) => {
       const start = new Date(event.startAt).getTime();
@@ -585,44 +580,6 @@ const VideoPage = () => {
 
         {contentView === "videozapisi" && (
           <>
-        {/* Nastavi gledati */}
-        {continueWatching.length > 0 && (
-          <motion.div
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3, delay: 0.1 }}
-            className="mb-8 sm:mb-10"
-          >
-            <div className="mb-3 flex items-center gap-2 sm:mb-4">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-teal-500/10 text-teal-600 dark:text-teal-400">
-                <PlayCircle className="h-4 w-4" />
-              </div>
-              <h2 className="text-base font-bold text-slate-900 sm:text-lg dark:text-slate-100">
-                Nastavi gledati
-              </h2>
-              <span className="rounded-full bg-teal-500/10 px-2 py-0.5 text-[11px] font-bold text-teal-700 dark:text-teal-300">
-                {continueWatching.length}
-              </span>
-            </div>
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3 xl:grid-cols-4">
-              {continueWatching.map((video) => (
-                <VideoCard
-                  key={video.id}
-                  id={video.id}
-                  title={video.title}
-                  description={video.description}
-                  category={video.category}
-                  duration={video.duration}
-                  thumbnail={video.thumbnail}
-                  views={video.views}
-                  isNew={video.isNew}
-                  watchedProgress={video.watchedProgress}
-                />
-              ))}
-            </div>
-          </motion.div>
-        )}
-
         {/* Search + Filters */}
         <motion.div
           initial={{ opacity: 0, y: 12 }}

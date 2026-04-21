@@ -459,8 +459,9 @@ const Kalkulator = () => {
       <TooltipProvider delayDuration={300}>
         <section
           className={cn(
-            "container relative mx-auto max-w-6xl overflow-hidden px-3 py-10 sm:px-4 md:py-14",
-            wizardStep < 4 && "pb-28 sm:pb-14",
+            "container relative mx-auto max-w-6xl overflow-x-hidden px-3 py-10 sm:px-4 md:py-14",
+            wizardStep < 4 &&
+              "pb-[max(8.5rem,calc(6.5rem+env(safe-area-inset-bottom)))] sm:pb-14",
             wizardStep >= 4 && "pb-10 sm:pb-14",
           )}
         >
@@ -473,7 +474,7 @@ const Kalkulator = () => {
           <motion.div
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
-            className="relative space-y-6 sm:space-y-8"
+            className="relative min-w-0 w-full space-y-6 sm:space-y-8"
           >
             {/* Hero header */}
             <div className="relative overflow-hidden rounded-2xl border-2 border-primary/20 bg-gradient-to-br from-primary/[0.12] via-primary/[0.04] to-card p-4 shadow-card sm:rounded-3xl sm:p-6 md:p-7">
@@ -508,20 +509,21 @@ const Kalkulator = () => {
             {/* Stepper — wizard progress */}
             <div className="rounded-2xl border-2 border-border bg-card p-4 shadow-card sm:p-5 md:p-6">
               {/* Meta row */}
-              <div className="mb-5 flex items-start justify-between gap-3 sm:mb-6">
+              <div className="mb-5 flex flex-col gap-3 sm:mb-6 sm:flex-row sm:items-start sm:justify-between sm:gap-3">
                 <div className="min-w-0 flex-1">
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-start gap-2 sm:items-center">
                     <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
                       <CalcIcon className="h-4 w-4" aria-hidden />
                     </div>
-                    <p className="truncate text-sm font-semibold text-foreground sm:text-base">
+                    <p className="min-w-0 text-sm font-semibold leading-snug text-foreground sm:text-base">
                       {WIZARD_STEPS[wizardStep]?.label}
-                      <span className="ml-1.5 font-normal text-muted-foreground">
+                      <span className="font-normal text-muted-foreground">
+                        {" "}
                         — {WIZARD_STEPS[wizardStep]?.sub}
                       </span>
                     </p>
                   </div>
-                  <p className="ml-10 mt-1 text-xs text-muted-foreground">
+                  <p className="mt-1 text-xs text-muted-foreground sm:ml-10">
                     Možeš se uvijek vratiti i prilagoditi unos.
                   </p>
                 </div>
@@ -530,30 +532,21 @@ const Kalkulator = () => {
                 </span>
               </div>
 
-              {/* Connected-dot stepper */}
+              {/* Stepper: vertikalno na mobitelu, horizontalno od sm */}
               <div className="relative">
-                {/* Track line — sits at vertical center of the circles (h-9 → top-[18px]) */}
-                <div
-                  className="pointer-events-none absolute left-[10%] right-[10%] top-[18px] h-[3px] -translate-y-1/2 overflow-hidden rounded-full bg-border/60"
-                  aria-hidden
-                >
-                  <motion.div
-                    className="h-full rounded-full gradient-hero"
-                    initial={false}
-                    animate={{ width: `${(wizardStep / 4) * 100}%` }}
-                    transition={{ type: "spring", stiffness: 120, damping: 22 }}
-                  />
-                </div>
-
-                <ol className="relative grid grid-cols-5">
+                {/* Mobitel — puna širina, vertikalni popis */}
+                <ol className="flex flex-col gap-0 sm:hidden">
                   {WIZARD_STEPS.map((s) => {
                     const active = wizardStep === s.step;
                     const done = wizardStep > s.step;
                     return (
-                      <li key={s.step} className="flex flex-col items-center gap-1.5 sm:gap-2">
+                      <li
+                        key={s.step}
+                        className="flex gap-3 border-b border-border/50 py-3 first:pt-0 last:border-b-0 last:pb-0"
+                      >
                         <span
                           className={cn(
-                            "relative z-10 flex h-9 w-9 items-center justify-center rounded-full text-xs font-bold transition-all duration-300",
+                            "relative z-10 flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-xs font-bold transition-all duration-300",
                             done && "gradient-hero text-primary-foreground shadow-sm",
                             active &&
                               "border-2 border-primary bg-card text-primary shadow-md ring-4 ring-primary/20",
@@ -562,21 +555,69 @@ const Kalkulator = () => {
                         >
                           {done ? <Check className="h-4 w-4" strokeWidth={3} /> : s.step + 1}
                         </span>
-                        <span
-                          className={cn(
-                            "text-center text-[10px] font-semibold leading-tight sm:text-[11px]",
-                            active ? "text-foreground" : done ? "text-primary" : "text-muted-foreground",
-                          )}
-                        >
-                          {s.label}
-                        </span>
-                        <span className="hidden text-center text-[9px] leading-snug text-muted-foreground sm:block">
-                          {s.sub}
-                        </span>
+                        <div className="min-w-0 flex-1 pt-0.5">
+                          <p
+                            className={cn(
+                              "text-sm font-semibold leading-snug",
+                              active ? "text-foreground" : done ? "text-primary" : "text-muted-foreground",
+                            )}
+                          >
+                            {s.label}
+                          </p>
+                          <p className="text-xs leading-snug text-muted-foreground">{s.sub}</p>
+                        </div>
                       </li>
                     );
                   })}
                 </ol>
+
+                {/* Tablet+ — povezani točkasti koraci */}
+                <div className="hidden sm:block">
+                  <div
+                    className="pointer-events-none absolute left-[10%] right-[10%] top-[18px] h-[3px] -translate-y-1/2 overflow-hidden rounded-full bg-border/60"
+                    aria-hidden
+                  >
+                    <motion.div
+                      className="h-full rounded-full gradient-hero"
+                      initial={false}
+                      animate={{ width: `${(wizardStep / 4) * 100}%` }}
+                      transition={{ type: "spring", stiffness: 120, damping: 22 }}
+                    />
+                  </div>
+
+                  <ol className="relative grid grid-cols-5">
+                    {WIZARD_STEPS.map((s) => {
+                      const active = wizardStep === s.step;
+                      const done = wizardStep > s.step;
+                      return (
+                        <li key={s.step} className="flex flex-col items-center gap-1.5 sm:gap-2">
+                          <span
+                            className={cn(
+                              "relative z-10 flex h-9 w-9 items-center justify-center rounded-full text-xs font-bold transition-all duration-300",
+                              done && "gradient-hero text-primary-foreground shadow-sm",
+                              active &&
+                                "border-2 border-primary bg-card text-primary shadow-md ring-4 ring-primary/20",
+                              !active && !done && "border-2 border-border bg-muted/50 text-muted-foreground",
+                            )}
+                          >
+                            {done ? <Check className="h-4 w-4" strokeWidth={3} /> : s.step + 1}
+                          </span>
+                          <span
+                            className={cn(
+                              "text-center text-[10px] font-semibold leading-tight sm:text-[11px]",
+                              active ? "text-foreground" : done ? "text-primary" : "text-muted-foreground",
+                            )}
+                          >
+                            {s.label}
+                          </span>
+                          <span className="hidden text-center text-[9px] leading-snug text-muted-foreground sm:block">
+                            {s.sub}
+                          </span>
+                        </li>
+                      );
+                    })}
+                  </ol>
+                </div>
               </div>
             </div>
 
