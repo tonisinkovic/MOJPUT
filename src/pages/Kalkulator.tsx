@@ -1514,13 +1514,16 @@ const Kalkulator = () => {
                     aria-label="Koraci kalkulatora bodova"
                   >
                     <>
-                      {/* Ispod lg: potpuno vertikalno — telefoni, landscape, tableti */}
-                      <div className="flex w-full min-w-0 flex-col gap-3 lg:hidden">
-                        <div className="min-w-0 px-0 text-center">
-                          <p className="text-[13px] font-medium leading-snug text-foreground">
+                      {/* Ispod lg: kompaktan, centrirani blok + uravnoteženi gumbi */}
+                      <div className="flex w-full min-w-0 flex-col items-stretch gap-0 lg:hidden">
+                        <div className="rounded-xl border border-border/60 bg-muted/40 px-3 py-3 text-center sm:px-4">
+                          <span className="inline-flex items-center justify-center rounded-full border border-primary/20 bg-primary/10 px-2.5 py-0.5 text-[11px] font-bold tabular-nums uppercase tracking-wide text-primary">
+                            Korak {wizardStep + 1} / 5
+                          </span>
+                          <p className="mt-2.5 text-center text-base font-semibold leading-tight text-foreground">
                             {WIZARD_STEPS[wizardStep]?.label}
                           </p>
-                          <p className="mt-0.5 text-[11px] leading-snug text-muted-foreground">
+                          <p className="mx-auto mt-1 max-w-[20rem] text-center text-xs leading-relaxed text-muted-foreground">
                             {(() => {
                               const r = 4 - wizardStep;
                               if (r === 1) return "Još 1 korak do rezultata";
@@ -1529,13 +1532,13 @@ const Kalkulator = () => {
                             })()}
                           </p>
                         </div>
-                        <div className="flex w-full flex-col gap-2">
+                        <div className="mt-3 grid w-full grid-cols-2 gap-2">
                           <Button
                             type="button"
                             variant="outline"
                             disabled={wizardStep === 0}
                             onClick={() => setWizardStep((s) => Math.max(0, s - 1))}
-                            className="min-h-11 w-full rounded-xl px-3 text-sm touch-manipulation"
+                            className="h-11 min-h-[44px] w-full shrink-0 rounded-xl px-2 text-sm font-semibold touch-manipulation sm:px-3"
                           >
                             Natrag
                           </Button>
@@ -1543,7 +1546,7 @@ const Kalkulator = () => {
                             type="button"
                             disabled={!canWizardNext}
                             onClick={() => setWizardStep((s) => Math.min(4, s + 1))}
-                            className="min-h-11 w-full rounded-xl border-0 bg-primary px-3 text-sm font-semibold text-primary-foreground shadow-md transition-all hover:bg-primary/90 hover:shadow-lg disabled:opacity-50 touch-manipulation"
+                            className="h-11 min-h-[44px] w-full shrink-0 rounded-xl border-0 bg-primary px-2 text-sm font-semibold text-primary-foreground shadow-sm transition-all hover:bg-primary/90 hover:shadow-md disabled:opacity-50 touch-manipulation sm:px-3"
                           >
                             Dalje
                           </Button>
