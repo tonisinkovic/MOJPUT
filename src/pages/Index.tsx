@@ -761,40 +761,6 @@ const Index = () => {
         </motion.div>
       </section>
 
-      {/* Mobile sticky bottom dock — appears after hero, hides on CTA */}
-      <AnimatePresence>
-        {showMobileDock && (
-          <motion.div
-            key="mobile-dock"
-            initial={{ y: 80, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            exit={{ y: 80, opacity: 0 }}
-            transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
-            className="mobile-dock lg:hidden"
-            role="region"
-            aria-label="Brze akcije na dnu ekrana"
-          >
-            <div className="flex items-center gap-2 pr-16">
-              <Link
-                to="/karta"
-                className="touch-tap flex h-11 flex-1 items-center justify-center gap-1.5 rounded-xl border border-border bg-background text-[13px] font-semibold text-foreground active:scale-[0.98] transition-transform"
-              >
-                <Map className="h-4 w-4 text-primary" aria-hidden />
-                Karta
-              </Link>
-              <Link
-                to="/kviz"
-                className="group touch-tap flex h-11 flex-[1.2] items-center justify-center gap-1.5 rounded-xl border-0 btn-primary-premium text-[13px] font-semibold text-primary-foreground active:scale-[0.98] transition-transform"
-              >
-                <Sparkles className="h-4 w-4" aria-hidden />
-                Započni kviz
-                <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" aria-hidden />
-              </Link>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
     </Layout>
   );
 };
