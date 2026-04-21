@@ -641,25 +641,30 @@ const Kalkulator = () => {
                   >
                 {wizardStep === 0 && (
                 <>
-                {/* 1. Odabir fakulteta i smjera */}
-                <Card className={cardShell}>
-                  <CardHeader className="pb-3">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <GraduationCap className="w-5 h-5 text-primary" />
-                        <CardTitle className="text-lg">
+                {/* 1. Odabir fakulteta i smjera — na mobitelu isti vizual kao stepper (border-2, shadow-card) */}
+                <Card
+                  className={cn(
+                    "overflow-hidden rounded-2xl border-2 border-border bg-card shadow-card transition-shadow duration-300 hover:shadow-md",
+                    "lg:border lg:border-border/70 lg:bg-card/95 lg:shadow-sm lg:backdrop-blur-[2px]",
+                  )}
+                >
+                  <CardHeader className="pb-3 max-lg:p-4 max-lg:pb-3">
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="flex min-w-0 items-center gap-2">
+                        <GraduationCap className="h-5 w-5 shrink-0 text-primary" />
+                        <CardTitle className="text-base leading-tight sm:text-lg">
                           Odabir fakulteta i smjera
                         </CardTitle>
                       </div>
-                      <Badge variant="secondary" className="text-xs">
+                      <Badge variant="secondary" className="shrink-0 text-[11px] sm:text-xs">
                         {preFilteredPrograms.length} programa
                       </Badge>
                     </div>
-                    <CardDescription>
+                    <CardDescription className="max-lg:text-[13px]">
                       Filtriraj po gradu ili vrsti, pa pretraži
                     </CardDescription>
                   </CardHeader>
-                  <CardContent className="space-y-4">
+                  <CardContent className="space-y-4 max-lg:px-4 max-lg:pb-4">
                     {/* ── City filter chips ── */}
                     <div className="space-y-2">
                       <div className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
@@ -1514,16 +1519,16 @@ const Kalkulator = () => {
                     aria-label="Koraci kalkulatora bodova"
                   >
                     <>
-                      {/* Ispod lg: kompaktan, centrirani blok + uravnoteženi gumbi */}
+                      {/* Ispod lg: kompaktno, Natrag/Dalje jedan ispod drugog (manji gumbi) */}
                       <div className="flex w-full min-w-0 flex-col items-stretch gap-0 lg:hidden">
-                        <div className="rounded-xl border border-border/60 bg-muted/40 px-3 py-3 text-center sm:px-4">
-                          <span className="inline-flex items-center justify-center rounded-full border border-primary/20 bg-primary/10 px-2.5 py-0.5 text-[11px] font-bold tabular-nums uppercase tracking-wide text-primary">
+                        <div className="rounded-xl border border-border/60 bg-muted/40 px-3 py-2.5 text-center sm:px-4">
+                          <span className="inline-flex items-center justify-center rounded-full border border-primary/20 bg-primary/10 px-2 py-0.5 text-[10px] font-bold tabular-nums uppercase tracking-wide text-primary">
                             Korak {wizardStep + 1} / 5
                           </span>
-                          <p className="mt-2.5 text-center text-base font-semibold leading-tight text-foreground">
+                          <p className="mt-2 text-center text-[15px] font-semibold leading-snug text-foreground">
                             {WIZARD_STEPS[wizardStep]?.label}
                           </p>
-                          <p className="mx-auto mt-1 max-w-[20rem] text-center text-xs leading-relaxed text-muted-foreground">
+                          <p className="mx-auto mt-0.5 max-w-[20rem] text-center text-[11px] leading-snug text-muted-foreground">
                             {(() => {
                               const r = 4 - wizardStep;
                               if (r === 1) return "Još 1 korak do rezultata";
@@ -1532,13 +1537,13 @@ const Kalkulator = () => {
                             })()}
                           </p>
                         </div>
-                        <div className="mt-3 grid w-full grid-cols-2 gap-2">
+                        <div className="mt-2 flex w-full flex-col gap-1.5">
                           <Button
                             type="button"
                             variant="outline"
                             disabled={wizardStep === 0}
                             onClick={() => setWizardStep((s) => Math.max(0, s - 1))}
-                            className="h-11 min-h-[44px] w-full shrink-0 rounded-xl px-2 text-sm font-semibold touch-manipulation sm:px-3"
+                            className="h-9 min-h-9 w-full shrink-0 rounded-lg px-3 text-xs font-semibold touch-manipulation sm:h-10 sm:min-h-10 sm:text-sm"
                           >
                             Natrag
                           </Button>
@@ -1546,7 +1551,7 @@ const Kalkulator = () => {
                             type="button"
                             disabled={!canWizardNext}
                             onClick={() => setWizardStep((s) => Math.min(4, s + 1))}
-                            className="h-11 min-h-[44px] w-full shrink-0 rounded-xl border-0 bg-primary px-2 text-sm font-semibold text-primary-foreground shadow-sm transition-all hover:bg-primary/90 hover:shadow-md disabled:opacity-50 touch-manipulation sm:px-3"
+                            className="h-9 min-h-9 w-full shrink-0 rounded-lg border-0 bg-primary px-3 text-xs font-semibold text-primary-foreground shadow-sm transition-all hover:bg-primary/90 hover:shadow-md disabled:opacity-50 touch-manipulation sm:h-10 sm:min-h-10 sm:text-sm"
                           >
                             Dalje
                           </Button>
