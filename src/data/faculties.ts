@@ -119,25 +119,77 @@ export function getCutoffForYear(cutoffByYear: ProgramCutoffs | undefined, year:
   return v;
 }
 
-export const facultyInstitutions: FacultyInstitution[] = (raw as RawInstitution[])
-  .filter((x) => x && typeof x.name === "string" && typeof x.city === "string")
-  .map((x) => {
-    const city = normalizeCity(x.city);
-    return {
-      id: makeId(x.name.trim(), city),
-      name: x.name.trim(),
-      city,
-      provider: x.provider?.trim(),
-      institutionType: normalizeInstitutionType(x.institutionType),
-      programs: (x.programs ?? [])
-        .filter((p) => p && typeof p.name === "string")
-        .map((p) => ({
-          name: p.name.trim(),
-          cutoffByYear: p.cutoffByYear ?? {},
-        })),
-    };
-  })
-  // Izbaci ustanove s neispravnim gradom (fragmenti imena programa i sl.).
-  .filter((x) => isValidCity(x.city))
-  .sort((a, b) => a.name.localeCompare(b.name, "hr"));
+function mergeCutoffByYear(
+  a: ProgramCutoffs | undefined,
+  b: ProgramCutoffs | undefined,
+): ProgramCutoffs {
+  return { ...a, ...b };
+}
+
+/** Spoji programe istog imena: pragovi se kombiniraju po godinama. */
+function mergePrograms(lists: FacultyProgram[][]): FacultyProgram[] {
+  const byName = new Map<string, FacultyProgram>();
+  for (const list of lists) {
+    for (const p of list) {
+      const existing = byName.get(p.name);
+      if (!existing) {
+        byName.set(p.name, p);
+        continue;
+      }
+      byName.set(p.name, {
+        name: p.name,
+        cutoffByYear: mergeCutoffByYear(existing.cutoffByYear, p.cutoffByYear),
+      });
+    }
+  }
+  return Array.from(byName.values());
+}
+
+/**
+ * U izvornom JSON-u postoje duple ustanove (npr. isti naziv, grad "X" vs. varijanta grada
+ * nakon normalizacije). Isti `id` u listi daje duple React keyeve i krivo filtriranje.
+ */
+function dedupeFacilities(list: FacultyInstitution[]): FacultyInstitution[] {
+  const map = new Map<string, FacultyInstitution[]>();
+  for (const f of list) {
+    const arr = map.get(f.id);
+    if (arr) arr.push(f);
+    else map.set(f.id, [f]);
+  }
+  const out: FacultyInstitution[] = [];
+  for (const group of map.values()) {
+    if (group.length === 1) {
+      out.push(group[0]);
+      continue;
+    }
+    const base = { ...group[0] };
+    base.provider = group.map((g) => g.provider).find(Boolean) ?? base.provider;
+    base.programs = mergePrograms(group.map((g) => g.programs));
+    out.push(base);
+  }
+  return out.sort((a, b) => a.name.localeCompare(b.name, "hr"));
+}
+
+export const facultyInstitutions: FacultyInstitution[] = dedupeFacilities(
+  (raw as RawInstitution[])
+    .filter((x) => x && typeof x.name === "string" && typeof x.city === "string")
+    .map((x) => {
+      const city = normalizeCity(x.city);
+      return {
+        id: makeId(x.name.trim(), city),
+        name: x.name.trim(),
+        city,
+        provider: x.provider?.trim(),
+        institutionType: normalizeInstitutionType(x.institutionType),
+        programs: (x.programs ?? [])
+          .filter((p) => p && typeof p.name === "string")
+          .map((p) => ({
+            name: p.name.trim(),
+            cutoffByYear: p.cutoffByYear ?? {},
+          })),
+      };
+    })
+    // Izbaci ustanove s neispravnim gradom (fragmenti imena programa i sl.).
+    .filter((x) => isValidCity(x.city)),
+);
 

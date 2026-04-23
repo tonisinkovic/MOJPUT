@@ -59,6 +59,48 @@ const faculties: FacultyItem[] = facultyInstitutions.map((x) => ({
   programs: x.programs,
 }));
 
+// Napomena: / unutar /.../ ne smije slobodno stajati; koristimo new RegExp.
+const WORD_SPLIT = new RegExp("[\\s,;.()\\-/[\\]\"'·]+", "g");
+
+/** Riječi za pretragu (mala slova) – jedno "široko" slovo u podnizu ne pogađa sve. */
+function wordsFromText(s: string): string[] {
+  return s
+    .toLowerCase()
+    .split(WORD_SPLIT)
+    .map((w) => w.replace(/^[^a-z0-9čćžšđ]+/i, ""))
+    .filter(Boolean);
+}
+
+function wordStartsWith(s: string, token: string): boolean {
+  return wordsFromText(s).some((w) => w.startsWith(token));
+}
+
+/** Više riječi = sve moraju pogađati; jedno slovo = samo početak riječi. */
+function matchesFacultySearch(f: FacultyItem, qRaw: string): boolean {
+  const raw = qRaw.trim();
+  if (!raw) return true;
+  const tokens = raw
+    .toLowerCase()
+    .split(/\s+/)
+    .map((t) => t.replace(/^['"]+|['"]+$/g, ""))
+    .filter(Boolean);
+  if (tokens.length === 0) return true;
+
+  return tokens.every((token) => {
+    if (token.length < 2) {
+      return (
+        wordStartsWith(f.name, token) ||
+        wordStartsWith(f.city, token) ||
+        f.programs.some((p) => wordStartsWith(p.name, token))
+      );
+    }
+    const t = token;
+    if (f.name.toLowerCase().includes(t)) return true;
+    if (f.city.toLowerCase().includes(t)) return true;
+    return f.programs.some((p) => p.name.toLowerCase().includes(t));
+  });
+}
+
 const KartaFakulteta = () => {
   const [search, setSearch] = useState("");
   const [filterType, setFilterType] = useState<FacultyItem["institutionType"] | null>(null);
@@ -79,13 +121,8 @@ const KartaFakulteta = () => {
   const cities = useMemo(() => [...new Set(faculties.map((f) => f.city))].sort(), []);
 
   const filtered = useMemo(() => {
-    const q = search.trim().toLowerCase();
     return faculties.filter((f) => {
-      const matchSearch =
-        !q ||
-        f.name.toLowerCase().includes(q) ||
-        f.city.toLowerCase().includes(q) ||
-        f.programs.some((p) => p.name.toLowerCase().includes(q));
+      const matchSearch = matchesFacultySearch(f, search);
       const matchType = !filterType || f.institutionType === filterType;
       const matchCity = !filterCity || f.city.trim().toLowerCase() === filterCity.trim().toLowerCase();
       return matchSearch && matchType && matchCity;
@@ -330,11 +367,13 @@ const KartaFakulteta = () => {
                         </label>
                         <Select
                           value={
-                            search &&
-                            filterCity &&
-                            faculties.some((f) => f.name === search && f.city === filterCity)
-                              ? `${search}__${filterCity}`
-                              : "svi"
+                            (() => {
+                              if (!search.trim() || !filterCity) return "svi";
+                              const f = faculties.find(
+                                (x) => x.name === search && x.city === filterCity,
+                              );
+                              return f?.id ?? "svi";
+                            })()
                           }
                           onValueChange={(v) => {
                             if (v === "svi") {
@@ -342,10 +381,10 @@ const KartaFakulteta = () => {
                               setFilterCity(null);
                               return;
                             }
-                            const [name, city] = v.split("__");
-                            if (name && city) {
-                              setSearch(name);
-                              setFilterCity(city);
+                            const f = faculties.find((x) => x.id === v);
+                            if (f) {
+                              setSearch(f.name);
+                              setFilterCity(f.city);
                             }
                           }}
                         >
@@ -361,10 +400,7 @@ const KartaFakulteta = () => {
                                 <SelectGroup key={city}>
                                   <SelectLabel>{city}</SelectLabel>
                                   {inCity.map((f) => (
-                                    <SelectItem
-                                      key={`${f.name}__${f.city}`}
-                                      value={`${f.name}__${f.city}`}
-                                    >
+                                    <SelectItem key={f.id} value={f.id}>
                                       {f.name}
                                     </SelectItem>
                                   ))}

@@ -3036,29 +3036,13 @@ function ConfidenceQuiz() {
       />
 
       {resultsOpen && allAnswered && (
-        <>
-          <motion.div
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="lg:col-span-2"
-          >
-            <ConfidenceFeedback traits={traits} confidenceLevel={confidenceLevel} recommendation={recommendation} />
-          </motion.div>
-          <motion.div
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
-            className="flex flex-col gap-3 rounded-2xl border bg-card p-6 shadow-card sm:flex-row sm:items-center sm:justify-between lg:col-span-2"
-          >
-            <p className="text-sm text-muted-foreground">Preporučujemo ti program koji odgovara tvojoj razini.</p>
-            <Button asChild size="lg" className="gradient-hero shrink-0 border-0 text-primary-foreground">
-              <Link to="/registracija">
-                Preporučujemo ti ovaj program
-                <ArrowRight className="ml-2 h-4 w-4" />
-              </Link>
-            </Button>
-          </motion.div>
-        </>
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="lg:col-span-2"
+        >
+          <ConfidenceFeedback traits={traits} confidenceLevel={confidenceLevel} recommendation={recommendation} />
+        </motion.div>
       )}
     </div>
   );

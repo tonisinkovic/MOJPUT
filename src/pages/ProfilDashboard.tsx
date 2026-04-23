@@ -5,17 +5,22 @@ import {
   ArrowRight,
   Bookmark,
   Calendar,
+  CheckCircle2,
+  ChevronDown,
   GraduationCap,
+  KeyRound,
   LayoutDashboard,
   Loader2,
   LogOut,
+  Map,
   MessageSquare,
   Moon,
+  Palette,
   Settings,
   Sparkles,
   Sun,
   Trash2,
-  User,
+  UserCircle2,
   Users,
 } from "lucide-react";
 import { useTheme } from "next-themes";
@@ -318,31 +323,15 @@ export default function ProfilDashboard() {
             initial={{ opacity: 0, y: 14 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.35 }}
-            className="mb-8 md:mb-10"
+            className="mb-6 md:mb-8"
           >
-            <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
-              <div className="max-w-2xl">
-                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary/80">Moj račun</p>
-                <h1 className="mt-2 text-balance bg-gradient-to-br from-foreground via-foreground to-foreground/70 bg-clip-text text-3xl font-bold tracking-tight md:text-4xl lg:text-[2.5rem] lg:leading-tight">
-                  Moj profil
-                </h1>
-                <p className="mt-3 text-base leading-relaxed text-muted-foreground md:text-lg">
-                  Aktivnost, kvizovi i spremljeni fakulteti na jednom preglednom mjestu — brzo za čitanje, jednostavno za
-                  korištenje.
-                </p>
-              </div>
-              {dash && !dashLoading && (
-                <div className="flex shrink-0 items-center gap-3 rounded-2xl border border-border/60 bg-card/90 px-4 py-3 shadow-sm backdrop-blur-sm">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-primary/80 text-sm font-bold text-primary-foreground shadow-inner">
-                    {(dash.user.username || "?").slice(0, 2).toUpperCase()}
-                  </div>
-                  <div className="min-w-0">
-                    <p className="truncate font-semibold text-foreground">{dash.user.username}</p>
-                    <p className="truncate text-xs text-muted-foreground">{dash.user.email}</p>
-                  </div>
-                </div>
-              )}
-            </div>
+            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary/80">Moj račun</p>
+            <h1 className="mt-1 text-balance bg-gradient-to-br from-foreground via-foreground to-foreground/70 bg-clip-text text-3xl font-bold tracking-tight md:text-4xl">
+              Moj profil
+            </h1>
+            <p className="mt-2 text-sm leading-relaxed text-muted-foreground md:text-base">
+              Sve što ti treba na jednom mjestu.
+            </p>
           </motion.div>
 
           <div className="flex flex-col gap-8 lg:flex-row lg:gap-10">
@@ -463,107 +452,165 @@ export default function ProfilDashboard() {
                 >
                   {tab === "pregled" && (
                     <>
-                      <Card className="overflow-hidden border-0 bg-gradient-to-br from-card via-card to-primary/[0.04] shadow-xl shadow-primary/[0.07] ring-1 ring-border/50">
-                        <CardHeader className="space-y-6 pb-4">
-                          <div className="flex flex-col gap-6 sm:flex-row sm:items-start sm:justify-between">
-                            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:gap-5">
-                              <div className="relative mx-auto sm:mx-0">
-                                <div className="absolute -inset-1 rounded-3xl bg-gradient-to-br from-primary via-primary/70 to-violet-500/60 opacity-90 blur-sm" aria-hidden />
-                                <div className="relative flex h-20 w-20 items-center justify-center rounded-2xl bg-gradient-to-br from-primary to-primary/85 text-2xl font-bold text-primary-foreground shadow-lg">
-                                  {(dash.user.username || "?").slice(0, 2).toUpperCase()}
-                                </div>
-                              </div>
-                              <div className="min-w-0 flex-1 text-center sm:text-left">
-                                <div className="flex flex-col items-center gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:gap-3">
-                                  <CardTitle className="text-2xl font-bold tracking-tight md:text-3xl">
-                                    {dash.user.username}
-                                  </CardTitle>
-                                  <Badge variant="secondary" className="rounded-full px-3 py-0.5 font-normal">
-                                    {labelForUserType(dash.user.user_type)}
-                                  </Badge>
-                                </div>
-                                <CardDescription className="mt-3 text-base text-muted-foreground">
-                                  {dash.user.email}
-                                </CardDescription>
-                                <div className="mt-4 grid gap-2 text-sm text-muted-foreground sm:grid-cols-2">
-                                  <p className="rounded-xl border border-border/50 bg-muted/30 px-3 py-2">
-                                    <span className="block text-[11px] font-medium uppercase tracking-wide text-muted-foreground/90">
-                                      Registracija
-                                    </span>
-                                    {formatHrDate(dash.user.created_at)}
-                                  </p>
-                                  <p className="rounded-xl border border-border/50 bg-muted/30 px-3 py-2">
-                                    <span className="block text-[11px] font-medium uppercase tracking-wide text-muted-foreground/90">
-                                      Zadnja prijava
-                                    </span>
-                                    {formatHrDate(dash.user.last_login_at)}
-                                  </p>
-                                </div>
+                      {/* Profil kartica - kompaktna, s integriranim progresom */}
+                      <Card className="overflow-hidden border-border/50 bg-gradient-to-br from-card via-card to-primary/[0.03] shadow-lg ring-1 ring-border/40">
+                        <CardContent className="p-5 sm:p-6">
+                          <div className="flex flex-col gap-5 sm:flex-row sm:items-center">
+                            <div className="relative mx-auto shrink-0 sm:mx-0">
+                              <div
+                                className="absolute -inset-1 rounded-3xl bg-gradient-to-br from-primary via-primary/70 to-violet-500/60 opacity-70 blur-sm"
+                                aria-hidden
+                              />
+                              <div className="relative flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-primary to-primary/85 text-xl font-bold text-primary-foreground shadow-md sm:h-20 sm:w-20 sm:text-2xl">
+                                {(dash.user.username || "?").slice(0, 2).toUpperCase()}
                               </div>
                             </div>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              className="shrink-0 gap-2 rounded-2xl border-primary/20 bg-background/80 shadow-sm hover:bg-primary/10"
-                              asChild
-                            >
-                              <Link to="/forum">
-                                <MessageSquare className="h-4 w-4" />
-                                Forum
-                              </Link>
-                            </Button>
+                            <div className="min-w-0 flex-1 text-center sm:text-left">
+                              <div className="flex flex-col items-center gap-1.5 sm:flex-row sm:flex-wrap sm:items-center sm:gap-2">
+                                <h2 className="truncate text-xl font-bold tracking-tight md:text-2xl">
+                                  {dash.user.username}
+                                </h2>
+                                <Badge variant="secondary" className="rounded-full px-2.5 py-0.5 text-xs font-medium">
+                                  {labelForUserType(dash.user.user_type)}
+                                </Badge>
+                              </div>
+                              <p className="mt-1 truncate text-sm text-muted-foreground">{dash.user.email}</p>
+                              <p className="mt-1.5 text-xs text-muted-foreground/90">
+                                <Calendar className="mr-1 inline h-3 w-3" aria-hidden />
+                                Zadnja prijava: {formatHrDate(dash.user.last_login_at)}
+                              </p>
+                            </div>
                           </div>
-                        </CardHeader>
-                        <CardContent className="space-y-4 border-t border-border/40 bg-muted/20 px-6 py-6">
-                          <div>
+
+                          {/* Progress */}
+                          <div className="mt-5 rounded-2xl border border-border/50 bg-muted/30 p-4">
                             <div className="mb-2 flex items-center justify-between gap-3">
                               <span className="text-sm font-semibold text-foreground">Napredak profila</span>
                               <span className="tabular-nums text-sm font-bold text-primary">
                                 {dash.activity.profile_completion_percent}%
                               </span>
                             </div>
-                            <Progress value={dash.activity.profile_completion_percent} className="h-3 rounded-full" />
-                            <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
-                              Popuni tip korisnika, riješi kviz i spremi fakultete za više bodova.
-                            </p>
+                            <Progress value={dash.activity.profile_completion_percent} className="h-2.5 rounded-full" />
+                            {dash.activity.profile_completion_percent < 100 && (
+                              <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
+                                Popuni tip korisnika, riješi kviz i spremi fakultete za 100%.
+                              </p>
+                            )}
                           </div>
                         </CardContent>
                       </Card>
 
-                      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+                      {/* Sljedeći koraci - personalizirano */}
+                      {(() => {
+                        const steps: { id: string; label: string; desc: string; to: string; icon: React.ElementType; done: boolean }[] = [
+                          {
+                            id: "quiz",
+                            label: "Riješi karijerni kviz",
+                            desc: "Saznaj koji smjer ti najviše odgovara.",
+                            to: "/kviz",
+                            icon: Sparkles,
+                            done: Boolean(lastQuiz && isCareerQuizPayload(lastQuiz.payload)),
+                          },
+                          {
+                            id: "fav",
+                            label: "Spremi fakultete",
+                            desc: "Dodaj bar 1 fakultet u listu interesa.",
+                            to: "/karta",
+                            icon: Bookmark,
+                            done: dash.activity.saved_faculties_count > 0,
+                          },
+                          {
+                            id: "profile",
+                            label: "Popuni tip korisnika",
+                            desc: "Prilagodi preporuke tvom statusu.",
+                            to: "/profil?tab=postavke",
+                            icon: UserCircle2,
+                            done: Boolean(dash.user.user_type),
+                          },
+                        ];
+                        const remaining = steps.filter((s) => !s.done);
+                        if (remaining.length === 0) return null;
+                        return (
+                          <Card className="border-primary/20 bg-gradient-to-br from-primary/[0.04] to-transparent shadow-sm">
+                            <CardHeader className="pb-3">
+                              <div className="flex items-center gap-3">
+                                <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                                  <CheckCircle2 className="h-5 w-5" />
+                                </span>
+                                <div>
+                                  <CardTitle className="text-lg">Sljedeći koraci</CardTitle>
+                                  <CardDescription className="mt-0.5">
+                                    {remaining.length === 1
+                                      ? "Još jedan korak do punog profila."
+                                      : `Još ${remaining.length} koraka do punog profila.`}
+                                  </CardDescription>
+                                </div>
+                              </div>
+                            </CardHeader>
+                            <CardContent className="grid gap-2.5 sm:grid-cols-2 lg:grid-cols-3">
+                              {remaining.map((s) => (
+                                <Link
+                                  key={s.id}
+                                  to={s.to}
+                                  className="group flex items-start gap-3 rounded-2xl border border-border/60 bg-card p-3.5 text-left shadow-sm transition-all hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-md"
+                                >
+                                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary transition-colors group-hover:bg-primary group-hover:text-primary-foreground">
+                                    <s.icon className="h-4 w-4" />
+                                  </span>
+                                  <span className="min-w-0 flex-1">
+                                    <span className="block text-sm font-semibold text-foreground">{s.label}</span>
+                                    <span className="mt-0.5 block text-xs leading-snug text-muted-foreground">
+                                      {s.desc}
+                                    </span>
+                                  </span>
+                                  <ArrowRight className="mt-1 h-4 w-4 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5 group-hover:text-primary" />
+                                </Link>
+                              ))}
+                            </CardContent>
+                          </Card>
+                        );
+                      })()}
+
+                      {/* Stats - klikabilne, 2x2 na mobile, 4 u red na desktop */}
+                      <div className="grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-4">
                         <StatCard
                           icon={MessageSquare}
                           label="Teme na forumu"
                           value={dash.activity.forum_threads}
                           accent="sky"
+                          to="/forum"
                         />
                         <StatCard
                           icon={Users}
                           label="Poruke na forumu"
                           value={dash.activity.forum_messages}
                           accent="emerald"
+                          to="/forum"
                         />
                         <StatCard
                           icon={Bookmark}
                           label="Spremljeni fakulteti"
                           value={dash.activity.saved_faculties_count}
                           accent="violet"
+                          to="/profil?tab=fakulteti"
                         />
                         <StatCard
                           icon={Calendar}
                           label="Pokušaja kviza"
                           value={dash.quiz_history.length}
                           accent="amber"
+                          to="/profil?tab=kviz"
                         />
                       </div>
 
-                      <Card className="border-border/60 shadow-lg shadow-black/[0.03] ring-1 ring-border/40 transition-shadow hover:shadow-xl">
+                      {/* Brzi pregled kviza */}
+                      <Card className="border-border/60 shadow-md ring-1 ring-border/40">
                         <CardHeader className="pb-3">
                           <div className="flex items-center gap-3">
                             <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
                               <Sparkles className="h-5 w-5" />
                             </span>
-                            <div>
+                            <div className="min-w-0 flex-1">
                               <CardTitle className="text-lg md:text-xl">Brzi pregled kviza</CardTitle>
                               <CardDescription className="mt-0.5">Zadnji rezultat i preporuke</CardDescription>
                             </div>
@@ -572,45 +619,61 @@ export default function ProfilDashboard() {
                         <CardContent className="space-y-4">
                           {lastQuiz ? (
                             <>
-                              <p className="text-sm text-muted-foreground">
-                                <span className="font-medium text-foreground">{formatHrDate(lastQuiz.created_at)}</span>
+                              <div className="rounded-xl border border-border/50 bg-muted/30 p-3">
+                                <p className="text-xs font-medium text-muted-foreground">
+                                  {formatHrDate(lastQuiz.created_at)}
+                                </p>
                                 {lastQuizSummaryLine && (
-                                  <>
-                                    <br />
-                                    <span className="text-foreground/90">{lastQuizSummaryLine}</span>
-                                  </>
+                                  <p className="mt-1 text-sm font-medium text-foreground">{lastQuizSummaryLine}</p>
                                 )}
-                              </p>
+                              </div>
                               {topNames.length > 0 && (
-                                <ul className="grid gap-2 sm:grid-cols-2">
-                                  {topNames.slice(0, 6).map((name) => (
-                                    <li
-                                      key={name}
-                                      className="rounded-xl border border-border/60 bg-muted/30 px-3 py-2 text-sm font-medium"
-                                    >
-                                      {name}
-                                    </li>
-                                  ))}
-                                </ul>
+                                <div>
+                                  <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                                    Top preporuke
+                                  </p>
+                                  <ul className="grid gap-2 sm:grid-cols-2">
+                                    {topNames.slice(0, 6).map((name, i) => (
+                                      <li
+                                        key={name}
+                                        className="flex items-center gap-2 rounded-xl border border-border/60 bg-card px-3 py-2 text-sm font-medium"
+                                      >
+                                        <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-xs font-bold text-primary">
+                                          {i + 1}
+                                        </span>
+                                        <span className="truncate">{name}</span>
+                                      </li>
+                                    ))}
+                                  </ul>
+                                </div>
                               )}
-                              <div className="flex flex-wrap gap-2 pt-2">
+                              <div className="flex flex-wrap gap-2">
                                 <Button size="sm" className="rounded-xl" asChild>
                                   <Link to={isCareerQuizPayload(lastQuiz.payload) ? "/kviz" : "/samoprocjena"}>
                                     {isCareerQuizPayload(lastQuiz.payload) ? "Ponovi kviz" : "Ponovi samoprocjenu"}
                                   </Link>
                                 </Button>
-                                <Button size="sm" variant="outline" className="rounded-xl" onClick={() => handleSaveQuizFromHistory(lastQuiz)}>
-                                  Spremi ovaj zapis ponovo
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  className="rounded-xl"
+                                  onClick={() => handleSaveQuizFromHistory(lastQuiz)}
+                                >
+                                  Spremi zapis
                                 </Button>
                               </div>
                             </>
                           ) : (
-                            <p className="text-sm text-muted-foreground">
-                              Još nemaš spremljenog kviza.{" "}
-                              <Link to="/kviz" className="font-medium text-primary underline-offset-2 hover:underline">
-                                Riješi kviz
-                              </Link>
-                            </p>
+                            <EmptyState
+                              icon={Sparkles}
+                              title="Još nisi riješio kviz"
+                              description="Karijerni kviz ti pokazuje koji smjer i zanimanje najbolje odgovaraju tvojim interesima."
+                              action={
+                                <Button size="sm" className="rounded-xl" asChild>
+                                  <Link to="/kviz">Pokreni kviz</Link>
+                                </Button>
+                              }
+                            />
                           )}
                         </CardContent>
                       </Card>
