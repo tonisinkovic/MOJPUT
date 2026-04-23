@@ -3167,9 +3167,14 @@ const QUIZ_CARDS_LEGACY: {
 const Samoprocjena = () => {
   const [selectedQuiz, setSelectedQuiz] = useState<QuizId | null>(null);
   const quizContentRef = useRef<HTMLDivElement>(null);
+  const hiddenQuizIds = useMemo(() => new Set<QuizId>(["confidence"]), []);
+  const visibleQuizCards = useMemo(
+    () => QUIZ_CARDS.filter((c) => !hiddenQuizIds.has(c.id)),
+    [hiddenQuizIds],
+  );
 
   const openQuiz = (id: QuizId) => {
-    if (QUIZ_CARDS.find((c) => c.id === id)?.locked) return;
+    if (hiddenQuizIds.has(id) || QUIZ_CARDS.find((c) => c.id === id)?.locked) return;
     setSelectedQuiz(id);
     requestAnimationFrame(() => {
       quizContentRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -3178,12 +3183,16 @@ const Samoprocjena = () => {
 
   useEffect(() => {
     const card = QUIZ_CARDS.find((c) => c.id === selectedQuiz);
+    if (selectedQuiz && hiddenQuizIds.has(selectedQuiz)) {
+      setSelectedQuiz(null);
+      return;
+    }
     if (card?.locked) setSelectedQuiz(null);
-  }, [selectedQuiz]);
+  }, [hiddenQuizIds, selectedQuiz]);
 
   const availableCount = useMemo(
-    () => QUIZ_CARDS.filter((c) => !c.locked).length,
-    [],
+    () => visibleQuizCards.filter((c) => !c.locked).length,
+    [visibleQuizCards],
   );
 
   return (
@@ -3294,7 +3303,7 @@ const Samoprocjena = () => {
           </div>
 
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            {QUIZ_CARDS.map((card, i) => {
+            {visibleQuizCards.map((card, i) => {
               const locked = Boolean(card.locked);
               const isActive = selectedQuiz === card.id;
               return (

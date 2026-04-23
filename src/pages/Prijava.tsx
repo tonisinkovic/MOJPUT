@@ -21,7 +21,14 @@ import {
   User,
   LogOut,
 } from "lucide-react";
-import { authLogin, authLogout, authMe, authResendVerification, type AuthUser } from "@/lib/auth";
+import {
+  authLogin,
+  authLogout,
+  authMe,
+  authResendVerification,
+  userFromAuthMe,
+  type AuthUser,
+} from "@/lib/auth";
 import { getStoredLastLoginEmail } from "@/lib/api";
 import {
   Dialog,
@@ -101,7 +108,7 @@ const Prijava = () => {
     authMe()
       .then((res) => {
         if (!alive) return;
-        if (res.success) setLoggedUser(res.user ?? (res as any).user ?? (res as any).data?.user ?? null);
+        if (res.success) setLoggedUser(userFromAuthMe(res));
       })
       .finally(() => {
         if (alive) setLoading(false);
@@ -148,19 +155,19 @@ const Prijava = () => {
       trackEvent("login_failed", {
         method: "email",
         page_path: window.location.pathname,
-        error_type: String((res as any).code || "invalid_credentials"),
+        error_type: String(res.code || "invalid_credentials"),
       });
       setLoginError(res.message || "Prijava nije uspjela.");
       if (
-        (res as any).code === "EMAIL_NOT_VERIFIED" ||
-        (res as any).code === "PENDING_VERIFICATION" ||
+        res.code === "EMAIL_NOT_VERIFIED" ||
+        res.code === "PENDING_VERIFICATION" ||
         /potvrdi email|nije aktiviran/i.test(res.message)
       ) {
         setNeedsVerification(true);
       }
       return;
     }
-    const user = (res as any).user ?? (res as any).data?.user ?? null;
+    const user = userFromAuthMe(res);
     if (!user) {
       trackEvent("login_failed", {
         method: "email",
@@ -349,6 +356,22 @@ const Prijava = () => {
                       Prijavi se i nastavi gdje si stao.
                     </p>
                   </div>
+                </div>
+
+                {/* Napomena: ovo je prijava za učenike. Fakultetski računi imaju zasebnu stranicu. */}
+                <div className="mb-4 flex items-start gap-2.5 rounded-xl border border-border/70 bg-muted/40 px-3.5 py-2.5 text-[12.5px] text-muted-foreground">
+                  <Info className="mt-0.5 h-3.5 w-3.5 shrink-0 text-primary" aria-hidden />
+                  <span>
+                    Ovo je prijava za <span className="font-semibold text-foreground">učenike</span>. Fakultetski
+                    računi koriste{" "}
+                    <Link
+                      to="/fakulteti/prijava"
+                      className="font-semibold text-primary underline-offset-2 hover:underline"
+                    >
+                      posebnu prijavu za fakultete
+                    </Link>
+                    .
+                  </span>
                 </div>
 
                 {/* Transient alerts */}

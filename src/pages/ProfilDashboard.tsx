@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState, type ReactNode } from "react";
 import { Link, Navigate, useSearchParams } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -6,16 +6,12 @@ import {
   Bookmark,
   Calendar,
   CheckCircle2,
-  ChevronDown,
   GraduationCap,
-  KeyRound,
   LayoutDashboard,
   Loader2,
   LogOut,
-  Map,
   MessageSquare,
   Moon,
-  Palette,
   Settings,
   Sparkles,
   Sun,
@@ -800,33 +796,63 @@ export default function ProfilDashboard() {
                       <Card>
                         <CardHeader>
                           <CardTitle>Spremljeni fakulteti</CardTitle>
-                          <CardDescription> Tvoja lista — dodaj brzi unos ispod (ID iz URL-a stranice fakulteta). </CardDescription>
+                          <CardDescription>
+                            Tvoja lista — najlakše je dodati fakultet s{" "}
+                            <Link to="/karta" className="font-medium text-primary underline-offset-2 hover:underline">
+                              karte fakulteta
+                            </Link>
+                            .
+                          </CardDescription>
                         </CardHeader>
                         <CardContent className="space-y-4">
-                          <div className="grid gap-3 rounded-xl border border-dashed border-border/80 bg-muted/20 p-4 sm:grid-cols-2 lg:grid-cols-4">
-                            <div className="space-y-1">
-                              <Label className="text-xs">ID (npr. fer)</Label>
-                              <Input value={demoFacultyId} onChange={(e) => setDemoFacultyId(e.target.value)} className="rounded-xl" />
-                            </div>
-                            <div className="space-y-1">
-                              <Label className="text-xs">Naziv</Label>
-                              <Input value={demoLabel} onChange={(e) => setDemoLabel(e.target.value)} className="rounded-xl" />
-                            </div>
-                            <div className="space-y-1">
-                              <Label className="text-xs">Grad</Label>
-                              <Input value={demoCity} onChange={(e) => setDemoCity(e.target.value)} className="rounded-xl" />
-                            </div>
-                            <div className="flex items-end">
-                              <Button type="button" className="w-full rounded-xl" onClick={handleAddSavedFaculty}>
-                                Spremi
+                          {dash.saved_faculties.length === 0 && (
+                            <div className="flex flex-col items-start gap-3 rounded-2xl border border-dashed border-border/70 bg-muted/25 p-5 text-sm text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
+                              <span>Još nemaš spremljenih fakulteta.</span>
+                              <Button size="sm" className="rounded-xl" asChild>
+                                <Link to="/karta">
+                                  Otvori kartu fakulteta
+                                  <ArrowRight className="ml-1 h-3.5 w-3.5" />
+                                </Link>
                               </Button>
                             </div>
-                          </div>
+                          )}
+
+                          <details className="group rounded-2xl border border-border/60 bg-muted/10 px-4 py-3 open:bg-muted/30">
+                            <summary className="flex cursor-pointer list-none items-center justify-between gap-2 text-sm font-semibold text-foreground">
+                              <span className="flex items-center gap-2">
+                                <Settings className="h-4 w-4 text-muted-foreground" />
+                                Napredno: ručno dodaj po ID-u
+                              </span>
+                              <span className="text-xs font-normal text-muted-foreground transition-transform group-open:rotate-180">
+                                ▾
+                              </span>
+                            </summary>
+                            <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                              <div className="space-y-1">
+                                <Label className="text-xs">ID (npr. fer)</Label>
+                                <Input value={demoFacultyId} onChange={(e) => setDemoFacultyId(e.target.value)} className="rounded-xl" />
+                              </div>
+                              <div className="space-y-1">
+                                <Label className="text-xs">Naziv</Label>
+                                <Input value={demoLabel} onChange={(e) => setDemoLabel(e.target.value)} className="rounded-xl" />
+                              </div>
+                              <div className="space-y-1">
+                                <Label className="text-xs">Grad</Label>
+                                <Input value={demoCity} onChange={(e) => setDemoCity(e.target.value)} className="rounded-xl" />
+                              </div>
+                              <div className="flex items-end">
+                                <Button type="button" className="w-full rounded-xl" onClick={handleAddSavedFaculty}>
+                                  Spremi
+                                </Button>
+                              </div>
+                            </div>
+                            <p className="mt-2 text-[11px] text-muted-foreground">
+                              Za napredne korisnike: ID je završni dio URL-a na stranici fakulteta.
+                            </p>
+                          </details>
 
                           <div className="grid gap-4 md:grid-cols-2">
-                            {dash.saved_faculties.length === 0 ? (
-                              <p className="text-sm text-muted-foreground">Još nemaš spremljenih fakulteta.</p>
-                            ) : (
+                            {dash.saved_faculties.length > 0 &&
                               dash.saved_faculties.map((f: SavedFacultyRow) => (
                                 <motion.div
                                   key={f.id}
@@ -853,8 +879,7 @@ export default function ProfilDashboard() {
                                     <Link to={`/fakulteti/${f.faculty_id}`}>Pogledaj više</Link>
                                   </Button>
                                 </motion.div>
-                              ))
-                            )}
+                              ))}
                           </div>
                         </CardContent>
                       </Card>
@@ -995,19 +1020,44 @@ const STAT_ACCENT: Record<string, { ring: string; icon: string; glow: string }> 
   },
 };
 
+function EmptyState({
+  icon: Icon,
+  title,
+  description,
+  action,
+}: {
+  icon: React.ElementType;
+  title: string;
+  description: string;
+  action?: ReactNode;
+}) {
+  return (
+    <div className="rounded-xl border border-dashed border-border/60 bg-muted/20 p-6 text-center">
+      <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+        <Icon className="h-6 w-6" />
+      </div>
+      <p className="mt-3 font-semibold text-foreground">{title}</p>
+      <p className="mt-1 text-sm text-muted-foreground">{description}</p>
+      {action ? <div className="mt-4 flex justify-center">{action}</div> : null}
+    </div>
+  );
+}
+
 function StatCard({
   icon: Icon,
   label,
   value,
   accent,
+  to,
 }: {
   icon: React.ElementType;
   label: string;
   value: number;
   accent: keyof typeof STAT_ACCENT;
+  to?: string;
 }) {
   const a = STAT_ACCENT[accent] ?? STAT_ACCENT.sky;
-  return (
+  const inner = (
     <motion.div
       whileHover={{ y: -3 }}
       transition={{ type: "spring", stiffness: 400, damping: 28 }}
@@ -1015,6 +1065,7 @@ function StatCard({
         "group relative overflow-hidden rounded-2xl border border-border/50 bg-gradient-to-br p-5 shadow-md transition-all hover:shadow-lg",
         a.ring,
         a.glow,
+        to && "cursor-pointer",
       )}
     >
       <div className="flex items-start justify-between gap-3">
@@ -1033,4 +1084,15 @@ function StatCard({
       </div>
     </motion.div>
   );
+  if (to) {
+    return (
+      <Link
+        to={to}
+        className="block rounded-2xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+      >
+        {inner}
+      </Link>
+    );
+  }
+  return inner;
 }

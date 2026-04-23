@@ -7,6 +7,12 @@ import { Textarea } from "@/components/ui/textarea";
 import { Lightbulb, Loader2, CheckCircle2, Lock, Sparkles, Send, LogIn, Youtube, Instagram } from "lucide-react";
 
 const MAX_LEN = 4000;
+const FEEDBACK_DAILY_LIMIT = 2;
+
+type FeedbackSubmitData = {
+  dailyCount?: number;
+  dailyRemaining?: number;
+};
 
 /** Lucide u ovoj verziji nema TikTok ikonu — jednostavni glyph u istom stilu kao ostale. */
 function TikTokGlyph({ className }: { className?: string }) {
@@ -46,6 +52,8 @@ const SiteFeedback = () => {
   const [submitting, setSubmitting] = useState(false);
   const [done, setDone] = useState(false);
   const [error, setError] = useState("");
+  const [dailyRemaining, setDailyRemaining] = useState<number | null>(null);
+  const [limitReached, setLimitReached] = useState(false);
 
   const refreshUser = useCallback(() => {
     setAuthLoading(true);
@@ -64,6 +72,8 @@ const SiteFeedback = () => {
     const onAuth = () => {
       setDone(false);
       setText("");
+      setDailyRemaining(null);
+      setLimitReached(false);
       refreshUser();
     };
     window.addEventListener("mojput-auth-changed", onAuth);
@@ -73,21 +83,35 @@ const SiteFeedback = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
+    if (limitReached) {
+      setError("Dosegnut je limit od 2 poruke u 24 sata. Pokušaj ponovno kasnije.");
+      return;
+    }
     const trimmed = text.trim();
     if (trimmed.length < 3) {
       setError("Napiši barem nekoliko riječi.");
       return;
     }
     setSubmitting(true);
-    const res = await apiPost<{ success: boolean }>("/api/feedback", {
+    const res = await apiPost<FeedbackSubmitData>("/api/feedback", {
       message: trimmed,
       pagePath: `${location.pathname}${location.search || ""}`.slice(0, 500),
     });
     setSubmitting(false);
     if (res.success) {
+      const payload = (res as { data?: FeedbackSubmitData }).data;
+      const nextRemaining =
+        typeof payload?.dailyRemaining === "number"
+          ? Math.max(0, payload.dailyRemaining)
+          : null;
       setDone(true);
       setText("");
+      setDailyRemaining(nextRemaining);
+      setLimitReached(nextRemaining === 0);
       return;
+    }
+    if (res.code === "FEEDBACK_DAILY_LIMIT") {
+      setLimitReached(true);
     }
     setError(res.message || "Slanje nije uspjelo.");
   };
@@ -171,6 +195,31 @@ const SiteFeedback = () => {
               <div className="min-w-0">
                 <p className="font-semibold leading-tight">Hvala! Zaprimili smo tvoju poruku.</p>
                 <p className="mt-0.5 text-xs opacity-80">Tvoj feedback pomaže nam da MojPut bude bolji.</p>
+                {limitReached ? (
+                  <p className="mt-1 text-xs font-semibold">
+                    Poslao/la si {FEEDBACK_DAILY_LIMIT} poruke unutar 24 sata. Sljedeću možeš poslati nakon isteka tog perioda.
+                  </p>
+                ) : (
+                  <p className="mt-1 text-xs opacity-80">
+                    {dailyRemaining != null
+                      ? `Preostalo danas: ${dailyRemaining}.`
+                      : "Možeš poslati još jednu poruku unutar 24 sata."}
+                  </p>
+                )}
+                {!limitReached && (
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="outline"
+                    className="mt-2"
+                    onClick={() => {
+                      setDone(false);
+                      setError("");
+                    }}
+                  >
+                    Pošalji još jednu poruku
+                  </Button>
+                )}
               </div>
             </div>
           ) : (

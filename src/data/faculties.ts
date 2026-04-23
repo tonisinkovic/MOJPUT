@@ -29,7 +29,6 @@ type RawInstitution = {
   programs?: RawProgram[];
 };
 
-// eslint-disable-next-line @typescript-eslint/consistent-type-imports
 import raw from "../../universities_data.json";
 
 function normalizeInstitutionType(value: string | undefined): FacultyInstitutionType {

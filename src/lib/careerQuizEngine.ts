@@ -239,7 +239,7 @@ function allocateIntegerSlots(weights: number[], totalSlots: number): number[] {
   }
   const exact = safe.map((w) => (w / sum) * totalSlots);
   const floors = exact.map((x) => Math.floor(x));
-  let remainder = totalSlots - floors.reduce((a, b) => a + b, 0);
+  const remainder = totalSlots - floors.reduce((a, b) => a + b, 0);
   const ranked = exact
     .map((x, i) => ({ i, frac: x - Math.floor(x) }))
     .sort((a, b) => (b.frac !== a.frac ? b.frac - a.frac : a.i - b.i));
@@ -516,7 +516,7 @@ function distributeIntegerPercentsFromWeights(weights: number[]): number[] {
   }
   const exact = weights.map((w) => (w / sum) * 100);
   const floors = exact.map((x) => Math.floor(x));
-  let remainder = 100 - floors.reduce((a, b) => a + b, 0);
+  const remainder = 100 - floors.reduce((a, b) => a + b, 0);
   const withFrac = exact.map((x, i) => ({ i, frac: x - Math.floor(x) }));
   withFrac.sort((a, b) => (b.frac !== a.frac ? b.frac - a.frac : a.i - b.i));
   const out = [...floors];

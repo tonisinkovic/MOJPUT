@@ -111,7 +111,7 @@ const features: HomeFeature[] = [
 const stats = [
   { value: "120+", label: "Fakulteta", icon: <GraduationCap className="w-5 h-5" /> },
   { value: "500+", label: "Korisnika", icon: <Users className="w-5 h-5" /> },
-  { value: "5", label: "Video lekcija", icon: <Video className="w-5 h-5" /> },
+  { value: "1", label: "Video lekcija", icon: <Video className="w-5 h-5" /> },
   { value: "95%", label: "Zadovoljstvo", icon: <Award className="w-5 h-5" /> },
 ];
 
@@ -277,7 +277,7 @@ const Index = () => {
                     Brze akcije
                   </span>
                   <Link
-                    to="/karta"
+                    to="/#alati"
                     className="text-[11px] font-semibold text-primary hover:underline underline-offset-4"
                   >
                     Svi alati →
@@ -544,7 +544,7 @@ const Index = () => {
       </section>
 
       {/* Features */}
-      <section className="relative overflow-hidden py-12 sm:py-16 md:py-24 lg:py-28">
+      <section id="alati" className="relative overflow-hidden py-12 sm:py-16 md:py-24 lg:py-28">
         <div
           className="pointer-events-none absolute inset-0 bg-gradient-to-b from-background via-muted/25 to-background"
           aria-hidden
@@ -623,6 +623,7 @@ const Index = () => {
                   key={feature.path}
                   className="block h-full min-h-[11rem] select-none sm:min-h-[12.5rem]"
                   aria-disabled
+                  title="Još nije aktivno — uskoro dostupno."
                 >
                   <FeatureCard
                     icon={feature.icon}
@@ -658,7 +659,7 @@ const Index = () => {
           initial={{ opacity: 0, y: 10 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          className="eyebrow mx-auto w-fit mb-5 sm:mb-7"
+          className="eyebrow mx-auto mb-5 flex w-full justify-center text-center sm:mb-7"
           aria-hidden
         >
           <span>Sljedeći korak</span>

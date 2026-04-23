@@ -106,6 +106,7 @@ const KartaFakulteta = () => {
   const [filterType, setFilterType] = useState<FacultyItem["institutionType"] | null>(null);
   const [filterCity, setFilterCity] = useState<string | null>(null);
   const [selectedFacultyId, setSelectedFacultyId] = useState<string | null>(null);
+  const [sortBy, setSortBy] = useState<"az" | "za" | "programs">("az");
   const [showFerModal, setShowFerModal] = useState(false);
   const [showEfzgModal, setShowEfzgModal] = useState(false);
   const [showFsbModal, setShowFsbModal] = useState(false);
@@ -121,13 +122,25 @@ const KartaFakulteta = () => {
   const cities = useMemo(() => [...new Set(faculties.map((f) => f.city))].sort(), []);
 
   const filtered = useMemo(() => {
-    return faculties.filter((f) => {
+    const list = faculties.filter((f) => {
       const matchSearch = matchesFacultySearch(f, search);
       const matchType = !filterType || f.institutionType === filterType;
       const matchCity = !filterCity || f.city.trim().toLowerCase() === filterCity.trim().toLowerCase();
       return matchSearch && matchType && matchCity;
     });
-  }, [filterCity, filterType, search]);
+    const sorted = [...list];
+    if (sortBy === "az") {
+      sorted.sort((a, b) => a.name.localeCompare(b.name, "hr"));
+    } else if (sortBy === "za") {
+      sorted.sort((a, b) => b.name.localeCompare(a.name, "hr"));
+    } else if (sortBy === "programs") {
+      sorted.sort((a, b) => {
+        const diff = b.programs.length - a.programs.length;
+        return diff !== 0 ? diff : a.name.localeCompare(b.name, "hr");
+      });
+    }
+    return sorted;
+  }, [filterCity, filterType, search, sortBy]);
 
   const totalStats = useMemo(() => {
     const institutions = faculties.length;
@@ -469,7 +482,9 @@ const KartaFakulteta = () => {
               </div>
               <div className="flex flex-col gap-2 border-t border-border bg-muted/30 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
                 <p className="text-xs text-muted-foreground">
-                  Filteri lijevo sužavaju listu ispod karte.
+                  <span className="font-semibold text-foreground">Napomena:</span> filteri dolje utječu
+                  samo na <span className="font-medium">listu fakulteta</span>, ne i na
+                  Google kartu iznad.
                 </p>
                 <a
                   href="https://www.google.com/maps/d/viewer?mid=1hfnNynhIABrOthygSpdz0RnzAtJdHAU"
@@ -485,16 +500,34 @@ const KartaFakulteta = () => {
 
             {/* Faculty list */}
             <div className="flex-1 min-h-0">
-              <div className="mb-3 flex items-baseline justify-between gap-3 sm:mb-4">
+              <div className="mb-3 flex flex-wrap items-center justify-between gap-2 sm:mb-4 sm:gap-3">
                 <h3 className="flex items-center gap-2 text-base font-bold text-foreground sm:text-lg">
                   <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-primary/10 text-primary">
                     <GraduationCap className="h-4 w-4" />
                   </span>
                   Fakulteti
                 </h3>
-                <span className="rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-bold text-primary">
-                  {filtered.length} {filtered.length === 1 ? "rezultat" : "rezultata"}
-                </span>
+                <div className="flex items-center gap-2">
+                  <Select
+                    value={sortBy}
+                    onValueChange={(v) => setSortBy(v as "az" | "za" | "programs")}
+                  >
+                    <SelectTrigger
+                      className="h-8 gap-1 rounded-full border-border/70 bg-background px-3 text-xs font-medium"
+                      aria-label="Sortiraj"
+                    >
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent className="rounded-xl">
+                      <SelectItem value="az">A – Ž</SelectItem>
+                      <SelectItem value="za">Ž – A</SelectItem>
+                      <SelectItem value="programs">Najviše programa</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <span className="rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-bold text-primary">
+                    {filtered.length} {filtered.length === 1 ? "rezultat" : "rezultata"}
+                  </span>
+                </div>
               </div>
 
               {filtered.length === 0 ? (

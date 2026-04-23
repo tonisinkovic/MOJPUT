@@ -230,6 +230,7 @@ function writeForumMessagesCache(conversationId: number, messages: ForumMessage[
 const Forum = () => {
   const location = useLocation();
   const [currentUser, setCurrentUser] = useState<AuthUser | null>(null);
+  const [authChecked, setAuthChecked] = useState(false);
   const canUseForum = Boolean(currentUser);
 
   const [conversations, setConversations] = useState<ForumConversation[]>([]);
@@ -254,11 +255,8 @@ const Forum = () => {
     authMe().then((res) => {
       if (!alive) return;
       const user = userFromAuthMe(res);
-      if (user) {
-        setCurrentUser(user);
-      } else {
-        setCurrentUser(null);
-      }
+      setCurrentUser(user ?? null);
+      setAuthChecked(true);
     });
     return () => {
       alive = false;
@@ -743,7 +741,7 @@ const Forum = () => {
           </div>
         </motion.div>
 
-        {!canUseForum && (
+        {authChecked && !canUseForum && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -758,9 +756,9 @@ const Forum = () => {
                   <LogIn className="h-4 w-4" />
                 </div>
                 <div className="min-w-0">
-                  <p className="text-sm font-semibold text-foreground">Samo pregled poruka</p>
+                  <p className="text-sm font-semibold text-foreground">Čitaš kao gost</p>
                   <p className="mt-0.5 text-xs leading-relaxed text-muted-foreground">
-                    Čitanje je slobodno — za slanje poruka, lajkanje i nove teme prijavi se.
+                    Sve teme i poruke su ti vidljive. Za slanje poruka, lajkanje i otvaranje novih tema — prijavi se.
                   </p>
                 </div>
               </div>
@@ -1037,7 +1035,9 @@ const Forum = () => {
                           <div className="max-w-xs text-center">
                             <MessageCircle className="mx-auto mb-4 h-14 w-14 text-muted-foreground/35" />
                             <p className="text-sm text-muted-foreground">
-                              Nema poruka. Budi prvi koji će započeti razgovor!
+                              {canUseForum
+                                ? "Nema poruka. Budi prvi koji će započeti razgovor!"
+                                : "U ovoj temi još nema poruka."}
                             </p>
                           </div>
                         </div>
@@ -1233,11 +1233,13 @@ const Forum = () => {
                     exit={{ opacity: 0 }}
                     className="hidden flex-1 items-center justify-center md:flex"
                   >
-                    <div className="text-center">
+                    <div className="max-w-xs text-center">
                       <MessageCircle className="mx-auto mb-4 h-16 w-16 text-muted-foreground/35" />
                       <p className="text-base font-medium text-muted-foreground">Odaberi razgovor</p>
                       <p className="mt-1 text-sm text-muted-foreground/80">
-                        {canUseForum ? "ili kreiraj novi za početak." : "kako bi pročitao poruke."}
+                        {canUseForum
+                          ? "ili kreiraj novi za početak."
+                          : "da pročitaš što drugi pišu. Za vlastite poruke treba ti prijava."}
                       </p>
                     </div>
                   </motion.div>

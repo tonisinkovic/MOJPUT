@@ -60,8 +60,24 @@ function shouldClearStoredTokenOn401(reqPath: string): boolean {
   return !skip.some((p) => reqPath.startsWith(p));
 }
 
+function messageFromJson(json: unknown): string {
+  if (json && typeof json === "object" && "message" in json) {
+    const m = (json as { message?: unknown }).message;
+    return typeof m === "string" ? m.trim() : "";
+  }
+  return "";
+}
+
+function codeFromJson(json: unknown): string | undefined {
+  if (json && typeof json === "object" && "code" in json) {
+    const c = (json as { code?: unknown }).code;
+    return typeof c === "string" ? c : undefined;
+  }
+  return undefined;
+}
+
 function formatHttpError(res: Response, json: unknown, rawText: string, reqPath: string): string {
-  const fromApi = typeof (json as any)?.message === "string" ? (json as any).message.trim() : "";
+  const fromApi = messageFromJson(json);
   if (fromApi) return fromApi;
   if (!res.ok && rawText && !rawText.trim().startsWith("{")) {
     const base =
@@ -95,7 +111,7 @@ async function parseJson<T>(res: Response, reqPath: string): Promise<ApiResponse
       setStoredAuthToken(null);
     }
     const msg = formatHttpError(res, json, text, reqPath);
-    const code = typeof (json as any)?.code === "string" ? (json as any).code : undefined;
+    const code = codeFromJson(json);
     return { success: false, message: msg, code };
   }
   const body = json as Record<string, unknown>;

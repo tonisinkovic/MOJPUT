@@ -18,13 +18,14 @@ const footerLinks = [
       { label: "Video predavanja", path: "/video" },
       { label: "Roditeljski kutak", path: "/roditelji" },
       { label: "Kalendar", path: "/kalendar" },
+      { label: "Chatbot pomoćnik", path: "/chatbot" },
     ],
   },
   {
     title: "Informacije",
     links: [
       { label: "O nama", path: "/o-nama" },
-      { label: "Kontakt", path: "/kontakt" },
+      { label: "Kontakt (pomoć)", path: "/kontakt" },
       { label: "Privatnost", path: "/privatnost" },
       { label: "Uvjeti korištenja", path: "/uvjeti" },
     ],

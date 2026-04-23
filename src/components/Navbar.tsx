@@ -19,23 +19,41 @@ import {
   MessageSquare,
   Calendar,
   Users,
+  MoreHorizontal,
+  ChevronDown,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { HeaderThemeToggle } from "@/components/HeaderThemeToggle";
 import { authLogout, authMe, userFromAuthMe, type AuthUser } from "@/lib/auth";
 import { cn } from "@/lib/utils";
 
-const navItems: { label: string; path: string; icon: LucideIcon }[] = [
+type NavEntry = { label: string; path: string; icon: LucideIcon };
+
+// Primarne - najčešće korištene stavke.
+const primaryNav: NavEntry[] = [
   { label: "Karta fakulteta", path: "/karta", icon: Map },
   { label: "Kviz", path: "/kviz", icon: HelpCircle },
-  { label: "Samoprocjena", path: "/samoprocjena", icon: Target },
   { label: "Kalkulator", path: "/kalkulator", icon: Calculator },
+  { label: "Forum", path: "/forum", icon: MessageSquare },
+];
+
+// Sekundarne - u "Više" padajućem na desktopu, lista na mobitelu.
+const secondaryNav: NavEntry[] = [
+  { label: "Samoprocjena", path: "/samoprocjena", icon: Target },
   { label: "Domovi", path: "/kalkulator-doma", icon: Home },
   { label: "Video", path: "/video", icon: Video },
-  { label: "Forum", path: "/forum", icon: MessageSquare },
   { label: "Kalendar", path: "/kalendar", icon: Calendar },
   { label: "Roditelji", path: "/roditelji", icon: Users },
 ];
+
+// Cijela lista za mobitel (redoslijed važnosti).
+const navItems: NavEntry[] = [...primaryNav, ...secondaryNav];
 
 const Navbar = () => {
   const [open, setOpen] = useState(false);
@@ -113,7 +131,7 @@ const Navbar = () => {
               "dark:border-border/50 dark:bg-muted/25",
             )}
           >
-            {navItems.map((item) => {
+            {primaryNav.map((item) => {
               const Icon = item.icon;
               const active = location.pathname === item.path;
               return (
@@ -137,6 +155,51 @@ const Navbar = () => {
                 </Link>
               );
             })}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button
+                  type="button"
+                  className={cn(
+                    "flex shrink-0 items-center gap-1 rounded-full px-2.5 py-1.5 text-[11px] font-semibold tracking-tight transition-all duration-200 xl:px-3 xl:text-[13px]",
+                    secondaryNav.some((i) => i.path === location.pathname)
+                      ? "bg-primary text-primary-foreground shadow-md shadow-primary/25 dark:shadow-primary/20"
+                      : "text-muted-foreground hover:bg-background/90 hover:text-foreground hover:shadow-sm dark:hover:bg-background/60",
+                  )}
+                  aria-label="Više opcija"
+                >
+                  <MoreHorizontal className="h-3.5 w-3.5 opacity-85 xl:h-4 xl:w-4" aria-hidden />
+                  <span className="whitespace-nowrap">Više</span>
+                  <ChevronDown className="h-3 w-3 opacity-70 xl:h-3.5 xl:w-3.5" aria-hidden />
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-56 rounded-xl p-1">
+                {secondaryNav.map((item) => {
+                  const Icon = item.icon;
+                  const active = location.pathname === item.path;
+                  return (
+                    <DropdownMenuItem key={item.path} asChild>
+                      <Link
+                        to={item.path}
+                        className={cn(
+                          "flex cursor-pointer items-center gap-2.5 rounded-lg px-2.5 py-2 text-sm font-medium",
+                          active && "bg-primary/10 text-primary",
+                        )}
+                      >
+                        <span
+                          className={cn(
+                            "flex h-7 w-7 items-center justify-center rounded-md",
+                            active ? "bg-primary/15 text-primary" : "bg-muted/60 text-muted-foreground",
+                          )}
+                        >
+                          <Icon className="h-3.5 w-3.5" aria-hidden />
+                        </span>
+                        {item.label}
+                      </Link>
+                    </DropdownMenuItem>
+                  );
+                })}
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </nav>
 

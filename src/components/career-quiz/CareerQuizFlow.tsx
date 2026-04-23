@@ -4,13 +4,19 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   ArrowRight,
   Briefcase,
+  CheckCircle2,
   GraduationCap,
   Lightbulb,
+  ListChecks,
   Map,
+  PartyPopper,
   RotateCcw,
   Sparkles,
+  Target,
+  Trophy,
   AlertTriangle,
   BookmarkCheck,
+  ChevronDown,
 } from "lucide-react";
 import {
   Radar,
@@ -35,7 +41,7 @@ import { INTEREST_SECTIONS, COMPETENCY_SECTIONS } from "@/lib/careerQuizThemes";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import {
   Dialog,
   DialogContent,
@@ -644,11 +650,13 @@ export default function CareerQuizFlow({
                     <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-primary/80 text-base font-bold text-primary-foreground shadow-sm sm:h-10 sm:w-10">
                       1
                     </div>
-                    <p className="pt-0.5 text-sm leading-relaxed text-muted-foreground sm:text-[0.9375rem]">
-                      <span className="font-semibold text-foreground">1. korak:</span> {interests.length} jasnih pitanja o tome
-                      koji <span className="font-medium text-foreground">tip studija</span> te zanima. Odmah nakon toga vidiš{" "}
-                      <span className="font-medium text-foreground">okvirne preporuke</span> za smjer i fakultete.
-                    </p>
+                    <div className="space-y-1 pt-0.5">
+                      <p className="text-sm font-semibold text-foreground sm:text-[0.9375rem]">Interesi</p>
+                      <p className="text-sm leading-relaxed text-muted-foreground sm:text-[0.9375rem]">
+                        Odgovori na {interests.length} pitanja o tome što te zanima. Nakon toga odmah dobivaš prve
+                        preporuke smjerova i fakulteta.
+                      </p>
+                    </div>
                   </div>
                 </div>
 
@@ -657,15 +665,13 @@ export default function CareerQuizFlow({
                     <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-primary/80 text-base font-bold text-primary-foreground shadow-sm sm:h-10 sm:w-10">
                       2
                     </div>
-                    <p className="pt-0.5 text-sm leading-relaxed text-muted-foreground sm:text-[0.9375rem]">
-                      <span className="font-semibold text-foreground">2. korak (preporučeno):</span> još {competencies.length}{" "}
-                      pitanja o vještinama za faks — na kraju dobiješ{" "}
-                      <span className="font-medium text-foreground">precizniju sliku</span> (interesi 70% + kompetencije 30%).
-                      Skala je uvijek 1–5. Na pitanjima o konkretnim područjima (npr. pravo, medicina, glazba, gluma,
-                      biljke, životinje) oznaka{" "}
-                      <span className="font-medium text-foreground">1 — Uopće ne</span> može ukloniti usko povezana zanimanja,
-                      a niži odgovori poput 2 i 3 ih osjetno spuštaju, da rezultat bude povezaniji s onim što stvarno želiš.
-                    </p>
+                    <div className="space-y-1 pt-0.5">
+                      <p className="text-sm font-semibold text-foreground sm:text-[0.9375rem]">Vještine (preporučeno)</p>
+                      <p className="text-sm leading-relaxed text-muted-foreground sm:text-[0.9375rem]">
+                        Još {competencies.length} pitanja o vještinama. Završni rezultat je precizniji jer kombinira
+                        interese (70%) i vještine (30%). Ocjene su na skali 1–5.
+                      </p>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -710,92 +716,200 @@ export default function CareerQuizFlow({
             exit={{ opacity: 0, y: -8 }}
             className="space-y-4 sm:space-y-6"
           >
+            {/* Celebratory hero – jasna poruka da je prva faza gotova. */}
+            <motion.div
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3 }}
+              className="relative overflow-hidden rounded-2xl border-2 border-primary/30 bg-gradient-to-br from-primary/[0.14] via-primary/[0.05] to-card p-4 shadow-card sm:rounded-3xl sm:p-6"
+            >
+              <div
+                aria-hidden
+                className="pointer-events-none absolute -right-10 -top-10 h-36 w-36 rounded-full bg-primary/20 blur-3xl sm:h-52 sm:w-52"
+              />
+              <div
+                aria-hidden
+                className="pointer-events-none absolute -bottom-14 -left-10 h-32 w-32 rounded-full bg-primary/10 blur-3xl sm:h-48 sm:w-48"
+              />
+              <div className="relative flex flex-col gap-4 sm:flex-row sm:items-center sm:gap-5">
+                <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl gradient-hero text-primary-foreground shadow-md sm:h-16 sm:w-16">
+                  <PartyPopper className="h-7 w-7 sm:h-8 sm:w-8" aria-hidden />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="inline-flex items-center gap-1 rounded-full border border-primary/30 bg-primary/15 px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-primary">
+                      <CheckCircle2 className="h-3 w-3" aria-hidden />
+                      Prva faza gotova
+                    </span>
+                    <span className="inline-flex items-center gap-1 rounded-full border border-border/60 bg-background/70 px-2.5 py-0.5 text-[11px] font-medium text-muted-foreground">
+                      <Sparkles className="h-3 w-3" aria-hidden />
+                      Faza 1 od 2
+                    </span>
+                  </div>
+                  <h3 className="mt-2 text-balance text-xl font-extrabold leading-tight tracking-tight sm:text-2xl md:text-[1.75rem]">
+                    Svaka čast — evo tvojih prvih preporuka!
+                  </h3>
+                  <p className="mt-1.5 max-w-2xl text-sm leading-relaxed text-muted-foreground">
+                    Na temelju tvojih odgovora o interesima ovo su{" "}
+                    <span className="font-medium text-foreground">zanimanja i smjerovi koji ti okvirno najbolje odgovaraju</span>.
+                    Druga faza (vještine) dodaje preciznost.
+                  </p>
+                </div>
+              </div>
+
+              {/* Mini progress – jasan vizualni prikaz napretka. */}
+              <div className="relative mt-4 grid grid-cols-3 gap-2 sm:mt-5 sm:gap-3">
+                <div className="flex items-center gap-2 rounded-xl border border-primary/25 bg-card/80 p-2.5 shadow-sm">
+                  <CheckCircle2 className="h-4 w-4 shrink-0 text-primary" aria-hidden />
+                  <div className="min-w-0">
+                    <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">Interesi</p>
+                    <p className="text-xs font-bold text-foreground sm:text-sm">Završeno</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2 rounded-xl border border-border/60 bg-muted/30 p-2.5">
+                  <Target className="h-4 w-4 shrink-0 text-primary" aria-hidden />
+                  <div className="min-w-0">
+                    <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">Vještine</p>
+                    <p className="text-xs font-bold text-foreground sm:text-sm">Na redu</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2 rounded-xl border border-border/60 bg-muted/20 p-2.5">
+                  <Trophy className="h-4 w-4 shrink-0 text-muted-foreground" aria-hidden />
+                  <div className="min-w-0">
+                    <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">Finalno</p>
+                    <p className="text-xs font-bold text-muted-foreground sm:text-sm">Kasnije</p>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+
             <div className="relative overflow-hidden rounded-2xl border-2 border-border/80 bg-gradient-to-b from-card via-card to-muted/30 shadow-card ring-1 ring-black/5 dark:ring-white/5 sm:rounded-3xl">
               <div
-                className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_90%_60%_at_50%_-30%,hsl(var(--primary)/0.2),transparent)]"
+                className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_90%_60%_at_50%_-30%,hsl(var(--primary)/0.15),transparent)]"
                 aria-hidden
               />
               <div className="relative space-y-6 p-4 sm:space-y-8 sm:p-6 md:p-7">
-                <header className="space-y-3 text-center sm:text-left">
-                  <div className="flex flex-wrap items-center justify-center gap-2 sm:justify-start">
-                    <Badge className="border-primary/30 bg-primary/10 text-primary hover:bg-primary/15">
-                      <Sparkles className="mr-1 h-3 w-3" aria-hidden />
-                      Prva faza — gotovo
-                    </Badge>
-                    <Badge variant="outline">Samo interesi · prije vještina</Badge>
-                  </div>
-                  <h3 className="text-balance text-lg font-bold tracking-tight sm:text-xl md:text-2xl">
-                    Tvoji rezultati — prvo zanimanja, zatim smjerovi
-                  </h3>
-                  <p className="max-w-2xl text-sm leading-relaxed text-muted-foreground">
-                    Ispod vidiš <span className="font-medium text-foreground">što ti najviše odgovara prema interesima</span>{" "}
-                    (rangirano), pa <span className="font-medium text-foreground">smjerove studija</span> koji s tim
-                    najčešće idu zajedno. Nakon druge faze (vještine) dobiješ i kompetencije u izračun — preporuke su tada
-                    preciznije.
-                  </p>
-                </header>
-
                 {interestPhaseAnalysis.recommendedByInterest.length > 0 && (
                   <section aria-labelledby="phase1-careers-heading">
-                    <div className="mb-3 flex items-start gap-2.5">
-                      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/12 text-primary">
-                        <Briefcase className="h-4 w-4" aria-hidden />
-                      </div>
-                      <div className="min-w-0">
-                        <h4 id="phase1-careers-heading" className="text-base font-semibold leading-tight text-foreground">
-                          1. Zanimanja koja ti najviše odgovaraju
-                        </h4>
-                        <p className="mt-0.5 text-[11px] leading-snug text-muted-foreground sm:text-xs">
-                          Rangirano po podudaranju s tvojim odgovorima o interesima — bolji rang znači veće podudaranje.
-                          Prikazano {interestPhaseAnalysis.recommendedByInterest.length} (od ukupno{" "}
-                          {interestPhaseAnalysis.totalInterestMatches} kandidata u bazi za ovu fazu).
-                        </p>
+                    <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
+                      <div className="flex items-center gap-2.5">
+                        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary/12 text-primary">
+                          <Briefcase className="h-4 w-4" aria-hidden />
+                        </div>
+                        <div className="min-w-0">
+                          <h4 id="phase1-careers-heading" className="text-base font-semibold leading-tight text-foreground sm:text-lg">
+                            Zanimanja koja ti najviše odgovaraju
+                          </h4>
+                          <p className="mt-0.5 text-[11px] leading-snug text-muted-foreground sm:text-xs">
+                            Top {interestPhaseAnalysis.recommendedByInterest.length} od{" "}
+                            {interestPhaseAnalysis.totalInterestMatches} kandidata · rangirano po podudaranju s tvojim
+                            odgovorima.
+                          </p>
+                        </div>
                       </div>
                     </div>
-                    <ul className="grid gap-3 sm:grid-cols-2">
-                      {interestPhaseAnalysis.recommendedByInterest.map(({ career }, i) => (
-                        <li
-                          key={career.id}
-                          className="flex gap-3 rounded-xl border border-border/80 bg-card/80 p-4 shadow-sm transition-shadow hover:shadow-md"
-                        >
-                          <span
-                            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/12 text-sm font-bold text-primary"
-                            aria-hidden
-                          >
-                            {i + 1}
-                          </span>
-                          <div className="min-w-0 flex-1">
-                            <div className="mb-1 flex flex-wrap items-start justify-between gap-2">
-                              <span className="text-sm font-semibold leading-snug text-foreground">{career.name}</span>
-                            </div>
-                            <p className="mb-2 line-clamp-2 text-xs text-muted-foreground">{career.description}</p>
-                            {career.facultyPaths && career.facultyPaths.length > 0 && (
-                              <p className="mt-auto border-t border-border/50 pt-2 text-[11px] leading-relaxed text-foreground/90">
-                                <span className="font-medium text-muted-foreground">Put upisa: </span>
-                                {career.facultyPaths.join(" · ")}
+
+                    {/* Top 3 "highlight" kartice s istaknutim postotkom podudaranja. */}
+                    {interestPhaseAnalysis.recommendedByInterest.slice(0, 3).length > 0 && (
+                      <ul className="mb-4 grid gap-3 md:grid-cols-3">
+                        {interestPhaseAnalysis.recommendedByInterest.slice(0, 3).map(({ career, interestMatch }, i) => {
+                          const matchPct = Math.max(0, Math.min(100, Math.round(interestMatch)));
+                          const placeColors = [
+                            "border-amber-400/60 bg-gradient-to-br from-amber-400/15 via-amber-400/[0.06] to-transparent",
+                            "border-slate-400/50 bg-gradient-to-br from-slate-400/10 via-slate-400/[0.04] to-transparent",
+                            "border-orange-500/40 bg-gradient-to-br from-orange-500/10 via-orange-500/[0.04] to-transparent",
+                          ];
+                          return (
+                            <li
+                              key={career.id}
+                              className={`relative flex flex-col gap-2 rounded-2xl border-2 p-4 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md ${placeColors[i] ?? placeColors[0]}`}
+                            >
+                              <div className="flex items-start justify-between gap-2">
+                                <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-background/80 text-sm font-extrabold tabular-nums text-foreground shadow-sm ring-1 ring-border/60">
+                                  {i === 0 ? (
+                                    <Trophy className="h-4 w-4 text-amber-500" aria-hidden />
+                                  ) : (
+                                    <span>{i + 1}</span>
+                                  )}
+                                </span>
+                                <span className="inline-flex items-center gap-1 rounded-full bg-primary/12 px-2 py-0.5 text-[11px] font-bold tabular-nums text-primary">
+                                  {matchPct}%
+                                </span>
+                              </div>
+                              <div className="min-w-0">
+                                <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+                                  {i === 0 ? "Najbolje poklapanje" : i === 1 ? "Vrlo blizu" : "Također dobar izbor"}
+                                </p>
+                                <p className="mt-0.5 text-[15px] font-bold leading-snug text-foreground">
+                                  {career.name}
+                                </p>
+                              </div>
+                              <p className="line-clamp-3 text-xs leading-relaxed text-muted-foreground">
+                                {career.description}
                               </p>
-                            )}
-                          </div>
-                        </li>
-                      ))}
-                    </ul>
+                            </li>
+                          );
+                        })}
+                      </ul>
+                    )}
+
+                    {/* Ostatak rangirane liste (ako ih je više od 3). */}
+                    {interestPhaseAnalysis.recommendedByInterest.length > 3 && (
+                      <>
+                        <p className="mb-2 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+                          Ostala zanimanja u razmatranju
+                        </p>
+                        <ul className="grid gap-2 sm:grid-cols-2">
+                          {interestPhaseAnalysis.recommendedByInterest.slice(3).map(({ career, interestMatch }, idx) => {
+                            const rank = idx + 4;
+                            const matchPct = Math.max(0, Math.min(100, Math.round(interestMatch)));
+                            return (
+                              <li
+                                key={career.id}
+                                className="flex items-start gap-3 rounded-xl border border-border/70 bg-card/80 p-3 shadow-sm transition-shadow hover:shadow-md"
+                              >
+                                <span
+                                  className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-muted text-xs font-bold tabular-nums text-muted-foreground"
+                                  aria-hidden
+                                >
+                                  {rank}
+                                </span>
+                                <div className="min-w-0 flex-1">
+                                  <div className="flex items-start justify-between gap-2">
+                                    <span className="text-sm font-semibold leading-snug text-foreground">
+                                      {career.name}
+                                    </span>
+                                    <span className="shrink-0 text-[11px] font-bold tabular-nums text-primary">
+                                      {matchPct}%
+                                    </span>
+                                  </div>
+                                  <p className="mt-0.5 line-clamp-2 text-[11px] leading-snug text-muted-foreground">
+                                    {career.description}
+                                  </p>
+                                </div>
+                              </li>
+                            );
+                          })}
+                        </ul>
+                      </>
+                    )}
                   </section>
                 )}
 
                 <section
-                  className="rounded-xl border border-primary/25 bg-gradient-to-b from-primary/[0.08] to-transparent p-3 sm:p-4"
+                  className="rounded-2xl border-2 border-primary/25 bg-gradient-to-b from-primary/[0.08] to-transparent p-4 sm:p-5"
                   aria-labelledby="phase1-faculty-heading"
                 >
                   <div className="mb-3 flex items-start gap-2.5">
-                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/12 text-primary">
+                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary/12 text-primary">
                       <GraduationCap className="h-4 w-4" aria-hidden />
                     </div>
                     <div className="min-w-0">
-                      <h4 id="phase1-faculty-heading" className="text-base font-semibold leading-tight text-foreground">
-                        2. Smjerovi studija (okvirno)
+                      <h4 id="phase1-faculty-heading" className="text-base font-semibold leading-tight text-foreground sm:text-lg">
+                        Smjerovi studija koji ti pašu
                       </h4>
                       <p className="mt-0.5 text-[11px] leading-snug text-muted-foreground sm:text-xs">
-                        Povezano s gornjim zanimanjima — rang pomaže usporediti smjerove. Više na{" "}
+                        Okvirna lista — povezano s gornjim zanimanjima. Detalje potraži na{" "}
                         <Link to="/karta" className="font-medium text-primary underline-offset-2 hover:underline">
                           Karti fakulteta
                         </Link>
@@ -815,9 +929,19 @@ export default function CareerQuizFlow({
                 </section>
 
                 <section aria-labelledby="phase1-riasec-heading">
-                  <h4 id="phase1-riasec-heading" className="mb-3 text-sm font-semibold text-foreground">
-                    3. Tri najjača tipa interesa (Holland)
-                  </h4>
+                  <div className="mb-3 flex items-start gap-2.5">
+                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary/12 text-primary">
+                      <Lightbulb className="h-4 w-4" aria-hidden />
+                    </div>
+                    <div className="min-w-0">
+                      <h4 id="phase1-riasec-heading" className="text-base font-semibold leading-tight text-foreground sm:text-lg">
+                        Tvoj profil interesa (Holland)
+                      </h4>
+                      <p className="mt-0.5 text-[11px] leading-snug text-muted-foreground sm:text-xs">
+                        Tri tipa koji te najbolje opisuju — klikni "Zašto?" za objašnjenje.
+                      </p>
+                    </div>
+                  </div>
                   <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
                     {(
                       [
@@ -828,20 +952,42 @@ export default function CareerQuizFlow({
                     ).map(([key, slot]) => (
                       <div
                         key={key}
-                        className={`rounded-xl border-2 p-4 text-center sm:text-left ${RIASEC_TOP_CARD[slot.type] ?? "border-border/60 bg-muted/20"}`}
+                        className={`rounded-2xl border-2 p-4 text-center sm:text-left ${RIASEC_TOP_CARD[slot.type] ?? "border-border/60 bg-muted/20"}`}
                       >
-                        <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
-                          {key === "primary" ? "1. mjesto" : key === "secondary" ? "2. mjesto" : "3. mjesto"}
+                        <div className="flex items-center justify-between gap-2">
+                          <span className="inline-flex items-center gap-1 rounded-full bg-background/70 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground ring-1 ring-border/60">
+                            {key === "primary" ? (
+                              <>
+                                <Trophy className="h-3 w-3 text-amber-500" aria-hidden />
+                                1. mjesto
+                              </>
+                            ) : key === "secondary" ? (
+                              "2. mjesto"
+                            ) : (
+                              "3. mjesto"
+                            )}
+                          </span>
+                          <span className="text-xl font-extrabold tabular-nums text-primary sm:text-2xl">
+                            {slot.score}%
+                          </span>
+                        </div>
+                        <p className="mt-2 text-base font-bold leading-snug text-foreground sm:text-lg">
+                          {interestLabel(slot.type)}
                         </p>
-                        <p className="mt-1 font-semibold text-foreground">{interestLabel(slot.type)}</p>
-                        <p className="mt-0.5 text-2xl font-bold tabular-nums text-primary">{slot.score}%</p>
+                        <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-background/60">
+                          <div
+                            className={`h-full rounded-full transition-all ${RIASEC_BAR[slot.type] ?? "bg-primary"}`}
+                            style={{ width: `${Math.max(0, Math.min(100, slot.score))}%` }}
+                          />
+                        </div>
                         {slot.type && (
-                          <Accordion type="single" collapsible className="mt-3">
-                            <AccordionItem value={`${key}-${slot.type}`} className="border-b-0">
-                              <AccordionTrigger className="py-2 text-left text-xs font-medium text-foreground hover:no-underline">
-                                Zašto ti je ispao ovaj tip?
-                              </AccordionTrigger>
-                              <AccordionContent className="pb-0">
+                          <Collapsible className="mt-3 w-full">
+                            <CollapsibleTrigger className="flex w-full items-center justify-between gap-2 rounded-lg py-2 text-left text-xs font-medium text-foreground transition-colors hover:text-primary hover:underline [&[data-state=open]>svg]:rotate-180">
+                              <span>Zašto ti je ispao ovaj tip?</span>
+                              <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground transition-transform duration-200" aria-hidden />
+                            </CollapsibleTrigger>
+                            <CollapsibleContent className="overflow-hidden data-[state=closed]:animate-accordion-up data-[state=open]:animate-accordion-down">
+                              <div className="pb-1 pt-0">
                                 <p className="text-xs leading-relaxed text-muted-foreground">
                                   {HOLLAND_EXPLANATIONS[slot.type]?.summary ?? "Ovaj tip opisuje područje koje ti je među jačim interesima."}
                                 </p>
@@ -862,9 +1008,9 @@ export default function CareerQuizFlow({
                                     )}
                                   </ul>
                                 </div>
-                              </AccordionContent>
-                            </AccordionItem>
-                          </Accordion>
+                              </div>
+                            </CollapsibleContent>
+                          </Collapsible>
                         )}
                       </div>
                     ))}
@@ -872,7 +1018,19 @@ export default function CareerQuizFlow({
                 </section>
 
                 <section className="rounded-2xl border border-border/70 bg-muted/10 p-4 md:p-5" aria-label="Svi tipovi interesa">
-                  <p className="mb-4 text-sm font-semibold text-foreground">4. Svi tipovi interesa (0–100)</p>
+                  <div className="mb-4 flex items-start gap-2.5">
+                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary/12 text-primary">
+                      <ListChecks className="h-4 w-4" aria-hidden />
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-base font-semibold leading-tight text-foreground sm:text-lg">
+                        Svi tipovi interesa
+                      </p>
+                      <p className="mt-0.5 text-[11px] leading-snug text-muted-foreground sm:text-xs">
+                        Kompletan pregled — ljestvica 0–100. Sortirano od najjačeg prema slabijem.
+                      </p>
+                    </div>
+                  </div>
                   <div className="grid gap-4 sm:grid-cols-2">
                     {Object.entries(interestPhaseAnalysis.interestScoresNormalized)
                       .sort(([, a], [, b]) => b - a)
@@ -894,10 +1052,19 @@ export default function CareerQuizFlow({
                 </section>
 
                 <footer className="flex flex-col gap-3 border-t border-border/60 pt-5 sm:pt-6">
+                  <div className="rounded-2xl border border-primary/25 bg-primary/[0.05] p-3 text-center sm:p-4">
+                    <p className="text-xs font-semibold uppercase tracking-wide text-primary sm:text-sm">
+                      Još samo jedan korak
+                    </p>
+                    <p className="mt-1 text-sm leading-relaxed text-foreground sm:text-base">
+                      Riješi <span className="font-bold">{competencies.length} pitanja o vještinama</span> i dobivaš{" "}
+                      <span className="font-bold">finalni, precizniji rezultat</span> (interesi 70% + vještine 30%).
+                    </p>
+                  </div>
                   <Button
                     type="button"
                     size="lg"
-                    className="gradient-hero h-14 w-full touch-manipulation border-0 text-base text-primary-foreground shadow-md active:scale-[0.99] sm:h-12"
+                    className="gradient-hero h-14 w-full touch-manipulation border-0 text-base font-semibold text-primary-foreground shadow-md active:scale-[0.99] sm:h-12"
                     onClick={() => {
                       setPhase("competencies");
                       setCIdx(0);
@@ -1116,19 +1283,47 @@ export default function CareerQuizFlow({
             animate={{ opacity: 1, y: 0 }}
             className="space-y-5 sm:space-y-6"
           >
-            <div>
-              <Badge variant="secondary" className="mb-2 text-xs sm:text-sm">
-                Obje faze — na temelju svih odgovora
-              </Badge>
-              <h3 className="text-lg font-semibold tracking-tight sm:text-xl md:text-2xl">
-                Što ti najviše odgovara — zanimanja i smjerovi studija
-              </h3>
-              <p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted-foreground">
-                Ispod je <span className="font-medium text-foreground">profil osobina</span> (iz interesa i kompetencija),{" "}
-                <span className="font-medium text-foreground">glavne preporuke s objašnjenjem</span>, zatim smjerovi
-                studija i detalji RIASEC profila.
-              </p>
-            </div>
+            {/* Hero — finalni rezultati. */}
+            <motion.div
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3 }}
+              className="relative overflow-hidden rounded-2xl border-2 border-primary/30 bg-gradient-to-br from-primary/[0.16] via-primary/[0.06] to-card p-4 shadow-card sm:rounded-3xl sm:p-6"
+            >
+              <div
+                aria-hidden
+                className="pointer-events-none absolute -right-10 -top-10 h-40 w-40 rounded-full bg-primary/25 blur-3xl sm:h-56 sm:w-56"
+              />
+              <div
+                aria-hidden
+                className="pointer-events-none absolute -bottom-14 -left-10 h-36 w-36 rounded-full bg-primary/15 blur-3xl sm:h-52 sm:w-52"
+              />
+              <div className="relative flex flex-col gap-4 sm:flex-row sm:items-center sm:gap-5">
+                <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl gradient-hero text-primary-foreground shadow-md sm:h-16 sm:w-16">
+                  <Trophy className="h-7 w-7 sm:h-8 sm:w-8" aria-hidden />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="inline-flex items-center gap-1 rounded-full border border-primary/30 bg-primary/15 px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-primary">
+                      <CheckCircle2 className="h-3 w-3" aria-hidden />
+                      Kviz gotov
+                    </span>
+                    <span className="inline-flex items-center gap-1 rounded-full border border-border/60 bg-background/70 px-2.5 py-0.5 text-[11px] font-medium text-muted-foreground">
+                      <Sparkles className="h-3 w-3" aria-hidden />
+                      Obje faze · precizan rezultat
+                    </span>
+                  </div>
+                  <h3 className="mt-2 text-balance text-xl font-extrabold leading-tight tracking-tight sm:text-2xl md:text-[1.75rem]">
+                    Tvoji finalni rezultati su spremni
+                  </h3>
+                  <p className="mt-1.5 max-w-2xl text-sm leading-relaxed text-muted-foreground">
+                    Uračunali smo <span className="font-medium text-foreground">interese (70%)</span> i{" "}
+                    <span className="font-medium text-foreground">vještine (30%)</span>. Ispod vidiš koja zanimanja i
+                    smjerovi ti najbolje odgovaraju — s objašnjenjem zašto.
+                  </p>
+                </div>
+              </div>
+            </motion.div>
 
             {saveStatus === "saved" && (
               <div className="flex items-start gap-2 rounded-xl border border-emerald-500/30 bg-emerald-500/[0.07] px-3 py-2.5 text-sm text-emerald-950 dark:text-emerald-100">
@@ -1142,30 +1337,78 @@ export default function CareerQuizFlow({
               </p>
             )}
 
+            {/* Prominentna "top match" kartica. */}
             {advisor && advisor.picks[0] && (
-              <div className="rounded-2xl border-2 border-primary/25 bg-gradient-to-br from-primary/[0.09] to-transparent p-4 sm:p-5">
-                <p className="text-[11px] font-semibold uppercase tracking-wide text-primary">Najjače podudaranje</p>
-                <p className="mt-1 text-lg font-bold tracking-tight text-foreground sm:text-xl">
-                  {advisor.picks[0].career.name}
-                </p>
-                <p className="mt-2 text-sm text-muted-foreground">
-                  Okvirno podudaranje:{" "}
-                  <span className="font-mono font-medium text-foreground">{advisor.picks[0].matchPercentage}%</span>{" "}
-                  (interesi {advisor.picks[0].interestMatch}% · kompetencije {advisor.picks[0].competencyMatch}%).
-                </p>
-              </div>
+              <motion.div
+                initial={{ opacity: 0, scale: 0.98 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.35, delay: 0.05 }}
+                className="relative overflow-hidden rounded-2xl border-2 border-amber-400/50 bg-gradient-to-br from-amber-400/15 via-amber-400/[0.06] to-card p-5 shadow-md sm:rounded-3xl sm:p-6"
+              >
+                <div
+                  aria-hidden
+                  className="pointer-events-none absolute -right-6 -top-6 h-24 w-24 rounded-full bg-amber-400/20 blur-2xl"
+                />
+                <div className="relative flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                  <div className="min-w-0 flex-1">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="inline-flex items-center gap-1 rounded-full bg-amber-400/20 px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wide text-amber-900 dark:text-amber-200">
+                        <Trophy className="h-3 w-3" aria-hidden />
+                        Najbolje podudaranje
+                      </span>
+                    </div>
+                    <p className="mt-2 text-2xl font-extrabold leading-tight tracking-tight text-foreground sm:text-3xl">
+                      {advisor.picks[0].career.name}
+                    </p>
+                    <p className="mt-1 line-clamp-2 text-sm leading-relaxed text-muted-foreground">
+                      {advisor.picks[0].career.description}
+                    </p>
+                  </div>
+                  <div className="flex shrink-0 flex-col items-center justify-center rounded-2xl border border-amber-400/40 bg-background/80 px-5 py-3 text-center shadow-sm sm:min-w-[128px]">
+                    <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+                      Podudaranje
+                    </p>
+                    <p className="mt-0.5 text-4xl font-extrabold tabular-nums text-primary sm:text-[2.75rem]">
+                      {advisor.picks[0].matchPercentage}
+                      <span className="ml-0.5 text-xl text-primary/70">%</span>
+                    </p>
+                  </div>
+                </div>
+                <div className="relative mt-4 grid grid-cols-2 gap-2 sm:gap-3">
+                  <div className="rounded-xl border border-border/60 bg-card/80 p-2.5 text-center sm:p-3 sm:text-left">
+                    <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">Interesi</p>
+                    <p className="mt-0.5 text-lg font-bold tabular-nums text-foreground sm:text-xl">
+                      {advisor.picks[0].interestMatch}%
+                    </p>
+                  </div>
+                  <div className="rounded-xl border border-border/60 bg-card/80 p-2.5 text-center sm:p-3 sm:text-left">
+                    <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+                      Vještine
+                    </p>
+                    <p className="mt-0.5 text-lg font-bold tabular-nums text-foreground sm:text-xl">
+                      {advisor.picks[0].competencyMatch}%
+                    </p>
+                  </div>
+                </div>
+              </motion.div>
             )}
 
             {advisor && (
               <>
                 <section className="rounded-2xl border border-border/70 bg-card/80 p-4 shadow-sm sm:p-6" aria-label="Profil osobina">
-                  <div className="mb-4 flex flex-wrap items-center gap-2">
-                    <Sparkles className="h-4 w-4 text-primary" aria-hidden />
-                    <h4 className="text-base font-semibold text-foreground">Tvoj profil — dominantne osobine</h4>
+                  <div className="mb-4 flex items-start gap-2.5">
+                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary/12 text-primary">
+                      <Sparkles className="h-4 w-4" aria-hidden />
+                    </div>
+                    <div className="min-w-0">
+                      <h4 className="text-base font-semibold leading-tight text-foreground sm:text-lg">
+                        Tvoj profil — dominantne osobine
+                      </h4>
+                      <p className="mt-0.5 text-[11px] leading-snug text-muted-foreground sm:text-xs">
+                        Pet holističkih dimenzija (0–100) — spoj RIASEC interesa i procijenjenih kompetencija za studij.
+                      </p>
+                    </div>
                   </div>
-                  <p className="mb-3 text-xs text-muted-foreground sm:text-sm">
-                    Pet holističkih dimenzija (0–100) spaja RIASEC interese s procijenjenim kompetencijama za studij.
-                  </p>
                   <div className="mb-4 flex flex-wrap gap-2">
                     {advisor.top5.map((t) => (
                       <Badge key={t.id} variant="secondary" className="font-normal">
@@ -1233,17 +1476,17 @@ export default function CareerQuizFlow({
                 )}
 
                 <section aria-labelledby="smart-picks-heading">
-                  <div className="mb-3 flex items-start gap-2.5">
-                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/12 text-primary">
+                  <div className="mb-4 flex items-start gap-2.5">
+                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary/12 text-primary">
                       <Lightbulb className="h-4 w-4" aria-hidden />
                     </div>
                     <div className="min-w-0">
-                      <h4 id="smart-picks-heading" className="text-base font-semibold text-foreground md:text-lg">
-                        Glavne preporuke (zašto ti odgovaraju)
+                      <h4 id="smart-picks-heading" className="text-base font-semibold leading-tight text-foreground sm:text-lg">
+                        Glavne preporuke — i zašto ti odgovaraju
                       </h4>
-                      <p className="mt-0.5 text-xs leading-relaxed text-muted-foreground sm:text-sm">
-                        Za svaku stavku: razlog, ključne osobine i smjer diplome / perspektiva. Podudaranje u bazi
-                        zanimanja: interesi 70% + kompetencije 30% (s balansom).
+                      <p className="mt-0.5 text-[11px] leading-snug text-muted-foreground sm:text-xs">
+                        Za svaku stavku: obrazloženje, ključne osobine i perspektiva posla. Rangirano po kombinaciji
+                        interesa (70%) i vještina (30%).
                       </p>
                     </div>
                   </div>
@@ -1253,40 +1496,61 @@ export default function CareerQuizFlow({
                       na rangiranu listu ispod ili ponovi kviz s drugačijim odgovorima.
                     </p>
                   )}
-                  <ol className="list-none space-y-4">
-                    {advisor.picks.map((pick) => (
+                  <ol className="list-none space-y-3">
+                    {advisor.picks.map((pick, idx) => (
                       <li
                         key={pick.career.id}
-                        className="rounded-2xl border border-border/80 bg-card p-4 shadow-sm sm:p-5"
+                        className="group relative overflow-hidden rounded-2xl border-2 border-border/70 bg-card p-4 shadow-sm transition-all hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-md sm:p-5"
                       >
-                        <div className="mb-2 flex flex-wrap items-baseline justify-between gap-2">
-                          <span className="text-base font-semibold text-foreground">{pick.career.name}</span>
-                          <span className="text-xs text-muted-foreground">
-                            Podudaranje:{" "}
-                            <span className="font-mono font-medium text-foreground">{pick.matchPercentage}%</span> ·{" "}
-                            {fieldGroupLabel(pick.fieldGroup)}
+                        <div className="flex items-start gap-3 sm:gap-4">
+                          <span
+                            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/12 text-base font-extrabold tabular-nums text-primary sm:h-11 sm:w-11"
+                            aria-hidden
+                          >
+                            {idx + 1}
                           </span>
-                        </div>
-                        <p className="text-sm leading-relaxed text-muted-foreground">{pick.why}</p>
-                        {pick.keyTraits.length > 0 && (
-                          <div className="mt-2 flex flex-wrap gap-1.5">
-                            {pick.keyTraits.map((kt) => (
-                              <Badge key={kt} variant="outline" className="text-[10px] font-normal">
-                                {kt}
-                              </Badge>
-                            ))}
+                          <div className="min-w-0 flex-1">
+                            <div className="flex flex-wrap items-start justify-between gap-x-3 gap-y-1">
+                              <span className="text-base font-bold leading-snug text-foreground sm:text-lg">
+                                {pick.career.name}
+                              </span>
+                              <div className="flex shrink-0 items-center gap-2">
+                                <span className="inline-flex items-center gap-1 rounded-full bg-primary/12 px-2 py-0.5 text-xs font-bold tabular-nums text-primary">
+                                  {pick.matchPercentage}%
+                                </span>
+                                <Badge variant="outline" className="text-[10px] font-medium">
+                                  {fieldGroupLabel(pick.fieldGroup)}
+                                </Badge>
+                              </div>
+                            </div>
+                            <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">{pick.why}</p>
+                            {pick.keyTraits.length > 0 && (
+                              <div className="mt-2.5 flex flex-wrap gap-1.5">
+                                {pick.keyTraits.map((kt) => (
+                                  <Badge
+                                    key={kt}
+                                    variant="secondary"
+                                    className="rounded-full text-[10px] font-medium"
+                                  >
+                                    {kt}
+                                  </Badge>
+                                ))}
+                              </div>
+                            )}
+                            <div className="mt-3 space-y-1.5 rounded-xl border border-border/50 bg-muted/20 px-3 py-2.5 text-xs leading-relaxed">
+                              <p className="text-foreground/90">
+                                <span className="font-semibold text-foreground">Perspektiva: </span>
+                                {pick.jobOutlook}
+                              </p>
+                              {pick.career.facultyPaths && pick.career.facultyPaths.length > 0 && (
+                                <p className="text-muted-foreground">
+                                  <span className="font-semibold text-foreground">Put upisa: </span>
+                                  {pick.career.facultyPaths.join(" · ")}
+                                </p>
+                              )}
+                            </div>
                           </div>
-                        )}
-                        <p className="mt-3 text-xs leading-relaxed text-foreground/90">
-                          <span className="font-medium text-foreground">Smjer i posao: </span>
-                          {pick.jobOutlook}
-                        </p>
-                        {pick.career.facultyPaths && pick.career.facultyPaths.length > 0 && (
-                          <p className="mt-2 text-xs text-muted-foreground">
-                            <span className="font-medium text-foreground">Put upisa: </span>
-                            {pick.career.facultyPaths.join(" · ")}
-                          </p>
-                        )}
+                        </div>
                       </li>
                     ))}
                   </ol>
@@ -1294,18 +1558,36 @@ export default function CareerQuizFlow({
 
                 {advisor.alternatives.length > 0 && (
                   <section aria-labelledby="alt-picks-heading">
-                    <h4 id="alt-picks-heading" className="mb-2 text-sm font-semibold text-foreground">
-                      Ako se predomisliš — slične alternative
-                    </h4>
-                    <ul className="grid gap-2 sm:grid-cols-2">
+                    <div className="mb-3 flex items-start gap-2.5">
+                      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary/12 text-primary">
+                        <Sparkles className="h-4 w-4" aria-hidden />
+                      </div>
+                      <div className="min-w-0">
+                        <h4 id="alt-picks-heading" className="text-base font-semibold leading-tight text-foreground sm:text-lg">
+                          Ako se predomisliš — slične alternative
+                        </h4>
+                        <p className="mt-0.5 text-[11px] leading-snug text-muted-foreground sm:text-xs">
+                          Zanimanja koja su blizu tvog profila, ali izvan glavnog top‑popisa.
+                        </p>
+                      </div>
+                    </div>
+                    <ul className="grid gap-2.5 sm:grid-cols-2">
                       {advisor.alternatives.map((pick) => (
                         <li
                           key={pick.career.id}
-                          className="rounded-xl border border-border/60 bg-muted/15 px-3 py-2.5 text-sm"
+                          className="rounded-xl border border-border/70 bg-card/90 p-3 shadow-sm transition-shadow hover:shadow-md"
                         >
-                          <span className="font-medium text-foreground">{pick.career.name}</span>
-                          <span className="ml-2 font-mono text-xs text-muted-foreground">{pick.matchPercentage}%</span>
-                          <p className="mt-1 line-clamp-2 text-xs text-muted-foreground">{pick.career.description}</p>
+                          <div className="flex items-start justify-between gap-2">
+                            <span className="text-sm font-semibold leading-snug text-foreground">
+                              {pick.career.name}
+                            </span>
+                            <span className="shrink-0 text-xs font-bold tabular-nums text-primary">
+                              {pick.matchPercentage}%
+                            </span>
+                          </div>
+                          <p className="mt-1 line-clamp-2 text-xs leading-snug text-muted-foreground">
+                            {pick.career.description}
+                          </p>
                         </li>
                       ))}
                     </ul>
@@ -1313,14 +1595,20 @@ export default function CareerQuizFlow({
                 )}
 
                 <section aria-labelledby="ranked-preview-heading">
-                  <h4 id="ranked-preview-heading" className="mb-2 text-sm font-semibold text-foreground">
-                    Kompletan pregled — globalni rang (top 40)
-                  </h4>
-                  <p className="mb-3 text-xs leading-relaxed text-muted-foreground sm:text-sm">
-                    Isti redoslijed kao u izračunu: sva zanimanja iz baze mogu se pojaviti. Oznaka područja (npr. poljoprivreda,
-                    kineziologija) samo pomaže orijentaciji — ne mijenja podudaranje.
-                  </p>
-                  <ul className="space-y-2 rounded-xl border border-border/60 bg-muted/10 p-3 sm:p-4">
+                  <div className="mb-3 flex items-start gap-2.5">
+                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary/12 text-primary">
+                      <ListChecks className="h-4 w-4" aria-hidden />
+                    </div>
+                    <div className="min-w-0">
+                      <h4 id="ranked-preview-heading" className="text-base font-semibold leading-tight text-foreground sm:text-lg">
+                        Globalni rang — top 40 zanimanja
+                      </h4>
+                      <p className="mt-0.5 text-[11px] leading-snug text-muted-foreground sm:text-xs">
+                        Isti redoslijed kao u izračunu. Oznaka područja pomaže orijentaciji — ne mijenja podudaranje.
+                      </p>
+                    </div>
+                  </div>
+                  <ul className="space-y-2 rounded-2xl border border-border/60 bg-muted/10 p-3 sm:p-4">
                     {analysis.allRanked.slice(0, 40).map((m, i) => {
                       const fg = inferCareerFieldGroup(m.career);
                       return (
@@ -1328,12 +1616,14 @@ export default function CareerQuizFlow({
                           key={m.career.id}
                           className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1 border-b border-border/40 pb-2 text-sm last:border-0 last:pb-0"
                         >
-                          <span className="tabular-nums text-muted-foreground">{i + 1}.</span>
+                          <span className="w-6 shrink-0 text-right tabular-nums text-muted-foreground">{i + 1}.</span>
                           <span className="min-w-0 flex-1 font-medium text-foreground">{m.career.name}</span>
                           <Badge variant="outline" className="shrink-0 text-[10px] font-normal">
                             {fieldGroupLabel(fg)}
                           </Badge>
-                          <span className="font-mono text-xs text-muted-foreground">{m.matchPercentage}%</span>
+                          <span className="shrink-0 font-mono text-xs font-semibold text-primary">
+                            {m.matchPercentage}%
+                          </span>
                         </li>
                       );
                     })}
@@ -1344,65 +1634,71 @@ export default function CareerQuizFlow({
 
             <section aria-labelledby="final-careers-heading">
               <div className="mb-3 flex items-start gap-2.5">
-                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/12 text-primary">
+                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary/12 text-primary">
                   <Briefcase className="h-4 w-4" aria-hidden />
                 </div>
                 <div className="min-w-0">
-                  <h4 id="final-careers-heading" className="text-base font-semibold text-foreground md:text-lg">
-                    Duga lista zanimanja (rang u bazi)
+                  <h4 id="final-careers-heading" className="text-base font-semibold leading-tight text-foreground sm:text-lg">
+                    Duga lista zanimanja
                   </h4>
-                  <p className="mt-0.5 text-xs leading-relaxed text-muted-foreground sm:text-sm">
-                    Prikazano {analysis.recommended.length} od najviše {QUIZ_TOP_CAREERS} — za brzi pregled svih kandidata iz
-                    istog izračuna.
+                  <p className="mt-0.5 text-[11px] leading-snug text-muted-foreground sm:text-xs">
+                    Prikazano {analysis.recommended.length} od najviše {QUIZ_TOP_CAREERS} — detaljan pregled svih kandidata
+                    iz izračuna.
                   </p>
                 </div>
               </div>
-              <ol className="list-none space-y-4">
+              <ol className="list-none space-y-3">
                 {analysis.recommended.map(({ career }, rank) => (
                   <li
                     key={career.id}
-                    className="flex gap-3 rounded-2xl border border-border/80 bg-card p-3.5 shadow-sm sm:gap-4 sm:p-4 md:p-5"
+                    className="flex gap-3 rounded-2xl border border-border/70 bg-card p-3.5 shadow-sm transition-shadow hover:shadow-md sm:gap-4 sm:p-4 md:p-5"
                   >
                     <span
-                      className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/12 text-base font-bold text-primary"
+                      className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/12 text-base font-extrabold tabular-nums text-primary"
                       aria-hidden
                     >
                       {rank + 1}
                     </span>
                     <div className="min-w-0 flex-1">
-                      <div className="mb-2 flex flex-wrap items-start justify-between gap-2">
-                        <span className="text-base font-semibold leading-snug text-foreground">{career.name}</span>
+                      <div className="mb-1 flex flex-wrap items-start justify-between gap-2">
+                        <span className="text-base font-bold leading-snug text-foreground sm:text-lg">
+                          {career.name}
+                        </span>
                       </div>
-                      <p className="text-sm text-muted-foreground">{career.description}</p>
+                      <p className="text-sm leading-relaxed text-muted-foreground">{career.description}</p>
                       {career.facultyPaths && career.facultyPaths.length > 0 && (
-                        <div className="mt-2 rounded-lg border border-border/60 bg-muted/30 px-3 py-2 text-xs text-foreground">
-                          <span className="font-medium text-muted-foreground">Put upisa: </span>
+                        <div className="mt-3 rounded-lg border border-border/60 bg-muted/30 px-3 py-2 text-xs text-foreground">
+                          <span className="font-semibold text-foreground">Put upisa: </span>
                           {career.facultyPaths.join(" · ")}
                         </div>
                       )}
-                      <p className="mt-2 text-xs text-muted-foreground">
-                        <span className="font-medium text-foreground">Smjer diplome:</span> {career.education}
+                      <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
+                        <span className="font-semibold text-foreground">Smjer diplome:</span> {career.education}
                       </p>
                       {(career.salary || career.employmentPerspective) && (
-                        <p className="mt-1 text-xs text-muted-foreground">
+                        <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
                           {career.salary && (
                             <>
-                              <span className="font-medium text-foreground">Plaća (indikativno):</span> {career.salary}
+                              <span className="font-semibold text-foreground">Plaća (indikativno):</span> {career.salary}
                             </>
                           )}
                           {career.salary && career.employmentPerspective && " · "}
                           {career.employmentPerspective && (
                             <>
-                              <span className="font-medium text-foreground">Perspektiva:</span>{" "}
+                              <span className="font-semibold text-foreground">Perspektiva:</span>{" "}
                               {career.employmentPerspective}
                             </>
                           )}
                         </p>
                       )}
                       {career.keywords && career.keywords.length > 0 && (
-                        <div className="mt-3 flex flex-wrap gap-1.5">
+                        <div className="mt-2.5 flex flex-wrap gap-1.5">
                           {career.keywords.map((kw) => (
-                            <Badge key={kw} variant="outline" className="text-[10px] font-normal">
+                            <Badge
+                              key={kw}
+                              variant="secondary"
+                              className="rounded-full text-[10px] font-medium"
+                            >
                               {kw}
                             </Badge>
                           ))}
@@ -1415,21 +1711,21 @@ export default function CareerQuizFlow({
             </section>
 
             <section
-              className="rounded-xl border border-primary/25 bg-gradient-to-b from-primary/[0.07] to-transparent p-3 sm:p-4"
+              className="rounded-2xl border-2 border-primary/25 bg-gradient-to-b from-primary/[0.08] to-transparent p-4 sm:p-5"
               aria-labelledby="final-faculty-heading"
             >
               <div className="mb-3 flex items-start gap-2.5">
-                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/12 text-primary">
+                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary/12 text-primary">
                   <GraduationCap className="h-4 w-4" aria-hidden />
                 </div>
                 <div className="min-w-0">
-                  <h4 id="final-faculty-heading" className="text-base font-semibold text-foreground md:text-lg">
-                    Smjerovi studija povezani s preporukama
+                  <h4 id="final-faculty-heading" className="text-base font-semibold leading-tight text-foreground sm:text-lg">
+                    Smjerovi studija koji ti pašu
                   </h4>
                   <p className="mt-0.5 text-[11px] leading-snug text-muted-foreground sm:text-xs">
-                    Smjerovi povezani s tvojim preporukama — rangirani od jačeg prema slabijem podudaranju. Više o programima:{" "}
+                    Rangirano od jačeg prema slabijem podudaranju. Detalje o programima potraži na{" "}
                     <Link to="/karta" className="font-medium text-primary underline-offset-2 hover:underline">
-                      Karta fakulteta
+                      Karti fakulteta
                     </Link>
                     .
                   </p>
@@ -1446,9 +1742,13 @@ export default function CareerQuizFlow({
               </ol>
             </section>
 
-            <details className="rounded-xl border border-border/60 bg-muted/10 px-3 py-2 text-sm sm:px-4 sm:py-3">
-              <summary className="min-h-12 cursor-pointer list-none py-2 font-semibold text-foreground marker:content-none sm:min-h-0 [&::-webkit-details-marker]:hidden">
-                Kratko o profilu interesa (Holland) i bodovima
+            <details className="group rounded-2xl border border-border/60 bg-muted/10 px-3 py-2 text-sm sm:px-4 sm:py-3">
+              <summary className="flex min-h-12 cursor-pointer list-none items-center justify-between gap-2 py-2 font-semibold text-foreground marker:content-none sm:min-h-0 [&::-webkit-details-marker]:hidden">
+                <span className="flex items-center gap-2">
+                  <Lightbulb className="h-4 w-4 text-primary" aria-hidden />
+                  Detalji — Holland profil i svi bodovi
+                </span>
+                <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground transition-transform duration-200 group-open:rotate-180" aria-hidden />
               </summary>
               <p className="mt-2 text-xs text-muted-foreground">
                 Ovi tipovi pomažu razumjeti široki smjer interesa; konkretnu preporuku za zanimanje i studij gledaj u
@@ -1501,13 +1801,24 @@ export default function CareerQuizFlow({
               </div>
             </details>
 
-            <div className="pt-1">
+            <div className="flex flex-col gap-2.5 border-t border-border/60 pt-5 sm:flex-row sm:gap-2">
+              <Button
+                type="button"
+                asChild
+                className="gradient-hero min-h-12 w-full touch-manipulation border-0 text-primary-foreground shadow-md sm:w-auto sm:flex-1"
+              >
+                <Link to="/karta">
+                  <Map className="mr-2 h-4 w-4" aria-hidden />
+                  Pogledaj smjerove na karti
+                </Link>
+              </Button>
               <Button
                 type="button"
                 variant="outline"
                 className="min-h-12 w-full touch-manipulation sm:w-auto"
                 onClick={reset}
               >
+                <RotateCcw className="mr-2 h-4 w-4" aria-hidden />
                 Ponovi kviz
               </Button>
             </div>

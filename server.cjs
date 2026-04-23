@@ -1888,13 +1888,41 @@ async function main() {
       if (raw.length > 4000) {
         return res.status(400).json({ success: false, message: "Poruka je predugačka (najviše 4000 znakova)." });
       }
+      const usedInLast24hRow = db.isPostgres
+        ? await db
+            .prepare(
+              "SELECT COUNT(*)::int as c FROM site_feedback WHERE user_id = ? AND created_at >= (CURRENT_TIMESTAMP - INTERVAL '24 hours')",
+            )
+            .get(req.user.id)
+        : await db
+            .prepare(
+              "SELECT COUNT(*) as c FROM site_feedback WHERE user_id = ? AND datetime(created_at) >= datetime('now', '-24 hours')",
+            )
+            .get(req.user.id);
+      const usedInLast24h = Number(usedInLast24hRow?.c || 0);
+      if (usedInLast24h >= 2) {
+        return res.status(429).json({
+          success: false,
+          code: "FEEDBACK_DAILY_LIMIT",
+          message: "Možeš poslati najviše 2 povratne informacije unutar 24 sata.",
+        });
+      }
+
       const pagePath = pageRaw.length > 500 ? pageRaw.slice(0, 500) : pageRaw;
       const insertInfo = await db
         .prepare("INSERT INTO site_feedback (user_id, message, page_path) VALUES (?, ?, ?)")
         .run(req.user.id, raw, pagePath || null);
       const feedbackId = Number(insertInfo.lastInsertRowid);
+      const dailyCount = usedInLast24h + 1;
+      const dailyRemaining = Math.max(0, 2 - dailyCount);
 
-      res.json({ success: true });
+      res.json({
+        success: true,
+        data: {
+          dailyCount,
+          dailyRemaining,
+        },
+      });
 
       sendFeedbackNotifyEmail({
         feedbackId,
