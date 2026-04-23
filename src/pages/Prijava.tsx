@@ -218,6 +218,10 @@ const Prijava = () => {
     setLoginError("");
   };
 
+  const handleFacultyLoginClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    e.preventDefault();
+  };
+
   const displayName = loggedUser?.username || "";
   const profileInitial = displayName?.trim()?.charAt(0)?.toUpperCase() || "?";
 
@@ -366,9 +370,12 @@ const Prijava = () => {
                     računi koriste{" "}
                     <Link
                       to="/fakulteti/prijava"
-                      className="font-semibold text-primary underline-offset-2 hover:underline"
+                      onClick={handleFacultyLoginClick}
+                      className="inline-flex items-center gap-1 font-semibold text-primary underline-offset-2 hover:underline"
+                      title="U izradi"
                     >
                       posebnu prijavu za fakultete
+                      <Lock className="h-3 w-3" aria-hidden />
                     </Link>
                     .
                   </span>
