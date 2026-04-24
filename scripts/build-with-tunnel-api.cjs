@@ -1,6 +1,6 @@
 /**
  * Build za test na mobitelu: VITE_API_URL = API_PUBLIC_URL iz .env.local (tunel nakon npm run dev:public).
- * Zatim upload dist/ na GitHub Pages ili ručno kopiraj u gh-pages branch.
+ * Zatim upload dist/ prema testnom hostu (npr. privremeni static hosting).
  */
 const fs = require("fs");
 const path = require("path");
@@ -37,6 +37,6 @@ execSync("npx vite build", {
   env: { ...process.env, VITE_API_URL: url },
 });
 console.log(
-  "\n[build:phone] dist/ je spreman. Push na main (GitHub Actions deploy) ili ručno objavi dist na GitHub Pages.\n" +
-    "  Na mobitelu otvori link iz Gmaila (tonisinkovic.github.io/...). Backend mora biti dostupan na gornjem URL-u.",
+  "\n[build:phone] dist/ je spreman. Objavi statički `dist` ili gurni u repo ako koristiš CI.\n" +
+    "  Na mobitelu otvori mojput.com (ili domena na koju si postavio dist). API mora biti dostupan na gornjem tunel-URL-u.",
 );

@@ -588,7 +588,7 @@ const Prijava = () => {
                     >
                       Račun s weba i račun s lokalnog testa nisu isti (različita baza). Email mora biti
                       potvrđen 6-znamenkastim kodom iz pisma. Ako te stranica ne drži prijavljenim nakon osvježenja,
-                      osvježi deploy API-ja (session cookie za GitHub Pages).
+                      osvježi deploy API-ja (session cookie pri različitom domenu frontenda i API-ja).
                     </motion.p>
                   )}
                 </div>

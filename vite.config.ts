@@ -62,16 +62,38 @@ function injectDeployMetaPlugin() {
 }
 
 /**
- * GitHub Pages: `/MOJPUT/`. Na Vercel / vlastitoj domeni u Project Settings postavi `VITE_BASE_PATH=/`
- * (inače build traži JS/CSS pod `/MOJPUT/` i stranica ostane prazna).
+ * mojput.com: korijen (`/`). U produkciji prvo čitamo .env.production iz diska: Viteov loadEnv spaja
+ * process.env na kraju, pa stari VITE_BASE_PATH u CI (npr. /MOJPUT/) inače pobjeđuje.
  */
-function publicBasePath(): string {
-  const raw = String(process.env.VITE_BASE_PATH ?? "/MOJPUT/").trim();
+function readViteBasePathFromProductionFile(root: string): string | undefined {
+  const fp = path.join(root, ".env.production");
+  if (!fs.existsSync(fp)) return undefined;
+  for (const line of fs.readFileSync(fp, "utf8").split(/\r?\n/)) {
+    const m = /^\s*VITE_BASE_PATH\s*=\s*(.*)$/.exec(line);
+    if (!m) continue;
+    let v = m[1].replace(/\s+#.*$/, "").trim();
+    if (!v || v.startsWith("#")) continue;
+    if ((v.startsWith('"') && v.endsWith('"')) || (v.startsWith("'") && v.endsWith("'"))) v = v.slice(1, -1);
+    return v.trim() || "/";
+  }
+  return undefined;
+}
+
+function publicBasePath(mode: string, root: string): string {
+  if (mode === "production") {
+    const fromFile = readViteBasePathFromProductionFile(root);
+    if (fromFile !== undefined) {
+      const raw = fromFile;
+      if (!raw || raw === "/") return "/";
+      return raw.endsWith("/") ? raw : `${raw}/`;
+    }
+  }
+  const raw = String(process.env.VITE_BASE_PATH ?? "/").trim();
   if (!raw || raw === "/") return "/";
   return raw.endsWith("/") ? raw : `${raw}/`;
 }
 
-/** Workbox SPA fallback — usklađeno s `base` (npr. `/MOJPUT/index.html`). */
+/** Workbox SPA fallback — usklađeno s `base` (npr. `/index.html` ili `/{segment}/index.html`). */
 function spaNavigateFallback(base: string): string {
   if (base === "/") return "/index.html";
   return `${base.replace(/\/$/, "")}/index.html`;
@@ -79,7 +101,7 @@ function spaNavigateFallback(base: string): string {
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => {
-  const base = publicBasePath();
+  const base = publicBasePath(mode, process.cwd());
 
   return {
     base,

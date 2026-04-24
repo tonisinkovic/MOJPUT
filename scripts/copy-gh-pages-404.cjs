@@ -1,5 +1,5 @@
 /**
- * GitHub Pages: deep linkovi (/MOJPUT/verify?...) trebaju 404.html = index.html (SPA).
+ * Deep linkovi (npr. /verify?… na statičkom hostu) — 404.html = index.html (SPA).
  */
 const fs = require("fs");
 const path = require("path");

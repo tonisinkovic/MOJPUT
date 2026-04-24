@@ -113,14 +113,14 @@ function normalizeResendFrom(raw) {
 /** Resend odbija zahtjeve bez User-Agent (403, često statusCode 1010). https://resend.com/docs/knowledge-base/403-error-1010 */
 const RESEND_JSON_HEADERS = {
   "Content-Type": "application/json",
-  "User-Agent": "MojPut/1.0 (+https://github.com/tonisinkovic/MOJPUT)",
+  "User-Agent": "MojPut/1.0 (+https://mojput.com)",
 };
 
-/** GitHub Pages origin (bez /MOJPUT) — CORS u produkciji. */
-const GITHUB_PAGES_ORIGIN = "https://tonisinkovic.github.io";
+/** Zadano ako APP_ORIGIN / PUBLIC_APP_ORIGIN nije postavljen (produkcija: https://mojput.com). */
+const DEFAULT_PUBLIC_APP_ORIGIN = "https://mojput.com";
 
 /**
- * APP_ORIGIN = javni origin frontenda (npr. https://tonisinkovic.github.io), bez putanje /MOJPUT.
+ * APP_ORIGIN = HTTPS origin javnog frontenda (npr. https://mojput.com), bez staze. Stare vrijednosti s /MOJPUT na kraju se i dalje normaliziraju.
  */
 function normalizeAppOrigin() {
   let o = String(process.env.APP_ORIGIN || "")
@@ -130,14 +130,14 @@ function normalizeAppOrigin() {
   return o;
 }
 
-/** Javni HTTPS origin frontenda ako APP_ORIGIN na Renderu slučajno ostane localhost (fork / vlastiti Pages). */
+/** Javni HTTPS origin frontenda ako APP_ORIGIN na hostu slučajno ostane localhost. */
 function publicAppOriginFallback() {
   const pub = String(process.env.PUBLIC_APP_ORIGIN || "")
     .trim()
     .replace(/\/$/, "")
     .replace(/\/MOJPUT$/i, "");
   if (pub && /^https:\/\//i.test(pub)) return pub;
-  return GITHUB_PAGES_ORIGIN;
+  return DEFAULT_PUBLIC_APP_ORIGIN;
 }
 
 /** Render / ostali PaaS — uključi sve uobičajene Render varijable (RENDER ponekad nije postavljen kako očekujemo). */
@@ -184,9 +184,8 @@ function readDevFrontendOriginFile() {
 }
 
 /**
- * Kad API radi lokalno, a APP_ORIGIN još pokazuje na GitHub Pages, link u mailu ne smije ići na Pages —
- * tamo bi /api/auth/verify zvao javni API (Render), a token postoji samo u lokalnoj bazi.
- * Stvarni port uzima se iz .dev-frontend-origin (Vite ga zapisuje pri startu). Ručno: DEV_MAIL_APP_ORIGIN.
+ * Kad API radi lokalno, a APP_ORIGIN pokazuje na javni sustav (mojput.com, Render, …), link u mailu ne smije tamo —
+ * token je u lokalnoj bazi. Vite: .dev-frontend-origin (stvarni port). Ručno: DEV_MAIL_APP_ORIGIN.
  */
 function localDevMailFrontendOrigin() {
   if (isDeployedOnPaaS()) return null;
@@ -204,7 +203,6 @@ function localDevMailFrontendOrigin() {
     .replace(/\/MOJPUT$/i, "");
   if (!w || !/^https:\/\//i.test(w)) return null;
   if (/^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/i.test(w)) return null;
-  if (!/^https:\/\/[^/]+\.github\.io$/i.test(w)) return null;
 
   const auto = readDevFrontendOriginFile();
   if (auto) return auto;
@@ -212,7 +210,7 @@ function localDevMailFrontendOrigin() {
   const port = String(process.env.FRONTEND_DEV_PORT || "8080").trim() || "8080";
   const fallback = `http://127.0.0.1:${port}`;
   console.warn(
-    "[mail] Lokalni API + APP_ORIGIN (GitHub Pages): nema .dev-frontend-origin (pokreni Vite prije slanja maila?) — koristim",
+    "[mail] Lokalni API + javni APP_ORIGIN: nema .dev-frontend-origin (pokreni Vite prije slanja maila?) — koristim",
     fallback,
     "ili FRONTEND_DEV_PORT iz .env.",
   );
@@ -221,8 +219,8 @@ function localDevMailFrontendOrigin() {
 
 /**
  * Na pravom deployu (PaaS) u mailu nikad localhost — korisnik otvara s mobitela.
- * Lokalno (!isDeployedOnPaaS): ne zamjenjuj localhost s GitHub Pages — inače token ostane u lokalnoj bazi,
- * a link vodi na Pages/Render. Koristi .dev-frontend-origin (stvarni Vite port) ili APP_ORIGIN.
+ * Lokalno: ne zamjenjuj localhost s javnim originom (mojput.com) u mailu — token ostane u lokalnoj bazi.
+ * Koristi .dev-frontend-origin (Vite) ili APP_ORIGIN.
  */
 function originNeverLocalhostForMail() {
   const fromLocalDev = localDevMailFrontendOrigin();
@@ -266,7 +264,7 @@ function appOriginForLinks() {
     console.warn(
       "[config] APP_ORIGIN je localhost na hostanom servisu — linkovi u mailu koriste:",
       fb,
-      "(postavi APP_ORIGIN ili FORCE_MAIL_APP_ORIGIN=https://tvoj-user.github.io)",
+      "(postavi APP_ORIGIN ili FORCE_MAIL_APP_ORIGIN=https://mojput.com)",
     );
     return fb;
   }
@@ -349,16 +347,51 @@ function resolvePublicApiBaseForMail() {
 }
 
 /**
- * Segment putanje u linkovima maila/redirecta (zadano MOJPUT = GitHub Pages).
- * Za frontend na korijenu domene (npr. Vercel): FRONTEND_AT_ROOT=1 ili FRONTEND_PATH_PREFIX= (prazan).
+ * Ako APP_ORIGIN sadrži jedan segment staze npr. https://domena.hr/app, izvuci taj segment.
+ * Samo host (mojput.com) vraća "" — linkovi u mailu tada idu na korijen (npr. /verify).
+ */
+function inferPathPrefixFromAppOrigin() {
+  const raw = String(process.env.APP_ORIGIN || "").trim();
+  if (!raw) return "";
+  let uStr = raw.replace(/\/$/, "");
+  if (!/^https?:\/\//i.test(uStr)) uStr = `https://${uStr}`;
+  try {
+    const u = new URL(uStr);
+    const parts = u.pathname.split("/").filter(Boolean);
+    if (parts.length === 1) return parts[0];
+  } catch {
+    /* ignore */
+  }
+  return "";
+}
+
+/** Poveznice u mailu: samo origin (protokol + host [+port]), nikad puta — segment ide odvojeno. */
+function toMailLinkOriginOnly(raw) {
+  if (!raw) return raw;
+  const t = String(raw).trim();
+  if (!/^https?:\/\//i.test(t)) return t;
+  try {
+    return new URL(t).origin;
+  } catch {
+    return t.replace(/\/MOJPUT$/i, "").replace(/\/$/, "");
+  }
+}
+
+/**
+ * Segment ispred rute u linkovima maila (npr. /app/verify). Prazan = mojput.com na korijenu.
+ * Stari subpath: postavi FRONTEND_PATH_PREFIX=MOJPUT (ili što god build koristi u Vite base).
  */
 function frontendPathPrefixSegment() {
   const root = String(process.env.FRONTEND_AT_ROOT || "")
     .trim()
     .toLowerCase();
   if (root === "1" || root === "true" || root === "yes") return "";
-  if (!Object.prototype.hasOwnProperty.call(process.env, "FRONTEND_PATH_PREFIX")) return "MOJPUT";
-  return String(process.env.FRONTEND_PATH_PREFIX || "").trim().replace(/^\/+|\/+$/g, "");
+  if (Object.prototype.hasOwnProperty.call(process.env, "FRONTEND_PATH_PREFIX")) {
+    return String(process.env.FRONTEND_PATH_PREFIX || "").trim().replace(/^\/+|\/+$/g, "");
+  }
+  const fromApp = inferPathPrefixFromAppOrigin();
+  if (fromApp) return fromApp;
+  return "";
 }
 
 /** Stranica frontenda za unos 6-znamenkastog koda (nakon registracije). */
@@ -370,23 +403,28 @@ function frontendVerifyPageUrl(querySuffix) {
   return `${origin}${path}${q}`;
 }
 
-/** Nakon potvrde na Renderu: uvijek HTTPS GitHub Pages (APP_ORIGIN), bez lokalne Vite logike. */
+/** Na produkciji: HTTPS prema APP_ORIGIN (npr. mojput.com); lokalno Vite kroz originNeverLocalhostForMail. */
 function getFrontendOriginForRedirect() {
+  let out;
   if (isDeployedOnPaaS()) {
     const forced = String(process.env.FORCE_MAIL_APP_ORIGIN || "")
       .trim()
       .replace(/\/$/, "")
       .replace(/\/MOJPUT$/i, "");
-    if (forced && /^https:\/\//i.test(forced)) return forced;
-    const o = normalizeAppOrigin();
-    const base = String(o || "")
-      .trim()
-      .replace(/\/$/, "")
-      .replace(/\/MOJPUT$/i, "");
-    if (base && /^https:\/\//i.test(base)) return base;
-    return publicAppOriginFallback();
+    if (forced && /^https:\/\//i.test(forced)) out = forced;
+    else {
+      const o = normalizeAppOrigin();
+      const base = String(o || "")
+        .trim()
+        .replace(/\/$/, "")
+        .replace(/\/MOJPUT$/i, "");
+      if (base && /^https:\/\//i.test(base)) out = base;
+      else out = publicAppOriginFallback();
+    }
+  } else {
+    out = originNeverLocalhostForMail();
   }
-  return originNeverLocalhostForMail();
+  return toMailLinkOriginOnly(out);
 }
 
 function frontendPrijavaUrl(querySuffix) {
@@ -406,7 +444,7 @@ function frontendResetPasswordPageUrl(token) {
   return `${origin}${path}?${q}`;
 }
 
-/** Klik iz maila u pregledniku: redirect na Pages. fetch() iz SPA šalje samo Accept: application/json → JSON. */
+/** Klik iz maila u pregledniku: redirect na frontend. fetch() iz SPA šalje samo Accept: application/json → JSON. */
 function shouldUseVerifyRedirect(req) {
   if (String(req.query.format || "").toLowerCase() === "json") return false;
   if (String(req.query.redirect || "") === "0") return false;
@@ -442,6 +480,7 @@ if (hasSmtp && process.env.SMTP_USER) {
 console.log("[config] APP_ORIGIN:", String(process.env.APP_ORIGIN || "").trim() || "(nije postavljen)");
 console.log("[config] Render/PaaS:", isDeployedOnPaaS(), "| NODE_ENV:", process.env.NODE_ENV || "(nema)");
 console.log("[config] Stranica za unos koda (potvrda) →", frontendVerifyPageUrl(""));
+console.log("[config] Oporavak lozinke (link u mailu) →", frontendResetPasswordPageUrl("…"));
 console.log("[config] Javni API (ostalo) →", resolvePublicApiBaseForMail());
 console.log("[config] Redirect nakon potvrde →", frontendPrijavaUrl(""));
 if (isDeployedOnPaaS() && !String(process.env.API_PUBLIC_URL || "").trim() && !readApiPublicUrlFromDisk()) {
@@ -521,7 +560,7 @@ function getAuthTokenFromRequest(req) {
 }
 
 /**
- * Session cookie: za GitHub Pages → Render (različit host od API-ja) preglednik traži SameSite=None; Secure.
+ * Session cookie: kad frontend (mojput.com) i API nisu isti host, preglednik traži SameSite=None; Secure.
  * Lokalno preko Vite proxyja (http → isti host u browseru): Lax je dovoljan.
  */
 function authCookieOptions(req) {
@@ -852,12 +891,12 @@ function getVerificationMailFrom() {
 
 async function sendVerificationEmail({ to, username, code }) {
   const subject = "MojPut — potvrdi svoj račun";
-  const textBody = `Pozdrav ${username},\n\nTvoj 6-znamenkasti kod za potvrdu MojPut računa:\n\n${code}\n\nOtvori MojPut u pregledniku (npr. mojput na GitHub Pages), idi na stranicu za potvrdu računa i upiši ovaj kod zajedno s email adresom koju si koristio pri registraciji.\n\nKod vrijedi 24 sata. Ako nisi ti tražio registraciju, zanemari ovu poruku.\n`;
+  const textBody = `Pozdrav ${username},\n\nTvoj 6-znamenkasti kod za potvrdu MojPut računa:\n\n${code}\n\nOtvori mojput.com u pregledniku, idi na stranicu za potvrdu računa i upiši ovaj kod zajedno s email adresom koju si koristio pri registraciji.\n\nKod vrijedi 24 sata. Ako nisi ti tražio registraciju, zanemari ovu poruku.\n`;
   const htmlBody = `
         <p>Pozdrav ${username},</p>
         <p>Tvoj <strong>6-znamenkasti kod</strong> za potvrdu računa na MojPutu:</p>
         <p style="font-size:28px;letter-spacing:0.25em;font-weight:700;font-family:ui-monospace,monospace;color:#0f172a;">${code}</p>
-        <p>Otvori MojPut u pregledniku, idi na stranicu za potvrdu računa i upiši gornji kod zajedno s email adresom koju si koristio pri registraciji.</p>
+        <p>Otvori <a href="https://mojput.com" style="color:#2563eb;">mojput.com</a> u pregledniku, idi na stranicu za potvrdu računa i upiši gornji kod zajedno s email adresom koju si koristio pri registraciji.</p>
         <p style="font-size:13px;color:#64748b;">Kod vrijedi 24 sata. Ne koristi linkove iz drugih starih poruka — samo ovaj kod u aplikaciji. Ako nisi ti tražio registraciju, zanemari ovu poruku.</p>
       `;
 
@@ -1244,19 +1283,22 @@ async function main() {
   }
 
   /**
-   * GitHub Pages i API na različitim hostovima — CORS mora točno odgovarati Originu.
-   * Više origin-a: CORS_ALLOWED_ORIGINS (zarezom), plus APP_ORIGIN / zadani GH Pages.
+   * Frontend i API mogu biti na različitim hostovima — CORS mora točno odgovarati zaglavlju Origin.
+   * CORS_ALLOWED_ORIGINS (zarezom), te APP_ORIGIN / zadano https://mojput.com.
    */
   function collectAllowedCorsOrigins() {
     const set = new Set();
     const add = (raw) => {
-      let s = String(raw || "")
-        .trim()
-        .replace(/\/$/, "")
-        .replace(/\/MOJPUT$/i, "");
-      if (s && /^https:\/\//i.test(s)) set.add(s);
+      let s = String(raw || "").trim().replace(/\/$/, "");
+      if (!s || !/^https?:\/\//i.test(s)) return;
+      try {
+        s = new URL(s).origin;
+      } catch {
+        s = s.replace(/\/MOJPUT$/i, "");
+      }
+      if (s && /^https?:\/\//i.test(s)) set.add(s);
     };
-    add(GITHUB_PAGES_ORIGIN);
+    add(DEFAULT_PUBLIC_APP_ORIGIN);
     add(normalizeAppOrigin());
     add(publicAppOriginFallback());
     add(appOriginForLinks());
@@ -1643,7 +1685,7 @@ async function main() {
       const user = userPayloadWithAdminFlag(fresh);
       const token = signToken({ sub: user.id });
       setAuthCookie(res, token, req);
-      /** Isti JWT i u JSON-u — preglednici često blokiraju cross-site kolačić (Pages → Render); klijent šalje Authorization. */
+      /** Isti JWT i u JSON-u — cross-site kolačić često nije moguć; klijent šalje Authorization. */
       return res.json({ success: true, user, token });
     } catch (err) {
       console.error("[auth/login] greška:", err?.message || err);

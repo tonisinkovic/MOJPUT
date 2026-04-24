@@ -2,7 +2,7 @@
 
 ## Project info
 
-**URL**: https://tonisinkovic.github.io/MOJPUT/
+**Javna stranica**: https://mojput.com
 
 ## How can I edit this code?
 
@@ -67,13 +67,12 @@ Chatbot odgovara na pitanja o fakultetima i studijima u Hrvatskoj koristeći RAG
 
 ### Registracija i potvrda emaila
 
-**Produkcija (Render + GitHub Pages)** — glavni tok:
+**Produkcija (mojput.com + API na Renderu)** — glavni tok:
 
-1. Deployaj API na Render (`render.yaml` već postavlja `API_PUBLIC_URL` i `APP_ORIGIN`).
-2. U Render dashboardu dodaj **`JWT_SECRET`** i **SMTP** (`SMTP_*`, `MAIL_FROM`) ili **Resend**.
-3. Build frontenda za Pages mora imati **`VITE_API_URL`** = javni URL API-ja (vidi `.env.production`).
-4. Korisnik se registrira na Pages → API na Renderu šalje mail s **6-znamenkastim kodom** → korisnik otvara  
-   `{APP_ORIGIN}/MOJPUT/verify`, upiše email i kod → račun se potvrdi u bazi na Renderu.
+1. Deployaj API na Render (`render.yaml` postavlja `API_PUBLIC_URL` i `APP_ORIGIN=https://mojput.com`).
+2. U Render dashboardu dodaj **`JWT_SECRET`** i **Resend** (`RESEND_API_KEY`) ili **SMTP** (`SMTP_*`, `MAIL_FROM`).
+3. Produkcijski build (hosting mojput.com) koristi **`VITE_API_URL`** = javni URL API-ja (vidi `.env.production`).
+4. Korisnik se registrira → API šalje **6-znamenkasti kod** → korisnik na **mojput.com/verify** upiše email i kod → račun se potvrdi u bazi.
 
 **Lokalno:** `npm run dev:full`, baza `data/mojput.db`. Očisti testne račune: `npm run clear:auth`.
 
@@ -137,9 +136,11 @@ This project is built with:
 
 ## How can I deploy this project?
 
-**Frontend (GitHub Pages):** push na granu `main` pokreće workflow [Deploy to GitHub Pages](.github/workflows/deploy-pages.yml) — build (`npm run build`) i objava artefakta iz `dist/`.
+**Frontend:** `npm run build` (zadano `VITE_BASE_PATH=/` — korijen mojput.com) i hosting statičkog `dist/`.
 
-**Backend (API):** vidi `render.yaml` i odjeljak *Registracija i potvrda emaila* gore — API na Renderu, statički frontend na Pages.
+**API:** vidi `render.yaml` i odjeljak *Registracija i potvrda emaila* gore.
+
+*Opcijski* postoji [workflow za GitHub Pages](.github/workflows/deploy-pages.yml) (ako želiš zrcalni testni deploy) — nije obavezno za mojput.com.
 
 ## Can I connect a custom domain to my Lovable project?
 

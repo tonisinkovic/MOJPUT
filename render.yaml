@@ -1,5 +1,5 @@
-# Render.com — „New Blueprint Instance” s ovog repozitorija
-# Nakon deploya kopiraj javni URL servisa u APP_ORIGIN (frontend) i API_PUBLIC_URL
+# Render.com — API (Node). Staticki frontend mojput.com: build s `npm run build` (koristi .env.production) pa upload / CI.
+# VITE_BASE_PATH, VITE_API_URL, VITE_GA_* — ne ide na ovaj servis; one su samo u buildu frontenda, ne u API procesu.
 services:
   - type: web
     name: mojput-api
@@ -13,12 +13,12 @@ services:
         value: production
       - key: PORT
         value: "3000"
-      # Javni URL ovog API-ja — isti kao VITE_API_URL u buildu za GitHub Pages. Link u mailu: …/api/auth/verify?…
+      # Javni URL API-ja = isti kao VITE_API_URL u produkcijskom buildu. Link u mailu: …/api/auth/…
       - key: API_PUBLIC_URL
         value: https://mojput.onrender.com
-      # Frontend (GitHub Pages) — redirect nakon klika na potvrdu u mailu
+      # Javni frontend mojput.com (linkovi u mailu, CORS, redirecti)
       - key: APP_ORIGIN
-        value: https://tonisinkovic.github.io
+        value: https://mojput.com
       # U dashboardu još: JWT_SECRET + RESEND_API_KEY (+ opcionalno RESEND_FROM; prazno = onboarding@resend.dev) ili SMTP_*
       # Ako mijenjaš URL servisa, prilagodi API_PUBLIC_URL i VITE_API_URL u buildu.
       # Trajni korisnici: na Renderu (besplatno) dodaj MOJPUT_DATABASE_URL = Neon ili Supabase PostgreSQL connection string.
