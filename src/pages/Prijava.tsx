@@ -189,7 +189,7 @@ const Prijava = () => {
     if (nextPath && nextPath.startsWith("/") && !nextPath.startsWith("//")) {
       navigate(nextPath);
     } else {
-      navigate("/profil");
+      navigate("/");
     }
   };
 

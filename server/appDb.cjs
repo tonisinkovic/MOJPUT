@@ -77,6 +77,39 @@ function needsReturningId(sql) {
   return INSERT_RETURNING_TABLES.has(m[1].toLowerCase());
 }
 
+function isTruthyEnv(v) {
+  const s = String(v || "").trim().toLowerCase();
+  return s === "1" || s === "true" || s === "yes";
+}
+
+function allowsDestructiveUserSql() {
+  return isTruthyEnv(process.env.MOJPUT_ALLOW_DESTRUCTIVE_USER_SQL);
+}
+
+function normalizeSqlForGuard(sql) {
+  return String(sql || "")
+    .replace(/\/\*[\s\S]*?\*\//g, " ")
+    .replace(/--.*$/gm, " ")
+    .replace(/\s+/g, " ")
+    .trim()
+    .toUpperCase();
+}
+
+function assertNoDestructiveUsersSql(sql, source) {
+  if (allowsDestructiveUserSql()) return;
+  const normalized = normalizeSqlForGuard(sql);
+  if (!normalized) return;
+  const destructiveUsersSql =
+    /\bDELETE\s+FROM\s+USERS\b/.test(normalized) ||
+    /\bTRUNCATE(?:\s+TABLE)?\s+USERS\b/.test(normalized) ||
+    /\bDROP\s+TABLE(?:\s+IF\s+EXISTS)?\s+USERS\b/.test(normalized);
+  if (!destructiveUsersSql) return;
+  throw new Error(
+    `[db-guard] Blokiran destruktivan SQL nad users (${source}). ` +
+      "Ako je namjerno, privremeno postavi MOJPUT_ALLOW_DESTRUCTIVE_USER_SQL=1.",
+  );
+}
+
 function migrateSqlite(db) {
   db.exec(`
     CREATE TABLE IF NOT EXISTS users (
@@ -269,36 +302,14 @@ function migrateSqlite(db) {
 
   const migrated = db.prepare("SELECT 1 FROM app_meta WHERE key = 'pending_registration_flow_v1'").get();
   if (!migrated) {
-    db.exec("PRAGMA foreign_keys = OFF");
-    db.exec("DELETE FROM forum_likes");
-    db.exec("DELETE FROM forum_messages");
-    db.exec("DELETE FROM forum_conversations");
-    db.exec("DELETE FROM users");
-    try {
-      db.exec("DELETE FROM pending_registrations");
-    } catch {
-      /* ignore */
-    }
-    db.exec("PRAGMA foreign_keys = ON");
     db.prepare("INSERT INTO app_meta (key, value) VALUES ('pending_registration_flow_v1', '1')").run();
-    console.log("[migrate] Jednokratno očišćeni korisnici i nepotvrđene prijave (račun nastaje tek nakon klika u mailu).");
+    console.log("[migrate] pending_registration_flow_v1 označen bez brisanja korisnika.");
   }
 
   const otpMigrated = db.prepare("SELECT 1 FROM app_meta WHERE key = 'email_verify_otp_v1'").get();
   if (!otpMigrated) {
-    db.exec("PRAGMA foreign_keys = OFF");
-    db.exec("DELETE FROM forum_likes");
-    db.exec("DELETE FROM forum_messages");
-    db.exec("DELETE FROM forum_conversations");
-    db.exec("DELETE FROM users");
-    try {
-      db.exec("DELETE FROM pending_registrations");
-    } catch {
-      /* ignore */
-    }
-    db.exec("PRAGMA foreign_keys = ON");
     db.prepare("INSERT INTO app_meta (key, value) VALUES ('email_verify_otp_v1', '1')").run();
-    console.log("[migrate] Potvrda računa 6-znamenkastim kodom — jednokratno očišćeni korisnici i nepotvrđene prijave.");
+    console.log("[migrate] email_verify_otp_v1 označen bez brisanja korisnika.");
   }
 }
 
@@ -394,18 +405,6 @@ async function migratePg(pool) {
   await run("ALTER TABLE users ADD COLUMN IF NOT EXISTS user_type TEXT DEFAULT 'srednjoskolac'");
   await run("ALTER TABLE pending_registrations ADD COLUMN IF NOT EXISTS user_type TEXT DEFAULT 'srednjoskolac'");
 
-  const wipeUserData = async () => {
-    await run("DELETE FROM forum_likes");
-    await run("DELETE FROM forum_messages");
-    await run("DELETE FROM forum_conversations");
-    await run("DELETE FROM career_quiz_results");
-    await run("DELETE FROM site_feedback");
-    await run("DELETE FROM user_saved_faculties");
-    await run("DELETE FROM chatbot_daily_usage");
-    await run("DELETE FROM users");
-    await run("DELETE FROM pending_registrations");
-  };
-
   let migrated;
   try {
     migrated = (await pool.query("SELECT 1 FROM app_meta WHERE key = 'pending_registration_flow_v1'")).rows[0];
@@ -413,9 +412,8 @@ async function migratePg(pool) {
     migrated = null;
   }
   if (!migrated) {
-    await wipeUserData();
     await run("INSERT INTO app_meta (key, value) VALUES ('pending_registration_flow_v1', '1')");
-    console.log("[migrate:pg] Jednokratno očišćeni korisnici i nepotvrđene prijave.");
+    console.log("[migrate:pg] pending_registration_flow_v1 označen bez brisanja korisnika.");
   }
 
   let otpMigrated;
@@ -425,9 +423,8 @@ async function migratePg(pool) {
     otpMigrated = null;
   }
   if (!otpMigrated) {
-    await wipeUserData();
     await run("INSERT INTO app_meta (key, value) VALUES ('email_verify_otp_v1', '1')");
-    console.log("[migrate:pg] Potvrda 6-znamenkastim kodom — jednokratno očišćeno.");
+    console.log("[migrate:pg] email_verify_otp_v1 označen bez brisanja korisnika.");
   }
 }
 
@@ -464,10 +461,12 @@ function createSqliteDriver(dbPath) {
       return raw.prepare(sql).all(...params);
     },
     async run(sql, ...params) {
+      assertNoDestructiveUsersSql(sql, "sqlite.run");
       const info = raw.prepare(sql).run(...params);
       return { lastInsertRowid: Number(info.lastInsertRowid) || 0, changes: info.changes };
     },
     async exec(sql) {
+      assertNoDestructiveUsersSql(sql, "sqlite.exec");
       raw.exec(sql);
     },
     async getChatUsageToday(userId) {
@@ -529,6 +528,7 @@ function createPgDriver(connectionString) {
       return r.rows;
     },
     async run(sql, ...params) {
+      assertNoDestructiveUsersSql(sql, "postgres.run");
       let text = toPgSql(sql);
       if (needsReturningId(sql)) {
         text = `${text.trim()} RETURNING id`;
@@ -541,6 +541,7 @@ function createPgDriver(connectionString) {
       };
     },
     async exec(sql) {
+      assertNoDestructiveUsersSql(sql, "postgres.exec");
       await pool.query(toPgSql(sql));
     },
     async getChatUsageToday(userId) {

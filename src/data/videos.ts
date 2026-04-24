@@ -38,7 +38,7 @@ export const VIDEOS: VideoItem[] = [
  * Istaknuti YouTube video (tab „Videozapisi”) — uredi ovdje. Prikazuje se ugrađeno u prvoj kartici mreže.
  * Možeš zalijepiti puni URL (youtu.be, watch?v=…) ili samo 11-znakovni video ID.
  */
-export const FEATURED_YOUTUBE_URL_OR_ID = "https://youtu.be/AONIq-XrlsY";
+export const FEATURED_YOUTUBE_URL_OR_ID = "https://youtu.be/KnlmjQwvfLo?si=uVDsreodUqQPhEvG";
 
 export const featuredYouTubeVideoId: string | null = parseYouTubeVideoId(FEATURED_YOUTUBE_URL_OR_ID);
 

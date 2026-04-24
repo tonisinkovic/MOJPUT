@@ -232,6 +232,8 @@ const Forum = () => {
   const [currentUser, setCurrentUser] = useState<AuthUser | null>(null);
   const [authChecked, setAuthChecked] = useState(false);
   const canUseForum = Boolean(currentUser);
+  /** U ADMIN_EMAILS (npr. mojputhr@gmail.com) – može ukloniti i tuđe poruke. */
+  const isForumModerator = Boolean(currentUser?.is_admin);
 
   const [conversations, setConversations] = useState<ForumConversation[]>([]);
   const [loadingConversations, setLoadingConversations] = useState(true);
@@ -550,7 +552,9 @@ const Forum = () => {
   };
 
   const handleSoftDeleteMessage = async (msg: ForumMessage) => {
-    if (!currentUser || msg.userId !== currentUser.id || msg.deletedByUser) return;
+    if (!currentUser || msg.deletedByUser) return;
+    const canDelete = currentUser.id === msg.userId || currentUser.is_admin === true;
+    if (!canDelete) return;
     if (!selectedConversation) return;
 
     if (isLocalForumConversationId(msg.id)) {
@@ -1098,7 +1102,7 @@ const Forum = () => {
                                 <p className="whitespace-pre-wrap break-words">
                                   {msg.deletedByUser ? (
                                     <span className="italic">
-                                      Ova poruka je uklonjena s tvog prikaza; u temi ostaje zapis za kontekst.
+                                      Ova je poruka uklonjena s prikaza; u temi ostaje zapis radi konteksta.
                                     </span>
                                   ) : (
                                     msg.text
@@ -1121,7 +1125,9 @@ const Forum = () => {
                                     Odgovori
                                   </button>
                                 )}
-                                {canUseForum && currentUser?.id === msg.userId && !msg.deletedByUser && (
+                                {canUseForum &&
+                                  (currentUser?.id === msg.userId || isForumModerator) &&
+                                  !msg.deletedByUser && (
                                   <button
                                     type="button"
                                     disabled={deletingMessageId === msg.id}
@@ -1129,7 +1135,9 @@ const Forum = () => {
                                     className="inline-flex min-h-9 items-center gap-1 px-1 text-xs text-muted-foreground transition-colors hover:text-destructive touch-manipulation disabled:opacity-50"
                                   >
                                     <Trash2 className="h-3.5 w-3.5" />
-                                    Ukloni s prikaza
+                                    {isForumModerator && currentUser?.id !== msg.userId
+                                      ? "Ukloni (moderator)"
+                                      : "Ukloni s prikaza"}
                                   </button>
                                 )}
                                 {canUseForum && (

@@ -469,11 +469,15 @@ const KartaFakulteta = () => {
                     </p>
                   </div>
                 </div>
-                <div className="h-56 w-full sm:h-72 md:h-80">
+                {/*
+                  Google My Maps u ugrađenom prikazu prikazuje naslov karte (npr. ime autora) u gornjoj traci.
+                  Ako se naslov u Googleu ne promijeni, ovdje skrivamo taj gornji dio (overflow + pomak).
+                */}
+                <div className="relative h-56 w-full overflow-hidden sm:h-72 md:h-80">
                   <iframe
                     title="Karta fakulteta – Google My Maps"
-                    src="https://www.google.com/maps/d/embed?mid=1hfnNynhIABrOthygSpdz0RnzAtJdHAU"
-                    className="h-full w-full border-0"
+                    src="https://www.google.com/maps/d/embed?mid=1hfnNynhIABrOthygSpdz0RnzAtJdHAU&hl=hr"
+                    className="absolute left-0 top-[-56px] h-[calc(100%+56px)] w-full border-0 sm:top-[-60px] sm:h-[calc(100%+60px)]"
                     loading="lazy"
                     referrerPolicy="no-referrer-when-downgrade"
                     allowFullScreen

@@ -2107,14 +2107,15 @@ async function main() {
     });
   });
 
-  /** Autor može ukloniti poruku s javnog prikaza; red ostaje u bazi (soft delete). */
+  /** Autor može ukloniti poruku; moderatori (ADMIN_EMAILS) mogu ukloniti bilo čiju poruku. Red ostaje u bazi (soft delete). */
   app.post("/api/forum/messages/:id/soft-delete", authMiddleware(db), async (req, res) => {
     const msgId = Number(req.params.id);
     if (!Number.isFinite(msgId)) return res.status(400).json({ success: false, message: "Neispravan ID." });
 
     const row = await db.prepare("SELECT id, user_id, deleted_by_user_at FROM forum_messages WHERE id = ?").get(msgId);
     if (!row) return res.status(404).json({ success: false, message: "Poruka ne postoji." });
-    if (row.user_id !== req.user.id) {
+    const isModerator = isAdminEmail(req.user.email);
+    if (row.user_id !== req.user.id && !isModerator) {
       return res.status(403).json({ success: false, message: "Možeš ukloniti samo vlastite poruke." });
     }
     if (row.deleted_by_user_at) {
