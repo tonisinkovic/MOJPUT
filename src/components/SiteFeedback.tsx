@@ -31,8 +31,8 @@ const SOCIAL_LINKS = [
     iconClassName: "h-5 w-5 sm:h-[1.35rem] sm:w-[1.35rem]",
   },
   {
-    href: "https://www.tiktok.com/@projekt30dana",
-    label: "TikTok — Projekt 30dana",
+    href: "https://www.tiktok.com/@mojput.com?_r=1&_t=ZN-95pcPKmDCIo",
+    label: "TikTok — MojPut",
     Icon: TikTokGlyph,
     iconClassName: "h-[1.15rem] w-[1.15rem] sm:h-5 sm:w-5",
   },
