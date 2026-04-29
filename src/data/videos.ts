@@ -32,6 +32,16 @@ export const VIDEOS: VideoItem[] = [
     views: 2450,
     isNew: true,
   },
+  {
+    id: "2",
+    title: "Stres i Pripreme za maturu/ispit",
+    description: "Epizoda 1",
+    category: "Mentalno zdravlje",
+    duration: "12:34",
+    thumbnail: "🎓",
+    views: 2450,
+    isNew: true,
+  },
 ];
 
 /**
@@ -39,8 +49,10 @@ export const VIDEOS: VideoItem[] = [
  * Možeš zalijepiti puni URL (youtu.be, watch?v=…) ili samo 11-znakovni video ID.
  */
 export const FEATURED_YOUTUBE_URL_OR_ID = "https://youtu.be/KnlmjQwvfLo?si=uVDsreodUqQPhEvG";
+export const SECOND_FEATURED_YOUTUBE_URL_OR_ID = "https://youtu.be/4ZQ_HmjzI78?si=rS7vq6o6L0NMKjrs";
 
 export const featuredYouTubeVideoId: string | null = parseYouTubeVideoId(FEATURED_YOUTUBE_URL_OR_ID);
+export const secondFeaturedYouTubeVideoId: string | null = parseYouTubeVideoId(SECOND_FEATURED_YOUTUBE_URL_OR_ID);
 
 export const LIVE_EVENTS: LiveEvent[] = [
   {

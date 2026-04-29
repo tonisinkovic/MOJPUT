@@ -1,6 +1,6 @@
 import Layout from "@/components/Layout";
 import VideoCard from "@/components/VideoCard";
-import { VIDEOS, CATEGORIES, featuredYouTubeVideoId } from "@/data/videos";
+import { VIDEOS, CATEGORIES, featuredYouTubeVideoId, secondFeaturedYouTubeVideoId } from "@/data/videos";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Clock,
@@ -738,7 +738,11 @@ const VideoPage = () => {
                       isNew={video.isNew}
                       watchedProgress={video.watchedProgress}
                       youtubeVideoId={
-                        video.id === "1" ? featuredYouTubeVideoId : undefined
+                        video.id === "1"
+                          ? featuredYouTubeVideoId
+                          : video.id === "2"
+                            ? secondFeaturedYouTubeVideoId
+                            : undefined
                       }
                     />
                   </motion.div>
