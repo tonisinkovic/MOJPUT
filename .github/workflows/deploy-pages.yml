@@ -39,6 +39,9 @@ jobs:
 
       - name: Configure Pages
         uses: actions/configure-pages@v5
+        with:
+          # Omogući Pages na repou ako još nije uključeno (inače "Get Pages site" → 404 Not Found).
+          enablement: true
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
