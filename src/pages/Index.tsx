@@ -110,7 +110,7 @@ const features: HomeFeature[] = [
 
 const stats = [
   { value: "120+", label: "Fakulteta", icon: <GraduationCap className="w-5 h-5" /> },
-  { value: "500+", label: "Korisnika", icon: <Users className="w-5 h-5" /> },
+  { value: "600+", label: "Korisnika", icon: <Users className="w-5 h-5" /> },
   { value: "1", label: "Video lekcija", icon: <Video className="w-5 h-5" /> },
   { value: "95%", label: "Zadovoljstvo", icon: <Award className="w-5 h-5" /> },
 ];
