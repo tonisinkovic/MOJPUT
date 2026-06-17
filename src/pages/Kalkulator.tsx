@@ -139,8 +139,72 @@ const WIZARD_STEPS = [
 const cardShell =
   "rounded-2xl border border-border/70 bg-card/95 shadow-sm backdrop-blur-[2px] overflow-hidden transition-shadow duration-300 hover:shadow-md";
 
+/** Kartice sa sliderima — thumb ne smije biti odrezan (overflow-hidden na cardShell). */
+const cardShellWithSliders =
+  "rounded-2xl border border-border/70 bg-card/95 shadow-sm backdrop-blur-[2px] overflow-visible transition-shadow duration-300 hover:shadow-md";
+
 const softField =
   "space-y-3 rounded-xl border border-border/45 bg-muted/15 p-3 shadow-sm sm:p-4";
+
+const maturaSliderField =
+  "min-w-0 overflow-visible space-y-2 rounded-xl border border-border/45 bg-muted/15 p-3 pb-3 shadow-sm sm:space-y-2.5 sm:p-4 sm:pb-5";
+
+const cardHeaderSliders = "pb-2 max-lg:px-3 max-lg:pt-4 sm:pb-3";
+const cardContentSliders =
+  "space-y-3 overflow-visible px-3 pb-4 pt-0 sm:space-y-4 sm:px-6 sm:pb-6";
+
+type MaturaPercentSliderRowProps = {
+  comp: ScoringComponent;
+  pct: number;
+  displayPts: number;
+  onChange: (value: number) => void;
+};
+
+function MaturaPercentSliderRow({ comp, pct, displayPts, onChange }: MaturaPercentSliderRowProps) {
+  return (
+    <div className={maturaSliderField}>
+      <div className="flex flex-col gap-1.5 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between sm:gap-x-3 sm:gap-y-1">
+        <div className="flex min-w-0 flex-wrap items-center gap-x-1.5 gap-y-1">
+          <Label className="text-sm font-medium leading-snug">{comp.label}</Label>
+          {comp.razina && (
+            <span
+              className={cn(
+                "shrink-0 rounded-md px-1.5 py-0.5 text-[10px] font-medium sm:text-xs",
+                comp.razina === "A"
+                  ? "bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300"
+                  : "bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400",
+              )}
+            >
+              <span className="sm:hidden">razina {comp.razina}</span>
+              <span className="hidden sm:inline">obavezna razina {comp.razina}</span>
+            </span>
+          )}
+          {comp.opis && (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <HelpCircle className="h-3.5 w-3.5 shrink-0 cursor-help text-muted-foreground" />
+              </TooltipTrigger>
+              <TooltipContent className="max-w-xs">{comp.opis}</TooltipContent>
+            </Tooltip>
+          )}
+        </div>
+        <span className="shrink-0 text-xs tabular-nums text-muted-foreground sm:text-sm">
+          {pct}% → {displayPts.toFixed(1)} / {comp.max} bod.
+        </span>
+      </div>
+      <div className="px-4 py-2.5 sm:px-3 sm:py-2">
+        <Slider
+          value={[pct]}
+          onValueChange={([v]) => onChange(v)}
+          min={0}
+          max={100}
+          step={1}
+          className="w-full"
+        />
+      </div>
+    </div>
+  );
+}
 
 /** Parsira unos ocjene (1–5), podržava „3,45” i „3.45”. */
 function parseGradeString(raw: string): number | null {
@@ -969,8 +1033,8 @@ const Kalkulator = () => {
 
                     {/* Matura – obavezni predmeti — korak 2 */}
                     {wizardStep === 2 && groupedComponents.maturaObv.length > 0 && (
-                      <Card className={cardShell}>
-                        <CardHeader className="pb-3">
+                      <Card className={cardShellWithSliders}>
+                        <CardHeader className={cardHeaderSliders}>
                           <div className="flex items-center gap-2">
                             <Award className="w-5 h-5 text-primary" />
                             <CardTitle className="text-lg">
@@ -989,7 +1053,7 @@ const Kalkulator = () => {
                             Ukupno do {groupedComponents.maturaObv.reduce((s, c) => s + c.max, 0)} bodova
                           </CardDescription>
                         </CardHeader>
-                        <CardContent className="space-y-4">
+                        <CardContent className={cardContentSliders}>
                           {groupedComponents.maturaObv.map((comp) => {
                             const idx = indexOfComponent(comp);
                             const pct = getRawAtIndex(idx);
@@ -999,34 +1063,13 @@ const Kalkulator = () => {
                                 ? pts
                                 : Math.round((pct / 100) * comp.max);
                             return (
-                            <div key={`${comp.id}-${idx}`} className={softField}>
-                              <div className="flex flex-wrap justify-between gap-2 text-sm">
-                                <Label className="flex items-center gap-1.5">
-                                  {comp.label}
-                                  {comp.razina && (
-                                    <span className={cn(
-                                      "text-xs px-1.5 py-0.5 rounded-md font-medium",
-                                      comp.razina === "A"
-                                        ? "bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300"
-                                        : "bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400"
-                                    )}>
-                                      obavezna razina {comp.razina}
-                                    </span>
-                                  )}
-                                </Label>
-                                <span className="text-muted-foreground text-right">
-                                  {pct}% → {displayPts.toFixed(1)} / {comp.max} bod.
-                                </span>
-                              </div>
-                              <Slider
-                                value={[pct]}
-                                onValueChange={([v]) => updateInputAtIndex(idx, v)}
-                                min={0}
-                                max={100}
-                                step={1}
-                                className="py-2"
-                              />
-                            </div>
+                            <MaturaPercentSliderRow
+                              key={`${comp.id}-${idx}`}
+                              comp={comp}
+                              pct={pct}
+                              displayPts={displayPts}
+                              onChange={(v) => updateInputAtIndex(idx, v)}
+                            />
                           );})}
                         </CardContent>
                       </Card>
@@ -1045,8 +1088,8 @@ const Kalkulator = () => {
 
                     {/* Dodatne provjere (fakultetski testovi) – id komponente u podacima počinje s dod_ */}
                     {wizardStep === 2 && groupedComponents.dodatneProvjere.length > 0 && (
-                      <Card className={cardShell}>
-                        <CardHeader className="pb-3">
+                      <Card className={cardShellWithSliders}>
+                        <CardHeader className={cardHeaderSliders}>
                           <div className="flex items-center gap-2">
                             <Award className="w-5 h-5 text-primary" />
                             <CardTitle className="text-lg">
@@ -1058,7 +1101,7 @@ const Kalkulator = () => {
                             {groupedComponents.dodatneProvjere.reduce((s, c) => s + c.max, 0)} bodova.
                           </CardDescription>
                         </CardHeader>
-                        <CardContent className="space-y-4">
+                        <CardContent className={cardContentSliders}>
                           {groupedComponents.dodatneProvjere.map((comp) => {
                             const idx = indexOfComponent(comp);
                             const pct = getRawAtIndex(idx);
@@ -1068,33 +1111,13 @@ const Kalkulator = () => {
                                 ? pts
                                 : Math.round((pct / 100) * comp.max);
                             return (
-                              <div key={`${comp.id}-${idx}`} className={softField}>
-                                <div className="flex flex-wrap justify-between gap-2 text-sm">
-                                  <Label className="flex items-center gap-1.5 flex-wrap">
-                                    {comp.label}
-                                    {comp.opis && (
-                                      <Tooltip>
-                                        <TooltipTrigger asChild>
-                                          <HelpCircle className="w-3.5 h-3.5 text-muted-foreground cursor-help shrink-0" />
-                                        </TooltipTrigger>
-                                        <TooltipContent className="max-w-sm">{comp.opis}</TooltipContent>
-                                      </Tooltip>
-                                    )}
-                                  </Label>
-                                  <span className="text-muted-foreground text-right">
-                                    {pct}% → {displayPts.toFixed(1)} / {comp.max}{" "}
-                                    bod.
-                                  </span>
-                                </div>
-                                <Slider
-                                  value={[pct]}
-                                  onValueChange={([v]) => updateInputAtIndex(idx, v)}
-                                  min={0}
-                                  max={100}
-                                  step={1}
-                                  className="py-2"
-                                />
-                              </div>
+                              <MaturaPercentSliderRow
+                                key={`${comp.id}-${idx}`}
+                                comp={comp}
+                                pct={pct}
+                                displayPts={displayPts}
+                                onChange={(v) => updateInputAtIndex(idx, v)}
+                              />
                             );
                           })}
                         </CardContent>
@@ -1140,8 +1163,8 @@ const Kalkulator = () => {
 
                     {/* Matura – izborni predmeti — korak 3 */}
                     {wizardStep === 3 && groupedComponents.maturaIzb.length > 0 && (
-                      <Card className={cardShell}>
-                        <CardHeader className="pb-3">
+                      <Card className={cardShellWithSliders}>
+                        <CardHeader className={cardHeaderSliders}>
                           <div className="flex items-center gap-2">
                             <Plus className="w-5 h-5 text-primary" />
                             <CardTitle className="text-lg">
@@ -1149,10 +1172,11 @@ const Kalkulator = () => {
                             </CardTitle>
                           </div>
                           <CardDescription>
-                            Opcionalno – donose dodatne bodove (do {groupedComponents.maturaIzb.reduce((s, c) => s + c.max, 0)} bod.)
+                            Unesi postotak (0–100) za svaki predmet koji si polagao — ukupno do{" "}
+                            {groupedComponents.maturaIzb.reduce((s, c) => s + c.max, 0)} bod.
                           </CardDescription>
                         </CardHeader>
-                        <CardContent className="space-y-4">
+                        <CardContent className={cardContentSliders}>
                           {groupedComponents.maturaIzb.map((comp) => {
                             const idx = indexOfComponent(comp);
                             const pct = getRawAtIndex(idx);
@@ -1162,37 +1186,13 @@ const Kalkulator = () => {
                                 ? pts
                                 : Math.round((pct / 100) * comp.max);
                             return (
-                            <div key={`${comp.id}-${idx}`} className={softField}>
-                              <div className="flex flex-wrap justify-between gap-2 text-sm">
-                                <Label className="flex items-center gap-1.5">
-                                  {comp.label}
-                                  {comp.razina && (
-                                    <span className="text-xs px-1.5 py-0.5 rounded-md font-medium bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300">
-                                      obavezna razina {comp.razina}
-                                    </span>
-                                  )}
-                                  {comp.opis && (
-                                    <Tooltip>
-                                      <TooltipTrigger asChild>
-                                        <HelpCircle className="w-3.5 h-3.5 text-muted-foreground cursor-help" />
-                                      </TooltipTrigger>
-                                      <TooltipContent>{comp.opis}</TooltipContent>
-                                    </Tooltip>
-                                  )}
-                                </Label>
-                                <span className="text-muted-foreground text-right">
-                                  {pct}% → {displayPts.toFixed(1)} / {comp.max} bod.
-                                </span>
-                              </div>
-                              <Slider
-                                value={[pct]}
-                                onValueChange={([v]) => updateInputAtIndex(idx, v)}
-                                min={0}
-                                max={100}
-                                step={1}
-                                className="py-2"
-                              />
-                            </div>
+                            <MaturaPercentSliderRow
+                              key={`${comp.id}-${idx}`}
+                              comp={comp}
+                              pct={pct}
+                              displayPts={displayPts}
+                              onChange={(v) => updateInputAtIndex(idx, v)}
+                            />
                           );})}
                         </CardContent>
                       </Card>

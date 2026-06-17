@@ -62,8 +62,7 @@ function injectDeployMetaPlugin() {
 }
 
 /**
- * mojput.com: korijen (`/`). U produkciji prvo čitamo .env.production iz diska: Viteov loadEnv spaja
- * process.env na kraju, pa stari VITE_BASE_PATH u CI (npr. /MOJPUT/) inače pobjeđuje.
+ * mojput.com: korijen (`/`) iz `.env.production`. GitHub Pages CI postavlja `VITE_BASE_PATH=/MOJPUT/` u workflowu.
  */
 function readViteBasePathFromProductionFile(root: string): string | undefined {
   const fp = path.join(root, ".env.production");
@@ -80,17 +79,21 @@ function readViteBasePathFromProductionFile(root: string): string | undefined {
 }
 
 function publicBasePath(mode: string, root: string): string {
+  const normalize = (raw: string) => {
+    const t = raw.trim();
+    if (!t || t === "/") return "/";
+    return t.endsWith("/") ? t : `${t}/`;
+  };
+
+  // CI (npr. GitHub Pages) može eksplicitno postaviti VITE_BASE_PATH=/MOJPUT/
+  const fromEnv = String(process.env.VITE_BASE_PATH ?? "").trim();
+  if (fromEnv) return normalize(fromEnv);
+
   if (mode === "production") {
     const fromFile = readViteBasePathFromProductionFile(root);
-    if (fromFile !== undefined) {
-      const raw = fromFile;
-      if (!raw || raw === "/") return "/";
-      return raw.endsWith("/") ? raw : `${raw}/`;
-    }
+    if (fromFile !== undefined) return normalize(fromFile);
   }
-  const raw = String(process.env.VITE_BASE_PATH ?? "/").trim();
-  if (!raw || raw === "/") return "/";
-  return raw.endsWith("/") ? raw : `${raw}/`;
+  return "/";
 }
 
 /** Workbox SPA fallback — usklađeno s `base` (npr. `/index.html` ili `/{segment}/index.html`). */
