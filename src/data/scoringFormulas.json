@@ -21982,13 +21982,31 @@
         "postotak": 10.0
       },
       {
-        "id": "izb_kemija_ili_b",
-        "label": "Kemija ili Biologija ili Fizika",
-        "max": 0,
+        "id": "izb_kemija",
+        "label": "Kemija",
+        "max": 100.0,
         "type": "matura_izborni",
         "razina": "A",
-        "obavezno": true,
-        "postotak": 0
+        "obavezno": false,
+        "postotak": 10.0
+      },
+      {
+        "id": "izb_biologija",
+        "label": "Biologija",
+        "max": 100.0,
+        "type": "matura_izborni",
+        "razina": "A",
+        "obavezno": false,
+        "postotak": 10.0
+      },
+      {
+        "id": "izb_fizika",
+        "label": "Fizika",
+        "max": 100.0,
+        "type": "matura_izborni",
+        "razina": "A",
+        "obavezno": false,
+        "postotak": 10.0
       }
     ],
     "pragovi": {
@@ -21998,13 +22016,30 @@
     "natjecanja": [
       {
         "kategorija": "Državno natjecanje",
-        "disciplina": "Bilo koja disciplina",
+        "disciplina": "Bilo koja disciplina (1.–4. razred, 1.–3. mjesto)",
         "vrednovanje": "5,00 %"
+      },
+      {
+        "kategorija": "Sportaš",
+        "disciplina": "I. kategorija",
+        "vrednovanje": "2,50 %"
+      },
+      {
+        "kategorija": "Sportaš",
+        "disciplina": "II. kategorija",
+        "vrednovanje": "1,50 %"
+      },
+      {
+        "kategorija": "Sportaš",
+        "disciplina": "III. kategorija",
+        "vrednovanje": "0,50 %"
       }
     ],
     "napomene": [
-      "*   Polaganje ispita obveznog dijela državne mature obavezno je za sve kandidate",
-      "*  Pristupnik je dužan položiti jedan od tri navedena predmeta. Polaganjem sva tri predmeta stječu se dodatni bodovi. Najbolji rezultat vrednovat će se s 10.0%, drugi s 10.0%, a treći s 10.0%"
+      "* Polaganje ispita obveznog dijela državne mature obavezno je za sve kandidate.",
+      "** Polaganje ispita izbornog dijela državne mature obavezno je za sve kandidate.",
+      "* Pristupnik je dužan položiti jedan od tri navedena predmeta. Polaganjem sva tri predmeta stječu se dodatni bodovi. Najbolji rezultat vrednovat će se s 10.0%, drugi s 10.0%, a treći s 10.0%.",
+      "* Ukupni broj bodova ostvaren iz rezultata natjecanja, kategorije sportaša i ostalih posebnih postignuća ne može biti veći od 10,00 %."
     ]
   },
   {
