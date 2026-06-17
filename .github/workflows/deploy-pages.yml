@@ -35,11 +35,11 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      # VITE_* pri buildu: .env.production u repou (VITE_BASE_PATH=/) + eksplicitno ispod (spriječi stari /MOJPUT u org secrets).
+      # GitHub project page: https://tonisinkovic.github.io/MOJPUT/ → base mora biti /MOJPUT/
       - name: Build app
         run: npm run build
         env:
-          VITE_BASE_PATH: /
+          VITE_BASE_PATH: /MOJPUT/
 
       # Pages mora biti ručno uključen: Settings → Pages → Source = GitHub Actions.
       # enablement: true ne radi s GITHUB_TOKEN (Resource not accessible by integration).
