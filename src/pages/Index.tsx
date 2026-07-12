@@ -3,6 +3,8 @@ import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import Layout from "@/components/Layout";
+import RangListaCountdown from "@/components/RangListaCountdown";
+import AnimatedStatsGrid, { type StatItem } from "@/components/AnimatedStatsGrid";
 import { authMe, userFromAuthMe, type AuthUser } from "@/lib/auth";
 import FeatureCard from "@/components/FeatureCard";
 import {
@@ -108,11 +110,11 @@ const features: HomeFeature[] = [
   },
 ];
 
-const stats = [
-  { value: "120+", label: "Fakulteta", icon: <GraduationCap className="w-5 h-5" /> },
-  { value: "600+", label: "Korisnika", icon: <Users className="w-5 h-5" /> },
-  { value: "1", label: "Video lekcija", icon: <Video className="w-5 h-5" /> },
-  { value: "95%", label: "Zadovoljstvo", icon: <Award className="w-5 h-5" /> },
+const stats: StatItem[] = [
+  { value: 120, suffix: "+", label: "Fakulteta", icon: <GraduationCap className="w-5 h-5" /> },
+  { value: 600, suffix: "+", label: "Korisnika", icon: <Users className="w-5 h-5" /> },
+  { value: 1, label: "Video lekcija", icon: <Video className="w-5 h-5" /> },
+  { value: 95, suffix: "%", label: "Zadovoljstvo", icon: <Award className="w-5 h-5" /> },
 ];
 
 const Index = () => {
@@ -181,6 +183,8 @@ const Index = () => {
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[320px] sm:w-[640px] h-[320px] sm:h-[640px] bg-primary/5 rounded-full blur-3xl pointer-events-none" aria-hidden />
 
         <div className="container relative pb-10 pt-8 sm:pb-24 sm:pt-14 md:pb-36 md:pt-20 lg:pt-24">
+          <RangListaCountdown className="mb-8 sm:mb-10 lg:mb-12" />
+
           <div className="grid grid-cols-1 items-center gap-10 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)] lg:gap-14">
             {/* Copy column */}
             <div className="max-w-2xl mx-auto text-center lg:mx-0 lg:text-left">
@@ -231,7 +235,7 @@ const Index = () => {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: 0.2 }}
-                className="text-pretty text-[14px] sm:text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto lg:mx-0 mb-6 sm:mb-10 leading-[1.55] sm:leading-[1.6] break-words"
+                className="text-pretty text-[14px] sm:text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto lg:mx-0 mb-6 sm:mb-8 leading-[1.55] sm:leading-[1.6] break-words"
               >
                 <span className="hidden sm:inline">MojPut ti pomaže istražiti fakultete, otkriti svoje talente i donijeti informiranu odluku o budućoj karijeri — sve na jednom mjestu.</span>
                 <span className="sm:hidden">Istraži fakultete, otkrij talente i donesi pravu odluku.</span>
@@ -239,29 +243,68 @@ const Index = () => {
 
               <motion.div
                 ref={heroCtaRef}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 0.3 }}
+                initial="hidden"
+                animate="visible"
+                variants={{
+                  hidden: { opacity: 0 },
+                  visible: {
+                    opacity: 1,
+                    transition: { staggerChildren: 0.14, delayChildren: 0.3 },
+                  },
+                }}
                 className="flex flex-col sm:flex-row items-stretch sm:items-center justify-center lg:justify-start gap-2.5 sm:gap-4 w-full"
               >
-                <Button
-                  size="lg"
-                  className="group btn-primary-premium touch-tap border-0 rounded-xl px-5 sm:px-8 h-[3rem] sm:h-[3.25rem] text-[15px] sm:text-base font-semibold w-full sm:w-auto"
-                  asChild
+                <motion.div
+                  variants={{
+                    hidden: { opacity: 0, y: 18, scale: 0.94 },
+                    visible: {
+                      opacity: 1,
+                      y: 0,
+                      scale: 1,
+                      transition: { type: "spring", stiffness: 260, damping: 22 },
+                    },
+                  }}
+                  whileHover={{ y: -2 }}
+                  whileTap={{ scale: 0.97 }}
+                  className="w-full sm:w-auto"
                 >
-                  <Link to="/kviz" className="inline-flex items-center justify-center">
-                    Započni kviz
-                    <ArrowRight className="w-4 h-4 ml-2 transition-transform duration-300 group-hover:translate-x-1" />
-                  </Link>
-                </Button>
-                <Button
-                  size="lg"
-                  variant="outline"
-                  className="btn-secondary-premium touch-tap rounded-xl px-5 sm:px-8 h-[3rem] sm:h-[3.25rem] text-[15px] sm:text-base font-semibold w-full sm:w-auto"
-                  asChild
+                  <Button
+                    size="lg"
+                    className="group btn-primary-premium btn-primary-premium--live touch-tap border-0 rounded-xl px-5 sm:px-8 h-[3rem] sm:h-[3.25rem] text-[15px] sm:text-base font-semibold w-full sm:w-auto"
+                    asChild
+                  >
+                    <Link to="/kviz" className="relative inline-flex items-center justify-center overflow-hidden">
+                      <span className="relative z-[1]">Započni kviz</span>
+                      <ArrowRight className="relative z-[1] w-4 h-4 ml-2 transition-transform duration-300 group-hover:translate-x-1.5" />
+                    </Link>
+                  </Button>
+                </motion.div>
+                <motion.div
+                  variants={{
+                    hidden: { opacity: 0, y: 18, scale: 0.94 },
+                    visible: {
+                      opacity: 1,
+                      y: 0,
+                      scale: 1,
+                      transition: { type: "spring", stiffness: 260, damping: 22 },
+                    },
+                  }}
+                  whileHover={{ y: -2 }}
+                  whileTap={{ scale: 0.97 }}
+                  className="w-full sm:w-auto"
                 >
-                  <Link to="/karta" className="inline-flex items-center justify-center">Istraži fakultete</Link>
-                </Button>
+                  <Button
+                    size="lg"
+                    variant="outline"
+                    className="group btn-secondary-premium btn-secondary-premium--live touch-tap rounded-xl px-5 sm:px-8 h-[3rem] sm:h-[3.25rem] text-[15px] sm:text-base font-semibold w-full sm:w-auto"
+                    asChild
+                  >
+                    <Link to="/karta" className="relative inline-flex items-center justify-center overflow-hidden">
+                      <Map className="relative z-[1] mr-2 h-4 w-4 transition-transform duration-300 group-hover:scale-110" />
+                      <span className="relative z-[1]">Istraži fakultete</span>
+                    </Link>
+                  </Button>
+                </motion.div>
               </motion.div>
 
               {/* Mobile quick actions — vertikalno prilagođena 3×2 mreža (bez horizontalnog scrolla) */}
@@ -510,36 +553,7 @@ const Index = () => {
           aria-hidden
         />
         <div className="container py-8 sm:py-12 md:py-14">
-          <div className="mx-auto grid max-w-5xl grid-cols-2 gap-3 sm:gap-4 md:grid-cols-4 md:gap-5">
-            {stats.map((stat, i) => (
-              <motion.div
-                key={stat.label}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.4, delay: i * 0.08 }}
-                className="group relative flex flex-col items-center text-center p-4 sm:p-5 md:p-5 rounded-2xl bg-card/80 border border-border/60 backdrop-blur-sm hover:bg-card hover:border-primary/35 hover:shadow-card-hover hover:-translate-y-0.5 transition-all duration-300 overflow-hidden"
-              >
-                <div
-                  className="pointer-events-none absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-transparent via-primary/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-                  aria-hidden
-                />
-                <div
-                  className="pointer-events-none absolute -right-8 -top-8 h-20 w-20 rounded-full bg-primary/[0.08] blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"
-                  aria-hidden
-                />
-                <span className="mb-2 sm:mb-2.5 inline-flex h-9 w-9 sm:h-10 sm:w-10 items-center justify-center rounded-xl bg-gradient-to-br from-primary/15 to-primary/5 text-primary ring-1 ring-primary/15 shadow-inner group-hover:from-primary/20 group-hover:to-primary/10 group-hover:ring-primary/35 group-hover:scale-105 transition-all duration-300">
-                  {stat.icon}
-                </span>
-                <span className="text-[1.625rem] sm:text-[1.875rem] md:text-[2.125rem] font-extrabold tracking-[-0.03em] tabular-nums leading-none bg-gradient-to-br from-foreground to-foreground/70 bg-clip-text text-transparent">
-                  {stat.value}
-                </span>
-                <p className="mt-1.5 sm:mt-2 text-[10px] sm:text-[11px] text-muted-foreground font-semibold tracking-[0.08em] leading-snug uppercase">
-                  {stat.label}
-                </p>
-              </motion.div>
-            ))}
-          </div>
+          <AnimatedStatsGrid stats={stats} />
         </div>
       </section>
 

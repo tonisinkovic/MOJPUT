@@ -328,6 +328,54 @@
     transform: translateY(0);
   }
 
+  /* Hero CTA — idle glow + shine sweep */
+  .btn-primary-premium--live {
+    overflow: hidden;
+    animation: btn-primary-glow 3.2s ease-in-out infinite;
+  }
+
+  .btn-primary-premium--live::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: linear-gradient(
+      110deg,
+      transparent 28%,
+      hsl(0 0% 100% / 0.22) 48%,
+      transparent 68%
+    );
+    transform: translateX(-130%);
+    animation: btn-shine-sweep 4s ease-in-out infinite;
+    pointer-events: none;
+  }
+
+  @keyframes btn-primary-glow {
+    0%, 100% {
+      box-shadow:
+        0 1px 0 hsl(0 0% 100% / 0.18) inset,
+        0 12px 28px -10px hsl(205 82% 54% / 0.55),
+        0 4px 12px -3px hsl(174 72% 38% / 0.4),
+        0 0 0 0 hsl(205 82% 54% / 0);
+    }
+    50% {
+      box-shadow:
+        0 1px 0 hsl(0 0% 100% / 0.24) inset,
+        0 16px 36px -8px hsl(205 82% 54% / 0.72),
+        0 6px 16px -2px hsl(174 72% 38% / 0.52),
+        0 0 28px -4px hsl(205 82% 54% / 0.35);
+    }
+  }
+
+  @keyframes btn-shine-sweep {
+    0%, 72% {
+      transform: translateX(-130%);
+    }
+    100% {
+      transform: translateX(130%);
+    }
+  }
+
   /* Secondary outline button — paired with primary CTA */
   .btn-secondary-premium {
     background: hsl(var(--background) / 0.7);
@@ -343,6 +391,40 @@
     color: hsl(var(--primary));
     background: hsl(var(--primary) / 0.05);
     box-shadow: 0 6px 18px -8px hsl(215 30% 12% / 0.18);
+  }
+
+  .btn-secondary-premium--live {
+    position: relative;
+    overflow: hidden;
+    animation: btn-secondary-border-pulse 3.5s ease-in-out infinite;
+  }
+
+  .btn-secondary-premium--live::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: linear-gradient(
+      110deg,
+      transparent 30%,
+      hsl(var(--primary) / 0.08) 50%,
+      transparent 70%
+    );
+    transform: translateX(-130%);
+    animation: btn-shine-sweep 5s ease-in-out infinite;
+    animation-delay: 1.2s;
+    pointer-events: none;
+  }
+
+  @keyframes btn-secondary-border-pulse {
+    0%, 100% {
+      border-color: hsl(var(--border));
+      box-shadow: none;
+    }
+    50% {
+      border-color: hsl(var(--primary) / 0.38);
+      box-shadow: 0 0 0 1px hsl(var(--primary) / 0.08), 0 8px 22px -10px hsl(var(--primary) / 0.2);
+    }
   }
 
   /* Noise-ish soft texture for premium surfaces (very subtle) */
@@ -468,11 +550,178 @@
     }
   }
 
+  @keyframes countdown-glow-pulse {
+    0%, 100% {
+      box-shadow:
+        0 0 0 1px hsl(0 84% 58% / 0.35),
+        0 16px 40px -14px hsl(0 84% 38% / 0.75),
+        0 0 48px -8px hsl(0 90% 55% / 0.35);
+    }
+    50% {
+      box-shadow:
+        0 0 0 1px hsl(0 84% 68% / 0.55),
+        0 22px 52px -12px hsl(0 84% 38% / 0.9),
+        0 0 64px -6px hsl(0 90% 55% / 0.5);
+    }
+  }
+
+  @keyframes countdown-shine-sweep {
+    0% {
+      transform: translateX(-120%);
+    }
+    100% {
+      transform: translateX(120%);
+    }
+  }
+
+  @keyframes countdown-orb-drift {
+    0%, 100% {
+      transform: translate(0, 0) scale(1);
+      opacity: 0.55;
+    }
+    50% {
+      transform: translate(12px, 8px) scale(1.08);
+      opacity: 0.85;
+    }
+  }
+
+  .countdown-glow {
+    animation: countdown-glow-pulse 2.8s ease-in-out infinite;
+  }
+
+  .countdown-shine {
+    animation: countdown-shine-sweep 4.5s ease-in-out infinite;
+  }
+
+  .countdown-orb-drift {
+    animation: countdown-orb-drift 5s ease-in-out infinite;
+  }
+
+  .countdown-orb-drift-reverse {
+    animation: countdown-orb-drift 6.5s ease-in-out infinite reverse;
+  }
+
+  .countdown-ticker-panel {
+    animation: countdown-panel-breathe 4s ease-in-out infinite;
+  }
+
+  @keyframes countdown-panel-breathe {
+    0%, 100% {
+      box-shadow:
+        inset 0 1px 0 hsl(0 0% 100% / 0.12),
+        0 8px 24px -12px hsl(0 84% 20% / 0.55);
+    }
+    50% {
+      box-shadow:
+        inset 0 1px 0 hsl(0 0% 100% / 0.18),
+        0 12px 32px -10px hsl(0 84% 30% / 0.65);
+    }
+  }
+
+  @keyframes countdown-progress-sweep {
+    0% {
+      transform: translateX(-100%);
+      opacity: 0;
+    }
+    30% {
+      opacity: 1;
+    }
+    100% {
+      transform: translateX(100%);
+      opacity: 0;
+    }
+  }
+
+  .countdown-progress-sweep {
+    animation: countdown-progress-sweep 3s ease-in-out infinite;
+  }
+
+  /* Kalkulator — rezultat korak */
+  @keyframes result-score-orb-pulse {
+    0%,
+    100% {
+      transform: translate(-50%, -50%) scale(0.92);
+      opacity: 0.55;
+    }
+    50% {
+      transform: translate(-50%, -50%) scale(1.08);
+      opacity: 0.9;
+    }
+  }
+
+  @keyframes result-score-shine {
+    0% {
+      transform: translateY(-50%) translateX(-120%);
+      opacity: 0;
+    }
+    20% {
+      opacity: 0.85;
+    }
+    100% {
+      transform: translateY(-50%) translateX(120%);
+      opacity: 0;
+    }
+  }
+
+  @keyframes result-bar-shimmer {
+    0% {
+      transform: translateX(-100%);
+    }
+    100% {
+      transform: translateX(220%);
+    }
+  }
+
+  @keyframes result-card-orb-drift {
+    0%,
+    100% {
+      transform: translate(0, 0) scale(1);
+    }
+    50% {
+      transform: translate(12px, -8px) scale(1.06);
+    }
+  }
+
+  .result-score-orb {
+    animation: result-score-orb-pulse 3.2s ease-in-out infinite;
+  }
+
+  .result-score-shine {
+    animation: result-score-shine 2.8s ease-in-out infinite;
+  }
+
+  .result-bar-shimmer {
+    animation: result-bar-shimmer 2.4s ease-in-out infinite;
+  }
+
+  .result-card-orb {
+    animation: result-card-orb-drift 5.5s ease-in-out infinite;
+  }
+
+  .result-card-orb-reverse {
+    animation: result-card-orb-drift 6.8s ease-in-out infinite reverse;
+  }
+
   @media (prefers-reduced-motion: reduce) {
     .aurora-orb,
     .animate-float-slow,
     .animate-float-slower,
-    .badge-popular {
+    .badge-popular,
+    .countdown-glow,
+    .countdown-shine,
+    .countdown-orb-drift,
+    .countdown-orb-drift-reverse,
+    .countdown-ticker-panel,
+    .countdown-progress-sweep,
+    .result-score-orb,
+    .result-score-shine,
+    .result-bar-shimmer,
+    .result-card-orb,
+    .result-card-orb-reverse,
+    .btn-primary-premium--live,
+    .btn-primary-premium--live::after,
+    .btn-secondary-premium--live,
+    .btn-secondary-premium--live::after {
       animation: none;
     }
   }
