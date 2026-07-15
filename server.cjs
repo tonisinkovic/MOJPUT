@@ -118,6 +118,7 @@ const RESEND_JSON_HEADERS = {
 
 /** Zadano ako APP_ORIGIN / PUBLIC_APP_ORIGIN nije postavljen (produkcija: https://mojput.com). */
 const DEFAULT_PUBLIC_APP_ORIGIN = "https://mojput.com";
+const DEFAULT_PUBLIC_APP_ORIGIN_WWW = "https://www.mojput.com";
 
 /**
  * APP_ORIGIN = HTTPS origin javnog frontenda (npr. https://mojput.com), bez staze. Stare vrijednosti s /MOJPUT na kraju se i dalje normaliziraju.
@@ -1299,6 +1300,7 @@ async function main() {
       if (s && /^https?:\/\//i.test(s)) set.add(s);
     };
     add(DEFAULT_PUBLIC_APP_ORIGIN);
+    add(DEFAULT_PUBLIC_APP_ORIGIN_WWW);
     add(normalizeAppOrigin());
     add(publicAppOriginFallback());
     add(appOriginForLinks());

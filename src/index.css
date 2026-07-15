@@ -734,6 +734,9 @@
     .countdown-ticker-panel,
     .countdown-progress-sweep,
     .results-glow,
+    .hero-quick-shine,
+    .stats-celebrate-shine,
+    .stats-celebrate-glow,
     .result-score-orb,
     .result-score-shine,
     .result-bar-shimmer,
@@ -780,6 +783,75 @@
   .touch-tap {
     touch-action: manipulation;
     -webkit-tap-highlight-color: transparent;
+  }
+
+  .hero-quick-shine {
+    background: linear-gradient(
+      110deg,
+      transparent 25%,
+      hsl(0 0% 100% / 0.22) 50%,
+      transparent 75%
+    );
+    animation: hero-quick-shine-sweep 3.5s ease-in-out infinite;
+  }
+
+  @keyframes stats-celebrate-shine {
+    0% {
+      opacity: 0;
+      transform: translateX(-120%) skewX(-12deg);
+    }
+    25% {
+      opacity: 1;
+    }
+    100% {
+      opacity: 0;
+      transform: translateX(120%) skewX(-12deg);
+    }
+  }
+
+  @keyframes stats-celebrate-glow {
+    0%,
+    100% {
+      border-color: hsl(var(--border) / 0.6);
+      box-shadow: var(--shadow-soft);
+    }
+    40% {
+      border-color: hsl(var(--primary) / 0.45);
+      box-shadow:
+        0 0 0 1px hsl(var(--primary) / 0.18),
+        0 10px 32px -10px hsl(var(--primary) / 0.35),
+        0 0 28px -6px hsl(205 82% 54% / 0.28);
+    }
+  }
+
+  .stats-celebrate-shine {
+    background: linear-gradient(
+      105deg,
+      transparent 18%,
+      hsl(var(--primary) / 0.12) 42%,
+      hsl(205 82% 54% / 0.22) 50%,
+      hsl(var(--primary) / 0.1) 58%,
+      transparent 82%
+    );
+    animation: stats-celebrate-shine 1s ease-out forwards;
+  }
+
+  .stats-celebrate-glow {
+    animation: stats-celebrate-glow 1s ease-out forwards;
+  }
+
+  @keyframes hero-quick-shine-sweep {
+    0% {
+      transform: translateX(-120%);
+    }
+    100% {
+      transform: translateX(120%);
+    }
+  }
+
+  .hero-quick-tile:focus-visible {
+    outline: 2px solid hsl(var(--primary));
+    outline-offset: 2px;
   }
 
   /* Quick-action pill — compact CTA used in mobile hero strip */

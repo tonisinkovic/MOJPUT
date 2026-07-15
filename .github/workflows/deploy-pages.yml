@@ -40,6 +40,7 @@ jobs:
         run: npm run build
         env:
           VITE_BASE_PATH: /MOJPUT/
+          VITE_API_URL: https://mojput.onrender.com
 
       # Pages mora biti ručno uključen: Settings → Pages → Source = GitHub Actions.
       # enablement: true ne radi s GITHUB_TOKEN (Resource not accessible by integration).

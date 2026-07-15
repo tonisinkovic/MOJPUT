@@ -4,6 +4,8 @@ export type ApiOk<T> = { success: true; data?: T; user?: T };
 export type ApiErr = { success: false; message: string; code?: string };
 export type ApiResponse<T> = ApiOk<T> | ApiErr;
 
+const API_FETCH_TIMEOUT_MS = 22_000;
+
 const AUTH_TOKEN_KEY = "mojput_bearer_token";
 const LAST_LOGIN_EMAIL_KEY = "mojput_last_account_email";
 
@@ -121,16 +123,36 @@ async function parseJson<T>(res: Response, reqPath: string): Promise<ApiResponse
   return json as ApiResponse<T>;
 }
 
+async function fetchWithTimeout(url: string, init: RequestInit): Promise<Response> {
+  const controller = new AbortController();
+  const timeoutId = window.setTimeout(() => controller.abort(), API_FETCH_TIMEOUT_MS);
+  try {
+    return await fetch(url, { ...init, signal: controller.signal });
+  } finally {
+    window.clearTimeout(timeoutId);
+  }
+}
+
+function networkErrorMessage(err: unknown): string {
+  if (err instanceof DOMException && err.name === "AbortError") {
+    return (
+      "API ne odgovara na vrijeme. Server na Renderu možda „spava” — pričekaj minutu i pokušaj ponovno. " +
+      "Ako se ponavlja, provjeri je li backend pokrenut na mojput.onrender.com."
+    );
+  }
+  return "Server nije dostupan. Provjeri je li API pokrenut (mojput.onrender.com).";
+}
+
 export async function apiGet<T>(url: string): Promise<ApiResponse<T>> {
   try {
-    const res = await fetch(`${API_BASE_URL}${url}`, {
+    const res = await fetchWithTimeout(`${API_BASE_URL}${url}`, {
       method: "GET",
       credentials: "include",
       headers: withAuthHeaders({ Accept: "application/json" }),
     });
     return parseJson<T>(res, url);
-  } catch {
-    return { success: false, message: "Server nije dostupan. Provjeri je li pokrenut." };
+  } catch (err) {
+    return { success: false, message: networkErrorMessage(err), code: "NETWORK_ERROR" };
   }
 }
 
@@ -139,7 +161,7 @@ export async function apiPost<T>(
   body: unknown,
 ): Promise<ApiResponse<T>> {
   try {
-    const res = await fetch(`${API_BASE_URL}${url}`, {
+    const res = await fetchWithTimeout(`${API_BASE_URL}${url}`, {
       method: "POST",
       credentials: "include",
       headers: withAuthHeaders({
@@ -149,14 +171,14 @@ export async function apiPost<T>(
       body: JSON.stringify(body),
     });
     return parseJson<T>(res, url);
-  } catch {
-    return { success: false, message: "Server nije dostupan. Provjeri je li pokrenut." };
+  } catch (err) {
+    return { success: false, message: networkErrorMessage(err), code: "NETWORK_ERROR" };
   }
 }
 
 export async function apiPatch<T>(url: string, body: unknown): Promise<ApiResponse<T>> {
   try {
-    const res = await fetch(`${API_BASE_URL}${url}`, {
+    const res = await fetchWithTimeout(`${API_BASE_URL}${url}`, {
       method: "PATCH",
       credentials: "include",
       headers: withAuthHeaders({
@@ -166,20 +188,20 @@ export async function apiPatch<T>(url: string, body: unknown): Promise<ApiRespon
       body: JSON.stringify(body),
     });
     return parseJson<T>(res, url);
-  } catch {
-    return { success: false, message: "Server nije dostupan. Provjeri je li pokrenut." };
+  } catch (err) {
+    return { success: false, message: networkErrorMessage(err), code: "NETWORK_ERROR" };
   }
 }
 
 export async function apiDelete<T>(url: string): Promise<ApiResponse<T>> {
   try {
-    const res = await fetch(`${API_BASE_URL}${url}`, {
+    const res = await fetchWithTimeout(`${API_BASE_URL}${url}`, {
       method: "DELETE",
       credentials: "include",
       headers: withAuthHeaders({ Accept: "application/json" }),
     });
     return parseJson<T>(res, url);
-  } catch {
-    return { success: false, message: "Server nije dostupan. Provjeri je li pokrenut." };
+  } catch (err) {
+    return { success: false, message: networkErrorMessage(err), code: "NETWORK_ERROR" };
   }
 }

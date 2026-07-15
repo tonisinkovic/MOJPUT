@@ -57,7 +57,8 @@ const Prijava = () => {
   }));
   const [loginError, setLoginError] = useState("");
   const [loggedUser, setLoggedUser] = useState<AuthUser | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [checkingSession, setCheckingSession] = useState(true);
+  const [loginSubmitting, setLoginSubmitting] = useState(false);
   const [info, setInfo] = useState("");
   const [emailVerifyUi, setEmailVerifyUi] = useState<EmailVerifyUi>({ kind: "closed" });
   const [needsVerification, setNeedsVerification] = useState(false);
@@ -109,9 +110,12 @@ const Prijava = () => {
       .then((res) => {
         if (!alive) return;
         if (res.success) setLoggedUser(userFromAuthMe(res));
+        else if (res.code === "NETWORK_ERROR") {
+          setInfo(res.message);
+        }
       })
       .finally(() => {
-        if (alive) setLoading(false);
+        if (alive) setCheckingSession(false);
       });
     return () => {
       alive = false;
@@ -147,10 +151,16 @@ const Prijava = () => {
       method: "email",
       page_path: window.location.pathname,
     });
-    const res = await authLogin({
-      email: loginData.email,
-      password: loginData.password,
-    });
+    setLoginSubmitting(true);
+    let res;
+    try {
+      res = await authLogin({
+        email: loginData.email,
+        password: loginData.password,
+      });
+    } finally {
+      setLoginSubmitting(false);
+    }
     if (!res.success) {
       trackEvent("login_failed", {
         method: "email",
@@ -382,7 +392,7 @@ const Prijava = () => {
                 </div>
 
                 {/* Transient alerts */}
-                {loading && (
+                {checkingSession && (
                   <div className="mb-4 flex items-center gap-2.5 rounded-xl border border-border/70 bg-muted/40 px-3.5 py-2.5 text-[13px] font-medium text-muted-foreground">
                     <Loader2 className="h-4 w-4 animate-spin text-primary" aria-hidden />
                     Provjeravam prijavu…
@@ -531,10 +541,10 @@ const Prijava = () => {
                   {/* Submit */}
                   <button
                     type="submit"
-                    disabled={loading}
+                    disabled={checkingSession || loginSubmitting}
                     className="group btn-primary-premium border-0 rounded-xl h-12 w-full text-[15px] font-semibold inline-flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
                   >
-                    {loading ? (
+                    {loginSubmitting ? (
                       <Loader2 className="h-4 w-4 animate-spin" />
                     ) : (
                       <>

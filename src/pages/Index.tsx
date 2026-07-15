@@ -26,7 +26,94 @@ import {
   Lock,
   User,
 } from "lucide-react";
-import type { ReactNode } from "react";
+import type { LucideIcon, ReactNode } from "react";
+import { cn } from "@/lib/utils";
+
+type HeroQuickAction = {
+  to: string;
+  label: string;
+  hook: string;
+  Icon: LucideIcon;
+  shell: string;
+  iconWrap: string;
+  featured?: boolean;
+};
+
+const HERO_QUICK_ACTIONS: HeroQuickAction[] = [
+  {
+    to: "/kviz",
+    label: "Kviz",
+    hook: "Otkrij sebe",
+    Icon: GraduationCap,
+    shell:
+      "from-violet-500/16 via-violet-500/6 to-background/90 border-violet-400/35 shadow-[0_10px_28px_-12px_hsl(270_70%_50%/0.4)]",
+    iconWrap: "bg-violet-500/15 text-violet-600 dark:text-violet-400 ring-violet-500/25",
+    featured: true,
+  },
+  {
+    to: "/karta",
+    label: "Karta",
+    hook: "710+ smjerova",
+    Icon: Map,
+    shell:
+      "from-blue-500/14 via-blue-500/5 to-background/90 border-blue-400/30 shadow-[0_10px_28px_-12px_hsl(220_80%_50%/0.35)]",
+    iconWrap: "bg-blue-500/15 text-blue-600 dark:text-blue-400 ring-blue-500/25",
+  },
+  {
+    to: "/kalkulator",
+    label: "Bodovi",
+    hook: "Izračunaj",
+    Icon: Calculator,
+    shell:
+      "from-amber-500/16 via-amber-500/6 to-background/90 border-amber-400/35 shadow-[0_10px_28px_-12px_hsl(38_90%_50%/0.35)]",
+    iconWrap: "bg-amber-500/15 text-amber-700 dark:text-amber-400 ring-amber-500/25",
+  },
+  {
+    to: "/samoprocjena",
+    label: "Profil",
+    hook: "Talenti",
+    Icon: Target,
+    shell:
+      "from-emerald-500/14 via-emerald-500/5 to-background/90 border-emerald-400/30 shadow-[0_10px_28px_-12px_hsl(160_70%_40%/0.3)]",
+    iconWrap: "bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 ring-emerald-500/25",
+  },
+  {
+    to: "/kalendar",
+    label: "Kalendar",
+    hook: "Rokovi",
+    Icon: Calendar,
+    shell:
+      "from-rose-500/14 via-rose-500/5 to-background/90 border-rose-400/30 shadow-[0_10px_28px_-12px_hsl(350_80%_55%/0.3)]",
+    iconWrap: "bg-rose-500/15 text-rose-600 dark:text-rose-400 ring-rose-500/25",
+  },
+  {
+    to: "/video",
+    label: "Video",
+    hook: "Inspiracija",
+    Icon: Video,
+    shell:
+      "from-fuchsia-500/14 via-fuchsia-500/5 to-background/90 border-fuchsia-400/30 shadow-[0_10px_28px_-12px_hsl(300_70%_50%/0.3)]",
+    iconWrap: "bg-fuchsia-500/15 text-fuchsia-600 dark:text-fuchsia-400 ring-fuchsia-500/25",
+  },
+];
+
+const heroQuickStagger = {
+  hidden: { opacity: 0 },
+  show: {
+    opacity: 1,
+    transition: { staggerChildren: 0.07, delayChildren: 0.12 },
+  },
+};
+
+const heroQuickItem = {
+  hidden: { opacity: 0, y: 18, scale: 0.9 },
+  show: {
+    opacity: 1,
+    y: 0,
+    scale: 1,
+    transition: { type: "spring", stiffness: 280, damping: 22 },
+  },
+};
 
 type HomeFeature = {
   icon: ReactNode;
@@ -94,7 +181,6 @@ const features: HomeFeature[] = [
     title: "Matura",
     description: "Kvizovi i PDF materijali za šk. god. 2024/2025. (matematika; ostali predmeti uskoro).",
     path: "/mature",
-    locked: true,
   },
   {
     icon: <Users className="h-6 w-6 text-primary" />,
@@ -307,7 +393,7 @@ const Index = () => {
                 </motion.div>
               </motion.div>
 
-              {/* Mobile quick actions — vertikalno prilagođena 3×2 mreža (bez horizontalnog scrolla) */}
+              {/* Mobile quick actions — 3×2 mreža s bojama i animacijama */}
               <motion.div
                 initial={{ opacity: 0, y: 16 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -315,38 +401,64 @@ const Index = () => {
                 className="mt-6 lg:hidden"
                 aria-label="Brze akcije"
               >
-                <div className="mb-2.5 flex items-center justify-between px-0.5">
-                  <span className="text-[11px] font-bold uppercase tracking-[0.18em] text-muted-foreground/80">
-                    Brze akcije
-                  </span>
+                <div className="mb-3 flex items-end justify-between px-0.5">
+                  <div>
+                    <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-primary/80">
+                      Kreni odmah
+                    </p>
+                    <p className="mt-0.5 text-sm font-semibold text-foreground">Što te zanima?</p>
+                  </div>
                   <Link
                     to="/#alati"
-                    className="text-[11px] font-semibold text-primary hover:underline underline-offset-4"
+                    className="inline-flex items-center gap-1 text-[11px] font-semibold text-primary hover:underline underline-offset-4"
                   >
-                    Svi alati →
+                    Svi alati
+                    <ArrowRight className="h-3 w-3" />
                   </Link>
                 </div>
-                <div className="grid grid-cols-3 gap-2">
-                  {[
-                    { to: "/kviz", label: "Kviz", Icon: GraduationCap },
-                    { to: "/karta", label: "Karta", Icon: Map },
-                    { to: "/kalkulator", label: "Bodovi", Icon: Calculator },
-                    { to: "/samoprocjena", label: "Profil", Icon: Target },
-                    { to: "/kalendar", label: "Kalendar", Icon: Calendar },
-                    { to: "/video", label: "Video", Icon: Video },
-                  ].map(({ to, label, Icon }) => (
-                    <Link
-                      key={to}
-                      to={to}
-                      className="quick-pill quick-pill--grid touch-tap"
-                    >
-                      <span className="quick-pill-icon">
-                        <Icon className="h-4 w-4" aria-hidden />
-                      </span>
-                      <span className="quick-pill-label">{label}</span>
-                    </Link>
+                <motion.div
+                  variants={heroQuickStagger}
+                  initial="hidden"
+                  animate="show"
+                  className="grid grid-cols-3 gap-2.5"
+                >
+                  {HERO_QUICK_ACTIONS.map(({ to, label, hook, Icon, shell, iconWrap, featured }) => (
+                    <motion.div key={to} variants={heroQuickItem} className="min-w-0">
+                      <Link
+                        to={to}
+                        className={cn(
+                          "hero-quick-tile group relative flex min-h-[5.5rem] touch-tap flex-col items-center justify-center overflow-hidden rounded-2xl border bg-gradient-to-br px-2 py-3 text-center transition-all duration-300 active:scale-[0.96] sm:min-h-[5.75rem] sm:rounded-[1.125rem] sm:py-3.5",
+                          shell,
+                          "hover:-translate-y-1 hover:shadow-lg",
+                        )}
+                      >
+                        <div
+                          aria-hidden
+                          className="hero-quick-shine pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-300 group-hover:opacity-100"
+                        />
+                        {featured && (
+                          <span className="absolute right-1.5 top-1.5 rounded-full bg-violet-500/90 px-1.5 py-0.5 text-[8px] font-extrabold uppercase tracking-wider text-white shadow-sm">
+                            Start
+                          </span>
+                        )}
+                        <span
+                          className={cn(
+                            "relative flex h-10 w-10 items-center justify-center rounded-xl ring-1 transition-transform duration-300 group-hover:scale-110 group-active:scale-95 sm:h-11 sm:w-11 sm:rounded-2xl",
+                            iconWrap,
+                          )}
+                        >
+                          <Icon className="h-[1.125rem] w-[1.125rem] sm:h-5 sm:w-5" aria-hidden />
+                        </span>
+                        <span className="relative mt-2 text-[13px] font-bold leading-tight tracking-tight text-foreground">
+                          {label}
+                        </span>
+                        <span className="relative mt-0.5 text-[10px] font-medium leading-none text-muted-foreground/90">
+                          {hook}
+                        </span>
+                      </Link>
+                    </motion.div>
                   ))}
-                </div>
+                </motion.div>
               </motion.div>
 
               <motion.div
@@ -366,7 +478,7 @@ const Index = () => {
                 </span>
                 <span className="inline-flex items-center gap-1.5 rounded-full border border-border/70 bg-background/75 backdrop-blur-sm px-2.5 sm:px-3 py-1 sm:py-1.5 text-[10.5px] sm:text-[11px] font-semibold text-muted-foreground shadow-soft transition-all hover:border-primary/30 hover:text-foreground whitespace-nowrap">
                   <Users className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-primary" />
-                  500+ maturanata
+                  600+ maturanata
                 </span>
               </motion.div>
             </div>
