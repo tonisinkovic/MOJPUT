@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import Layout from "@/components/Layout";
-import RangListaCountdown from "@/components/RangListaCountdown";
+import UpisRezultatiBanner from "@/components/UpisRezultatiBanner";
 import AnimatedStatsGrid, { type StatItem } from "@/components/AnimatedStatsGrid";
 import { authMe, userFromAuthMe, type AuthUser } from "@/lib/auth";
 import FeatureCard from "@/components/FeatureCard";
@@ -183,7 +183,7 @@ const Index = () => {
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[320px] sm:w-[640px] h-[320px] sm:h-[640px] bg-primary/5 rounded-full blur-3xl pointer-events-none" aria-hidden />
 
         <div className="container relative pb-10 pt-8 sm:pb-24 sm:pt-14 md:pb-36 md:pt-20 lg:pt-24">
-          <RangListaCountdown className="mb-8 sm:mb-10 lg:mb-12" />
+          <UpisRezultatiBanner className="mb-8 sm:mb-10 lg:mb-12" />
 
           <div className="grid grid-cols-1 items-center gap-10 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)] lg:gap-14">
             {/* Copy column */}

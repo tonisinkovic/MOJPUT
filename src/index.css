@@ -550,6 +550,26 @@
     }
   }
 
+  @keyframes results-glow-pulse {
+    0%,
+    100% {
+      box-shadow:
+        0 0 0 1px hsl(160 70% 48% / 0.35),
+        0 16px 40px -14px hsl(160 70% 32% / 0.7),
+        0 0 48px -8px hsl(160 80% 45% / 0.3);
+    }
+    50% {
+      box-shadow:
+        0 0 0 1px hsl(160 70% 58% / 0.5),
+        0 22px 52px -12px hsl(160 70% 32% / 0.85),
+        0 0 64px -6px hsl(160 80% 50% / 0.45);
+    }
+  }
+
+  .results-glow {
+    animation: results-glow-pulse 3s ease-in-out infinite;
+  }
+
   @keyframes countdown-glow-pulse {
     0%, 100% {
       box-shadow:
@@ -713,6 +733,7 @@
     .countdown-orb-drift-reverse,
     .countdown-ticker-panel,
     .countdown-progress-sweep,
+    .results-glow,
     .result-score-orb,
     .result-score-shine,
     .result-bar-shimmer,
