@@ -283,7 +283,12 @@ const MojPutEntryIntro = ({ onEnterSenior }: MojPutEntryIntroProps) => {
         aria-hidden
       />
 
-      <section className="container relative z-10 flex min-h-screen flex-col items-center justify-start px-3 py-5 sm:justify-center sm:px-4 sm:py-8">
+      <section
+        className={cn(
+          "container relative z-10 flex min-h-screen flex-col items-center px-3 py-5 sm:justify-center sm:px-4 sm:py-8",
+          showChoice ? "justify-start" : "justify-center",
+        )}
+      >
         <motion.div
           initial={{ opacity: 0, scale: 0.58, y: 20, filter: "blur(18px)" }}
           animate={{
@@ -294,7 +299,8 @@ const MojPutEntryIntro = ({ onEnterSenior }: MojPutEntryIntroProps) => {
           }}
           transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1] }}
           className={cn(
-            "relative mx-auto flex h-20 w-20 items-center justify-center rounded-[1.7rem] border border-white/80 bg-white/80 p-2.5 shadow-[0_26px_80px_-36px_hsl(174_62%_42%/0.9)] backdrop-blur-2xl sm:h-32 sm:w-32 sm:rounded-[2.6rem] sm:p-3",
+            "relative mx-auto flex items-center justify-center border border-white/80 bg-white/80 shadow-[0_26px_80px_-36px_hsl(174_62%_42%/0.9)] backdrop-blur-2xl sm:h-32 sm:w-32 sm:rounded-[2.6rem] sm:p-3",
+            showChoice ? "h-20 w-20 rounded-[1.7rem] p-2.5" : "h-32 w-32 rounded-[2.6rem] p-3",
             showChoice ? "mb-2" : "mb-10 sm:mb-12",
           )}
         >
@@ -331,7 +337,7 @@ const MojPutEntryIntro = ({ onEnterSenior }: MojPutEntryIntroProps) => {
           />
         </motion.div>
 
-        <div className={cn("w-full transition-all duration-500", showChoice ? "min-h-0" : "min-h-[7.5rem]")}>
+        <div className={cn("w-full transition-all duration-500", showChoice ? "min-h-0" : "min-h-[9rem] sm:min-h-[7.5rem]")}>
           <AnimatePresence mode="wait">
             {introStage === "welcome" && (
               <motion.div
@@ -340,9 +346,9 @@ const MojPutEntryIntro = ({ onEnterSenior }: MojPutEntryIntroProps) => {
                 animate={{ opacity: 1, y: 0, scale: 1, filter: "blur(0px)" }}
                 exit={{ opacity: 0, y: 0, scale: 0.995, filter: "blur(6px)" }}
                 transition={{ duration: 0.72, ease: [0.25, 1, 0.5, 1] }}
-                className="mx-auto text-center"
+                className="mx-auto max-w-[22rem] text-center sm:max-w-none"
               >
-                <p className="text-[2rem] font-semibold leading-tight tracking-[-0.045em] text-slate-950 sm:text-5xl md:text-6xl">
+                <p className="text-[2.65rem] font-semibold leading-[1.02] tracking-[-0.055em] text-slate-950 sm:text-5xl md:text-6xl">
                   Dobrodošli na <span className="text-gradient">MojPut!</span>
                 </p>
               </motion.div>
