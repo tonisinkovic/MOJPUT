@@ -300,7 +300,7 @@ const MojPutEntryIntro = ({ onEnterSenior }: MojPutEntryIntroProps) => {
           transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1] }}
           className={cn(
             "relative mx-auto flex items-center justify-center border border-white/80 bg-white/80 shadow-[0_26px_80px_-36px_hsl(174_62%_42%/0.9)] backdrop-blur-2xl sm:h-32 sm:w-32 sm:rounded-[2.6rem] sm:p-3",
-            showChoice ? "h-20 w-20 rounded-[1.7rem] p-2.5" : "h-32 w-32 rounded-[2.6rem] p-3",
+            "h-32 w-32 rounded-[2.6rem] p-3",
             showChoice ? "mb-2" : "mb-10 sm:mb-12",
           )}
         >
