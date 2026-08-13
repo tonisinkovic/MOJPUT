@@ -196,18 +196,29 @@ const features: HomeFeature[] = [
   },
 ];
 
-const stats: StatItem[] = [
+const seniorStats: StatItem[] = [
   { value: 120, suffix: "+", label: "Fakulteta", icon: <GraduationCap className="w-5 h-5" /> },
   { value: 600, suffix: "+", label: "Korisnika", icon: <Users className="w-5 h-5" /> },
   { value: 1, label: "Video lekcija", icon: <Video className="w-5 h-5" /> },
   { value: 95, suffix: "%", label: "Zadovoljstvo", icon: <Award className="w-5 h-5" /> },
 ];
 
+/** DZS: 447 srednjih škola u RH, šk. g. 2024./2025. */
+const juniorStats: StatItem[] = [
+  { value: 447, label: "Srednjih škola", icon: <GraduationCap className="w-5 h-5" /> },
+  { value: 600, suffix: "+", label: "Korisnika", icon: <Users className="w-5 h-5" /> },
+  { value: 1, label: "Video lekcija", icon: <Video className="w-5 h-5" /> },
+  { value: 95, suffix: "%", label: "Zadovoljstvo", icon: <Award className="w-5 h-5" /> },
+];
+
 type MojPutEntryIntroProps = {
+  onEnterJunior: () => void;
   onEnterSenior: () => void;
 };
 
-const MojPutEntryIntro = ({ onEnterSenior }: MojPutEntryIntroProps) => {
+type MojPutExperience = "junior" | "senior";
+
+const MojPutEntryIntro = ({ onEnterJunior, onEnterSenior }: MojPutEntryIntroProps) => {
   const [introStage, setIntroStage] = useState<"logo" | "welcome" | "choose">("logo");
   const [isLeaving, setIsLeaving] = useState(false);
 
@@ -223,10 +234,10 @@ const MojPutEntryIntro = ({ onEnterSenior }: MojPutEntryIntroProps) => {
     };
   }, []);
 
-  const enterSenior = () => {
+  const enterExperience = (onEnter: () => void) => {
     if (isLeaving || introStage !== "choose") return;
     setIsLeaving(true);
-    window.setTimeout(onEnterSenior, 720);
+    window.setTimeout(onEnter, 720);
   };
 
   const revealItem = {
@@ -582,7 +593,8 @@ const MojPutEntryIntro = ({ onEnterSenior }: MojPutEntryIntroProps) => {
                 />
                 <motion.button
                   type="button"
-                  disabled
+                  onClick={() => enterExperience(onEnterJunior)}
+                  disabled={isLeaving}
                   variants={{
                     hidden: { opacity: 0, x: -24, y: 38, scale: 0.94, rotateX: 8, filter: "blur(16px)" },
                     show: {
@@ -595,7 +607,9 @@ const MojPutEntryIntro = ({ onEnterSenior }: MojPutEntryIntroProps) => {
                       transition: { type: "spring", stiffness: 130, damping: 17 },
                     },
                   }}
-                  className="group relative min-h-[12.75rem] cursor-not-allowed overflow-hidden rounded-[1.6rem] border border-amber-400/22 bg-white/82 p-5 text-left shadow-[0_30px_105px_-50px_hsl(38_92%_58%/0.75)] backdrop-blur-2xl transition-all duration-300 sm:min-h-[16.25rem] sm:rounded-[2rem] sm:p-7"
+                  whileHover={isLeaving ? undefined : { y: -8, scale: 1.012 }}
+                  whileTap={isLeaving ? undefined : { scale: 0.985 }}
+                  className="group relative min-h-[12.75rem] overflow-hidden rounded-[1.6rem] border border-amber-400/22 bg-white/82 p-5 text-left shadow-[0_30px_105px_-50px_hsl(38_92%_58%/0.75)] outline-none ring-amber-400/25 backdrop-blur-2xl transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_44px_130px_-48px_hsl(38_92%_58%/0.9)] focus-visible:ring-4 disabled:cursor-wait sm:min-h-[16.25rem] sm:rounded-[2rem] sm:p-7"
                 >
                   <span className="absolute inset-x-0 top-0 h-2 bg-gradient-to-r from-amber-300 via-orange-300 to-primary/50" aria-hidden />
                   <span className="absolute inset-0 bg-[radial-gradient(circle_at_82%_14%,hsl(38_92%_58%/0.2),transparent_30%),radial-gradient(circle_at_8%_18%,hsl(174_62%_42%/0.1),transparent_28%),linear-gradient(135deg,hsl(0_0%_100%/0.94),hsl(38_100%_97%/0.86))]" aria-hidden />
@@ -625,7 +639,7 @@ const MojPutEntryIntro = ({ onEnterSenior }: MojPutEntryIntroProps) => {
                     aria-hidden
                   />
                   <div className="absolute right-4 top-4 rounded-full border border-amber-500/20 bg-white/70 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.16em] text-amber-700 shadow-sm backdrop-blur">
-                    Zaključano
+                    Junior mod
                   </div>
                   <span className="relative flex h-full flex-col justify-between">
                     <span>
@@ -642,7 +656,7 @@ const MojPutEntryIntro = ({ onEnterSenior }: MojPutEntryIntroProps) => {
                         animate={{ y: [0, -4, 0], rotate: [0, 2, 0] }}
                         transition={{ duration: 3.2, repeat: Infinity, ease: "easeInOut" }}
                       >
-                        <Lock className="h-5 w-5 sm:h-6 sm:w-6" />
+                        <Users className="h-5 w-5 sm:h-6 sm:w-6" />
                       </motion.span>
                       <span className="block text-2xl font-semibold tracking-[-0.04em] text-slate-950 sm:text-4xl">
                         MojPut Junior
@@ -650,18 +664,18 @@ const MojPutEntryIntro = ({ onEnterSenior }: MojPutEntryIntroProps) => {
                       <span className="mt-1.5 block text-sm font-medium text-slate-500">Osnovnoškolci</span>
                     </span>
                     <span className="mt-5 block text-sm leading-6 text-slate-500 sm:mt-7">
-                      Zaključano trenutno. Stiže prostor za interese, navike učenja i prve školske odluke.
+                      Trenutno otvara istu platformu kao Senior. Kasnije ćemo Junior mijenjati zasebno.
                     </span>
                     <span className="mt-4 flex items-center justify-between rounded-2xl border border-amber-400/18 bg-amber-100/55 px-4 py-3 text-sm font-semibold leading-6 text-amber-800 shadow-[0_14px_34px_-22px_hsl(38_92%_58%/0.75)]">
-                      Uskoro dostupno
-                      <Lock className="ml-3 h-4 w-4" />
+                      Uđi u Junior
+                      <ArrowRight className="ml-3 h-4 w-4 transition-transform duration-300 group-hover:translate-x-1.5" />
                     </span>
                   </span>
                 </motion.button>
 
                 <motion.button
                   type="button"
-                  onClick={enterSenior}
+                  onClick={() => enterExperience(onEnterSenior)}
                   disabled={isLeaving}
                   variants={{
                     hidden: { opacity: 0, x: 24, y: 38, scale: 0.94, rotateX: 8, filter: "blur(16px)" },
@@ -806,6 +820,7 @@ const Index = () => {
   const [heroPassed, setHeroPassed] = useState(false);
   const [endReached, setEndReached] = useState(false);
   const [showEntryIntro, setShowEntryIntro] = useState(true);
+  const [selectedExperience, setSelectedExperience] = useState<MojPutExperience>("senior");
 
   useEffect(() => {
     let alive = true;
@@ -853,12 +868,26 @@ const Index = () => {
 
   const showMobileDock = heroPassed && !endReached && !user;
 
+  const openExperience = (experience: MojPutExperience) => {
+    setSelectedExperience(experience);
+    setShowEntryIntro(false);
+  };
+
+  const isJunior = selectedExperience === "junior";
+  const stats = isJunior ? juniorStats : seniorStats;
+
   if (showEntryIntro) {
-    return <MojPutEntryIntro onEnterSenior={() => setShowEntryIntro(false)} />;
+    return (
+      <MojPutEntryIntro
+        onEnterJunior={() => openExperience("junior")}
+        onEnterSenior={() => openExperience("senior")}
+      />
+    );
   }
 
   return (
-    <Layout>
+    <div data-mojput-experience={selectedExperience}>
+      <Layout>
       {/* Hero */}
       <section className="relative overflow-hidden bg-mesh-gradient">
         <div
@@ -870,7 +899,7 @@ const Index = () => {
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[320px] sm:w-[640px] h-[320px] sm:h-[640px] bg-primary/5 rounded-full blur-3xl pointer-events-none" aria-hidden />
 
         <div className="container relative pb-10 pt-8 sm:pb-24 sm:pt-14 md:pb-36 md:pt-20 lg:pt-24">
-          <UpisRezultatiBanner className="mb-8 sm:mb-10 lg:mb-12" />
+          {!isJunior && <UpisRezultatiBanner className="mb-8 sm:mb-10 lg:mb-12" />}
 
           <div className="grid grid-cols-1 items-center gap-10 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)] lg:gap-14">
             {/* Copy column */}
@@ -882,8 +911,17 @@ const Index = () => {
                 className="eyebrow mb-5 sm:mb-6 justify-center lg:justify-start"
                 aria-hidden
               >
-                <span className="hidden sm:inline">Za srednjoškolce · maturante · studente · roditelje</span>
-                <span className="sm:hidden">Za srednjoškolce, maturante i roditelje</span>
+                {isJunior ? (
+                  <>
+                    <span className="hidden sm:inline">Za osnovnoškolce · roditelje</span>
+                    <span className="sm:hidden">Za osnovnoškolce i roditelje</span>
+                  </>
+                ) : (
+                  <>
+                    <span className="hidden sm:inline">Za srednjoškolce · maturante · studente · roditelje</span>
+                    <span className="sm:hidden">Za srednjoškolce, maturante i roditelje</span>
+                  </>
+                )}
               </motion.div>
 
               <motion.div
@@ -915,7 +953,7 @@ const Index = () => {
                   />
                   <span className="relative text-gradient drop-shadow-sm">put</span>
                 </span>{" "}
-                do savršenog fakulteta
+                {isJunior ? "do idealne srednje škole" : "do savršenog fakulteta"}
               </motion.h1>
 
               <motion.p
@@ -924,8 +962,23 @@ const Index = () => {
                 transition={{ duration: 0.6, delay: 0.2 }}
                 className="text-pretty text-[14px] sm:text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto lg:mx-0 mb-6 sm:mb-8 leading-[1.55] sm:leading-[1.6] break-words"
               >
-                <span className="hidden sm:inline">MojPut ti pomaže istražiti fakultete, otkriti svoje talente i donijeti informiranu odluku o budućoj karijeri — sve na jednom mjestu.</span>
-                <span className="sm:hidden">Istraži fakultete, otkrij talente i donesi pravu odluku.</span>
+                {isJunior ? (
+                  <>
+                    <span className="hidden sm:inline">
+                      MojPut ti pomaže istražiti srednje škole, otkriti svoje interese i donijeti informiranu odluku o
+                      sljedećem koraku — sve na jednom mjestu.
+                    </span>
+                    <span className="sm:hidden">Istraži srednje škole, otkrij interese i donesi pravu odluku.</span>
+                  </>
+                ) : (
+                  <>
+                    <span className="hidden sm:inline">
+                      MojPut ti pomaže istražiti fakultete, otkriti svoje talente i donijeti informiranu odluku o
+                      budućoj karijeri — sve na jednom mjestu.
+                    </span>
+                    <span className="sm:hidden">Istraži fakultete, otkrij talente i donesi pravu odluku.</span>
+                  </>
+                )}
               </motion.p>
 
               <motion.div
@@ -988,7 +1041,7 @@ const Index = () => {
                   >
                     <Link to="/karta" className="relative inline-flex items-center justify-center overflow-hidden">
                       <Map className="relative z-[1] mr-2 h-4 w-4 transition-transform duration-300 group-hover:scale-110" />
-                      <span className="relative z-[1]">Istraži fakultete</span>
+                      <span className="relative z-[1]">{isJunior ? "Istraži srednje škole" : "Istraži fakultete"}</span>
                     </Link>
                   </Button>
                 </motion.div>
@@ -1079,7 +1132,7 @@ const Index = () => {
                 </span>
                 <span className="inline-flex items-center gap-1.5 rounded-full border border-border/70 bg-background/75 backdrop-blur-sm px-2.5 sm:px-3 py-1 sm:py-1.5 text-[10.5px] sm:text-[11px] font-semibold text-muted-foreground shadow-soft transition-all hover:border-primary/30 hover:text-foreground whitespace-nowrap">
                   <Users className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-primary" />
-                  600+ maturanata
+                  {isJunior ? "600+ učenika" : "600+ maturanata"}
                 </span>
               </motion.div>
             </div>
@@ -1173,8 +1226,12 @@ const Index = () => {
                       <GraduationCap className="h-[1.1rem] w-[1.1rem]" />
                     </span>
                     <div>
-                      <div className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">Fakulteta</div>
-                      <div className="text-lg font-extrabold tracking-tight text-foreground leading-none">120+</div>
+                      <div className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+                        {isJunior ? "Srednjih škola" : "Fakulteta"}
+                      </div>
+                      <div className="text-lg font-extrabold tracking-tight text-foreground leading-none">
+                        {isJunior ? "447" : "120+"}
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -1203,6 +1260,7 @@ const Index = () => {
       </section>
 
       {/* Faculty Hub — kompaktno, zaključano (u izradi) */}
+      {!isJunior && (
       <section className="container py-6 md:py-8">
         <motion.div
           initial={{ opacity: 0, y: 12 }}
@@ -1250,6 +1308,7 @@ const Index = () => {
           </div>
         </motion.div>
       </section>
+      )}
 
       {/* Stats */}
       <section className="relative border-y bg-gradient-to-b from-background via-muted/20 to-background">
@@ -1450,7 +1509,9 @@ const Index = () => {
                   Bok, {user.username}!
                 </h2>
                 <p className="mx-auto mt-2.5 sm:mt-3 max-w-md text-pretty text-[14px] sm:text-[15px] text-primary-foreground/85 md:text-base leading-[1.55] sm:leading-[1.6]">
-                  Ovdje možeš otvoriti svoj profil — aktivnost, kviz i spremljeni fakulteti.
+                  {isJunior
+                    ? "Ovdje možeš otvoriti svoj profil — aktivnost, kviz i spremljene škole."
+                    : "Ovdje možeš otvoriti svoj profil — aktivnost, kviz i spremljeni fakulteti."}
                 </p>
                 <Button
                   size="lg"
@@ -1470,8 +1531,21 @@ const Index = () => {
                   Spreman za prvi korak?
                 </h2>
                 <p className="mx-auto mt-2.5 sm:mt-3 max-w-md text-pretty text-[14px] sm:text-[15px] text-primary-foreground/85 md:text-base leading-[1.55] sm:leading-[1.6]">
-                  <span className="hidden sm:inline">Pridruži se tisućama maturanata koji su pronašli svoj put uz MojPut platformu.</span>
-                  <span className="sm:hidden">Pridruži se maturantima koji su pronašli svoj put.</span>
+                  {isJunior ? (
+                    <>
+                      <span className="hidden sm:inline">
+                        Pridruži se učenicima koji biraju srednju školu uz MojPut platformu.
+                      </span>
+                      <span className="sm:hidden">Pridruži se učenicima koji biraju srednju školu.</span>
+                    </>
+                  ) : (
+                    <>
+                      <span className="hidden sm:inline">
+                        Pridruži se tisućama maturanata koji su pronašli svoj put uz MojPut platformu.
+                      </span>
+                      <span className="sm:hidden">Pridruži se maturantima koji su pronašli svoj put.</span>
+                    </>
+                  )}
                 </p>
                 <Button
                   size="lg"
@@ -1489,7 +1563,8 @@ const Index = () => {
         </motion.div>
       </section>
 
-    </Layout>
+      </Layout>
+    </div>
   );
 };
 
