@@ -4,8 +4,10 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useEffect } from "react";
 import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
+import { warmupApiHealth } from "@/lib/api";
 import Index from "./pages/Index";
 import KartaFakulteta from "./pages/KartaFakulteta";
+import KartaSrednjihSkola from "./pages/KartaSrednjihSkola";
 import Kviz from "./pages/Kviz";
 import Samoprocjena from "./pages/Samoprocjena";
 import Kalkulator from "./pages/Kalkulator";
@@ -57,6 +59,23 @@ const AnalyticsPageTracker = () => {
   return null;
 };
 
+/** Probudi Render API pri učitavanju auth stranica. */
+const ApiWarmup = () => {
+  const location = useLocation();
+
+  useEffect(() => {
+    warmupApiHealth();
+  }, []);
+
+  useEffect(() => {
+    if (/^\/(prijava|registracija|zaboravljena-lozinka|verify)(\/|$)/.test(location.pathname)) {
+      warmupApiHealth(true);
+    }
+  }, [location.pathname]);
+
+  return null;
+};
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
@@ -66,9 +85,11 @@ const App = () => (
       <BrowserRouter basename={routerBasename}>
         <ScrollToTop />
         <AnalyticsPageTracker />
+        <ApiWarmup />
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/karta" element={<KartaFakulteta />} />
+          <Route path="/srednje-skole" element={<KartaSrednjihSkola />} />
           <Route path="/kviz" element={<Kviz />} />
           <Route path="/samoprocjena" element={<Samoprocjena />} />
           <Route path="/kalkulator" element={<Kalkulator />} />

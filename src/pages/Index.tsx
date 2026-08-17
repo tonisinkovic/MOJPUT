@@ -1,10 +1,11 @@
-import { useEffect, useRef, useState } from "react";
-import { Link } from "react-router-dom";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { Link, useSearchParams } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import Layout from "@/components/Layout";
-import UpisRezultatiBanner from "@/components/UpisRezultatiBanner";
 import AnimatedStatsGrid, { type StatItem } from "@/components/AnimatedStatsGrid";
+import { scrollDocumentToTopInstant } from "@/components/ScrollToTop";
+import { storeExperience } from "@/lib/experience";
 import { authMe, userFromAuthMe, type AuthUser } from "@/lib/auth";
 import FeatureCard from "@/components/FeatureCard";
 import {
@@ -203,9 +204,9 @@ const seniorStats: StatItem[] = [
   { value: 95, suffix: "%", label: "Zadovoljstvo", icon: <Award className="w-5 h-5" /> },
 ];
 
-/** DZS: 447 srednjih škola u RH, šk. g. 2024./2025. */
+/** Broj usklađen s bazom na /srednje-skole (javni popis srednjih škola RH). */
 const juniorStats: StatItem[] = [
-  { value: 447, label: "Srednjih škola", icon: <GraduationCap className="w-5 h-5" /> },
+  { value: 443, label: "Srednjih škola", icon: <GraduationCap className="w-5 h-5" /> },
   { value: 600, suffix: "+", label: "Korisnika", icon: <Users className="w-5 h-5" /> },
   { value: 1, label: "Video lekcija", icon: <Video className="w-5 h-5" /> },
   { value: 95, suffix: "%", label: "Zadovoljstvo", icon: <Award className="w-5 h-5" /> },
@@ -221,6 +222,8 @@ type MojPutExperience = "junior" | "senior";
 const MojPutEntryIntro = ({ onEnterJunior, onEnterSenior }: MojPutEntryIntroProps) => {
   const [introStage, setIntroStage] = useState<"logo" | "welcome" | "choose">("logo");
   const [isLeaving, setIsLeaving] = useState(false);
+  const [launchExperience, setLaunchExperience] = useState<MojPutExperience | null>(null);
+  const mainRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
     const welcomeTimer = window.setTimeout(() => setIntroStage("welcome"), 750);
@@ -234,10 +237,13 @@ const MojPutEntryIntro = ({ onEnterJunior, onEnterSenior }: MojPutEntryIntroProp
     };
   }, []);
 
-  const enterExperience = (onEnter: () => void) => {
+  const enterExperience = (experience: MojPutExperience, onEnter: () => void) => {
     if (isLeaving || introStage !== "choose") return;
+    scrollDocumentToTopInstant();
+    mainRef.current?.scrollTo({ top: 0, left: 0, behavior: "auto" });
+    setLaunchExperience(experience);
     setIsLeaving(true);
-    window.setTimeout(onEnter, 720);
+    window.setTimeout(onEnter, 1400);
   };
 
   const revealItem = {
@@ -257,14 +263,16 @@ const MojPutEntryIntro = ({ onEnterJunior, onEnterSenior }: MojPutEntryIntroProp
   const decidedStudentsPercent = 29;
 
   return (
+    <>
     <motion.main
+      ref={mainRef}
       initial={{ opacity: 0 }}
       animate={
         isLeaving
-          ? { opacity: 0, scale: 1.035, filter: "blur(18px)" }
+          ? { opacity: 0.18, scale: 1.025, filter: "blur(12px)" }
           : { opacity: 1, scale: 1, filter: "blur(0px)" }
       }
-      transition={{ duration: isLeaving ? 0.72 : 0.45, ease: [0.76, 0, 0.24, 1] }}
+      transition={{ duration: isLeaving ? 0.9 : 0.45, ease: [0.76, 0, 0.24, 1] }}
       className="relative min-h-screen overflow-x-hidden overflow-y-auto bg-[linear-gradient(135deg,hsl(210_38%_99%),hsl(216_30%_98%)_48%,hsl(190_38%_97%))] text-foreground"
       style={{ fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", system-ui, sans-serif' }}
     >
@@ -593,7 +601,7 @@ const MojPutEntryIntro = ({ onEnterJunior, onEnterSenior }: MojPutEntryIntroProp
                 />
                 <motion.button
                   type="button"
-                  onClick={() => enterExperience(onEnterJunior)}
+                  onClick={() => enterExperience("junior", onEnterJunior)}
                   disabled={isLeaving}
                   variants={{
                     hidden: { opacity: 0, x: -24, y: 38, scale: 0.94, rotateX: 8, filter: "blur(16px)" },
@@ -675,7 +683,7 @@ const MojPutEntryIntro = ({ onEnterJunior, onEnterSenior }: MojPutEntryIntroProp
 
                 <motion.button
                   type="button"
-                  onClick={() => enterExperience(onEnterSenior)}
+                  onClick={() => enterExperience("senior", onEnterSenior)}
                   disabled={isLeaving}
                   variants={{
                     hidden: { opacity: 0, x: 24, y: 38, scale: 0.94, rotateX: 8, filter: "blur(16px)" },
@@ -810,17 +818,138 @@ const MojPutEntryIntro = ({ onEnterJunior, onEnterSenior }: MojPutEntryIntroProp
         </AnimatePresence>
       </section>
     </motion.main>
+
+    <AnimatePresence>
+      {launchExperience && (
+        <motion.div
+          className={cn(
+            "fixed inset-0 z-[100] flex items-center justify-center overflow-hidden",
+            launchExperience === "junior"
+              ? "bg-[radial-gradient(circle_at_center,hsl(38_100%_96%),hsl(210_38%_98%)_68%)]"
+              : "bg-[radial-gradient(circle_at_center,hsl(174_65%_95%),hsl(210_38%_98%)_68%)]",
+          )}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.18 }}
+          aria-live="polite"
+        >
+          {[0, 1, 2, 3].map((ring) => (
+            <motion.span
+              key={ring}
+              className={cn(
+                "absolute h-24 w-24 rounded-full border",
+                launchExperience === "junior" ? "border-amber-400/40" : "border-primary/40",
+              )}
+              initial={{ scale: 0.45, opacity: 0.8 }}
+              animate={{ scale: 6.5, opacity: 0 }}
+              transition={{ duration: 1.18, delay: ring * 0.1, ease: [0.16, 1, 0.3, 1] }}
+              aria-hidden
+            />
+          ))}
+
+          <div className="absolute inset-0" aria-hidden>
+            {[-55, -36, -18, 0, 18, 36, 55].map((offset, index) => (
+              <motion.span
+                key={offset}
+                className={cn(
+                  "absolute left-1/2 top-1/2 h-px w-36 origin-left sm:w-56",
+                  launchExperience === "junior"
+                    ? "bg-gradient-to-r from-amber-400/70 to-transparent"
+                    : "bg-gradient-to-r from-primary/70 to-transparent",
+                )}
+                style={{ rotate: `${offset}deg` }}
+                initial={{ x: 25, scaleX: 0, opacity: 0 }}
+                animate={{ x: [25, 130, 280], scaleX: [0, 1.8, 0.7], opacity: [0, 0.9, 0] }}
+                transition={{ duration: 0.92, delay: 0.12 + index * 0.025, ease: "easeOut" }}
+              />
+            ))}
+          </div>
+
+          <div className="absolute inset-0" aria-hidden>
+            {Array.from({ length: 12 }).map((_, index) => {
+              const angle = (index / 12) * Math.PI * 2;
+              return (
+                <motion.span
+                  key={index}
+                  className={cn(
+                    "absolute left-1/2 top-1/2 h-2 w-2 rounded-full shadow-lg",
+                    launchExperience === "junior" ? "bg-amber-400 shadow-amber-400/60" : "bg-primary shadow-primary/60",
+                  )}
+                  initial={{ x: 0, y: 0, scale: 0, opacity: 0 }}
+                  animate={{
+                    x: Math.cos(angle) * (145 + (index % 3) * 35),
+                    y: Math.sin(angle) * (145 + (index % 3) * 35),
+                    scale: [0, 1.4, 0],
+                    opacity: [0, 1, 0],
+                  }}
+                  transition={{ duration: 1.05, delay: 0.2 + (index % 4) * 0.045, ease: [0.16, 1, 0.3, 1] }}
+                />
+              );
+            })}
+          </div>
+
+          <motion.div
+            className="relative flex flex-col items-center text-center"
+            initial={{ scale: 0.68, y: 24, opacity: 0, filter: "blur(10px)" }}
+            animate={{ scale: [0.68, 1.08, 1], y: [24, -5, 0], opacity: 1, filter: "blur(0px)" }}
+            transition={{ duration: 0.72, ease: [0.16, 1, 0.3, 1] }}
+          >
+            <motion.span
+              className={cn(
+                "mb-4 inline-flex h-20 w-20 items-center justify-center rounded-[1.75rem] border bg-white/85 shadow-2xl backdrop-blur-xl",
+                launchExperience === "junior"
+                  ? "border-amber-400/30 text-amber-700 shadow-amber-500/20"
+                  : "border-primary/30 text-primary shadow-primary/20",
+              )}
+              animate={{ rotate: [0, -7, 6, 0], y: [0, -8, 0], scale: [1, 1.08, 1] }}
+              transition={{ duration: 0.8 }}
+            >
+              {launchExperience === "junior" ? <Users className="h-9 w-9" /> : <GraduationCap className="h-9 w-9" />}
+            </motion.span>
+            <span className="text-xs font-bold uppercase tracking-[0.24em] text-slate-500">Pokrećemo tvoj put</span>
+            <span className="mt-2 text-3xl font-bold tracking-[-0.04em] text-slate-950 sm:text-4xl">
+              MojPut {launchExperience === "junior" ? "Junior" : "Senior"}
+            </span>
+            <span className="mt-3 text-sm font-medium text-slate-500">Prilagođavamo platformu za tebe</span>
+          </motion.div>
+
+          <motion.span
+            className={cn(
+              "absolute bottom-[12%] left-1/2 h-1 w-40 -translate-x-1/2 overflow-hidden rounded-full bg-slate-200/70 sm:w-52",
+            )}
+            aria-hidden
+          >
+            <motion.span
+              className={cn(
+                "block h-full origin-left rounded-full",
+                launchExperience === "junior" ? "bg-amber-400" : "bg-primary",
+              )}
+              initial={{ scaleX: 0 }}
+              animate={{ scaleX: 1 }}
+              transition={{ duration: 1.2, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
+            />
+          </motion.span>
+        </motion.div>
+      )}
+    </AnimatePresence>
+    </>
   );
 };
 
 const Index = () => {
+  const [searchParams, setSearchParams] = useSearchParams();
+  const experienceFromUrl = searchParams.get("experience");
+  const hasExperienceInUrl = experienceFromUrl === "junior" || experienceFromUrl === "senior";
   const [user, setUser] = useState<AuthUser | null>(null);
   const heroCtaRef = useRef<HTMLDivElement | null>(null);
   const ctaEndRef = useRef<HTMLElement | null>(null);
   const [heroPassed, setHeroPassed] = useState(false);
   const [endReached, setEndReached] = useState(false);
-  const [showEntryIntro, setShowEntryIntro] = useState(true);
-  const [selectedExperience, setSelectedExperience] = useState<MojPutExperience>("senior");
+  const [showEntryIntro, setShowEntryIntro] = useState(!hasExperienceInUrl);
+  const [selectedExperience, setSelectedExperience] = useState<MojPutExperience>(
+    hasExperienceInUrl ? experienceFromUrl : "senior",
+  );
 
   useEffect(() => {
     let alive = true;
@@ -868,13 +997,82 @@ const Index = () => {
 
   const showMobileDock = heroPassed && !endReached && !user;
 
+  const updateExperienceUrl = (experience: MojPutExperience | null) => {
+    const nextParams = new URLSearchParams(searchParams);
+    if (experience) {
+      nextParams.set("experience", experience);
+    } else {
+      nextParams.delete("experience");
+    }
+    setSearchParams(nextParams, { replace: true });
+  };
+
   const openExperience = (experience: MojPutExperience) => {
+    scrollDocumentToTopInstant();
     setSelectedExperience(experience);
     setShowEntryIntro(false);
+    updateExperienceUrl(experience);
+    storeExperience(experience);
   };
+
+  const returnToExperienceChoice = () => {
+    scrollDocumentToTopInstant();
+    setShowEntryIntro(true);
+    updateExperienceUrl(null);
+    storeExperience(null);
+  };
+
+  const switchExperience = (experience: MojPutExperience) => {
+    if (experience === selectedExperience) return;
+    scrollDocumentToTopInstant();
+    setSelectedExperience(experience);
+    updateExperienceUrl(experience);
+    storeExperience(experience);
+  };
+
+  useEffect(() => {
+    if (experienceFromUrl === "junior" || experienceFromUrl === "senior") {
+      setSelectedExperience(experienceFromUrl);
+      setShowEntryIntro(false);
+      storeExperience(experienceFromUrl);
+      return;
+    }
+    setShowEntryIntro(true);
+  }, [experienceFromUrl]);
+
+  useLayoutEffect(() => {
+    if (showEntryIntro) return;
+    scrollDocumentToTopInstant();
+    const t = window.setTimeout(scrollDocumentToTopInstant, 0);
+    const t2 = window.setTimeout(scrollDocumentToTopInstant, 120);
+    return () => {
+      window.clearTimeout(t);
+      window.clearTimeout(t2);
+    };
+  }, [showEntryIntro]);
 
   const isJunior = selectedExperience === "junior";
   const stats = isJunior ? juniorStats : seniorStats;
+  const mapPath = isJunior ? "/srednje-skole" : "/karta";
+
+  const quickActions = isJunior
+    ? HERO_QUICK_ACTIONS.map((a) =>
+        a.to === "/karta" ? { ...a, to: "/srednje-skole", hook: "443 škole" } : a,
+      )
+    : HERO_QUICK_ACTIONS;
+
+  const featureList = isJunior
+    ? features.map((f) =>
+        f.path === "/karta"
+          ? {
+              ...f,
+              title: "Karta srednjih škola",
+              description: "Pregled svih srednjih škola u Hrvatskoj s kontaktima, adresama i web stranicama.",
+              path: "/srednje-skole",
+            }
+          : f,
+      )
+    : features;
 
   if (showEntryIntro) {
     return (
@@ -899,7 +1097,53 @@ const Index = () => {
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[320px] sm:w-[640px] h-[320px] sm:h-[640px] bg-primary/5 rounded-full blur-3xl pointer-events-none" aria-hidden />
 
         <div className="container relative pb-10 pt-8 sm:pb-24 sm:pt-14 md:pb-36 md:pt-20 lg:pt-24">
-          {!isJunior && <UpisRezultatiBanner className="mb-8 sm:mb-10 lg:mb-12" />}
+          <motion.nav
+            initial={{ opacity: 0, y: -12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4, delay: 0.08 }}
+            className="relative z-20 mx-auto mb-6 flex w-fit items-center gap-1 rounded-2xl border border-white/80 bg-white/82 p-1.5 shadow-[0_14px_45px_-25px_hsl(215_30%_12%/0.45)] backdrop-blur-xl sm:mb-8"
+            aria-label="Odabir MojPut iskustva"
+          >
+            <button
+              type="button"
+              onClick={returnToExperienceChoice}
+              className="group inline-flex h-10 items-center gap-2 rounded-xl px-3 text-xs font-semibold text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary sm:px-4"
+              aria-label="Vrati se na početni odabir"
+              title="Početni odabir"
+            >
+              <Home className="h-4 w-4 transition-transform group-hover:-translate-x-0.5" />
+              <span className="hidden sm:inline">Odabir</span>
+            </button>
+            <span className="h-6 w-px bg-slate-200" aria-hidden />
+            <button
+              type="button"
+              onClick={() => switchExperience("junior")}
+              className={cn(
+                "inline-flex h-10 items-center gap-2 rounded-xl px-3 text-xs font-semibold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400 sm:px-4",
+                isJunior
+                  ? "bg-amber-100 text-amber-800 shadow-sm ring-1 ring-amber-400/20"
+                  : "text-slate-500 hover:bg-amber-50 hover:text-amber-800",
+              )}
+              aria-pressed={isJunior}
+            >
+              <Users className="h-4 w-4" />
+              <span>Junior</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => switchExperience("senior")}
+              className={cn(
+                "inline-flex h-10 items-center gap-2 rounded-xl px-3 text-xs font-semibold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary sm:px-4",
+                !isJunior
+                  ? "bg-primary/10 text-primary shadow-sm ring-1 ring-primary/20"
+                  : "text-slate-500 hover:bg-primary/5 hover:text-primary",
+              )}
+              aria-pressed={!isJunior}
+            >
+              <GraduationCap className="h-4 w-4" />
+              <span>Senior</span>
+            </button>
+          </motion.nav>
 
           <div className="grid grid-cols-1 items-center gap-10 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)] lg:gap-14">
             {/* Copy column */}
@@ -1039,7 +1283,7 @@ const Index = () => {
                     className="group btn-secondary-premium btn-secondary-premium--live touch-tap rounded-xl px-5 sm:px-8 h-[3rem] sm:h-[3.25rem] text-[15px] sm:text-base font-semibold w-full sm:w-auto"
                     asChild
                   >
-                    <Link to="/karta" className="relative inline-flex items-center justify-center overflow-hidden">
+                    <Link to={mapPath} className="relative inline-flex items-center justify-center overflow-hidden">
                       <Map className="relative z-[1] mr-2 h-4 w-4 transition-transform duration-300 group-hover:scale-110" />
                       <span className="relative z-[1]">{isJunior ? "Istraži srednje škole" : "Istraži fakultete"}</span>
                     </Link>
@@ -1076,7 +1320,7 @@ const Index = () => {
                   animate="show"
                   className="grid grid-cols-3 gap-2.5"
                 >
-                  {HERO_QUICK_ACTIONS.map(({ to, label, hook, Icon, shell, iconWrap, featured }) => (
+                  {quickActions.map(({ to, label, hook, Icon, shell, iconWrap, featured }) => (
                     <motion.div key={to} variants={heroQuickItem} className="min-w-0">
                       <Link
                         to={to}
@@ -1230,7 +1474,7 @@ const Index = () => {
                         {isJunior ? "Srednjih škola" : "Fakulteta"}
                       </div>
                       <div className="text-lg font-extrabold tracking-tight text-foreground leading-none">
-                        {isJunior ? "447" : "120+"}
+                        {isJunior ? "443" : "120+"}
                       </div>
                     </div>
                   </div>
@@ -1403,7 +1647,7 @@ const Index = () => {
           </div>
 
           <div className="mx-auto grid max-w-7xl grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-6 lg:grid-cols-4">
-            {features.map((feature, i) =>
+            {featureList.map((feature, i) =>
               feature.locked ? (
                 <div
                   key={feature.path}

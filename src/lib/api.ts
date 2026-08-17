@@ -5,6 +5,11 @@ export type ApiErr = { success: false; message: string; code?: string };
 export type ApiResponse<T> = ApiOk<T> | ApiErr;
 
 const API_FETCH_TIMEOUT_MS = 22_000;
+const API_HEALTH_TIMEOUT_MS = 8_000;
+const API_SESSION_CHECK_TIMEOUT_MS = 8_000;
+
+let lastHealthPingAt = 0;
+const HEALTH_PING_COOLDOWN_MS = 45_000;
 
 const AUTH_TOKEN_KEY = "mojput_bearer_token";
 const LAST_LOGIN_EMAIL_KEY = "mojput_last_account_email";
@@ -123,9 +128,9 @@ async function parseJson<T>(res: Response, reqPath: string): Promise<ApiResponse
   return json as ApiResponse<T>;
 }
 
-async function fetchWithTimeout(url: string, init: RequestInit): Promise<Response> {
+async function fetchWithTimeout(url: string, init: RequestInit, timeoutMs = API_FETCH_TIMEOUT_MS): Promise<Response> {
   const controller = new AbortController();
-  const timeoutId = window.setTimeout(() => controller.abort(), API_FETCH_TIMEOUT_MS);
+  const timeoutId = window.setTimeout(() => controller.abort(), timeoutMs);
   try {
     return await fetch(url, { ...init, signal: controller.signal });
   } finally {
@@ -143,13 +148,17 @@ function networkErrorMessage(err: unknown): string {
   return "Server nije dostupan. Provjeri je li API pokrenut (mojput.onrender.com).";
 }
 
-export async function apiGet<T>(url: string): Promise<ApiResponse<T>> {
+export async function apiGet<T>(url: string, options?: { timeoutMs?: number }): Promise<ApiResponse<T>> {
   try {
-    const res = await fetchWithTimeout(`${API_BASE_URL}${url}`, {
-      method: "GET",
-      credentials: "include",
-      headers: withAuthHeaders({ Accept: "application/json" }),
-    });
+    const res = await fetchWithTimeout(
+      `${API_BASE_URL}${url}`,
+      {
+        method: "GET",
+        credentials: "include",
+        headers: withAuthHeaders({ Accept: "application/json" }),
+      },
+      options?.timeoutMs,
+    );
     return parseJson<T>(res, url);
   } catch (err) {
     return { success: false, message: networkErrorMessage(err), code: "NETWORK_ERROR" };
@@ -159,17 +168,22 @@ export async function apiGet<T>(url: string): Promise<ApiResponse<T>> {
 export async function apiPost<T>(
   url: string,
   body: unknown,
+  options?: { timeoutMs?: number },
 ): Promise<ApiResponse<T>> {
   try {
-    const res = await fetchWithTimeout(`${API_BASE_URL}${url}`, {
-      method: "POST",
-      credentials: "include",
-      headers: withAuthHeaders({
-        "Content-Type": "application/json",
-        Accept: "application/json",
-      }),
-      body: JSON.stringify(body),
-    });
+    const res = await fetchWithTimeout(
+      `${API_BASE_URL}${url}`,
+      {
+        method: "POST",
+        credentials: "include",
+        headers: withAuthHeaders({
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        }),
+        body: JSON.stringify(body),
+      },
+      options?.timeoutMs,
+    );
     return parseJson<T>(res, url);
   } catch (err) {
     return { success: false, message: networkErrorMessage(err), code: "NETWORK_ERROR" };
@@ -193,6 +207,21 @@ export async function apiPatch<T>(url: string, body: unknown): Promise<ApiRespon
   }
 }
 
+/** Probudi Render API (free tier „spava”) — ne blokira UI. */
+export function warmupApiHealth(force = false): void {
+  if (import.meta.env.DEV) return;
+  const now = Date.now();
+  if (!force && now - lastHealthPingAt < HEALTH_PING_COOLDOWN_MS) return;
+  lastHealthPingAt = now;
+  void fetchWithTimeout(
+    `${API_BASE_URL}/api/health`,
+    { method: "GET", credentials: "omit" },
+    API_HEALTH_TIMEOUT_MS,
+  ).catch(() => {
+    /* tiho — sljedeći auth poziv pokušat će ponovno */
+  });
+}
+
 export async function apiDelete<T>(url: string): Promise<ApiResponse<T>> {
   try {
     const res = await fetchWithTimeout(`${API_BASE_URL}${url}`, {
@@ -205,3 +234,5 @@ export async function apiDelete<T>(url: string): Promise<ApiResponse<T>> {
     return { success: false, message: networkErrorMessage(err), code: "NETWORK_ERROR" };
   }
 }
+
+export { API_SESSION_CHECK_TIMEOUT_MS };

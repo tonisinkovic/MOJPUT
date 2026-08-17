@@ -8,7 +8,7 @@ const HEADER_OFFSET_PX = 80;
  * Preglednik + `scroll-behavior: smooth` na `html` mogu programatski skrolati "mekano"
  * ili kasnije vratiti poziciju; privremeno ga isključujemo za trenutačni skrol na vrh.
  */
-function scrollDocumentToTopInstant() {
+export function scrollDocumentToTopInstant() {
   const html = document.documentElement;
   const body = document.body;
   const prevHtml = html.style.scrollBehavior;

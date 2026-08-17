@@ -31,16 +31,23 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { HeaderThemeToggle } from "@/components/HeaderThemeToggle";
 import { authLogout, authMe, userFromAuthMe, type AuthUser } from "@/lib/auth";
+import { getStoredExperience, onExperienceChange } from "@/lib/experience";
 import { cn } from "@/lib/utils";
 
 type NavEntry = { label: string; path: string; icon: LucideIcon };
 
 // Primarne - najčešće korištene stavke.
-const primaryNav: NavEntry[] = [
+const primaryNavSenior: NavEntry[] = [
   { label: "Karta fakulteta", path: "/karta", icon: Map },
   { label: "Kviz", path: "/kviz", icon: HelpCircle },
   { label: "Kalkulator", path: "/kalkulator", icon: Calculator },
   { label: "Forum", path: "/forum", icon: MessageSquare },
+];
+
+// U Junior modu karta vodi na srednje škole umjesto na fakultete.
+const primaryNavJunior: NavEntry[] = [
+  { label: "Srednje škole", path: "/srednje-skole", icon: Map },
+  ...primaryNavSenior.slice(1),
 ];
 
 // Sekundarne - u "Više" padajućem na desktopu, lista na mobitelu.
@@ -52,13 +59,21 @@ const secondaryNav: NavEntry[] = [
   { label: "Roditelji", path: "/roditelji", icon: Users },
 ];
 
-// Cijela lista za mobitel (redoslijed važnosti).
-const navItems: NavEntry[] = [...primaryNav, ...secondaryNav];
-
 const Navbar = () => {
   const [open, setOpen] = useState(false);
   const [user, setUser] = useState<AuthUser | null>(null);
+  const [isJunior, setIsJunior] = useState(() => getStoredExperience() === "junior");
   const location = useLocation();
+
+  useEffect(() => {
+    const sync = () => setIsJunior(getStoredExperience() === "junior");
+    sync();
+    return onExperienceChange(sync);
+  }, []);
+
+  const primaryNav = isJunior ? primaryNavJunior : primaryNavSenior;
+  // Cijela lista za mobitel (redoslijed važnosti).
+  const navItems: NavEntry[] = [...primaryNav, ...secondaryNav];
 
   useEffect(() => {
     let alive = true;

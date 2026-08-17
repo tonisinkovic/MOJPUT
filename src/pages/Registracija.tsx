@@ -21,9 +21,10 @@ import {
   KeyRound,
   RefreshCw,
   ExternalLink,
+  Loader2,
 } from "lucide-react";
 import { authRegister, authResendVerification } from "@/lib/auth";
-import { setStoredLastLoginEmail } from "@/lib/api";
+import { setStoredLastLoginEmail, warmupApiHealth } from "@/lib/api";
 import { trackEvent } from "@/lib/analytics";
 
 const Registracija = () => {
@@ -50,6 +51,11 @@ const Registracija = () => {
   const [showPw, setShowPw] = useState(false);
   const [showConfirmPw, setShowConfirmPw] = useState(false);
   const [hasInteracted, setHasInteracted] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+
+  React.useEffect(() => {
+    warmupApiHealth(true);
+  }, []);
 
   React.useEffect(() => {
     trackEvent("signup_step_viewed", {
@@ -102,12 +108,19 @@ const Registracija = () => {
       method: "email",
       page_path: window.location.pathname,
     });
-    const res = await authRegister({
-      username: username || submittedEmail.split("@")[0],
-      email: submittedEmail,
-      password: formData.password,
-      user_type: formData.status || "srednjoskolac",
-    });
+    setSubmitting(true);
+    warmupApiHealth(true);
+    let res;
+    try {
+      res = await authRegister({
+        username: username || submittedEmail.split("@")[0],
+        email: submittedEmail,
+        password: formData.password,
+        user_type: formData.status || "srednjoskolac",
+      });
+    } finally {
+      setSubmitting(false);
+    }
 
     if (!res.success) {
       setError(res.message);
@@ -649,10 +662,20 @@ const Registracija = () => {
 
                     <button
                       type="submit"
-                      className="group btn-primary-premium border-0 rounded-xl h-12 w-full text-[15px] font-semibold inline-flex items-center justify-center gap-2"
+                      disabled={submitting}
+                      className="group btn-primary-premium border-0 rounded-xl h-12 w-full text-[15px] font-semibold inline-flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
                     >
-                      Registriraj se
-                      <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
+                      {submitting ? (
+                        <>
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                          Registracija…
+                        </>
+                      ) : (
+                        <>
+                          Registriraj se
+                          <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
+                        </>
+                      )}
                     </button>
 
                     <div className="flex items-center gap-3">

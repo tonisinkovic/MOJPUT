@@ -29,7 +29,7 @@ import {
   userFromAuthMe,
   type AuthUser,
 } from "@/lib/auth";
-import { getStoredLastLoginEmail } from "@/lib/api";
+import { getStoredLastLoginEmail, warmupApiHealth } from "@/lib/api";
 import {
   Dialog,
   DialogContent,
@@ -68,6 +68,7 @@ const Prijava = () => {
   const [noteOpen, setNoteOpen] = useState(false);
 
   useEffect(() => {
+    warmupApiHealth(true);
     let alive = true;
     const verifiedFlag = searchParams.get("verified");
     const verifyErr = searchParams.get("verify_error");
@@ -152,6 +153,7 @@ const Prijava = () => {
       page_path: window.location.pathname,
     });
     setLoginSubmitting(true);
+    warmupApiHealth(true);
     let res;
     try {
       res = await authLogin({
@@ -541,7 +543,7 @@ const Prijava = () => {
                   {/* Submit */}
                   <button
                     type="submit"
-                    disabled={checkingSession || loginSubmitting}
+                    disabled={loginSubmitting}
                     className="group btn-primary-premium border-0 rounded-xl h-12 w-full text-[15px] font-semibold inline-flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
                   >
                     {loginSubmitting ? (

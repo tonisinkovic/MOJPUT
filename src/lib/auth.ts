@@ -1,6 +1,7 @@
 import {
   apiGet,
   apiPost,
+  API_SESSION_CHECK_TIMEOUT_MS,
   setStoredAuthToken,
   setStoredLastLoginEmail,
   type ApiResponse,
@@ -48,7 +49,7 @@ export function userFromAuthMe(res: ApiResponse<{ user: AuthUser }>): AuthUser |
 }
 
 export async function authMe(): Promise<ApiResponse<{ user: AuthUser }>> {
-  return apiGet<{ user: AuthUser }>("/api/auth/me");
+  return apiGet<{ user: AuthUser }>("/api/auth/me", { timeoutMs: API_SESSION_CHECK_TIMEOUT_MS });
 }
 
 export async function authLogin(params: {
