@@ -1,6 +1,6 @@
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, useScroll, useTransform } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import Layout from "@/components/Layout";
 import AnimatedStatsGrid, { type StatItem } from "@/components/AnimatedStatsGrid";
@@ -226,13 +226,11 @@ const MojPutEntryIntro = ({ onEnterJunior, onEnterSenior }: MojPutEntryIntroProp
   const mainRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
-    const welcomeTimer = window.setTimeout(() => setIntroStage("welcome"), 750);
-    const clearWelcomeTimer = window.setTimeout(() => setIntroStage("logo"), 3650);
-    const chooseTimer = window.setTimeout(() => setIntroStage("choose"), 4400);
+    const welcomeTimer = window.setTimeout(() => setIntroStage("welcome"), 700);
+    const chooseTimer = window.setTimeout(() => setIntroStage("choose"), 3720);
 
     return () => {
       window.clearTimeout(welcomeTimer);
-      window.clearTimeout(clearWelcomeTimer);
       window.clearTimeout(chooseTimer);
     };
   }, []);
@@ -252,13 +250,47 @@ const MojPutEntryIntro = ({ onEnterJunior, onEnterSenior }: MojPutEntryIntroProp
   };
 
   const showChoice = introStage === "choose";
-  const seniorHighlights = [
-    { label: "Kviz smjerova", detail: "interesi i kompetencije", Icon: Target },
-    { label: "Karta fakulteta", detail: "fakulteti i studiji", Icon: Map },
-    { label: "Kalkulator bodova", detail: "upisne šanse", Icon: Calculator },
-    { label: "Kalendar rokova", detail: "matura i prijave", Icon: Calendar },
+  const decisionToolGroups = [
+    {
+      label: "MojPut Junior",
+      title: "Za izbor srednje škole",
+      accent: "junior",
+      tools: [
+        { label: "Kviz za srednju", detail: "Interesi, smjerovi i prvi izbor", to: "/kviz", Icon: Target },
+        { label: "Karta srednjih škola", detail: "Škole i programi u Hrvatskoj", to: "/srednje-skole", Icon: Map },
+        { label: "Kalkulator za srednju", detail: "Bodovi i upisne šanse", to: "/kalkulator", Icon: Calculator },
+      ],
+    },
+    {
+      label: "MojPut Senior",
+      title: "Za izbor fakulteta",
+      accent: "senior",
+      tools: [
+        { label: "Kviz za fakultet", detail: "Studiji, karijere i odluka nakon mature", to: "/kviz", Icon: Target },
+        { label: "Karta fakulteta", detail: "Fakulteti, studiji i lokacije", to: "/karta", Icon: Map },
+        { label: "Kalkulator za dom", detail: "Bodovi za studentski smještaj", to: "/kalkulator-doma", Icon: Calculator },
+      ],
+    },
   ];
-  const seniorJourney = ["Otkrij interese", "Usporedi smjerove", "Izračunaj bodove", "Donesi odluku"];
+  const decisionToolAccents = {
+    junior: {
+      panel:
+        "border-amber-200/70 bg-[radial-gradient(circle_at_92%_0%,hsl(38_92%_58%/0.14),transparent_34%),linear-gradient(145deg,hsl(0_0%_100%/0.9),hsl(42_80%_98%/0.82))]",
+      eyebrow: "text-amber-700",
+      card: "hover:border-amber-300/70 hover:shadow-[0_18px_54px_-38px_hsl(38_85%_48%/0.65)] focus-visible:ring-amber-400/25",
+      icon: "bg-amber-50 text-amber-700 ring-amber-500/14",
+      link: "text-amber-700",
+    },
+    senior: {
+      panel:
+        "border-primary/20 bg-[radial-gradient(circle_at_92%_0%,hsl(174_62%_42%/0.12),transparent_34%),linear-gradient(145deg,hsl(0_0%_100%/0.9),hsl(180_55%_98%/0.84))]",
+      eyebrow: "text-primary",
+      card: "hover:border-primary/35 hover:shadow-[0_18px_54px_-38px_hsl(174_62%_42%/0.7)] focus-visible:ring-primary/25",
+      icon: "bg-primary/8 text-primary ring-primary/12",
+      link: "text-primary",
+    },
+  } as const;
+  const journeySteps = ["Interesi", "Smjerovi", "Škole i fakulteti", "Bodovi", "Rokovi"];
   const undecidedStudentsPercent = 71;
   const decidedStudentsPercent = 29;
 
@@ -301,26 +333,66 @@ const MojPutEntryIntro = ({ onEnterJunior, onEnterSenior }: MojPutEntryIntroProp
         transition={{ duration: 9, repeat: Infinity, ease: "easeInOut" }}
         aria-hidden
       />
+      <AnimatePresence>
+        {introStage === "welcome" && (
+          <motion.div
+            key="welcome-spotlight"
+            className="pointer-events-none absolute inset-0 overflow-hidden"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.5 }}
+            aria-hidden
+          >
+            <motion.div
+              className="absolute left-1/2 top-[42%] h-[28rem] w-[28rem] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[radial-gradient(circle,hsl(174_62%_42%/0.18),hsl(205_82%_54%/0.08)_38%,transparent_68%)] blur-2xl sm:h-[44rem] sm:w-[44rem]"
+              initial={{ opacity: 0, scale: 0.82 }}
+              animate={{ opacity: [0, 0.82, 0.62], scale: [0.82, 1.04, 1.08] }}
+              exit={{ opacity: 0, scale: 1.12 }}
+              transition={{ duration: 2.2, ease: [0.16, 1, 0.3, 1] }}
+            />
+            <motion.div
+              className="absolute left-1/2 top-[43%] h-[18rem] w-[18rem] -translate-x-1/2 -translate-y-1/2 rounded-full border border-white/80 shadow-[0_0_120px_-36px_hsl(174_62%_42%/0.58)] sm:h-[28rem] sm:w-[28rem]"
+              initial={{ opacity: 0, scale: 0.72 }}
+              animate={{ opacity: [0, 0.65, 0.2], scale: [0.72, 1.14, 1.28] }}
+              transition={{ duration: 2.1, ease: [0.22, 1, 0.36, 1] }}
+            />
+            <motion.div
+              className="absolute left-1/2 top-[45%] h-px w-[72vw] -translate-x-1/2 -translate-y-1/2 bg-gradient-to-r from-transparent via-white/90 to-transparent"
+              initial={{ opacity: 0, scaleX: 0.1 }}
+              animate={{ opacity: [0, 0.9, 0], scaleX: [0.1, 1, 1] }}
+              transition={{ duration: 1.65, delay: 0.38, ease: "easeOut" }}
+            />
+            <motion.div
+              className="absolute inset-x-0 top-0 h-1/2 bg-[linear-gradient(180deg,hsl(0_0%_100%/0.75),transparent)]"
+              initial={{ opacity: 0, y: -32 }}
+              animate={{ opacity: [0, 0.5, 0.18], y: [ -32, 0, 8 ] }}
+              transition={{ duration: 2.3, ease: [0.22, 1, 0.36, 1] }}
+            />
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <section
         className={cn(
-          "container relative z-10 flex min-h-screen flex-col items-center px-3 py-5 sm:justify-center sm:px-4 sm:py-8",
+          "container relative z-10 flex min-h-screen flex-col items-center px-3 py-5 transition-[justify-content,padding] duration-700 [transition-timing-function:cubic-bezier(0.22,1,0.36,1)] sm:justify-center sm:px-4 sm:py-8",
           showChoice ? "justify-start" : "justify-center",
         )}
       >
         <motion.div
+          layout
           initial={{ opacity: 0, scale: 0.58, y: 20, filter: "blur(18px)" }}
           animate={{
             opacity: 1,
-            scale: showChoice ? 0.72 : 1,
-            y: showChoice ? -2 : 0,
+            scale: showChoice ? 0.72 : introStage === "welcome" ? [1, 1.045, 1.02] : 1,
+            y: showChoice ? -2 : introStage === "welcome" ? [0, -4, 0] : 0,
             filter: "blur(0px)",
           }}
-          transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1] }}
+          transition={{ duration: introStage === "welcome" ? 1.4 : 0.9, ease: [0.16, 1, 0.3, 1] }}
           className={cn(
-            "relative mx-auto flex items-center justify-center border border-white/80 bg-white/80 shadow-[0_26px_80px_-36px_hsl(174_62%_42%/0.9)] backdrop-blur-2xl sm:h-32 sm:w-32 sm:rounded-[2.6rem] sm:p-3",
+            "relative mx-auto flex items-center justify-center border border-white/80 bg-white/80 shadow-[0_26px_80px_-36px_hsl(174_62%_42%/0.9)] backdrop-blur-2xl transition-[margin] duration-700 [transition-timing-function:cubic-bezier(0.22,1,0.36,1)] sm:h-32 sm:w-32 sm:rounded-[2.6rem] sm:p-3",
             "h-32 w-32 rounded-[2.6rem] p-3",
-            showChoice ? "mb-2" : "mb-10 sm:mb-12",
+            showChoice ? "mb-3 sm:mb-4" : "mb-10 sm:mb-12",
           )}
         >
           <motion.span
@@ -350,26 +422,93 @@ const MojPutEntryIntro = ({ onEnterJunior, onEnterSenior }: MojPutEntryIntroProp
             animate={
               isLeaving
                 ? { scale: 1.18, rotate: 0 }
-                : { scale: [1, 1.035, 1], rotate: [0, -1.2, 0.8, 0] }
+                : introStage === "welcome"
+                  ? { scale: [1, 1.035, 1.01], rotate: [0, -0.8, 0.6, 0] }
+                  : { scale: [1, 1.035, 1], rotate: [0, -1.2, 0.8, 0] }
             }
-            transition={isLeaving ? { duration: 0.55 } : { duration: 3.2, repeat: Infinity, ease: "easeInOut" }}
+            transition={
+              isLeaving
+                ? { duration: 0.55 }
+                : introStage === "welcome"
+                  ? { duration: 1.5, ease: [0.16, 1, 0.3, 1] }
+                  : { duration: 3.2, repeat: Infinity, ease: "easeInOut" }
+            }
           />
         </motion.div>
 
-        <div className={cn("w-full transition-all duration-500", showChoice ? "min-h-0" : "min-h-[9rem] sm:min-h-[7.5rem]")}>
+        <div
+          className={cn(
+            "w-full transition-[min-height,opacity,transform] duration-700 [transition-timing-function:cubic-bezier(0.22,1,0.36,1)]",
+            showChoice ? "min-h-0 opacity-0 -translate-y-2" : "min-h-[9rem] opacity-100 sm:min-h-[7.5rem]",
+          )}
+        >
           <AnimatePresence mode="wait">
             {introStage === "welcome" && (
               <motion.div
                 key="welcome"
-                initial={{ opacity: 0, y: 10, scale: 0.985, filter: "blur(10px)" }}
+                initial={{ opacity: 0, y: 18, scale: 0.98, filter: "blur(14px)" }}
                 animate={{ opacity: 1, y: 0, scale: 1, filter: "blur(0px)" }}
-                exit={{ opacity: 0, y: 0, scale: 0.995, filter: "blur(6px)" }}
-                transition={{ duration: 0.72, ease: [0.25, 1, 0.5, 1] }}
-                className="mx-auto max-w-[22rem] text-center sm:max-w-none"
+                exit={{ opacity: 0, y: -14, scale: 0.985, filter: "blur(12px)" }}
+                transition={{ duration: 0.72, ease: [0.16, 1, 0.3, 1] }}
+                className="mx-auto max-w-[25rem] text-center sm:max-w-4xl"
               >
-                <p className="text-[2.65rem] font-semibold leading-[1.02] tracking-[-0.055em] text-slate-950 sm:text-5xl md:text-6xl">
-                  Dobrodošli na <span className="text-gradient">MojPut!</span>
-                </p>
+                <motion.div
+                  className="mb-5 inline-flex items-center gap-2 rounded-full border border-slate-200/80 bg-white/72 px-4 py-1.5 text-[10px] font-semibold uppercase tracking-[0.22em] text-slate-500 shadow-soft backdrop-blur-2xl"
+                  initial={{ opacity: 0, y: 8, scale: 0.98 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  transition={{ duration: 0.62, delay: 0.14, ease: [0.22, 1, 0.36, 1] }}
+                >
+                  <Sparkles className="h-3.5 w-3.5 text-primary" />
+                  Tvoja priča kreće
+                </motion.div>
+                <motion.h1
+                  className="mx-auto max-w-[min(92vw,54rem)] text-balance px-3 text-[clamp(2.35rem,7.4vw,5.25rem)] font-medium leading-[1.02] tracking-[-0.045em] text-slate-950"
+                  initial={{ opacity: 0, y: 24, filter: "blur(14px)" }}
+                  animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+                  transition={{ duration: 1.05, delay: 0.24, ease: [0.16, 1, 0.3, 1] }}
+                >
+                  <motion.span
+                    className="block font-medium text-slate-950"
+                    initial={{ opacity: 0, y: 18 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.82, delay: 0.28, ease: [0.16, 1, 0.3, 1] }}
+                  >
+                    Dobrodošli na
+                  </motion.span>
+                  <motion.span
+                    className="relative mt-1 inline-block bg-[linear-gradient(110deg,hsl(174_62%_30%),hsl(205_82%_44%),hsl(174_62%_30%))] bg-[length:180%_100%] bg-clip-text pb-2 font-semibold text-transparent sm:mt-2"
+                    initial={{ opacity: 0, y: 20, scale: 0.99 }}
+                    animate={{ opacity: 1, y: 0, scale: 1, backgroundPosition: ["0% 50%", "100% 50%", "0% 50%"] }}
+                    transition={{
+                      opacity: { duration: 0.82, delay: 0.46 },
+                      y: { duration: 0.82, delay: 0.46, ease: [0.16, 1, 0.3, 1] },
+                      scale: { duration: 0.82, delay: 0.46, ease: [0.16, 1, 0.3, 1] },
+                      backgroundPosition: { duration: 3.8, repeat: Infinity, ease: "easeInOut" },
+                    }}
+                  >
+                    MojPut
+                    <motion.span
+                      className="absolute inset-x-4 -bottom-0.5 h-px rounded-full bg-gradient-to-r from-transparent via-primary/45 to-transparent sm:inset-x-6"
+                      initial={{ opacity: 0, scaleX: 0.25 }}
+                      animate={{ opacity: [0, 0.9, 0.55], scaleX: [0.25, 1.04, 1] }}
+                      transition={{ duration: 1.25, delay: 0.9, ease: [0.16, 1, 0.3, 1] }}
+                    />
+                  </motion.span>
+                </motion.h1>
+                <motion.div
+                  className="mx-auto mt-5 h-px w-[min(62vw,24rem)] bg-gradient-to-r from-transparent via-slate-300/60 to-transparent"
+                  initial={{ opacity: 0, scaleX: 0.25 }}
+                  animate={{ opacity: 1, scaleX: 1 }}
+                  transition={{ duration: 0.95, delay: 1.02, ease: [0.22, 1, 0.36, 1] }}
+                />
+                <motion.p
+                  className="mx-auto mt-4 max-w-xl text-pretty px-4 text-[15px] font-medium leading-7 text-slate-500 sm:text-lg"
+                  initial={{ opacity: 0, y: 12, filter: "blur(8px)" }}
+                  animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+                  transition={{ duration: 0.82, delay: 1.14, ease: [0.22, 1, 0.36, 1] }}
+                >
+                  Tvoj sljedeći korak, jasnije i mirnije.
+                </motion.p>
               </motion.div>
             )}
           </AnimatePresence>
@@ -383,8 +522,19 @@ const MojPutEntryIntro = ({ onEnterJunior, onEnterSenior }: MojPutEntryIntroProp
               animate="show"
               exit={{ opacity: 0, y: -22, filter: "blur(16px)" }}
               variants={{
-                hidden: { opacity: 0 },
-                show: { opacity: 1, transition: { staggerChildren: 0.16, delayChildren: 0.05 } },
+                hidden: { opacity: 0, y: 22, scale: 0.985, filter: "blur(18px)" },
+                show: {
+                  opacity: 1,
+                  y: 0,
+                  scale: 1,
+                  filter: "blur(0px)",
+                  transition: {
+                    duration: 0.72,
+                    ease: [0.16, 1, 0.3, 1],
+                    staggerChildren: 0.14,
+                    delayChildren: 0.16,
+                  },
+                },
               }}
                 className="relative mx-auto w-full max-w-5xl overflow-hidden rounded-[1.75rem] border border-white/70 bg-white/24 p-2.5 shadow-[0_34px_120px_-70px_hsl(215_30%_12%/0.62)] backdrop-blur-sm sm:rounded-[2.5rem] sm:p-5"
             >
@@ -429,161 +579,28 @@ const MojPutEntryIntro = ({ onEnterJunior, onEnterSenior }: MojPutEntryIntroProp
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.55, delay: 0.18 }}
-                  className="relative mb-3 inline-flex items-center gap-2 rounded-full border border-primary/12 bg-white/76 px-3.5 py-1.5 text-[10px] font-bold uppercase tracking-[0.22em] text-primary shadow-soft backdrop-blur-xl"
+                  className="relative mb-3 inline-flex items-center gap-2 rounded-full border border-primary/12 bg-white/76 px-3.5 py-1.5 text-[10px] font-semibold uppercase tracking-[0.22em] text-slate-500 shadow-soft backdrop-blur-xl"
                 >
-                  <Sparkles className="h-4 w-4" />
-                  Izaberi iskustvo
+                  <Sparkles className="h-3.5 w-3.5 text-primary" />
+                  Dva puta, isti cilj
                 </motion.div>
                 <motion.h1
                   initial={{ opacity: 0, y: 14, filter: "blur(8px)" }}
                   animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
                   transition={{ duration: 0.7, delay: 0.28, ease: [0.22, 1, 0.36, 1] }}
-                  className="relative text-balance text-[2rem] font-semibold leading-[1.04] tracking-[-0.055em] text-slate-950 sm:text-5xl md:text-6xl"
+                  className="relative text-balance text-[2rem] font-semibold leading-[1.04] tracking-[-0.05em] text-slate-950 sm:text-5xl md:text-6xl"
                 >
-                  Odaberi svoj <span className="text-gradient">MojPut.</span>
+                  Od interesa do <span className="text-gradient">pravog izbora.</span>
                 </motion.h1>
                 <motion.p
                   initial={{ opacity: 0, y: 12 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.65, delay: 0.42 }}
-                  className="relative mx-auto mt-3 max-w-xl text-pretty text-sm leading-6 text-slate-500 sm:text-base"
+                  className="relative mx-auto mt-3 max-w-2xl text-pretty text-sm leading-6 text-slate-500 sm:text-base sm:leading-7"
                 >
-                  Platforma se prilagođava tvojoj fazi školovanja. Clean, brzo i fokusirano na sljedeći korak.
+                  MojPut ti pomaže pronaći srednju školu, fakultet i smjer koji odgovaraju tvojim
+                  interesima, bodovima i ciljevima.
                 </motion.p>
-                <motion.div
-                  initial={{ opacity: 0, y: 12 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.6, delay: 0.56 }}
-                  className="relative mt-4 flex flex-wrap items-center justify-center gap-2"
-                >
-                  {["Senior aktivan", "Junior uskoro", "Personalizirano"].map((label) => (
-                    <span
-                      key={label}
-                      className="rounded-full border border-slate-200/70 bg-white/68 px-3 py-1 text-xs font-semibold text-slate-500 shadow-sm"
-                    >
-                      {label}
-                    </span>
-                  ))}
-                </motion.div>
-              </motion.div>
-
-              <motion.div
-                variants={{
-                  hidden: { opacity: 0, y: 18, filter: "blur(10px)" },
-                  show: {
-                    opacity: 1,
-                    y: 0,
-                    filter: "blur(0px)",
-                    transition: { duration: 0.65, delay: 0.12, ease: [0.22, 1, 0.36, 1] },
-                  },
-                }}
-                className="relative mx-auto mt-3 grid max-w-4xl gap-2.5 rounded-[1.35rem] border border-white/70 bg-white/42 p-2.5 shadow-[0_18px_70px_-58px_hsl(215_30%_12%/0.5)] backdrop-blur-2xl sm:mt-4 sm:gap-3 sm:rounded-[1.5rem] sm:p-3 md:grid-cols-[1.05fr_1.95fr]"
-              >
-                <div className="rounded-[1.15rem] border border-primary/10 bg-gradient-to-br from-primary/10 via-white/60 to-sky-400/10 p-3.5 sm:rounded-[1.25rem] sm:p-4">
-                  <div className="mb-3 flex items-center gap-2 text-xs font-bold uppercase tracking-[0.18em] text-primary">
-                    <span className="relative flex h-2.5 w-2.5">
-                      <span className="absolute inline-flex h-full w-full rounded-full bg-primary/50 opacity-75 animate-ping" />
-                      <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-primary" />
-                    </span>
-                    MojPut radar
-                  </div>
-                  <p className="text-sm font-semibold leading-5 text-slate-700">
-                    Prije ulaska biraš okruženje koje najbolje prati tvoju fazu školovanja.
-                  </p>
-                </div>
-                <motion.div
-                  initial={{ opacity: 0, y: 18, scale: 0.96, filter: "blur(12px)" }}
-                  animate={{
-                    opacity: 1,
-                    y: [0, -2, 0],
-                    scale: 1,
-                    filter: "blur(0px)",
-                  }}
-                  transition={{
-                    opacity: { duration: 0.55, delay: 0.28 },
-                    scale: { duration: 0.55, delay: 0.28 },
-                    filter: { duration: 0.55, delay: 0.28 },
-                    y: { duration: 4.5, repeat: Infinity, ease: "easeInOut" },
-                  }}
-                  className="relative overflow-hidden rounded-[1.15rem] border border-slate-200/70 bg-white/68 p-3 shadow-sm sm:rounded-[1.25rem]"
-                >
-                  <motion.span
-                    className="absolute -right-10 -top-12 h-36 w-36 rounded-full bg-primary/14 blur-3xl"
-                    animate={{ opacity: [0.35, 0.8, 0.35], scale: [1, 1.16, 1] }}
-                    transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-                    aria-hidden
-                  />
-                  <motion.span
-                    className="absolute inset-y-0 -left-1/3 w-1/3 bg-gradient-to-r from-transparent via-white/45 to-transparent"
-                    animate={{ x: ["0%", "420%"] }}
-                    transition={{ duration: 4.2, repeat: Infinity, repeatDelay: 1.2, ease: "easeInOut" }}
-                    aria-hidden
-                  />
-                  <div className="relative grid items-center gap-3 sm:grid-cols-[9rem_1fr] sm:gap-4 md:grid-cols-[10rem_1fr]">
-                    <div className="relative mx-auto flex h-32 w-32 items-center justify-center sm:h-36 sm:w-36 md:h-40 md:w-40">
-                      <div
-                        className="absolute -inset-3 rounded-full bg-[radial-gradient(circle,hsl(174_62%_42%/0.18),transparent_62%)] blur-md"
-                        aria-hidden
-                      />
-                      <motion.div
-                        className="absolute inset-0 rounded-full bg-[conic-gradient(from_-90deg,hsl(174_62%_42%)_0_71%,hsl(38_92%_58%)_71%_100%)] shadow-[0_18px_50px_-28px_hsl(174_62%_42%/0.95)]"
-                        initial={{ opacity: 0, rotate: -70, scale: 0.78 }}
-                        animate={{ opacity: 1, rotate: 0, scale: 1 }}
-                        transition={{ duration: 1, delay: 0.25, ease: [0.22, 1, 0.36, 1] }}
-                      />
-                      <motion.div
-                        className="absolute inset-0 rounded-full bg-[conic-gradient(from_0deg,transparent_0_18%,hsl(0_0%_100%/0.42)_22%,transparent_28%_100%)] mix-blend-soft-light"
-                        animate={{ rotate: 360 }}
-                        transition={{ duration: 5, repeat: Infinity, ease: "linear" }}
-                        aria-hidden
-                      />
-                      <div
-                        className="absolute inset-[16px] rounded-full bg-[radial-gradient(circle_at_50%_42%,white_0%,hsl(210_38%_99%/0.96)_54%,hsl(190_50%_96%/0.82)_100%)] shadow-[inset_0_1px_0_hsl(0_0%_100%/0.9),0_0_0_1px_hsl(0_0%_100%/0.55)] backdrop-blur-md sm:inset-[18px] md:inset-[20px]"
-                        aria-hidden
-                      />
-                      <motion.div
-                        initial={{ opacity: 0, y: 8 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.55, delay: 0.75 }}
-                        className="relative text-center"
-                      >
-                        <p className="text-3xl font-semibold tracking-[-0.06em] text-slate-950 sm:text-4xl">{undecidedStudentsPercent}%</p>
-                        <p className="mt-1 text-[10px] font-bold uppercase tracking-[0.16em] text-primary">ne zna</p>
-                      </motion.div>
-                    </div>
-                    <div className="relative text-center sm:text-left">
-                      <p className="text-sm font-semibold leading-5 text-slate-800">
-                        Većina učenika još nema jasan smjer. MojPut pretvara neizvjesnost u konkretne korake.
-                      </p>
-                      <div className="mt-4 grid gap-2">
-                        <motion.div
-                          initial={{ opacity: 0, x: 12 }}
-                          animate={{ opacity: 1, x: 0 }}
-                          transition={{ duration: 0.45, delay: 0.65 }}
-                          className="flex items-center justify-between rounded-2xl border border-primary/12 bg-primary/7 px-3 py-2"
-                        >
-                          <span className="flex items-center gap-2 text-xs font-semibold text-slate-700">
-                            <span className="h-2.5 w-2.5 rounded-full bg-primary shadow-[0_0_18px_hsl(174_62%_42%/0.6)]" />
-                            Ne zna što želi upisati
-                          </span>
-                          <span className="text-sm font-bold text-primary">{undecidedStudentsPercent}%</span>
-                        </motion.div>
-                        <motion.div
-                          initial={{ opacity: 0, x: 12 }}
-                          animate={{ opacity: 1, x: 0 }}
-                          transition={{ duration: 0.45, delay: 0.78 }}
-                          className="flex items-center justify-between rounded-2xl border border-amber-400/18 bg-amber-100/45 px-3 py-2"
-                        >
-                          <span className="flex items-center gap-2 text-xs font-semibold text-slate-700">
-                            <span className="h-2.5 w-2.5 rounded-full bg-amber-400 shadow-[0_0_18px_hsl(38_92%_58%/0.55)]" />
-                            Već zna smjer
-                          </span>
-                          <span className="text-sm font-bold text-amber-600">{decidedStudentsPercent}%</span>
-                        </motion.div>
-                      </div>
-                    </div>
-                  </div>
-                </motion.div>
               </motion.div>
 
               <motion.div
@@ -599,151 +616,216 @@ const MojPutEntryIntro = ({ onEnterJunior, onEnterSenior }: MojPutEntryIntroProp
                   transition={{ duration: 4.5, repeat: Infinity, ease: "easeInOut" }}
                   aria-hidden
                 />
-                <motion.button
-                  type="button"
-                  onClick={() => enterExperience("junior", onEnterJunior)}
-                  disabled={isLeaving}
-                  variants={{
-                    hidden: { opacity: 0, x: -24, y: 38, scale: 0.94, rotateX: 8, filter: "blur(16px)" },
-                    show: {
-                      opacity: 1,
-                      x: 0,
-                      y: 0,
-                      scale: 1,
-                      rotateX: 0,
-                      filter: "blur(0px)",
-                      transition: { type: "spring", stiffness: 130, damping: 17 },
+                {[
+                  {
+                    experience: "junior" as MojPutExperience,
+                    titleLead: "Pronađi svoju",
+                    titleHighlight: "srednju školu",
+                    kicker: "Srednje škole",
+                    audience: "Za učenike osnovnih škola",
+                    badge: "MojPut Junior",
+                    stat: "447 škola",
+                    description: "Istraži srednje škole i smjerove, upoznaj svoje interese i saznaj što ti treba za upis.",
+                    cta: "Istraži srednje škole",
+                    Icon: Users,
+                    onEnter: onEnterJunior,
+                    accent: {
+                      topBar: "via-amber-400",
+                      surface:
+                        "bg-[radial-gradient(circle_at_88%_10%,hsl(38_92%_58%/0.18),transparent_34%),radial-gradient(circle_at_4%_98%,hsl(24_90%_58%/0.11),transparent_34%),linear-gradient(145deg,hsl(0_0%_100%/0.98),hsl(42_90%_97%/0.94))]",
+                      glow: "bg-amber-300/22",
+                      badge: "border-amber-500/18 bg-amber-50 text-amber-800",
+                      iconTile: "border-amber-500/18 bg-amber-100/80 text-amber-700",
+                      hover: "hover:border-amber-300/85 hover:shadow-[0_32px_98px_-58px_hsl(38_85%_48%/0.7)]",
+                      ring: "ring-amber-400/30",
+                      kicker: "text-amber-700",
+                      titleLead: "text-slate-900",
+                      titleStrong: "text-amber-700 group-hover:text-orange-600",
+                      audience: "border-amber-500/15 bg-amber-50/80 text-amber-800",
+                      stat: "text-amber-700",
+                      description: "text-slate-700",
+                      divider: "border-amber-900/10",
+                      wave: "via-amber-300/28",
+                      liveRing: "ring-amber-300/20",
+                      ctaChip:
+                        "bg-gradient-to-br from-amber-500 to-orange-500 text-white shadow-[0_12px_30px_-12px_hsl(30_90%_50%/0.8)]",
                     },
-                  }}
-                  whileHover={isLeaving ? undefined : { y: -8, scale: 1.012 }}
-                  whileTap={isLeaving ? undefined : { scale: 0.985 }}
-                  className="group relative min-h-[12.75rem] overflow-hidden rounded-[1.6rem] border border-amber-400/22 bg-white/82 p-5 text-left shadow-[0_30px_105px_-50px_hsl(38_92%_58%/0.75)] outline-none ring-amber-400/25 backdrop-blur-2xl transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_44px_130px_-48px_hsl(38_92%_58%/0.9)] focus-visible:ring-4 disabled:cursor-wait sm:min-h-[16.25rem] sm:rounded-[2rem] sm:p-7"
-                >
-                  <span className="absolute inset-x-0 top-0 h-2 bg-gradient-to-r from-amber-300 via-orange-300 to-primary/50" aria-hidden />
-                  <span className="absolute inset-0 bg-[radial-gradient(circle_at_82%_14%,hsl(38_92%_58%/0.2),transparent_30%),radial-gradient(circle_at_8%_18%,hsl(174_62%_42%/0.1),transparent_28%),linear-gradient(135deg,hsl(0_0%_100%/0.94),hsl(38_100%_97%/0.86))]" aria-hidden />
-                  <span className="shine-overlay opacity-25 group-hover:animate" aria-hidden />
-                  <motion.span
-                    className="absolute inset-x-8 top-0 h-px bg-gradient-to-r from-transparent via-amber-400/50 to-transparent"
-                    animate={{ opacity: [0.25, 0.75, 0.25], scaleX: [0.7, 1, 0.7] }}
-                    transition={{ duration: 3.2, repeat: Infinity, ease: "easeInOut" }}
-                    aria-hidden
-                  />
-                  <motion.span
-                    className="absolute inset-x-10 top-0 h-px bg-gradient-to-r from-transparent via-white/80 to-transparent"
-                    animate={{ opacity: [0.2, 0.85, 0.2], scaleX: [0.65, 1, 0.65] }}
-                    transition={{ duration: 3.3, repeat: Infinity, ease: "easeInOut" }}
-                    aria-hidden
-                  />
-                  <motion.span
-                    className="absolute -right-10 -top-10 h-40 w-40 rounded-full bg-amber-300/28 blur-3xl"
-                    animate={{ scale: [1, 1.22, 1], opacity: [0.34, 0.68, 0.34] }}
-                    transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-                    aria-hidden
-                  />
-                  <motion.span
-                    className="absolute -left-12 bottom-0 h-44 w-44 rounded-full bg-primary/10 blur-3xl"
-                    animate={{ x: [0, 14, 0], y: [0, -12, 0], scale: [1, 1.12, 1] }}
-                    transition={{ duration: 4.8, repeat: Infinity, ease: "easeInOut" }}
-                    aria-hidden
-                  />
-                  <div className="absolute right-4 top-4 rounded-full border border-amber-500/20 bg-white/70 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.16em] text-amber-700 shadow-sm backdrop-blur">
-                    Junior mod
-                  </div>
-                  <span className="relative flex h-full flex-col justify-between">
-                    <span>
-                      <motion.span
-                        className="mb-4 inline-flex items-center gap-2 rounded-full bg-amber-100 px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.18em] text-amber-700 ring-1 ring-amber-500/15"
-                        animate={{ y: [0, -2, 0] }}
-                        transition={{ duration: 2.8, repeat: Infinity, ease: "easeInOut" }}
-                      >
-                        <Sparkles className="h-3.5 w-3.5" />
-                        Novo i uskoro!
-                      </motion.span>
-                      <motion.span
-                        className="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-amber-100/70 text-amber-700 shadow-soft ring-1 ring-amber-500/14 sm:h-14 sm:w-14"
-                        animate={{ y: [0, -4, 0], rotate: [0, 2, 0] }}
-                        transition={{ duration: 3.2, repeat: Infinity, ease: "easeInOut" }}
-                      >
-                        <Users className="h-5 w-5 sm:h-6 sm:w-6" />
-                      </motion.span>
-                      <span className="block text-2xl font-semibold tracking-[-0.04em] text-slate-950 sm:text-4xl">
-                        MojPut Junior
-                      </span>
-                      <span className="mt-1.5 block text-sm font-medium text-slate-500">Osnovnoškolci</span>
-                    </span>
-                    <span className="mt-5 block text-sm leading-6 text-slate-500 sm:mt-7">
-                      Trenutno otvara istu platformu kao Senior. Kasnije ćemo Junior mijenjati zasebno.
-                    </span>
-                    <span className="mt-4 flex items-center justify-between rounded-2xl border border-amber-400/18 bg-amber-100/55 px-4 py-3 text-sm font-semibold leading-6 text-amber-800 shadow-[0_14px_34px_-22px_hsl(38_92%_58%/0.75)]">
-                      Uđi u Junior
-                      <ArrowRight className="ml-3 h-4 w-4 transition-transform duration-300 group-hover:translate-x-1.5" />
-                    </span>
-                  </span>
-                </motion.button>
+                  },
+                  {
+                    experience: "senior" as MojPutExperience,
+                    titleLead: "Pronađi svoj",
+                    titleHighlight: "fakultet",
+                    kicker: "Fakulteti i studiji",
+                    audience: "Za srednjoškolce i maturante",
+                    badge: "MojPut Senior",
+                    stat: "120+ fakulteta",
+                    description: "Usporedi fakultete, izračunaj bodove i odaberi studij koji prati tvoje ciljeve.",
+                    cta: "Istraži fakultete",
+                    Icon: GraduationCap,
+                    onEnter: onEnterSenior,
+                    accent: {
+                      topBar: "via-primary",
+                      surface:
+                        "bg-[radial-gradient(circle_at_88%_10%,hsl(174_62%_42%/0.16),transparent_34%),radial-gradient(circle_at_4%_98%,hsl(205_82%_54%/0.1),transparent_34%),linear-gradient(145deg,hsl(0_0%_100%/0.98),hsl(180_60%_97%/0.94))]",
+                      glow: "bg-primary/20",
+                      badge: "border-primary/18 bg-primary/8 text-primary",
+                      iconTile: "border-primary/18 bg-primary/10 text-primary",
+                      hover: "hover:border-primary/45 hover:shadow-[0_32px_98px_-58px_hsl(174_62%_38%/0.72)]",
+                      ring: "ring-primary/30",
+                      kicker: "text-primary",
+                      titleLead: "text-slate-900",
+                      titleStrong: "text-primary group-hover:text-teal-700",
+                      audience: "border-primary/15 bg-primary/8 text-primary",
+                      stat: "text-primary",
+                      description: "text-slate-700",
+                      divider: "border-primary/10",
+                      wave: "via-primary/24",
+                      liveRing: "ring-primary/18",
+                      ctaChip:
+                        "bg-gradient-to-br from-primary to-teal-600 text-white shadow-[0_12px_30px_-12px_hsl(174_62%_38%/0.85)]",
+                    },
+                  },
+                ].map(({ experience, titleLead, titleHighlight, kicker, audience, badge, stat, description, cta, Icon, onEnter, accent }, index) => (
+                  <motion.button
+                    key={experience}
+                    type="button"
+                    aria-label={`${badge}: ${titleLead} ${titleHighlight}`}
+                    onClick={() => enterExperience(experience, onEnter)}
+                    disabled={isLeaving}
+                    variants={{
+                      hidden: {
+                        opacity: 0,
+                        x: index === 0 ? -24 : 24,
+                        y: 38,
+                        scale: 0.94,
+                        rotateX: 8,
+                        filter: "blur(16px)",
+                      },
+                      show: {
+                        opacity: 1,
+                        x: 0,
+                        y: 0,
+                        scale: 1,
+                        rotateX: 0,
+                        filter: "blur(0px)",
+                        transition: { type: "spring", stiffness: 130, damping: 17 },
+                      },
+                    }}
+                    animate={isLeaving && launchExperience === experience ? { scale: 1.035, y: -8 } : undefined}
+                    whileHover={isLeaving ? undefined : { y: -5, scale: 1.006 }}
+                    whileTap={isLeaving ? undefined : { scale: 0.985 }}
+                    className={cn(
+                      "group relative min-h-[16rem] overflow-hidden rounded-[1.65rem] border border-white/80 p-5 text-left text-slate-950 shadow-[0_20px_80px_-58px_hsl(215_30%_12%/0.58)] outline-none backdrop-blur-2xl transition-all duration-300 hover:-translate-y-0.5 hover:bg-white focus-visible:ring-4 disabled:cursor-wait sm:min-h-[18rem] sm:rounded-[2rem] sm:p-7",
+                      accent.hover,
+                      accent.ring,
+                    )}
+                  >
+                    <motion.span
+                      className={cn("absolute inset-x-6 top-0 h-[2px] rounded-b-full bg-gradient-to-r from-transparent to-transparent", accent.topBar)}
+                      animate={{ opacity: [0.45, 1, 0.45], scaleX: [0.72, 1, 0.72] }}
+                      transition={{ duration: 3.4, repeat: Infinity, ease: "easeInOut", delay: index * 0.35 }}
+                      aria-hidden
+                    />
+                    <span className={cn("absolute inset-0", accent.surface)} aria-hidden />
+                    <motion.span
+                      className={cn(
+                        "absolute -right-20 -top-20 h-56 w-56 rounded-full opacity-70 blur-3xl transition-opacity duration-500 group-hover:opacity-100",
+                        accent.glow,
+                      )}
+                      animate={{ x: [0, -10, 0], y: [0, 12, 0], scale: [1, 1.08, 1], opacity: [0.34, 0.62, 0.34] }}
+                      transition={{ duration: 7.2, repeat: Infinity, ease: "easeInOut", delay: index * 0.45 }}
+                      aria-hidden
+                    />
+                    <motion.span
+                      className={cn(
+                        "pointer-events-none absolute -inset-y-16 -left-2/3 w-2/3 rotate-12 bg-gradient-to-r from-transparent to-transparent blur-sm",
+                        accent.wave,
+                      )}
+                      animate={{ x: ["0%", "330%"] }}
+                      transition={{ duration: 7.8, repeat: Infinity, ease: "easeInOut", delay: 1.2 + index * 1.1 }}
+                      aria-hidden
+                    />
+                    <motion.span
+                      className={cn("pointer-events-none absolute -bottom-20 left-8 h-32 w-64 rounded-[100%] blur-3xl", accent.glow)}
+                      animate={{ x: [0, 20, 0], opacity: [0.08, 0.2, 0.08] }}
+                      transition={{ duration: 7, repeat: Infinity, ease: "easeInOut", delay: index * 0.5 }}
+                      aria-hidden
+                    />
+                    <motion.span
+                      className={cn("pointer-events-none absolute inset-1 rounded-[1.45rem] ring-2 sm:rounded-[1.8rem]", accent.liveRing)}
+                      animate={{ opacity: [0, 0.28, 0], scale: [0.992, 1.006, 0.992] }}
+                      transition={{ duration: 5.4, repeat: Infinity, ease: "easeInOut", delay: index * 0.7 }}
+                      aria-hidden
+                    />
+                    <span
+                      className="pointer-events-none absolute inset-0 -translate-x-[130%] skew-x-[-18deg] bg-gradient-to-r from-transparent via-white/50 to-transparent transition-transform duration-[1100ms] [transition-timing-function:cubic-bezier(0.22,1,0.36,1)] group-hover:translate-x-[130%]"
+                      aria-hidden
+                    />
 
-                <motion.button
-                  type="button"
-                  onClick={() => enterExperience("senior", onEnterSenior)}
-                  disabled={isLeaving}
-                  variants={{
-                    hidden: { opacity: 0, x: 24, y: 38, scale: 0.94, rotateX: 8, filter: "blur(16px)" },
-                    show: {
-                      opacity: 1,
-                      x: 0,
-                      y: 0,
-                      scale: 1,
-                      rotateX: 0,
-                      filter: "blur(0px)",
-                      transition: { type: "spring", stiffness: 130, damping: 17 },
-                    },
-                  }}
-                  animate={isLeaving ? { scale: 1.04, y: -8 } : undefined}
-                  whileHover={isLeaving ? undefined : { y: -8, scale: 1.012 }}
-                  whileTap={isLeaving ? undefined : { scale: 0.985 }}
-                  className="group relative min-h-[12.75rem] overflow-hidden rounded-[1.6rem] border border-primary/24 bg-white/86 p-5 text-left text-slate-950 shadow-[0_30px_105px_-42px_hsl(174_62%_42%/1)] outline-none ring-primary/25 backdrop-blur-2xl transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_44px_130px_-44px_hsl(174_62%_42%/1)] focus-visible:ring-4 disabled:cursor-wait sm:min-h-[16.25rem] sm:rounded-[2rem] sm:p-7"
-                >
-                  <span className="absolute inset-x-0 top-0 h-2 bg-gradient-to-r from-primary via-sky-400 to-indigo-500" aria-hidden />
-                  <span className="absolute inset-0 bg-[radial-gradient(circle_at_82%_14%,hsl(205_82%_54%/0.24),transparent_30%),radial-gradient(circle_at_8%_18%,hsl(174_62%_42%/0.22),transparent_28%),linear-gradient(135deg,hsl(0_0%_100%/0.94),hsl(190_70%_97%/0.86))]" aria-hidden />
-                  <span className="shine-overlay opacity-35 group-hover:animate" aria-hidden />
-                  <motion.span
-                    className="absolute inset-x-10 top-0 h-px bg-gradient-to-r from-transparent via-white/80 to-transparent"
-                    animate={{ opacity: [0.2, 0.85, 0.2], scaleX: [0.65, 1, 0.65] }}
-                    transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-                    aria-hidden
-                  />
-                  <motion.span
-                    className="absolute -right-12 -top-12 h-44 w-44 rounded-full bg-sky-300/20 blur-3xl"
-                    animate={{ x: [0, -16, 0], y: [0, 16, 0], scale: [1, 1.16, 1] }}
-                    transition={{ duration: 4.5, repeat: Infinity, ease: "easeInOut" }}
-                    aria-hidden
-                  />
-                  <span className="relative flex h-full flex-col justify-between">
-                    <span>
-                      <motion.span
-                        className="mb-4 inline-flex items-center gap-2 rounded-full bg-primary/8 px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.18em] text-primary ring-1 ring-primary/14"
-                        animate={{ y: [0, -2, 0] }}
-                        transition={{ duration: 2.6, repeat: Infinity, ease: "easeInOut" }}
-                      >
-                        Spremno za ulazak
-                      </motion.span>
-                      <motion.span
-                        className="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/10 text-primary shadow-soft ring-1 ring-primary/10 sm:h-14 sm:w-14"
-                        animate={{ y: [0, -4, 0], rotate: [0, -2, 0] }}
-                        transition={{ duration: 3.2, repeat: Infinity, ease: "easeInOut" }}
-                      >
-                        <GraduationCap className="h-5 w-5 sm:h-6 sm:w-6" />
-                      </motion.span>
-                      <span className="block text-2xl font-semibold tracking-[-0.04em] sm:text-4xl">MojPut Senior</span>
-                      <span className="mt-1.5 block text-sm font-medium text-slate-500">
-                        Srednjoškolci i maturanti
+                    <span className="relative flex h-full flex-col">
+                      <span className="flex items-start justify-between">
+                        <motion.span
+                          className={cn(
+                            "flex h-12 w-12 items-center justify-center rounded-2xl border shadow-soft transition-transform duration-500 group-hover:scale-105 sm:h-[3.25rem] sm:w-[3.25rem]",
+                            accent.iconTile,
+                          )}
+                          animate={{ y: [0, -2.5, 0] }}
+                          transition={{ duration: 4.8, repeat: Infinity, ease: "easeInOut", delay: index * 0.4 }}
+                        >
+                          <Icon className="h-5 w-5 sm:h-[1.35rem] sm:w-[1.35rem]" strokeWidth={2} />
+                        </motion.span>
+                        <span
+                          className={cn(
+                            "rounded-full border px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] backdrop-blur-xl",
+                            accent.badge,
+                          )}
+                        >
+                          {badge}
+                        </span>
+                      </span>
+
+                      <span className={cn("mt-6 block text-[10px] font-bold uppercase tracking-[0.22em] sm:mt-7", accent.kicker)}>
+                        {kicker}
+                      </span>
+                      <span className="mt-2 block text-balance text-[1.75rem] leading-[1.05] tracking-[-0.045em] sm:text-[2.25rem]">
+                        <span className={cn("font-semibold", accent.titleLead)}>{titleLead}</span>
+                        <br />
+                        <span className={cn("font-extrabold transition-colors duration-300", accent.titleStrong)}>
+                          {titleHighlight}
+                        </span>
+                      </span>
+                      <span className="mt-3 flex flex-wrap items-center gap-2">
+                        <span className={cn("rounded-full border px-3 py-1 text-[11px] font-semibold", accent.audience)}>
+                          {audience}
+                        </span>
+                        <span className={cn("text-[11px] font-bold uppercase tracking-[0.12em]", accent.stat)}>
+                          {stat}
+                        </span>
+                      </span>
+                      <span className={cn("mt-4 block max-w-sm text-sm font-medium leading-6 sm:text-[15px] sm:leading-7", accent.description)}>
+                        {description}
+                      </span>
+
+                      <span className="mt-auto pt-6 sm:pt-7">
+                        <span className={cn("flex items-center justify-between border-t pt-4 sm:pt-5", accent.divider)}>
+                          <span className="text-sm font-bold tracking-[-0.01em] text-slate-950 sm:text-[15px]">
+                            {cta}
+                          </span>
+                          <motion.span
+                            className={cn(
+                              "flex h-9 w-9 shrink-0 items-center justify-center rounded-full transition-transform duration-300 group-hover:translate-x-1 sm:h-10 sm:w-10",
+                              accent.ctaChip,
+                            )}
+                            animate={{ scale: [1, 1.035, 1] }}
+                            transition={{ duration: 4.2, repeat: Infinity, ease: "easeInOut", delay: 0.6 + index * 0.45 }}
+                          >
+                            <ArrowRight className="h-4 w-4" strokeWidth={2.2} />
+                          </motion.span>
+                        </span>
                       </span>
                     </span>
-                    <span className="mt-5 flex items-center justify-between rounded-2xl border border-primary/12 bg-primary px-4 py-3 text-sm font-semibold leading-6 text-primary-foreground shadow-[0_14px_34px_-18px_hsl(174_62%_42%/0.9)] sm:mt-7 sm:px-5 sm:py-3.5">
-                      Uđi u platformu
-                      <ArrowRight className="ml-3 h-5 w-5 transition-transform duration-300 group-hover:translate-x-1.5" />
-                    </span>
-                  </span>
-                </motion.button>
+                  </motion.button>
+                ))}
               </motion.div>
 
               <motion.div
@@ -756,24 +838,86 @@ const MojPutEntryIntro = ({ onEnterJunior, onEnterSenior }: MojPutEntryIntroProp
                     transition: { duration: 0.7, delay: 0.15, ease: [0.22, 1, 0.36, 1] },
                   },
                 }}
-                className="mx-auto mt-5 max-w-4xl overflow-hidden rounded-[1.5rem] border border-white/70 bg-white/54 p-3 shadow-[0_20px_70px_-52px_hsl(215_30%_12%/0.55)] backdrop-blur-2xl"
+                className="mx-auto mt-6 w-full max-w-5xl sm:mt-8"
               >
-                <div className="grid grid-cols-2 gap-2 md:grid-cols-4">
-                  {seniorHighlights.map(({ label, detail, Icon }, index) => (
-                    <motion.div
+                <div className="mb-4 text-center sm:mb-5">
+                  <h2 className="text-balance text-xl font-semibold tracking-[-0.03em] text-slate-950 sm:text-2xl">
+                    Alati koji ti pomažu odlučiti
+                  </h2>
+                  <p className="mx-auto mt-1.5 max-w-md text-pretty text-sm font-medium leading-6 text-slate-500">
+                    Ne znaš odakle krenuti? Kreni od interesa, bodova ili rokova.
+                  </p>
+                </div>
+                <div className="grid grid-cols-1 gap-3 md:grid-cols-2 md:gap-4">
+                  {decisionToolGroups.map(({ label, title, accent, tools }, groupIndex) => {
+                    const tone = decisionToolAccents[accent];
+
+                    return (
+                    <motion.section
                       key={label}
                       initial={{ opacity: 0, y: 12 }}
                       animate={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.45, delay: 0.25 + index * 0.08 }}
-                      className="group rounded-2xl border border-slate-200/60 bg-white/66 p-3 text-left shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-primary/18 hover:bg-white"
+                      transition={{ duration: 0.5, delay: 0.25 + groupIndex * 0.1 }}
+                      className={cn(
+                        "overflow-hidden rounded-[1.35rem] border p-3 text-left shadow-sm backdrop-blur-xl sm:rounded-[1.6rem] sm:p-4",
+                        tone.panel,
+                      )}
                     >
-                      <div className="mb-2 flex h-8 w-8 items-center justify-center rounded-xl bg-primary/8 text-primary ring-1 ring-primary/10 transition-transform duration-300 group-hover:scale-105">
-                        <Icon className="h-4 w-4" />
+                      <div className="mb-3 px-1 sm:mb-4">
+                        <div>
+                          <span className={cn("text-[10px] font-bold uppercase tracking-[0.18em]", tone.eyebrow)}>
+                            {label}
+                          </span>
+                          <h3 className="mt-1 text-lg font-semibold tracking-[-0.03em] text-slate-950 sm:text-xl">
+                            {title}
+                          </h3>
+                        </div>
                       </div>
-                      <p className="text-xs font-bold tracking-[-0.01em] text-slate-900 sm:text-sm">{label}</p>
-                      <p className="mt-0.5 text-[11px] font-medium leading-4 text-slate-500">{detail}</p>
-                    </motion.div>
-                  ))}
+
+                      <div className="flex flex-col gap-2.5">
+                        {tools.map(({ label: toolLabel, detail, to, Icon }, toolIndex) => (
+                          <motion.div
+                            key={toolLabel}
+                            initial={{ opacity: 0, x: groupIndex === 0 ? -10 : 10 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            transition={{ duration: 0.42, delay: 0.38 + toolIndex * 0.07 + groupIndex * 0.08 }}
+                          >
+                            <Link
+                              to={to}
+                              className={cn(
+                                "group flex items-center gap-3 rounded-2xl border border-white/75 bg-white/76 p-3 shadow-sm outline-none backdrop-blur-xl transition-all duration-300 hover:-translate-y-0.5 hover:bg-white focus-visible:ring-4 sm:p-3.5",
+                                tone.card,
+                              )}
+                            >
+                              <span
+                                className={cn(
+                                  "flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ring-1 transition-transform duration-300 group-hover:scale-105",
+                                  tone.icon,
+                                )}
+                              >
+                                <Icon className="h-5 w-5" strokeWidth={2.1} />
+                              </span>
+                              <span className="min-w-0 flex-1">
+                                <span className="block text-sm font-semibold tracking-[-0.01em] text-slate-900">
+                                  {toolLabel}
+                                </span>
+                                <span className="mt-0.5 block text-xs font-medium leading-5 text-slate-500">
+                                  {detail}
+                                </span>
+                              </span>
+                              <ArrowRight
+                                className={cn(
+                                  "h-4 w-4 shrink-0 opacity-60 transition-transform duration-300 group-hover:translate-x-0.5 group-hover:opacity-100",
+                                  tone.link,
+                                )}
+                              />
+                            </Link>
+                          </motion.div>
+                        ))}
+                      </div>
+                    </motion.section>
+                    );
+                  })}
                 </div>
               </motion.div>
 
@@ -787,30 +931,134 @@ const MojPutEntryIntro = ({ onEnterJunior, onEnterSenior }: MojPutEntryIntroProp
                     transition: { duration: 0.65, delay: 0.28, ease: [0.22, 1, 0.36, 1] },
                   },
                 }}
-                className="mx-auto mt-4 flex max-w-4xl flex-col items-center gap-3 rounded-[1.4rem] border border-white/60 bg-white/42 px-4 py-3 shadow-[0_18px_60px_-52px_hsl(215_30%_12%/0.48)] backdrop-blur-2xl sm:flex-row sm:justify-between"
+                className="mx-auto mt-6 w-full max-w-4xl overflow-hidden rounded-[1.5rem] border border-white/70 bg-white/56 px-4 py-5 shadow-[0_20px_70px_-52px_hsl(215_30%_12%/0.5)] backdrop-blur-2xl sm:mt-8 sm:rounded-[1.75rem] sm:px-8 sm:py-7"
               >
-                <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.16em] text-slate-500">
-                  <span className="relative flex h-2.5 w-2.5">
-                    <span className="absolute inline-flex h-full w-full rounded-full bg-primary/55 opacity-75 animate-ping" />
-                    <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-primary" />
-                  </span>
-                  Senior flow
-                </div>
-                <div className="flex flex-wrap items-center justify-center gap-2">
-                  {seniorJourney.map((step, index) => (
+                <div className="grid gap-6 md:grid-cols-[minmax(0,1fr)_17rem] md:items-center md:gap-8">
+                  <div className="text-center md:text-left">
+                    <h2 className="text-balance text-xl font-semibold tracking-[-0.03em] text-slate-950 sm:text-2xl">
+                      Ne traži samo školu. <span className="text-gradient">Pronađi svoj put.</span>
+                    </h2>
+                    <p className="mx-auto mt-2 max-w-lg text-pretty text-sm font-medium leading-6 text-slate-500 md:mx-0">
+                      MojPut povezuje sve korake odluke na jednom mjestu, umjesto da ih tražiš po
+                      desecima stranica.
+                    </p>
+                    <div className="mt-4 flex flex-wrap items-center justify-center gap-1.5 sm:mt-5 sm:gap-2 md:justify-start">
+                      {journeySteps.map((step, index) => (
+                        <motion.div
+                          key={step}
+                          initial={{ opacity: 0, y: 8 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ duration: 0.42, delay: 0.42 + index * 0.08 }}
+                          className="flex items-center gap-1.5 sm:gap-2"
+                        >
+                          <span className="rounded-full border border-slate-200/70 bg-white/72 px-3 py-1.5 text-xs font-semibold text-slate-600 shadow-sm">
+                            {step}
+                          </span>
+                          {index < journeySteps.length - 1 && (
+                            <ArrowRight className="h-3.5 w-3.5 shrink-0 text-primary/50" aria-hidden />
+                          )}
+                        </motion.div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="relative mx-auto flex w-full max-w-[17rem] flex-col items-center rounded-[1.35rem] border border-white/80 bg-white/70 p-4 text-center shadow-[0_18px_54px_-42px_hsl(215_30%_12%/0.45)] backdrop-blur-xl">
+                    <span className="mb-3 text-[10px] font-bold uppercase tracking-[0.2em] text-slate-500">
+                      Odluka učenika
+                    </span>
                     <motion.div
-                      key={step}
-                      initial={{ opacity: 0, y: 8 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.42, delay: 0.42 + index * 0.08 }}
-                      className="flex items-center gap-2"
+                      className="relative grid h-36 w-36 place-items-center rounded-full sm:h-40 sm:w-40"
+                      initial={{ scale: 0.82, opacity: 0 }}
+                      animate={{ scale: 1, opacity: 1 }}
+                      transition={{
+                        duration: 0.85,
+                        delay: 0.48,
+                        ease: [0.22, 1, 0.36, 1],
+                      }}
                     >
-                      <span className="rounded-full border border-slate-200/70 bg-white/70 px-3 py-1.5 text-xs font-semibold text-slate-600 shadow-sm">
-                        {step}
+                      <motion.span
+                        className="absolute inset-2 rounded-full bg-primary/10 blur-2xl"
+                        animate={{ opacity: [0.18, 0.5, 0.18], scale: [0.9, 1.08, 0.9] }}
+                        transition={{ duration: 3.8, repeat: Infinity, ease: "easeInOut" }}
+                        aria-hidden
+                      />
+                      <svg className="absolute inset-0 h-full w-full -rotate-90" viewBox="0 0 120 120" aria-hidden>
+                        <circle
+                          cx="60"
+                          cy="60"
+                          r="48"
+                          fill="none"
+                          stroke="hsl(38 92% 55% / 0.22)"
+                          strokeWidth="13"
+                        />
+                        <motion.circle
+                          cx="60"
+                          cy="60"
+                          r="48"
+                          fill="none"
+                          stroke="hsl(38 92% 55%)"
+                          strokeWidth="13"
+                          strokeLinecap="round"
+                          pathLength="1"
+                          strokeDasharray={`${decidedStudentsPercent / 100} 1`}
+                          strokeDashoffset={-(undecidedStudentsPercent / 100)}
+                          initial={{ opacity: 0, strokeWidth: 10 }}
+                          animate={{ opacity: [0.75, 1, 0.75], strokeWidth: [11, 13, 11] }}
+                          transition={{ duration: 2.6, repeat: Infinity, ease: "easeInOut" }}
+                        />
+                        <motion.circle
+                          cx="60"
+                          cy="60"
+                          r="48"
+                          fill="none"
+                          stroke="hsl(174 62% 42%)"
+                          strokeWidth="13"
+                          strokeLinecap="round"
+                          pathLength="1"
+                          initial={{ pathLength: 0, opacity: 0.4 }}
+                          animate={{
+                            pathLength: [
+                              undecidedStudentsPercent / 100,
+                              undecidedStudentsPercent / 100 - 0.025,
+                              undecidedStudentsPercent / 100,
+                            ],
+                            opacity: [0.9, 1, 0.9],
+                          }}
+                          transition={{
+                            pathLength: { duration: 3.2, repeat: Infinity, ease: "easeInOut" },
+                            opacity: { duration: 3.2, repeat: Infinity, ease: "easeInOut" },
+                          }}
+                        />
+                      </svg>
+                      <span className="absolute inset-4 rounded-full bg-white shadow-[inset_0_0_34px_hsl(215_30%_12%/0.06),0_10px_28px_-24px_hsl(215_30%_12%/0.5)]" />
+                      <span className="relative flex flex-col items-center">
+                        <strong className="text-4xl font-semibold tracking-[-0.06em] text-slate-950">
+                          {undecidedStudentsPercent}%
+                        </strong>
+                        <span className="mt-1 max-w-24 text-[11px] font-semibold leading-4 text-slate-500">
+                          još bira smjer
+                        </span>
                       </span>
-                      {index < seniorJourney.length - 1 && <ArrowRight className="hidden h-3.5 w-3.5 text-slate-300 sm:block" />}
                     </motion.div>
-                  ))}
+                    <div className="mt-4 grid w-full grid-cols-2 gap-2 text-left">
+                      <span className="rounded-2xl border border-primary/12 bg-primary/8 px-3 py-2">
+                        <span className="block text-lg font-semibold leading-none text-primary">
+                          {undecidedStudentsPercent}%
+                        </span>
+                        <span className="mt-1 block text-[11px] font-medium leading-4 text-slate-600">
+                          treba pomoć
+                        </span>
+                      </span>
+                      <span className="rounded-2xl border border-amber-500/15 bg-amber-50 px-3 py-2">
+                        <span className="block text-lg font-semibold leading-none text-amber-600">
+                          {decidedStudentsPercent}%
+                        </span>
+                        <span className="mt-1 block text-[11px] font-medium leading-4 text-slate-600">
+                          zna smjer
+                        </span>
+                      </span>
+                    </div>
+                  </div>
                 </div>
               </motion.div>
             </motion.div>
@@ -944,6 +1192,14 @@ const Index = () => {
   const [user, setUser] = useState<AuthUser | null>(null);
   const heroCtaRef = useRef<HTMLDivElement | null>(null);
   const ctaEndRef = useRef<HTMLElement | null>(null);
+  const { scrollYProgress } = useScroll();
+  const pageProgressScale = useTransform(scrollYProgress, [0, 1], [0, 1]);
+  const heroOrbY = useTransform(scrollYProgress, [0, 0.32], [0, 120]);
+  const heroOrbYReverse = useTransform(scrollYProgress, [0, 0.32], [0, -90]);
+  const heroPreviewY = useTransform(scrollYProgress, [0, 0.26], [0, 46]);
+  const heroCopyY = useTransform(scrollYProgress, [0, 0.22], [0, -22]);
+  const statsGlowY = useTransform(scrollYProgress, [0.18, 0.48], [56, -40]);
+  const featuresGlowY = useTransform(scrollYProgress, [0.34, 0.78], [90, -110]);
   const [heroPassed, setHeroPassed] = useState(false);
   const [endReached, setEndReached] = useState(false);
   const [showEntryIntro, setShowEntryIntro] = useState(!hasExperienceInUrl);
@@ -1073,6 +1329,25 @@ const Index = () => {
           : f,
       )
     : features;
+  const scrollRevealGroup = {
+    hidden: {},
+    show: {
+      transition: {
+        staggerChildren: 0.11,
+        delayChildren: 0.08,
+      },
+    },
+  };
+  const scrollRevealItem = {
+    hidden: { opacity: 0, y: 34, scale: 0.96, filter: "blur(10px)" },
+    show: {
+      opacity: 1,
+      y: 0,
+      scale: 1,
+      filter: "blur(0px)",
+      transition: { duration: 0.68, ease: [0.22, 1, 0.36, 1] },
+    },
+  };
 
   if (showEntryIntro) {
     return (
@@ -1086,15 +1361,32 @@ const Index = () => {
   return (
     <div data-mojput-experience={selectedExperience}>
       <Layout>
+      <motion.div
+        className="fixed left-0 top-0 z-[80] h-[3px] w-full origin-left bg-gradient-to-r from-primary via-sky-400 to-amber-400 shadow-[0_0_18px_hsl(174_62%_42%/0.45)]"
+        style={{ scaleX: pageProgressScale }}
+        aria-hidden
+      />
       {/* Hero */}
       <section className="relative overflow-hidden bg-mesh-gradient">
         <div
           className="absolute inset-0 bg-grid-pattern opacity-[0.28] sm:opacity-[0.32] [mask-image:radial-gradient(ellipse_at_center,black_30%,transparent_78%)]"
           aria-hidden
         />
-        <div className="aurora-orb top-[-8rem] right-[-6rem] h-[20rem] w-[20rem] sm:h-[32rem] sm:w-[32rem]" aria-hidden />
-        <div className="aurora-orb bottom-[-10rem] left-[-8rem] h-[18rem] w-[18rem] sm:h-[26rem] sm:w-[26rem] opacity-40" aria-hidden />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[320px] sm:w-[640px] h-[320px] sm:h-[640px] bg-primary/5 rounded-full blur-3xl pointer-events-none" aria-hidden />
+        <motion.div
+          className="aurora-orb top-[-8rem] right-[-6rem] h-[20rem] w-[20rem] sm:h-[32rem] sm:w-[32rem]"
+          style={{ y: heroOrbY }}
+          aria-hidden
+        />
+        <motion.div
+          className="aurora-orb bottom-[-10rem] left-[-8rem] h-[18rem] w-[18rem] opacity-40 sm:h-[26rem] sm:w-[26rem]"
+          style={{ y: heroOrbYReverse }}
+          aria-hidden
+        />
+        <motion.div
+          className="pointer-events-none absolute left-1/2 top-1/2 h-[320px] w-[320px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-primary/5 blur-3xl sm:h-[640px] sm:w-[640px]"
+          style={{ y: heroPreviewY }}
+          aria-hidden
+        />
 
         <div className="container relative pb-10 pt-8 sm:pb-24 sm:pt-14 md:pb-36 md:pt-20 lg:pt-24">
           <motion.nav
@@ -1147,7 +1439,7 @@ const Index = () => {
 
           <div className="grid grid-cols-1 items-center gap-10 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)] lg:gap-14">
             {/* Copy column */}
-            <div className="max-w-2xl mx-auto text-center lg:mx-0 lg:text-left">
+            <motion.div className="max-w-2xl mx-auto text-center lg:mx-0 lg:text-left" style={{ y: heroCopyY }}>
               <motion.div
                 initial={{ opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -1379,13 +1671,14 @@ const Index = () => {
                   {isJunior ? "600+ učenika" : "600+ maturanata"}
                 </span>
               </motion.div>
-            </div>
+            </motion.div>
 
             {/* Visual / preview column — decorative only */}
             <motion.div
               initial={{ opacity: 0, scale: 0.96, y: 24 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               transition={{ duration: 0.7, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
+              style={{ y: heroPreviewY }}
               className="relative hidden lg:block"
               aria-hidden
             >
@@ -1555,7 +1848,13 @@ const Index = () => {
       )}
 
       {/* Stats */}
-      <section className="relative border-y bg-gradient-to-b from-background via-muted/20 to-background">
+      <motion.section
+        className="relative border-y bg-gradient-to-b from-background via-muted/20 to-background"
+        initial={{ opacity: 0.88 }}
+        whileInView={{ opacity: 1 }}
+        viewport={{ once: false, amount: 0.25 }}
+        transition={{ duration: 0.6 }}
+      >
         <div
           className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-border to-transparent"
           aria-hidden
@@ -1564,17 +1863,31 @@ const Index = () => {
           className="pointer-events-none absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-border to-transparent"
           aria-hidden
         />
-        <div
+        <motion.div
           className="pointer-events-none absolute -top-24 left-1/2 -translate-x-1/2 h-64 w-[40rem] rounded-full bg-[var(--hero-gradient-soft)] opacity-60 blur-3xl"
+          style={{ y: statsGlowY }}
           aria-hidden
         />
-        <div className="container py-8 sm:py-12 md:py-14">
+        <motion.div
+          className="container py-8 sm:py-12 md:py-14"
+          initial={{ opacity: 0, y: 28, scale: 0.98 }}
+          whileInView={{ opacity: 1, y: 0, scale: 1 }}
+          viewport={{ once: false, amount: 0.35 }}
+          transition={{ duration: 0.65, ease: [0.22, 1, 0.36, 1] }}
+        >
           <AnimatedStatsGrid stats={stats} />
-        </div>
-      </section>
+        </motion.div>
+      </motion.section>
 
       {/* Features */}
-      <section id="alati" className="relative overflow-hidden py-12 sm:py-16 md:py-24 lg:py-28">
+      <motion.section
+        id="alati"
+        className="relative overflow-hidden py-12 sm:py-16 md:py-24 lg:py-28"
+        initial={{ opacity: 0.94 }}
+        whileInView={{ opacity: 1 }}
+        viewport={{ once: false, amount: 0.18 }}
+        transition={{ duration: 0.5 }}
+      >
         <div
           className="pointer-events-none absolute inset-0 bg-gradient-to-b from-background via-muted/25 to-background"
           aria-hidden
@@ -1583,22 +1896,24 @@ const Index = () => {
           className="pointer-events-none absolute inset-0 bg-grid-pattern opacity-[0.16] [mask-image:radial-gradient(ellipse_at_top,black_0%,transparent_70%)]"
           aria-hidden
         />
-        <div
+        <motion.div
           className="pointer-events-none absolute -left-24 top-1/4 h-80 w-80 rounded-full bg-primary/[0.08] blur-3xl"
+          style={{ y: featuresGlowY }}
           aria-hidden
         />
-        <div
+        <motion.div
           className="pointer-events-none absolute -right-32 bottom-0 h-96 w-96 rounded-full bg-accent/[0.06] blur-3xl"
+          style={{ y: statsGlowY }}
           aria-hidden
         />
 
         <div className="container relative">
           <div className="mx-auto mb-8 flex max-w-5xl flex-col items-center gap-5 sm:mb-12 sm:gap-6 md:mb-16 md:flex-row md:items-end md:justify-between md:gap-10">
             <motion.div
-              initial={{ opacity: 0, y: 16 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: "-60px" }}
-              transition={{ duration: 0.45 }}
+              initial={{ opacity: 0, y: 28, filter: "blur(10px)" }}
+              whileInView={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+              viewport={{ once: false, margin: "-80px", amount: 0.45 }}
+              transition={{ duration: 0.62, ease: [0.22, 1, 0.36, 1] }}
               className="max-w-2xl text-center md:text-left"
             >
               <div className="mb-4 sm:mb-5 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 backdrop-blur-sm px-3 sm:px-3.5 py-1.5 text-[10px] sm:text-[11px] font-bold uppercase tracking-[0.16em] sm:tracking-[0.18em] text-primary shadow-soft">
@@ -1615,10 +1930,10 @@ const Index = () => {
 
             {/* Counter chip hidden on mobile — da se ne troši vertikalni prostor */}
             <motion.div
-              initial={{ opacity: 0, y: 16 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: "-60px" }}
-              transition={{ duration: 0.45, delay: 0.1 }}
+              initial={{ opacity: 0, y: 28, scale: 0.96, filter: "blur(10px)" }}
+              whileInView={{ opacity: 1, y: 0, scale: 1, filter: "blur(0px)" }}
+              viewport={{ once: false, margin: "-80px", amount: 0.45 }}
+              transition={{ duration: 0.62, delay: 0.12, ease: [0.22, 1, 0.36, 1] }}
               className="relative hidden md:block shrink-0 rounded-2xl border border-border/60 bg-card/80 px-5 py-4 backdrop-blur-sm shadow-soft"
             >
               <div
@@ -1646,49 +1961,54 @@ const Index = () => {
             </motion.div>
           </div>
 
-          <div className="mx-auto grid max-w-7xl grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-6 lg:grid-cols-4">
-            {featureList.map((feature, i) =>
-              feature.locked ? (
-                <div
-                  key={feature.path}
-                  className="block h-full min-h-[11rem] select-none sm:min-h-[12.5rem]"
-                  aria-disabled
-                  title="Još nije aktivno — uskoro dostupno."
-                >
-                  <FeatureCard
-                    icon={feature.icon}
-                    title={feature.title}
-                    description={feature.description}
-                    delay={i * 0.06}
-                    locked
-                  />
-                </div>
-              ) : (
-                <Link
-                  key={feature.path}
-                  to={feature.path}
-                  className="block h-full min-h-[11rem] rounded-2xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 focus-visible:ring-offset-2 focus-visible:ring-offset-background sm:min-h-[12.5rem]"
-                >
-                  <FeatureCard
-                    icon={feature.icon}
-                    title={feature.title}
-                    description={feature.description}
-                    delay={i * 0.06}
-                    highlighted={feature.highlighted}
-                  />
-                </Link>
-              ),
-            )}
-          </div>
+          <motion.div
+            className="mx-auto grid max-w-7xl grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-6 lg:grid-cols-4"
+            variants={scrollRevealGroup}
+            initial="hidden"
+            whileInView="show"
+            viewport={{ once: false, margin: "-90px", amount: 0.12 }}
+          >
+            {featureList.map((feature) => (
+              <motion.div key={feature.path} variants={scrollRevealItem} className="h-full">
+                {feature.locked ? (
+                  <div
+                    className="block h-full min-h-[11rem] select-none sm:min-h-[12.5rem]"
+                    aria-disabled
+                    title="Još nije aktivno — uskoro dostupno."
+                  >
+                    <FeatureCard
+                      icon={feature.icon}
+                      title={feature.title}
+                      description={feature.description}
+                      locked
+                    />
+                  </div>
+                ) : (
+                  <Link
+                    to={feature.path}
+                    className="block h-full min-h-[11rem] rounded-2xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 focus-visible:ring-offset-2 focus-visible:ring-offset-background sm:min-h-[12.5rem]"
+                  >
+                    <FeatureCard
+                      icon={feature.icon}
+                      title={feature.title}
+                      description={feature.description}
+                      highlighted={feature.highlighted}
+                    />
+                  </Link>
+                )}
+              </motion.div>
+            ))}
+          </motion.div>
         </div>
-      </section>
+      </motion.section>
 
       {/* CTA */}
       <section ref={ctaEndRef} className="container pb-14 pt-4 sm:pb-20 sm:pt-6 md:pb-28 md:pt-10">
         <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
+          initial={{ opacity: 0, y: 16, filter: "blur(8px)" }}
+          whileInView={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+          viewport={{ once: false, amount: 0.4 }}
+          transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
           className="eyebrow mx-auto mb-5 flex w-full justify-center text-center sm:mb-7"
           aria-hidden
         >
@@ -1696,9 +2016,10 @@ const Index = () => {
         </motion.div>
 
         <motion.div
-          initial={{ opacity: 0, y: 12 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
+          initial={{ opacity: 0, y: 36, scale: 0.96, filter: "blur(12px)" }}
+          whileInView={{ opacity: 1, y: 0, scale: 1, filter: "blur(0px)" }}
+          viewport={{ once: false, amount: 0.35 }}
+          transition={{ duration: 0.74, ease: [0.22, 1, 0.36, 1] }}
           className="group relative mx-auto max-w-3xl overflow-hidden rounded-[1.5rem] sm:rounded-[1.75rem] border border-white/20 gradient-hero px-5 py-8 text-center shadow-[0_30px_70px_-20px_hsl(205_82%_54%/0.5)] sm:px-6 sm:py-10 md:px-12 md:py-14"
         >
           {/* Decorative concentric rings */}

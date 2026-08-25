@@ -150,10 +150,10 @@ export default function AnimatedStatsGrid({ stats }: AnimatedStatsGridProps) {
       {stats.map((stat, i) => (
         <motion.div
           key={stat.label}
-          initial={reducedMotion ? false : { opacity: 0, y: 20 }}
-          whileInView={reducedMotion ? undefined : { opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.45, delay: i * 0.06 }}
+          initial={reducedMotion ? false : { opacity: 0, y: 26, scale: 0.96, filter: "blur(8px)" }}
+          whileInView={reducedMotion ? undefined : { opacity: 1, y: 0, scale: 1, filter: "blur(0px)" }}
+          viewport={{ once: false, margin: "-80px", amount: 0.35 }}
+          transition={{ duration: 0.58, delay: i * 0.1, ease: [0.22, 1, 0.36, 1] }}
           animate={
             celebrate && !reducedMotion
               ? { scale: [1, 1.025, 1], transition: { duration: 0.75, ease: [0.22, 1, 0.36, 1] } }

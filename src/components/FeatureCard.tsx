@@ -25,10 +25,10 @@ const FeatureCard = ({
 }: FeatureCardProps) => {
   return (
     <motion.div
-      initial={{ opacity: 0, y: 16 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: "-40px" }}
-      transition={{ duration: 0.45, delay }}
+      initial={{ opacity: 0, y: 26, scale: 0.96, filter: "blur(8px)" }}
+      whileInView={{ opacity: 1, y: 0, scale: 1, filter: "blur(0px)" }}
+      viewport={{ once: false, margin: "-70px", amount: 0.24 }}
+      transition={{ duration: 0.62, delay, ease: [0.22, 1, 0.36, 1] }}
       className={cn(
         "group relative flex h-full flex-col overflow-hidden rounded-2xl border bg-card/95 p-5 shadow-soft backdrop-blur-[2px] transition-all duration-300 sm:p-6",
         locked
