@@ -268,7 +268,7 @@ const MojPutEntryIntro = ({ onEnterJunior, onEnterSenior }: MojPutEntryIntroProp
       tools: [
         { label: "Kviz za fakultet", detail: "Studiji, karijere i odluka nakon mature", to: "/kviz", Icon: Target },
         { label: "Karta fakulteta", detail: "Fakulteti, studiji i lokacije", to: "/karta", Icon: Map },
-        { label: "Kalkulator za dom", detail: "Bodovi za studentski smještaj", to: "/kalkulator-doma", Icon: Calculator },
+        { label: "Kalkulator za fakultete", detail: "Bodovi i upisne šanse za studije", to: "/kalkulator-fakulteti", Icon: Calculator },
       ],
     },
   ];
@@ -934,131 +934,259 @@ const MojPutEntryIntro = ({ onEnterJunior, onEnterSenior }: MojPutEntryIntroProp
                 className="mx-auto mt-6 w-full max-w-4xl overflow-hidden rounded-[1.5rem] border border-white/70 bg-white/56 px-4 py-5 shadow-[0_20px_70px_-52px_hsl(215_30%_12%/0.5)] backdrop-blur-2xl sm:mt-8 sm:rounded-[1.75rem] sm:px-8 sm:py-7"
               >
                 <div className="grid gap-6 md:grid-cols-[minmax(0,1fr)_17rem] md:items-center md:gap-8">
-                  <div className="text-center md:text-left">
-                    <h2 className="text-balance text-xl font-semibold tracking-[-0.03em] text-slate-950 sm:text-2xl">
-                      Ne traži samo školu. <span className="text-gradient">Pronađi svoj put.</span>
-                    </h2>
-                    <p className="mx-auto mt-2 max-w-lg text-pretty text-sm font-medium leading-6 text-slate-500 md:mx-0">
-                      MojPut povezuje sve korake odluke na jednom mjestu, umjesto da ih tražiš po
-                      desecima stranica.
-                    </p>
-                    <div className="mt-4 flex flex-wrap items-center justify-center gap-1.5 sm:mt-5 sm:gap-2 md:justify-start">
-                      {journeySteps.map((step, index) => (
-                        <motion.div
-                          key={step}
-                          initial={{ opacity: 0, y: 8 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ duration: 0.42, delay: 0.42 + index * 0.08 }}
-                          className="flex items-center gap-1.5 sm:gap-2"
-                        >
-                          <span className="rounded-full border border-slate-200/70 bg-white/72 px-3 py-1.5 text-xs font-semibold text-slate-600 shadow-sm">
-                            {step}
-                          </span>
-                          {index < journeySteps.length - 1 && (
-                            <ArrowRight className="h-3.5 w-3.5 shrink-0 text-primary/50" aria-hidden />
-                          )}
-                        </motion.div>
-                      ))}
+                  <div className="relative overflow-hidden rounded-[1.35rem] border border-white/70 bg-white/58 p-4 text-center shadow-sm backdrop-blur-xl md:p-5 md:text-left">
+                    <motion.span
+                      className="pointer-events-none absolute -left-16 -top-16 h-36 w-36 rounded-full bg-primary/12 blur-3xl"
+                      animate={{ x: [0, 12, 0], y: [0, 10, 0], opacity: [0.28, 0.58, 0.28] }}
+                      transition={{ duration: 5.8, repeat: Infinity, ease: "easeInOut" }}
+                      aria-hidden
+                    />
+                    <div className="relative">
+                      <span className="inline-flex items-center gap-2 rounded-full border border-primary/15 bg-primary/8 px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.18em] text-primary">
+                        <Sparkles className="h-3 w-3" aria-hidden />
+                        MojPut vodič
+                      </span>
+                      <h2 className="mt-3 text-balance text-2xl font-extrabold leading-[1.05] tracking-[-0.045em] text-slate-950 sm:text-3xl">
+                        Od pitanja do odluke, <span className="text-gradient">korak po korak.</span>
+                      </h2>
+                      <p className="mx-auto mt-3 max-w-lg text-pretty text-sm font-medium leading-6 text-slate-600 md:mx-0">
+                        Umjesto skakanja po desecima stranica, prvo složi sliku o sebi, zatim usporedi smjerove,
+                        škole, bodove i rokove.
+                      </p>
+                      <div className="mt-4 overflow-hidden rounded-2xl border border-primary/12 bg-white/74 p-3 shadow-sm backdrop-blur-sm">
+                        <div className="mb-2 flex items-center justify-between text-[10px] font-bold uppercase tracking-[0.16em]">
+                          <span className="text-primary">Start</span>
+                          <span className="text-amber-600">Odluka</span>
+                        </div>
+                        <div className="relative h-2 overflow-hidden rounded-full bg-slate-100">
+                          <motion.span
+                            className="absolute inset-y-0 left-0 rounded-full bg-gradient-to-r from-primary via-sky-400 to-amber-400 shadow-[0_0_18px_hsl(174_62%_42%/0.35)]"
+                            animate={{ width: ["18%", "100%", "18%"] }}
+                            transition={{ duration: 4.8, repeat: Infinity, ease: "easeInOut" }}
+                            aria-hidden
+                          />
+                        </div>
+                      </div>
+                      <div className="mt-5 grid grid-cols-1 gap-2 xs:grid-cols-2">
+                        {journeySteps.map((step, index) => (
+                          <motion.div
+                            key={step}
+                            initial={{ opacity: 0, y: 10, scale: 0.97 }}
+                            animate={{ opacity: 1, y: 0, scale: 1 }}
+                            transition={{ duration: 0.42, delay: 0.42 + index * 0.07 }}
+                            className={cn(
+                              "group relative overflow-hidden flex items-center gap-2.5 rounded-2xl border bg-white/72 px-3 py-2.5 text-left shadow-sm backdrop-blur-sm transition-transform duration-300 hover:-translate-y-0.5",
+                              index === 0
+                                ? "border-primary/20"
+                                : index === journeySteps.length - 1
+                                  ? "border-amber-400/25"
+                                  : "border-slate-200/70",
+                            )}
+                          >
+                            <span
+                              className={cn(
+                                "pointer-events-none absolute -right-8 -top-8 h-16 w-16 rounded-full opacity-0 blur-2xl transition-opacity duration-300 group-hover:opacity-100",
+                                index === journeySteps.length - 1 ? "bg-amber-300/30" : "bg-primary/18",
+                              )}
+                              aria-hidden
+                            />
+                            <span
+                              className={cn(
+                                "relative flex h-7 w-7 shrink-0 items-center justify-center rounded-xl text-[11px] font-extrabold tabular-nums",
+                                index === 0
+                                  ? "bg-primary/10 text-primary"
+                                  : index === journeySteps.length - 1
+                                    ? "bg-amber-100 text-amber-700"
+                                    : "bg-slate-100 text-slate-700",
+                              )}
+                            >
+                              {index + 1}
+                            </span>
+                            <span className="relative text-xs font-bold tracking-[-0.01em] text-slate-800 sm:text-[13px]">
+                              {step}
+                            </span>
+                          </motion.div>
+                        ))}
+                      </div>
                     </div>
                   </div>
 
-                  <div className="relative mx-auto flex w-full max-w-[17rem] flex-col items-center rounded-[1.35rem] border border-white/80 bg-white/70 p-4 text-center shadow-[0_18px_54px_-42px_hsl(215_30%_12%/0.45)] backdrop-blur-xl">
-                    <span className="mb-3 text-[10px] font-bold uppercase tracking-[0.2em] text-slate-500">
+                  <motion.div
+                    className="relative mx-auto flex w-full max-w-[18rem] flex-col items-center overflow-hidden rounded-[1.6rem] border border-white/80 bg-white/72 p-4 text-center shadow-[0_22px_72px_-48px_hsl(215_30%_12%/0.58)] backdrop-blur-2xl"
+                    initial={{ opacity: 0, y: 18, scale: 0.94 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    transition={{ duration: 0.72, delay: 0.34, ease: [0.22, 1, 0.36, 1] }}
+                  >
+                    <motion.span
+                      className="pointer-events-none absolute -right-16 -top-16 h-40 w-40 rounded-full bg-primary/18 blur-3xl"
+                      animate={{ x: [0, -10, 0], y: [0, 12, 0], opacity: [0.35, 0.78, 0.35] }}
+                      transition={{ duration: 5.4, repeat: Infinity, ease: "easeInOut" }}
+                      aria-hidden
+                    />
+                    <motion.span
+                      className="pointer-events-none absolute -bottom-20 -left-12 h-44 w-44 rounded-full bg-amber-300/22 blur-3xl"
+                      animate={{ x: [0, 14, 0], y: [0, -10, 0], opacity: [0.22, 0.58, 0.22] }}
+                      transition={{ duration: 6.2, repeat: Infinity, ease: "easeInOut", delay: 0.7 }}
+                      aria-hidden
+                    />
+                    <motion.span
+                      className="pointer-events-none absolute inset-x-8 top-0 h-px bg-gradient-to-r from-transparent via-primary/60 to-transparent"
+                      animate={{ opacity: [0.25, 1, 0.25], scaleX: [0.65, 1, 0.65] }}
+                      transition={{ duration: 3.6, repeat: Infinity, ease: "easeInOut" }}
+                      aria-hidden
+                    />
+
+                    <div className="relative mb-3 flex items-center gap-2 rounded-full border border-primary/12 bg-white/75 px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.18em] text-primary shadow-soft">
+                      <span className="relative flex h-2 w-2" aria-hidden>
+                        <motion.span
+                          className="absolute inline-flex h-full w-full rounded-full bg-primary/60"
+                          animate={{ scale: [1, 2.3, 1], opacity: [0.7, 0, 0.7] }}
+                          transition={{ duration: 2.2, repeat: Infinity, ease: "easeOut" }}
+                        />
+                        <span className="relative inline-flex h-2 w-2 rounded-full bg-primary" />
+                      </span>
                       Odluka učenika
-                    </span>
+                    </div>
+
                     <motion.div
-                      className="relative grid h-36 w-36 place-items-center rounded-full sm:h-40 sm:w-40"
-                      initial={{ scale: 0.82, opacity: 0 }}
+                      className="relative grid h-44 w-44 place-items-center rounded-full"
+                      initial={{ scale: 0.8, opacity: 0 }}
                       animate={{ scale: 1, opacity: 1 }}
-                      transition={{
-                        duration: 0.85,
-                        delay: 0.48,
-                        ease: [0.22, 1, 0.36, 1],
-                      }}
+                      transition={{ duration: 0.82, delay: 0.48, ease: [0.22, 1, 0.36, 1] }}
                     >
                       <motion.span
-                        className="absolute inset-2 rounded-full bg-primary/10 blur-2xl"
-                        animate={{ opacity: [0.18, 0.5, 0.18], scale: [0.9, 1.08, 0.9] }}
-                        transition={{ duration: 3.8, repeat: Infinity, ease: "easeInOut" }}
+                        className="absolute inset-0 rounded-full bg-[conic-gradient(from_180deg,hsl(174_62%_42%/0.16),hsl(38_92%_55%/0.18),hsl(174_62%_42%/0.16))] blur-xl"
+                        animate={{ rotate: 360, opacity: [0.36, 0.72, 0.36] }}
+                        transition={{
+                          rotate: { duration: 16, repeat: Infinity, ease: "linear" },
+                          opacity: { duration: 4.6, repeat: Infinity, ease: "easeInOut" },
+                        }}
                         aria-hidden
                       />
-                      <svg className="absolute inset-0 h-full w-full -rotate-90" viewBox="0 0 120 120" aria-hidden>
+                      <motion.svg
+                        className="absolute inset-0 h-full w-full -rotate-90 drop-shadow-[0_18px_28px_hsl(174_62%_42%/0.16)]"
+                        viewBox="0 0 140 140"
+                        aria-hidden
+                      >
+                        <defs>
+                          <linearGradient id="decisionTealGradient" x1="12" y1="12" x2="128" y2="128">
+                            <stop offset="0%" stopColor="hsl(190 95% 58%)" />
+                            <stop offset="48%" stopColor="hsl(174 62% 42%)" />
+                            <stop offset="100%" stopColor="hsl(158 72% 42%)" />
+                          </linearGradient>
+                          <linearGradient id="decisionAmberGradient" x1="12" y1="12" x2="128" y2="128">
+                            <stop offset="0%" stopColor="hsl(45 97% 62%)" />
+                            <stop offset="100%" stopColor="hsl(30 92% 52%)" />
+                          </linearGradient>
+                        </defs>
                         <circle
-                          cx="60"
-                          cy="60"
-                          r="48"
+                          cx="70"
+                          cy="70"
+                          r="54"
                           fill="none"
-                          stroke="hsl(38 92% 55% / 0.22)"
-                          strokeWidth="13"
+                          stroke="hsl(215 20% 88% / 0.62)"
+                          strokeWidth="12"
                         />
                         <motion.circle
-                          cx="60"
-                          cy="60"
-                          r="48"
+                          cx="70"
+                          cy="70"
+                          r="54"
                           fill="none"
-                          stroke="hsl(38 92% 55%)"
-                          strokeWidth="13"
+                          stroke="url(#decisionAmberGradient)"
+                          strokeWidth="12"
                           strokeLinecap="round"
                           pathLength="1"
                           strokeDasharray={`${decidedStudentsPercent / 100} 1`}
                           strokeDashoffset={-(undecidedStudentsPercent / 100)}
-                          initial={{ opacity: 0, strokeWidth: 10 }}
-                          animate={{ opacity: [0.75, 1, 0.75], strokeWidth: [11, 13, 11] }}
-                          transition={{ duration: 2.6, repeat: Infinity, ease: "easeInOut" }}
+                          initial={{ opacity: 0, strokeWidth: 8 }}
+                          animate={{ opacity: [0.68, 1, 0.68], strokeWidth: [10, 12, 10] }}
+                          transition={{ duration: 3.2, repeat: Infinity, ease: "easeInOut", delay: 0.55 }}
                         />
                         <motion.circle
-                          cx="60"
-                          cy="60"
-                          r="48"
+                          cx="70"
+                          cy="70"
+                          r="54"
                           fill="none"
-                          stroke="hsl(174 62% 42%)"
-                          strokeWidth="13"
+                          stroke="url(#decisionTealGradient)"
+                          strokeWidth="12"
                           strokeLinecap="round"
                           pathLength="1"
-                          initial={{ pathLength: 0, opacity: 0.4 }}
+                          initial={{ pathLength: 0, opacity: 0 }}
                           animate={{
                             pathLength: [
                               undecidedStudentsPercent / 100,
-                              undecidedStudentsPercent / 100 - 0.025,
+                              undecidedStudentsPercent / 100 - 0.018,
                               undecidedStudentsPercent / 100,
                             ],
-                            opacity: [0.9, 1, 0.9],
+                            opacity: [0.86, 1, 0.86],
                           }}
                           transition={{
-                            pathLength: { duration: 3.2, repeat: Infinity, ease: "easeInOut" },
-                            opacity: { duration: 3.2, repeat: Infinity, ease: "easeInOut" },
+                            pathLength: { duration: 3.8, repeat: Infinity, ease: "easeInOut" },
+                            opacity: { duration: 3.8, repeat: Infinity, ease: "easeInOut" },
                           }}
                         />
-                      </svg>
-                      <span className="absolute inset-4 rounded-full bg-white shadow-[inset_0_0_34px_hsl(215_30%_12%/0.06),0_10px_28px_-24px_hsl(215_30%_12%/0.5)]" />
+                      </motion.svg>
+
+                      {[0, 1, 2].map((dot) => (
+                        <motion.span
+                          key={dot}
+                          className={cn(
+                            "absolute h-2.5 w-2.5 rounded-full shadow-[0_0_18px_currentColor]",
+                            dot === 1 ? "bg-amber-400 text-amber-400" : "bg-primary text-primary",
+                          )}
+                          style={{
+                            top: dot === 0 ? "0.75rem" : dot === 1 ? "8.9rem" : "2.35rem",
+                            right: dot === 0 ? "2.2rem" : dot === 1 ? "0.95rem" : undefined,
+                            left: dot === 2 ? "1.05rem" : undefined,
+                          }}
+                          animate={{ y: [0, -5, 0], scale: [0.9, 1.25, 0.9], opacity: [0.62, 1, 0.62] }}
+                          transition={{ duration: 2.4 + dot * 0.35, repeat: Infinity, ease: "easeInOut", delay: dot * 0.35 }}
+                          aria-hidden
+                        />
+                      ))}
+
+                      <span className="absolute inset-5 rounded-full bg-white/95 shadow-[inset_0_0_36px_hsl(215_30%_12%/0.06),0_14px_30px_-24px_hsl(215_30%_12%/0.55)]" />
                       <span className="relative flex flex-col items-center">
-                        <strong className="text-4xl font-semibold tracking-[-0.06em] text-slate-950">
+                        <motion.strong
+                          className="text-5xl font-extrabold tracking-[-0.08em] text-slate-950"
+                          animate={{ scale: [1, 1.035, 1] }}
+                          transition={{ duration: 3.2, repeat: Infinity, ease: "easeInOut" }}
+                        >
                           {undecidedStudentsPercent}%
-                        </strong>
-                        <span className="mt-1 max-w-24 text-[11px] font-semibold leading-4 text-slate-500">
-                          još bira smjer
+                        </motion.strong>
+                        <span className="mt-1 max-w-28 text-[11px] font-bold uppercase leading-4 tracking-[0.12em] text-primary">
+                          još traži smjer
                         </span>
                       </span>
                     </motion.div>
-                    <div className="mt-4 grid w-full grid-cols-2 gap-2 text-left">
-                      <span className="rounded-2xl border border-primary/12 bg-primary/8 px-3 py-2">
-                        <span className="block text-lg font-semibold leading-none text-primary">
+
+                    <div className="relative mt-4 grid w-full grid-cols-2 gap-2 text-left">
+                      <motion.span
+                        className="rounded-2xl border border-primary/14 bg-primary/8 px-3 py-2 shadow-sm"
+                        animate={{ y: [0, -2, 0], borderColor: ["hsl(174 62% 42% / 0.14)", "hsl(174 62% 42% / 0.34)", "hsl(174 62% 42% / 0.14)"] }}
+                        transition={{ duration: 3.4, repeat: Infinity, ease: "easeInOut" }}
+                      >
+                        <span className="block text-lg font-extrabold leading-none text-primary">
                           {undecidedStudentsPercent}%
                         </span>
-                        <span className="mt-1 block text-[11px] font-medium leading-4 text-slate-600">
+                        <span className="mt-1 block text-[11px] font-semibold leading-4 text-slate-600">
                           treba pomoć
                         </span>
-                      </span>
-                      <span className="rounded-2xl border border-amber-500/15 bg-amber-50 px-3 py-2">
-                        <span className="block text-lg font-semibold leading-none text-amber-600">
+                      </motion.span>
+                      <motion.span
+                        className="rounded-2xl border border-amber-500/16 bg-amber-50 px-3 py-2 shadow-sm"
+                        animate={{ y: [0, -2, 0], borderColor: ["hsl(38 92% 55% / 0.16)", "hsl(38 92% 55% / 0.38)", "hsl(38 92% 55% / 0.16)"] }}
+                        transition={{ duration: 3.4, repeat: Infinity, ease: "easeInOut", delay: 0.55 }}
+                      >
+                        <span className="block text-lg font-extrabold leading-none text-amber-600">
                           {decidedStudentsPercent}%
                         </span>
-                        <span className="mt-1 block text-[11px] font-medium leading-4 text-slate-600">
+                        <span className="mt-1 block text-[11px] font-semibold leading-4 text-slate-600">
                           zna smjer
                         </span>
-                      </span>
+                      </motion.span>
                     </div>
-                  </div>
+                  </motion.div>
                 </div>
               </motion.div>
             </motion.div>

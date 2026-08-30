@@ -68,6 +68,7 @@ import interestsJson from "@/data/career-quiz/questions-interests.json";
 import competenciesJson from "@/data/career-quiz/questions-competencies.json";
 import careersJson from "@/data/career-quiz/careers-database.json";
 import { trackEvent } from "@/lib/analytics";
+import { cn } from "@/lib/utils";
 
 /**
  * Skala 1–5. Na uskim ekranima kratke oznake za lakše dodirivanje i čitanje.
@@ -601,109 +602,349 @@ export default function CareerQuizFlow({
         {phase === "intro" && (
           <motion.div
             key="intro"
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
+            initial={{ opacity: 0, y: 18, scale: 0.98, filter: "blur(10px)" }}
+            animate={{ opacity: 1, y: 0, scale: 1, filter: "blur(0px)" }}
             exit={{ opacity: 0, y: -10, transition: { duration: 0.3 } }}
-            className="relative overflow-hidden rounded-2xl border-2 border-border bg-card p-4 shadow-card sm:rounded-3xl sm:p-6 md:p-7"
+            transition={{ duration: 0.62, ease: [0.22, 1, 0.36, 1] }}
+            className="relative overflow-hidden rounded-[1.75rem] border border-primary/18 bg-[radial-gradient(circle_at_92%_0%,hsl(var(--primary)/0.16),transparent_34%),radial-gradient(circle_at_0%_100%,hsl(38_92%_55%/0.12),transparent_34%),linear-gradient(145deg,hsl(var(--card)/0.98),hsl(var(--background)/0.94))] p-4 shadow-[0_24px_90px_-58px_hsl(var(--primary)/0.75)] backdrop-blur-xl sm:rounded-[2rem] sm:p-6 md:p-7"
           >
+            <motion.div
+              className="pointer-events-none absolute -right-20 -top-20 h-56 w-56 rounded-full bg-primary/18 blur-3xl"
+              animate={{ x: [0, -14, 0], y: [0, 18, 0], opacity: [0.35, 0.78, 0.35] }}
+              transition={{ duration: 6.2, repeat: Infinity, ease: "easeInOut" }}
+              aria-hidden
+            />
+            <motion.div
+              className="pointer-events-none absolute -bottom-24 -left-16 h-60 w-60 rounded-full bg-amber-300/18 blur-3xl"
+              animate={{ x: [0, 20, 0], y: [0, -12, 0], opacity: [0.24, 0.58, 0.24] }}
+              transition={{ duration: 7, repeat: Infinity, ease: "easeInOut", delay: 0.8 }}
+              aria-hidden
+            />
+            <motion.div
+              className="pointer-events-none absolute inset-x-10 top-0 h-px bg-gradient-to-r from-transparent via-primary/60 to-transparent"
+              animate={{ opacity: [0.25, 1, 0.25], scaleX: [0.65, 1, 0.65] }}
+              transition={{ duration: 3.8, repeat: Infinity, ease: "easeInOut" }}
+              aria-hidden
+            />
+
             <div className="relative space-y-5 sm:space-y-6">
-              {/* Status badges */}
-              <div className="flex flex-wrap items-center gap-2">
-                <Badge className="border-primary/25 bg-primary/10 font-medium text-primary hover:bg-primary/15">
-                  Upis na fakultet
-                </Badge>
-                <Badge variant="outline" className="border-border/80 bg-background/60 text-xs backdrop-blur-sm sm:text-[0.8125rem]">
-                  {interests.length} + {competencies.length} pitanja
-                </Badge>
-              </div>
-
-              {/* Stats grid */}
-              <div className="grid grid-cols-3 gap-2 sm:gap-3">
-                <div className="flex flex-col items-center gap-0.5 rounded-2xl border-2 border-border bg-gradient-to-br from-primary/[0.08] to-transparent px-3 py-3 text-center sm:py-4">
-                  <p className="text-xl font-bold tabular-nums text-primary sm:text-2xl">{interests.length}</p>
-                  <p className="text-[10px] font-medium leading-tight text-muted-foreground sm:text-xs">
-                    pitanja o interesima
-                  </p>
-                </div>
-                <div className="flex flex-col items-center gap-0.5 rounded-2xl border-2 border-border bg-gradient-to-br from-primary/[0.08] to-transparent px-3 py-3 text-center sm:py-4">
-                  <p className="text-xl font-bold tabular-nums text-primary sm:text-2xl">{competencies.length}</p>
-                  <p className="text-[10px] font-medium leading-tight text-muted-foreground sm:text-xs">
-                    pitanja o vještinama
-                  </p>
-                </div>
-                <div className="flex flex-col items-center gap-0.5 rounded-2xl border-2 border-border bg-gradient-to-br from-primary/[0.08] to-transparent px-3 py-3 text-center sm:py-4">
-                  <p className="text-base font-bold tabular-nums text-foreground sm:text-lg">70% / 30%</p>
-                  <p className="text-[10px] font-medium leading-tight text-muted-foreground sm:text-xs">
-                    interesi · kompetencije
-                  </p>
-                </div>
-              </div>
-
-              {showIntroHeading && (
-                <h3 className="text-xl font-semibold tracking-tight md:text-2xl">{introTitle}</h3>
-              )}
-
-              {/* Steps */}
-              <div className="space-y-3 sm:space-y-3.5">
-                <div className="relative overflow-hidden rounded-2xl border-2 border-border bg-gradient-to-br from-primary/[0.06] to-transparent p-3.5 sm:p-4">
-                  <div className="flex items-start gap-3">
-                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-primary/80 text-base font-bold text-primary-foreground shadow-sm sm:h-10 sm:w-10">
-                      1
-                    </div>
-                    <div className="space-y-1 pt-0.5">
-                      <p className="text-sm font-semibold text-foreground sm:text-[0.9375rem]">Interesi</p>
-                      <p className="text-sm leading-relaxed text-muted-foreground sm:text-[0.9375rem]">
-                        Odgovori na {interests.length} pitanja o tome što te zanima. Nakon toga odmah dobivaš prve
-                        preporuke smjerova i fakulteta.
-                      </p>
-                    </div>
+              <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_20rem] lg:items-center">
+                <div>
+                  <div className="mb-4 flex flex-wrap items-center gap-2">
+                    <Badge className="border-primary/25 bg-primary/10 font-semibold text-primary hover:bg-primary/15">
+                      Upis na fakultet
+                    </Badge>
+                    <Badge variant="outline" className="border-border/80 bg-background/70 text-xs backdrop-blur-sm sm:text-[0.8125rem]">
+                      Personalizirani profil
+                    </Badge>
                   </div>
+
+                  {showIntroHeading && (
+                    <p className="mb-2 text-sm font-semibold text-primary">{introTitle}</p>
+                  )}
+                  <h3 className="max-w-2xl text-balance text-2xl font-extrabold leading-[1.05] tracking-[-0.045em] text-foreground sm:text-3xl md:text-4xl">
+                    Otkrij koji studij ima smisla za tebe, ne samo koji zvuči dobro.
+                  </h3>
+                  <p className="mt-3 max-w-2xl text-pretty text-sm font-medium leading-6 text-muted-foreground sm:text-base sm:leading-7">
+                    Kviz te vodi kroz interese i vještine, a na kraju dobivaš jasniji profil, preporuke smjerova i
+                    ideju odakle krenuti dalje.
+                  </p>
                 </div>
 
-                <div className="relative overflow-hidden rounded-2xl border-2 border-border bg-gradient-to-br from-primary/[0.06] to-transparent p-3.5 sm:p-4">
-                  <div className="flex items-start gap-3">
-                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-primary/80 text-base font-bold text-primary-foreground shadow-sm sm:h-10 sm:w-10">
-                      2
-                    </div>
-                    <div className="space-y-1 pt-0.5">
-                      <p className="text-sm font-semibold text-foreground sm:text-[0.9375rem]">Vještine (preporučeno)</p>
-                      <p className="text-sm leading-relaxed text-muted-foreground sm:text-[0.9375rem]">
-                        Još {competencies.length} pitanja o vještinama. Završni rezultat je precizniji jer kombinira
-                        interese (70%) i vještine (30%). Ocjene su na skali 1–5.
-                      </p>
-                    </div>
-                  </div>
+                <div className="relative mx-auto grid h-64 w-full max-w-[20rem] place-items-center overflow-hidden rounded-[1.75rem] border border-white/80 bg-[radial-gradient(circle_at_50%_42%,hsl(var(--primary)/0.12),transparent_42%),linear-gradient(145deg,hsl(var(--background)/0.9),hsl(var(--card)/0.78))] shadow-[0_22px_76px_-46px_hsl(var(--primary)/0.82)] backdrop-blur-2xl sm:h-72">
+                  <motion.span
+                    className="pointer-events-none absolute -right-10 -top-10 h-36 w-36 rounded-full bg-primary/18 blur-3xl"
+                    animate={{ x: [0, -12, 0], y: [0, 16, 0], opacity: [0.32, 0.76, 0.32] }}
+                    transition={{ duration: 5.8, repeat: Infinity, ease: "easeInOut" }}
+                    aria-hidden
+                  />
+                  <motion.span
+                    className="pointer-events-none absolute -bottom-12 -left-10 h-40 w-40 rounded-full bg-amber-300/24 blur-3xl"
+                    animate={{ x: [0, 16, 0], y: [0, -10, 0], opacity: [0.24, 0.62, 0.24] }}
+                    transition={{ duration: 6.4, repeat: Infinity, ease: "easeInOut", delay: 0.6 }}
+                    aria-hidden
+                  />
+
+                  <motion.div
+                    className="absolute grid h-56 w-56 place-items-center rounded-full sm:h-60 sm:w-60"
+                    animate={{ rotate: 360 }}
+                    transition={{ duration: 18, repeat: Infinity, ease: "linear" }}
+                    aria-hidden
+                  >
+                    <span className="absolute inset-0 rounded-full border border-primary/18" />
+                    <span className="absolute inset-6 rounded-full border border-amber-400/16" />
+                    <span className="absolute left-1/2 top-0 h-3 w-3 -translate-x-1/2 rounded-full bg-primary shadow-[0_0_24px_hsl(var(--primary)/0.8)]" />
+                    <span className="absolute bottom-7 right-3 h-2.5 w-2.5 rounded-full bg-amber-400 shadow-[0_0_22px_hsl(38_92%_55%/0.78)]" />
+                    <span className="absolute bottom-12 left-4 h-2 w-2 rounded-full bg-sky-400 shadow-[0_0_18px_hsl(205_82%_54%/0.65)]" />
+                  </motion.div>
+
+                  <motion.svg
+                    className="absolute h-48 w-48 -rotate-90 overflow-visible sm:h-52 sm:w-52"
+                    viewBox="0 0 160 160"
+                    initial={{ scale: 0.88, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    transition={{ duration: 0.7, delay: 0.15, ease: [0.22, 1, 0.36, 1] }}
+                    aria-hidden
+                  >
+                    <defs>
+                      <linearGradient id="quizRatioPrimary" x1="18" y1="18" x2="142" y2="142">
+                        <stop offset="0%" stopColor="hsl(190 95% 58%)" />
+                        <stop offset="50%" stopColor="hsl(var(--primary))" />
+                        <stop offset="100%" stopColor="hsl(158 76% 44%)" />
+                      </linearGradient>
+                      <linearGradient id="quizRatioWarm" x1="18" y1="18" x2="142" y2="142">
+                        <stop offset="0%" stopColor="hsl(45 96% 62%)" />
+                        <stop offset="100%" stopColor="hsl(28 92% 54%)" />
+                      </linearGradient>
+                      <filter id="quizRatioGlow" x="-40%" y="-40%" width="180%" height="180%">
+                        <feGaussianBlur stdDeviation="4" result="blur" />
+                        <feMerge>
+                          <feMergeNode in="blur" />
+                          <feMergeNode in="SourceGraphic" />
+                        </feMerge>
+                      </filter>
+                    </defs>
+                    <circle
+                      cx="80"
+                      cy="80"
+                      r="58"
+                      fill="none"
+                      stroke="hsl(var(--muted) / 0.82)"
+                      strokeWidth="13"
+                    />
+                    <motion.circle
+                      cx="80"
+                      cy="80"
+                      r="58"
+                      fill="none"
+                      stroke="url(#quizRatioWarm)"
+                      strokeWidth="13"
+                      strokeLinecap="round"
+                      pathLength="1"
+                      strokeDasharray="0.3 1"
+                      strokeDashoffset="-0.7"
+                      filter="url(#quizRatioGlow)"
+                      animate={{ opacity: [0.68, 1, 0.68], strokeWidth: [11, 14, 11] }}
+                      transition={{ duration: 3.4, repeat: Infinity, ease: "easeInOut", delay: 0.4 }}
+                    />
+                    <motion.circle
+                      cx="80"
+                      cy="80"
+                      r="58"
+                      fill="none"
+                      stroke="url(#quizRatioPrimary)"
+                      strokeWidth="13"
+                      strokeLinecap="round"
+                      pathLength="1"
+                      filter="url(#quizRatioGlow)"
+                      initial={{ pathLength: 0 }}
+                      animate={{ pathLength: [0.7, 0.67, 0.7], strokeWidth: [13, 16, 13] }}
+                      transition={{
+                        pathLength: { duration: 3.8, repeat: Infinity, ease: "easeInOut" },
+                        strokeWidth: { duration: 3.8, repeat: Infinity, ease: "easeInOut" },
+                      }}
+                    />
+                  </motion.svg>
+
+                  <motion.div
+                    className="relative flex h-32 w-32 flex-col items-center justify-center rounded-full border border-white/80 bg-background/92 text-center shadow-[inset_0_0_34px_hsl(var(--foreground)/0.06),0_18px_42px_-30px_hsl(var(--primary)/0.65)] backdrop-blur-xl sm:h-36 sm:w-36"
+                    animate={{ y: [0, -4, 0], scale: [1, 1.025, 1] }}
+                    transition={{ duration: 3.6, repeat: Infinity, ease: "easeInOut" }}
+                  >
+                    <span className="text-[10px] font-bold uppercase tracking-[0.18em] text-primary">Omjer procjene</span>
+                    <span className="mt-1 text-4xl font-extrabold leading-none tracking-[-0.08em] text-foreground sm:text-5xl">
+                      70/30
+                    </span>
+                    <span className="mt-2 max-w-24 text-[11px] font-semibold leading-4 text-muted-foreground">
+                      interesi + vještine
+                    </span>
+                  </motion.div>
+
+                  <motion.div
+                    className="absolute left-4 top-4 rounded-2xl border border-primary/15 bg-white/78 px-3 py-2 text-left shadow-sm backdrop-blur-xl"
+                    animate={{ y: [0, -3, 0] }}
+                    transition={{ duration: 3.2, repeat: Infinity, ease: "easeInOut" }}
+                  >
+                    <span className="block text-base font-extrabold leading-none text-primary">70%</span>
+                    <span className="mt-0.5 block text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+                      interesi
+                    </span>
+                  </motion.div>
+                  <motion.div
+                    className="absolute bottom-4 right-4 rounded-2xl border border-amber-500/20 bg-white/78 px-3 py-2 text-left shadow-sm backdrop-blur-xl"
+                    animate={{ y: [0, 3, 0] }}
+                    transition={{ duration: 3.2, repeat: Infinity, ease: "easeInOut", delay: 0.45 }}
+                  >
+                    <span className="block text-base font-extrabold leading-none text-amber-600">30%</span>
+                    <span className="mt-0.5 block text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+                      vještine
+                    </span>
+                  </motion.div>
                 </div>
               </div>
 
-              {/* Disclaimer */}
-              <div className="flex items-start gap-2.5 rounded-xl border border-dashed border-border bg-muted/30 px-3 py-2.5">
-                <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground/80" aria-hidden />
-                <p className="text-xs leading-snug text-muted-foreground">
-                  Odgovaraj iskreno u kontekstu upisa. Ovo nije službena procjena niti zamjena za Natječaj za studente ili
-                  stručno savjetovanje.
-                </p>
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+                {[
+                  {
+                    value: interests.length,
+                    label: "pitanja o interesima",
+                    kicker: "Faza 1",
+                    Icon: Lightbulb,
+                    line: "via-primary",
+                    glow: "bg-primary/16",
+                    icon: "bg-primary/10 text-primary ring-primary/18",
+                  },
+                  {
+                    value: competencies.length,
+                    label: "pitanja o vještinama",
+                    kicker: "Faza 2",
+                    Icon: ListChecks,
+                    line: "via-amber-400",
+                    glow: "bg-amber-300/20",
+                    icon: "bg-amber-100 text-amber-700 ring-amber-500/18",
+                  },
+                  {
+                    value: "RIASEC",
+                    label: "profil i preporuke",
+                    kicker: "Rezultat",
+                    Icon: Target,
+                    line: "via-violet-500",
+                    glow: "bg-violet-400/16",
+                    icon: "bg-violet-100 text-violet-700 ring-violet-500/18",
+                  },
+                ].map(({ value, label, kicker, Icon, line, glow, icon }, index) => (
+                  <motion.div
+                    key={label}
+                    initial={{ opacity: 0, y: 18, scale: 0.96 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    transition={{ duration: 0.5, delay: 0.18 + index * 0.08, ease: [0.22, 1, 0.36, 1] }}
+                    className="group relative min-h-[7rem] overflow-hidden rounded-[1.35rem] border border-white/80 bg-white/72 p-4 shadow-[0_16px_46px_-36px_hsl(var(--foreground)/0.42)] backdrop-blur-xl transition-all duration-300 hover:-translate-y-1 hover:bg-white hover:shadow-[0_22px_58px_-38px_hsl(var(--primary)/0.45)]"
+                  >
+                    <motion.span
+                      className={cn("pointer-events-none absolute inset-x-5 top-0 h-[2px] bg-gradient-to-r from-transparent to-transparent", line)}
+                      animate={{ opacity: [0.35, 1, 0.35], scaleX: [0.65, 1, 0.65] }}
+                      transition={{ duration: 3.2, repeat: Infinity, ease: "easeInOut", delay: index * 0.25 }}
+                      aria-hidden
+                    />
+                    <motion.span
+                      className={cn("pointer-events-none absolute -right-10 -top-10 h-24 w-24 rounded-full blur-2xl", glow)}
+                      animate={{ scale: [0.9, 1.18, 0.9], opacity: [0.25, 0.72, 0.25] }}
+                      transition={{ duration: 4.2, repeat: Infinity, ease: "easeInOut", delay: index * 0.35 }}
+                      aria-hidden
+                    />
+                    <div className="relative flex h-full flex-col justify-between gap-4">
+                      <div className="flex items-start justify-between gap-3">
+                        <span className={cn("flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl ring-1 shadow-sm", icon)}>
+                        <Icon className="h-5 w-5" aria-hidden />
+                        </span>
+                        <span className="rounded-full border border-border/60 bg-background/60 px-2 py-1 text-[9px] font-extrabold uppercase tracking-[0.14em] text-muted-foreground">
+                          {kicker}
+                        </span>
+                      </div>
+                      <div>
+                        <p className="text-2xl font-extrabold leading-none tracking-[-0.055em] text-foreground sm:text-[1.7rem]">
+                          {value}
+                        </p>
+                        <p className="mt-1.5 text-xs font-semibold leading-4 text-muted-foreground">{label}</p>
+                      </div>
+                    </div>
+                  </motion.div>
+                ))}
               </div>
 
-              {/* CTA */}
-              <Button
-                type="button"
-                size="lg"
-                className="inline-flex h-14 w-full items-center justify-center gap-2 rounded-2xl border-0 bg-gradient-to-r from-primary to-primary/90 text-base font-semibold text-primary-foreground shadow-lg shadow-primary/25 transition hover:shadow-xl hover:shadow-primary/30 active:scale-[0.99] sm:mx-auto sm:h-12 sm:max-w-md"
-                onClick={() => {
-                  trackEvent("quiz_started", {
-                    quiz_id: "career_quiz",
-                    quiz_name: "Koji je fakultet za mene?",
-                    total_questions: interests.length + competencies.length,
-                    page_path: window.location.pathname,
-                  });
-                  setPhase("interests");
-                  setIIdx(0);
-                }}
-              >
-                Započni prvu fazu
-                <ArrowRight className="h-5 w-5" aria-hidden />
-              </Button>
+              <div className="relative grid gap-3 sm:grid-cols-2">
+                <div
+                  className="pointer-events-none absolute left-1/2 top-1/2 hidden h-px w-16 -translate-x-1/2 -translate-y-1/2 bg-gradient-to-r from-primary/50 via-sky-400/40 to-amber-400/50 sm:block"
+                  aria-hidden
+                />
+                {[
+                  {
+                    step: "01",
+                    title: "Kreni od interesa",
+                    text: `Odgovori na ${interests.length} pitanja i odmah dobivaš prve preporuke smjerova i fakulteta.`,
+                    Icon: Lightbulb,
+                    shell:
+                      "border-primary/18 bg-[radial-gradient(circle_at_90%_0%,hsl(var(--primary)/0.14),transparent_34%),linear-gradient(145deg,hsl(var(--background)/0.78),hsl(var(--card)/0.72))]",
+                    icon: "bg-primary/10 text-primary ring-primary/18",
+                  },
+                  {
+                    step: "02",
+                    title: "Dodaj vještine",
+                    text: `${competencies.length} pitanja čini rezultat preciznijim jer spaja ono što te zanima s onim u čemu si jak.`,
+                    Icon: ListChecks,
+                    shell:
+                      "border-amber-500/18 bg-[radial-gradient(circle_at_90%_0%,hsl(38_92%_55%/0.16),transparent_34%),linear-gradient(145deg,hsl(var(--background)/0.78),hsl(var(--card)/0.72))]",
+                    icon: "bg-amber-100 text-amber-700 ring-amber-500/18",
+                  },
+                ].map(({ step, title, text, Icon, shell, icon }, index) => (
+                  <motion.div
+                    key={step}
+                    initial={{ opacity: 0, x: index === 0 ? -18 : 18 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ duration: 0.5, delay: 0.34 + index * 0.1, ease: [0.22, 1, 0.36, 1] }}
+                    className={cn(
+                      "group relative min-h-[10rem] overflow-hidden rounded-[1.5rem] border p-4 shadow-sm backdrop-blur-xl transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_22px_62px_-42px_hsl(var(--primary)/0.5)] sm:p-5",
+                      shell,
+                    )}
+                  >
+                    <motion.span
+                      className="pointer-events-none absolute -right-16 -top-16 h-36 w-36 rounded-full bg-white/55 blur-3xl"
+                      animate={{ x: [0, -10, 0], y: [0, 10, 0], opacity: [0.25, 0.65, 0.25] }}
+                      transition={{ duration: 4.8, repeat: Infinity, ease: "easeInOut", delay: index * 0.35 }}
+                      aria-hidden
+                    />
+                    <div className="relative flex items-start justify-between gap-4">
+                      <span className={cn("flex h-12 w-12 items-center justify-center rounded-2xl ring-1 shadow-sm", icon)}>
+                        <Icon className="h-5 w-5" aria-hidden />
+                      </span>
+                      <span className="text-4xl font-black leading-none tracking-[-0.08em] text-foreground/10 sm:text-5xl">
+                        {step}
+                      </span>
+                    </div>
+                    <div className="relative mt-5">
+                      <p className="text-base font-extrabold tracking-[-0.025em] text-foreground sm:text-lg">{title}</p>
+                      <p className="mt-2 text-sm font-medium leading-6 text-muted-foreground">{text}</p>
+                    </div>
+                    <div className="relative mt-4 h-1.5 overflow-hidden rounded-full bg-background/70">
+                      <motion.span
+                        className={cn("absolute inset-y-0 left-0 rounded-full", index === 0 ? "bg-primary" : "bg-amber-500")}
+                        initial={{ width: "0%" }}
+                        animate={{ width: index === 0 ? ["35%", "72%", "35%"] : ["24%", "100%", "24%"] }}
+                        transition={{ duration: 4.2, repeat: Infinity, ease: "easeInOut", delay: index * 0.45 }}
+                        aria-hidden
+                      />
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
+
+              <div className="grid gap-3 sm:grid-cols-[1fr_auto] sm:items-center">
+                <div className="flex items-start gap-2.5 rounded-2xl border border-dashed border-border/80 bg-background/58 px-3 py-2.5">
+                  <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground/80" aria-hidden />
+                  <p className="text-xs leading-snug text-muted-foreground">
+                    Odgovaraj iskreno. Kviz nije službena procjena, nego pametan početak za razgovor, istraživanje i odabir.
+                  </p>
+                </div>
+
+                <Button
+                  type="button"
+                  size="lg"
+                  className="group inline-flex h-14 w-full items-center justify-center gap-2 rounded-2xl border-0 bg-gradient-to-r from-primary via-primary to-teal-600 text-base font-semibold text-primary-foreground shadow-lg shadow-primary/25 transition hover:-translate-y-0.5 hover:shadow-xl hover:shadow-primary/30 active:scale-[0.99] sm:h-12 sm:w-auto sm:px-7"
+                  onClick={() => {
+                    trackEvent("quiz_started", {
+                      quiz_id: "career_quiz",
+                      quiz_name: "Koji je fakultet za mene?",
+                      total_questions: interests.length + competencies.length,
+                      page_path: window.location.pathname,
+                    });
+                    setPhase("interests");
+                    setIIdx(0);
+                  }}
+                >
+                  Kreni s interesima
+                  <ArrowRight className="h-5 w-5 transition-transform duration-300 group-hover:translate-x-1" aria-hidden />
+                </Button>
+              </div>
             </div>
           </motion.div>
         )}
