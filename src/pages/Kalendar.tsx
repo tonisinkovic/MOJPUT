@@ -1,48 +1,82 @@
 import Layout from "@/components/Layout";
+import { getStoredExperience, onExperienceChange, type MojPutExperienceMode } from "@/lib/experience";
 import { motion } from "framer-motion";
 import { Bell, CalendarDays, ChevronLeft, ChevronRight, ListChecks, Sparkles } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 
-const events = [
+type CalendarEvent = {
+  year: number;
+  month: number;
+  day: number;
+  title: string;
+  type: string;
+  urgent: boolean;
+};
+
+const seniorEvents: CalendarEvent[] = [
+  // --- Rokovi prijava (prema slici: kalendar mature i upisa 2025./2026.) ---
+  { year: 2025, month: 11, day: 1, title: "Početak prijava ispita mature", type: "Rok", urgent: true },
+  { year: 2026, month: 1, day: 1, title: "Početak prijava studija", type: "Upisi", urgent: true },
+  { year: 2026, month: 1, day: 15, title: "Kraj prijava ispita mature", type: "Rok", urgent: true },
+  { year: 2026, month: 3, day: 27, title: "Orijentacijske rang-liste upisa na studije", type: "Upisi", urgent: false },
+  { year: 2026, month: 4, day: 22, title: "Kraj nastave za maturante i norijada", type: "Rok", urgent: false },
+
+  // --- Ljetni rok ispita (lipanj 2026) ---
+  { year: 2026, month: 5, day: 3, title: "Biologija (9h) • Geografija (14h)", type: "Ispit", urgent: false },
+  { year: 2026, month: 5, day: 9, title: "Njemački jezik (9h) • Filozofija (14h)", type: "Ispit", urgent: false },
+  { year: 2026, month: 5, day: 10, title: "Talijanski jezik (9h) • Likovna umjetnost (14h)", type: "Ispit", urgent: false },
+  { year: 2026, month: 5, day: 15, title: "Hrvatski jezik – test + sažetak (9h)", type: "Ispit", urgent: true },
+  { year: 2026, month: 5, day: 16, title: "Hrvatski jezik – esej (9h)", type: "Ispit", urgent: true },
+  { year: 2026, month: 5, day: 17, title: "Politika i gospodarstvo (9h) • Povijest (14h)", type: "Ispit", urgent: false },
+  { year: 2026, month: 5, day: 18, title: "Fizika (9h) • Logika (14h)", type: "Ispit", urgent: false },
+  { year: 2026, month: 5, day: 19, title: "Engleski jezik – viša razina (9h)", type: "Ispit", urgent: true },
+  { year: 2026, month: 5, day: 23, title: "Psihologija (9h) • Informatika (14h)", type: "Ispit", urgent: false },
+  { year: 2026, month: 5, day: 24, title: "Kemija (9h) • Sociologija (14h)", type: "Ispit", urgent: false },
+  { year: 2026, month: 5, day: 25, title: "Matematika – viša i osnovna (9h)", type: "Ispit", urgent: true },
+  { year: 2026, month: 5, day: 26, title: "Glazbena umjetnost (9h) • Etika (14h) • Vjeronauk (14h)", type: "Ispit", urgent: false },
+
+  // --- Srpanj 2026 (Postani student, rezultati, upisi) ---
+  { year: 2026, month: 6, day: 1, title: "Kraj registracija u sustavu Postani student (stariji kandidati)", type: "Upisi", urgent: false },
+  { year: 2026, month: 6, day: 8, title: "Privremeni rezultati mature • privremene rang-liste upisa na studije", type: "Rezultati", urgent: false },
+  { year: 2026, month: 6, day: 10, title: "Rok za prigovore na rezultate mature", type: "Rok", urgent: true },
+  {
+    year: 2026,
+    month: 6,
+    day: 15,
+    title:
+      "Konačni rezultati mature • rok za prijavu i odjavu studija (do 13:59) • konačne liste upisa na studije (iza 15h)",
+    type: "Rezultati",
+    urgent: true,
+  },
+];
+
+const juniorEvents: CalendarEvent[] = [
   // --- Ljetni upisni rok 2026 ---
-  { year: 2026, month: 5, day: 6, title: "Počinju prijave u sustav Postani student", type: "Upisi", urgent: true },
-  { year: 2026, month: 5, day: 24, title: "Ljetni rok – prijava obrazovnih programa (24. 6. – 3. 7.)", type: "Upisi", urgent: true },
-  { year: 2026, month: 5, day: 24, title: "Ljetni rok – programi s dodatnim provjerama (24. 6. – 26. 6.)", type: "Upisi", urgent: false },
-  { year: 2026, month: 5, day: 24, title: "Ljetni rok – dostava dokumentacije HZZ / dodatna prava (24. 6. – 1. 7.)", type: "Rok", urgent: false },
-  { year: 2026, month: 5, day: 26, title: "Ljetni rok – završetak prijava s dodatnim provjerama", type: "Rok", urgent: true },
+  { year: 2026, month: 5, day: 6, title: "Počinju prijave u sustav", type: "Upisi", urgent: true },
+  { year: 2026, month: 5, day: 24, title: "Prijava obrazovnih programa (24. 6. – 3. 7.)", type: "Upisi", urgent: true },
+  { year: 2026, month: 5, day: 24, title: "Programi koji imaju dodatne provjere (24. 6. – 26. 6.)", type: "Upisi", urgent: false },
+  { year: 2026, month: 5, day: 24, title: "Dostava dokumentacije za dodatna prava / HZZ (24. 6. – 1. 7.)", type: "Rok", urgent: false },
   { year: 2026, month: 5, day: 29, title: "Dodatni ispiti i provjere (29. 6. – 2. 7.)", type: "Ispit", urgent: false },
-
-  // --- Srpanj 2026 (ljetni upisni rok) ---
-  { year: 2026, month: 6, day: 1, title: "Rok dostave dokumentacije za dodatna prava / HZZ", type: "Rok", urgent: true },
   { year: 2026, month: 6, day: 2, title: "Brisanje kandidata koji nisu zadovoljili preduvjete", type: "Rok", urgent: true },
-  { year: 2026, month: 6, day: 2, title: "Završetak dodatnih ispita i provjera", type: "Ispit", urgent: false },
-  { year: 2026, month: 6, day: 3, title: "Rok za prigovore (ljetni upisni rok)", type: "Rok", urgent: true },
-  { year: 2026, month: 6, day: 3, title: "Završetak prijava obrazovnih programa (ljetni rok)", type: "Upisi", urgent: true },
-  { year: 2026, month: 6, day: 7, title: "Objava konačnih ljestvica (ljetni upisni rok)", type: "Rezultati", urgent: true },
-  { year: 2026, month: 6, day: 7, title: "Dostava upisnica i liječničkih dokumenata (7. – 9. 7.)", type: "Upisi", urgent: true },
-  { year: 2026, month: 6, day: 9, title: "Završetak dostave upisnica i liječničkih dokumenata", type: "Upisi", urgent: true },
-
-  // --- Kolovoz 2026 ---
-  { year: 2026, month: 7, day: 10, title: "Objava slobodnih mjesta za jesenski upisni rok", type: "Rezultati", urgent: false },
+  { year: 2026, month: 6, day: 3, title: "Rok za prigovore", type: "Rok", urgent: true },
+  { year: 2026, month: 6, day: 7, title: "Objava konačnih ljestvica", type: "Rezultati", urgent: true },
+  { year: 2026, month: 6, day: 7, title: "Dostava upisnice i potrebnih liječničkih dokumenata (7. – 9. 7.)", type: "Upisi", urgent: true },
+  { year: 2026, month: 7, day: 10, title: "Objava slobodnih mjesta za jesenski rok", type: "Rezultati", urgent: false },
 
   // --- Jesenski upisni rok 2026 ---
-  { year: 2026, month: 7, day: 24, title: "Jesenski rok – prijava obrazovnih programa (24. – 28. 8.)", type: "Upisi", urgent: true },
-  { year: 2026, month: 7, day: 24, title: "Jesenski rok – programi s dodatnim provjerama (24. – 26. 8.)", type: "Upisi", urgent: false },
-  { year: 2026, month: 7, day: 24, title: "Jesenski rok – dostava dokumentacije (24. – 27. 8.)", type: "Rok", urgent: false },
-  { year: 2026, month: 7, day: 26, title: "Jesenski rok – završetak prijava s dodatnim provjerama", type: "Rok", urgent: true },
-  { year: 2026, month: 7, day: 27, title: "Dodatne provjere (jesenski rok)", type: "Ispit", urgent: false },
-  { year: 2026, month: 7, day: 27, title: "Rok dostave dokumentacije (jesenski rok)", type: "Rok", urgent: true },
-  { year: 2026, month: 7, day: 28, title: "Brisanje kandidata bez preduvjeta (jesenski rok)", type: "Rok", urgent: true },
-  { year: 2026, month: 7, day: 28, title: "Rok za prigovore (jesenski rok)", type: "Rok", urgent: true },
-  { year: 2026, month: 7, day: 28, title: "Završetak prijava obrazovnih programa (jesenski rok)", type: "Upisi", urgent: true },
-  { year: 2026, month: 7, day: 31, title: "Objava konačnih ljestvica (jesenski upisni rok)", type: "Rezultati", urgent: true },
-  { year: 2026, month: 7, day: 31, title: "Dostava upisnica i dokumenata (31. 8. – 2. 9.)", type: "Upisi", urgent: true },
-
-  // --- Rujan 2026 (naknadni upisni rok) ---
-  { year: 2026, month: 8, day: 2, title: "Završetak dostave upisnica (jesenski rok)", type: "Upisi", urgent: true },
+  { year: 2026, month: 7, day: 24, title: "Prijava obrazovnih programa (24. – 28. 8.)", type: "Upisi", urgent: true },
+  { year: 2026, month: 7, day: 24, title: "Programi s dodatnim provjerama (24. – 26. 8.)", type: "Upisi", urgent: false },
+  { year: 2026, month: 7, day: 24, title: "Dostava dokumentacije (24. – 27. 8.)", type: "Rok", urgent: false },
+  { year: 2026, month: 7, day: 27, title: "Dodatne provjere", type: "Ispit", urgent: false },
+  { year: 2026, month: 7, day: 28, title: "Brisanje kandidata koji ne zadovoljavaju preduvjete", type: "Rok", urgent: true },
+  { year: 2026, month: 7, day: 28, title: "Prigovori", type: "Rok", urgent: true },
+  { year: 2026, month: 7, day: 31, title: "Objava konačnih ljestvica", type: "Rezultati", urgent: true },
+  { year: 2026, month: 7, day: 31, title: "Dostava upisnica i potrebne dokumentacije (31. 8. – 2. 9.)", type: "Upisi", urgent: true },
   { year: 2026, month: 8, day: 3, title: "Objava slobodnih mjesta nakon jesenskog roka", type: "Rezultati", urgent: false },
-  { year: 2026, month: 8, day: 3, title: "Naknadni upisni rok – početak (3. – 30. 9., samo slobodna mjesta)", type: "Upisi", urgent: true },
+
+  // --- Naknadni upisni rok 2026 ---
+  { year: 2026, month: 8, day: 3, title: "Naknadni upisni rok (3. – 30. 9., samo gdje ostane slobodnih mjesta)", type: "Upisi", urgent: true },
   { year: 2026, month: 8, day: 30, title: "Naknadni upisni rok – završetak", type: "Upisi", urgent: true },
 ];
 
@@ -68,41 +102,71 @@ const typeDots: Record<string, string> = {
   Upisi: "bg-orange-500",
 };
 
+function getEventBounds(eventList: CalendarEvent[]) {
+  if (eventList.length === 0) {
+    return { minYear: 2026, minMonth: 0, maxYear: 2026, maxMonth: 0 };
+  }
+
+  let minYear = eventList[0].year;
+  let minMonth = eventList[0].month;
+  let maxYear = eventList[0].year;
+  let maxMonth = eventList[0].month;
+
+  for (const e of eventList) {
+    if (e.year < minYear || (e.year === minYear && e.month < minMonth)) {
+      minYear = e.year;
+      minMonth = e.month;
+    }
+    if (e.year > maxYear || (e.year === maxYear && e.month > maxMonth)) {
+      maxYear = e.year;
+      maxMonth = e.month;
+    }
+  }
+
+  return { minYear, minMonth, maxYear, maxMonth };
+}
+
+function clampMonthYear(year: number, month: number, bounds: ReturnType<typeof getEventBounds>) {
+  const { minYear, minMonth, maxYear, maxMonth } = bounds;
+
+  if (year < minYear || (year === minYear && month < minMonth)) {
+    return { year: minYear, month: minMonth };
+  }
+  if (year > maxYear || (year === maxYear && month > maxMonth)) {
+    return { year: maxYear, month: maxMonth };
+  }
+  return { year, month };
+}
+
 const Kalendar = () => {
   const [reminders, setReminders] = useState<Set<string>>(new Set());
+  const [experience, setExperience] = useState<MojPutExperienceMode>(
+    () => getStoredExperience() ?? "senior",
+  );
 
-  // Ograničenje navigacije: ne prije siječnja 2026, niti poslije zadnjeg eventa.
-  const minYear = 2026;
-  const minMonth = 5; // lipanj
-  const lastEvent = events.reduce<{ year: number; month: number } | null>((acc, e) => {
-    if (!acc) return { year: e.year, month: e.month };
-    if (e.year > acc.year) return { year: e.year, month: e.month };
-    if (e.year === acc.year && e.month > acc.month) return { year: e.year, month: e.month };
-    return acc;
-  }, null);
+  useEffect(() => {
+    const sync = () => setExperience(getStoredExperience() ?? "senior");
+    sync();
+    return onExperienceChange(sync);
+  }, []);
 
-  const maxYear = lastEvent?.year ?? 2026;
-  const maxMonth = lastEvent?.month ?? 0;
+  const isJunior = experience === "junior";
+  const events = isJunior ? juniorEvents : seniorEvents;
+  const bounds = useMemo(() => getEventBounds(events), [events]);
 
-  // Prilikom otvaranja stranice prikazuj trenutni mjesec (ali klampaj unutar dozvoljenog raspona).
-  const now = new Date();
-  let initialYear = now.getFullYear();
-  let initialMonth = now.getMonth();
+  const [year, setYear] = useState(() => getInitialMonthYear(getEventBounds(seniorEvents)).year);
+  const [month, setMonth] = useState(() => getInitialMonthYear(getEventBounds(seniorEvents)).month);
 
-  if (initialYear < minYear || (initialYear === minYear && initialMonth < minMonth)) {
-    initialYear = minYear;
-    initialMonth = minMonth;
-  }
-  if (initialYear > maxYear || (initialYear === maxYear && initialMonth > maxMonth)) {
-    initialYear = maxYear;
-    initialMonth = maxMonth;
-  }
+  useEffect(() => {
+    const clamped = getInitialMonthYear(bounds);
+    setYear(clamped.year);
+    setMonth(clamped.month);
+  }, [experience, bounds]);
 
-  const [year, setYear] = useState(initialYear);
-  const [month, setMonth] = useState(initialMonth);
+  const { minYear, minMonth, maxYear, maxMonth } = bounds;
 
-  const toggleReminder = async (e: typeof events[0]) => {
-    const key = `${e.year}-${e.month}-${e.day}-${e.title}`;
+  const toggleReminder = async (e: CalendarEvent) => {
+    const key = `${experience}-${e.year}-${e.month}-${e.day}-${e.title}`;
     const isSet = reminders.has(key);
 
     if (isSet) {
@@ -127,7 +191,6 @@ const Kalendar = () => {
     setReminders(prev => new Set(prev).add(key));
     toast.success("Podsjetnik postavljen!", { description: `${e.day}. – ${e.title}` });
 
-    // Pokušaj zakazati obavijest dan prije
     const eventDate = new Date(e.year, e.month, e.day, 9, 0, 0);
     const notifyDate = new Date(eventDate.getTime() - 24 * 60 * 60 * 1000);
     const delay = notifyDate.getTime() - Date.now();
@@ -142,7 +205,6 @@ const Kalendar = () => {
   };
 
   const prev = () => {
-    // Ne dozvoli prije siječnja 2026.
     if (year === minYear && month === minMonth) return;
     if (month === 0) {
       setMonth(11);
@@ -152,7 +214,6 @@ const Kalendar = () => {
     }
   };
   const next = () => {
-    // Ne dozvoli poslije mjeseca koji sadrži zadnji event.
     if (year === maxYear && month === maxMonth) return;
     if (month === 11) {
       setMonth(0);
@@ -179,10 +240,23 @@ const Kalendar = () => {
   const canPrev = !(year === minYear && month === minMonth);
   const canNext = !(year === maxYear && month === maxMonth);
 
+  const heroBadge = isJunior ? "Upisi · rokovi · ljestvice" : "Matura · upisi · rokovi";
+  const heroSubtitle = isJunior
+    ? "Ljetni, jesenski i naknadni upisni rok 2026."
+    : "Svi rokovi za maturu, prijave i upise";
+  const listTitle = isJunior ? (
+    <>
+      <span className="text-gradient">Upisni</span> rokovi
+    </>
+  ) : (
+    <>
+      <span className="text-gradient">Matura</span>, upisi &amp; rokovi
+    </>
+  );
+
   return (
     <Layout>
       <section className="container py-12 max-w-6xl">
-        {/* Hero header */}
         <motion.div
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
@@ -204,16 +278,15 @@ const Kalendar = () => {
             <div className="min-w-0 flex-1">
               <span className="inline-flex items-center gap-1 rounded-full border border-primary/25 bg-primary/10 px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-primary">
                 <Sparkles className="h-3 w-3" aria-hidden />
-                Upisi · rokovi · ljestvice
+                {heroBadge}
               </span>
               <h1 className="mt-2 text-balance text-2xl font-bold leading-tight tracking-tight sm:text-3xl md:text-4xl">
                 <span className="text-gradient">Kalendar</span> važnih datuma
               </h1>
               <p className="mt-1.5 max-w-2xl text-pretty text-sm leading-relaxed text-muted-foreground sm:text-base">
-                Ljetni, jesenski i naknadni upisni rok 2026.
+                {heroSubtitle}
               </p>
 
-              {/* Legenda */}
               <div className="mt-4 flex flex-wrap gap-1.5 sm:gap-2">
                 {Object.entries(typeDots).map(([type, dot]) => (
                   <span
@@ -230,13 +303,11 @@ const Kalendar = () => {
         </motion.div>
 
         <div className="grid lg:grid-cols-[minmax(0,560px)_minmax(0,1fr)] gap-8 items-stretch lg:h-[70vh]">
-          {/* Left: calendar */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             className="bg-card rounded-2xl border-2 border-border shadow-card p-5 sm:p-7 h-full flex flex-col overflow-hidden"
           >
-            {/* Header with navigation */}
             <div className="flex items-center justify-between mb-6">
               <button
                 onClick={prev}
@@ -263,7 +334,6 @@ const Kalendar = () => {
               </button>
             </div>
 
-            {/* Day headers */}
             <div className="grid grid-cols-7 mb-2 rounded-xl bg-muted/40 py-1">
               {dayNames.map(d => (
                 <div key={d} className="text-center text-xs font-semibold uppercase tracking-wide text-muted-foreground py-1.5">
@@ -272,7 +342,6 @@ const Kalendar = () => {
               ))}
             </div>
 
-            {/* Day cells */}
             <div className="grid grid-cols-7 gap-1.5">
               {cells.map((day, idx) => {
                 const dayEvents = day ? monthEvents.filter(e => e.day === day) : [];
@@ -320,7 +389,6 @@ const Kalendar = () => {
             </div>
           </motion.div>
 
-          {/* Right: events for the month */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -333,7 +401,7 @@ const Kalendar = () => {
                 </div>
                 <div className="min-w-0">
                   <h3 className="text-lg sm:text-xl font-bold leading-tight">
-                    <span className="text-gradient">Upisni</span> rokovi
+                    {listTitle}
                   </h3>
                   <p className="text-muted-foreground text-sm mt-0.5">Za {croatianMonths[month]} {year}</p>
                 </div>
@@ -346,7 +414,7 @@ const Kalendar = () => {
             {monthEvents.length > 0 && (
               <div className="flex-1 overflow-y-auto pr-1 space-y-2.5 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-border hover:[&::-webkit-scrollbar-thumb]:bg-muted-foreground/40">
                 {monthEvents.map((e, i) => {
-                  const key = `${e.year}-${e.month}-${e.day}-${e.title}`;
+                  const key = `${experience}-${e.year}-${e.month}-${e.day}-${e.title}`;
                   const isReminded = reminders.has(key);
                   return (
                     <div
@@ -410,5 +478,10 @@ const Kalendar = () => {
     </Layout>
   );
 };
+
+function getInitialMonthYear(bounds: ReturnType<typeof getEventBounds>) {
+  const now = new Date();
+  return clampMonthYear(now.getFullYear(), now.getMonth(), bounds);
+}
 
 export default Kalendar;
