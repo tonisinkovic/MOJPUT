@@ -268,6 +268,11 @@ function migrateSqlite(db) {
     db.exec("ALTER TABLE forum_messages ADD COLUMN deleted_by_user_at TEXT");
   }
 
+  const forumConvCols = db.prepare("PRAGMA table_info(forum_conversations)").all().map((c) => c.name);
+  if (!forumConvCols.includes("audience")) {
+    db.exec("ALTER TABLE forum_conversations ADD COLUMN audience TEXT NOT NULL DEFAULT 'senior'");
+  }
+
   try {
     db.prepare("SELECT 1 FROM user_saved_faculties LIMIT 1").get();
   } catch {
@@ -404,6 +409,9 @@ async function migratePg(pool) {
   for (const sql of ddl) await run(sql);
   await run("ALTER TABLE users ADD COLUMN IF NOT EXISTS user_type TEXT DEFAULT 'srednjoskolac'");
   await run("ALTER TABLE pending_registrations ADD COLUMN IF NOT EXISTS user_type TEXT DEFAULT 'srednjoskolac'");
+  await run(
+    "ALTER TABLE forum_conversations ADD COLUMN IF NOT EXISTS audience TEXT NOT NULL DEFAULT 'senior'",
+  );
 
   let migrated;
   try {

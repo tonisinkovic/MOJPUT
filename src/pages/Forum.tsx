@@ -25,8 +25,9 @@ import { apiGet, apiPost } from "@/lib/api";
 function isLocalForumConversationId(id: number): boolean {
   return id >= 1_000_000_000_000;
 }
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useSearchParams } from "react-router-dom";
 import { authLogout, authMe, userFromAuthMe, type AuthUser } from "@/lib/auth";
+import { resolveExperienceMode, type MojPutExperienceMode } from "@/lib/experience";
 import { cn } from "@/lib/utils";
 
 type ForumMessage = {
@@ -57,7 +58,11 @@ type ForumConversation = {
 
 type SortMode = "recent" | "active";
 
-const FORUM_LOCAL_KEY = "mojput_forum_local_conversations";
+const FORUM_LOCAL_KEY_PREFIX = "mojput_forum_local_conversations";
+
+function forumLocalKey(audience: MojPutExperienceMode): string {
+  return `${FORUM_LOCAL_KEY_PREFIX}_${audience}`;
+}
 
 function porukeOznaka(n: number): string {
   const k = n % 100;
@@ -68,7 +73,7 @@ function porukeOznaka(n: number): string {
   return "poruka";
 }
 
-const FALLBACK_CONVERSATIONS: ForumConversation[] = [
+const SENIOR_FALLBACK_CONVERSATIONS: ForumConversation[] = [
   {
     id: 1001,
     title: "Kako se najbolje pripremiti za maturu iz matematike?",
@@ -158,9 +163,94 @@ const FALLBACK_CONVERSATIONS: ForumConversation[] = [
   },
 ];
 
-const readLocalConversations = (): ForumConversation[] => {
+const JUNIOR_FALLBACK_CONVERSATIONS: ForumConversation[] = [
+  {
+    id: 2001,
+    title: "Kako odabrati srednju školu ako nisam siguran što želim?",
+    description: "Pitanja o interesima, smjerovima i savjetima starijih učenika.",
+    creator: "Petra",
+    creatorId: -1,
+    createdAt: new Date("2026-03-13T12:00:00+01:00"),
+    messageCount: 1,
+    messages: [
+      {
+        id: 6001,
+        userId: -6,
+        username: "Petra",
+        text: "Ako ste bili neodlučni pri upisu u srednju, kako ste na kraju donijeli odluku?",
+        timestamp: new Date("2026-03-13T12:03:00+01:00"),
+        likeCount: 2,
+        userLiked: false,
+      },
+    ],
+  },
+  {
+    id: 2002,
+    title: "Gimnazija ili strukovna škola — kako ste odlučili?",
+    description: "Iskustva, praksa u učenju i što biste danas drugačije odabrali.",
+    creator: "LukaSS",
+    creatorId: -1,
+    createdAt: new Date("2026-03-11T15:20:00+01:00"),
+    messageCount: 2,
+    messages: [
+      {
+        id: 6101,
+        userId: -7,
+        username: "LukaSS",
+        text: "Ne znam je li bolje ići na gimnaziju ili neki IT smjer u strukovnoj — tko ima iskustva?",
+        timestamp: new Date("2026-03-11T15:22:00+01:00"),
+        likeCount: 3,
+        userLiked: false,
+      },
+      {
+        id: 6102,
+        userId: -8,
+        username: "MajaGim",
+        text: "Ja sam na gimnaziji i zadovoljna sam, ali kolege na strukovnoj puno više rade praktične stvari.",
+        timestamp: new Date("2026-03-11T17:45:00+01:00"),
+        likeCount: 4,
+        userLiked: false,
+      },
+    ],
+  },
+  {
+    id: 2003,
+    title: "Koji smjer u srednjoj za medicinu, IT ili ekonomiju?",
+    description: "Preporuke smjera, škola i savjeti za daljnji put nakon srednje.",
+    creator: "IvanaUpis",
+    creatorId: -1,
+    createdAt: new Date("2026-03-09T10:00:00+01:00"),
+    messageCount: 2,
+    messages: [
+      {
+        id: 6201,
+        userId: -9,
+        username: "IvanaUpis",
+        text: "Zanima me medicina poslije srednje — koji smjer i škola vam se čine najbolji start?",
+        timestamp: new Date("2026-03-09T10:05:00+01:00"),
+        likeCount: 5,
+        userLiked: false,
+      },
+      {
+        id: 6202,
+        userId: -10,
+        username: "TomoMed",
+        text: "Prirodoslovna gimnazija je klasičan put, ali znam i ljude koji su krenuli preko medicinske sestre u strukovnoj.",
+        timestamp: new Date("2026-03-09T11:30:00+01:00"),
+        likeCount: 3,
+        userLiked: false,
+      },
+    ],
+  },
+];
+
+function fallbackConversationsFor(audience: MojPutExperienceMode): ForumConversation[] {
+  return audience === "junior" ? JUNIOR_FALLBACK_CONVERSATIONS : SENIOR_FALLBACK_CONVERSATIONS;
+}
+
+const readLocalConversations = (audience: MojPutExperienceMode): ForumConversation[] => {
   try {
-    const raw = localStorage.getItem(FORUM_LOCAL_KEY);
+    const raw = localStorage.getItem(forumLocalKey(audience));
     if (!raw) return [];
     const parsed = JSON.parse(raw) as Array<{
       id: number;
@@ -190,8 +280,8 @@ const readLocalConversations = (): ForumConversation[] => {
   }
 };
 
-const writeLocalConversations = (conversations: ForumConversation[]) => {
-  localStorage.setItem(FORUM_LOCAL_KEY, JSON.stringify(conversations));
+const writeLocalConversations = (audience: MojPutExperienceMode, conversations: ForumConversation[]) => {
+  localStorage.setItem(forumLocalKey(audience), JSON.stringify(conversations));
 };
 
 /** Cache poruka po ID-u razgovora (server ili lokalno) — pamti poruke kad API nakratko zakaže ili nakon slanja. */
@@ -229,6 +319,10 @@ function writeForumMessagesCache(conversationId: number, messages: ForumMessage[
 
 const Forum = () => {
   const location = useLocation();
+  const [searchParams] = useSearchParams();
+  const audience = resolveExperienceMode(searchParams);
+  const isJunior = audience === "junior";
+  const fallbackConversations = fallbackConversationsFor(audience);
   const [currentUser, setCurrentUser] = useState<AuthUser | null>(null);
   const [authChecked, setAuthChecked] = useState(false);
   const canUseForum = Boolean(currentUser);
@@ -284,7 +378,7 @@ const Forum = () => {
   const loadConversations = async () => {
     setLoadingConversations(true);
     try {
-      const res = await apiGet<{ data: unknown }>("/api/forum/conversations");
+      const res = await apiGet<{ data: unknown }>(`/api/forum/conversations?audience=${audience}`);
       if (res.success) {
         const raw = (res as { data?: unknown }).data;
         const rows = Array.isArray(raw)
@@ -309,15 +403,16 @@ const Forum = () => {
           messageCount: typeof c.message_count === "number" ? c.message_count : 0,
           messages: [],
         }));
-        const localOnly = readLocalConversations();
-        setConversations([...localOnly, ...mapped]);
+        const localOnly = readLocalConversations(audience);
+        const merged = [...localOnly, ...mapped];
+        setConversations(merged.length > 0 ? merged : fallbackConversations);
       } else {
-        const localOnly = readLocalConversations();
-        setConversations([...localOnly, ...FALLBACK_CONVERSATIONS]);
+        const localOnly = readLocalConversations(audience);
+        setConversations([...localOnly, ...fallbackConversations]);
       }
     } catch {
-      const localOnly = readLocalConversations();
-      setConversations([...localOnly, ...FALLBACK_CONVERSATIONS]);
+      const localOnly = readLocalConversations(audience);
+      setConversations([...localOnly, ...fallbackConversations]);
     } finally {
       setLoadingConversations(false);
     }
@@ -379,7 +474,7 @@ const Forum = () => {
         if (cached?.length) {
           applyMessagesToConversation(conversationId, cached);
         } else {
-          const fallbackConv = FALLBACK_CONVERSATIONS.find((c) => c.id === conversationId);
+          const fallbackConv = fallbackConversations.find((c) => c.id === conversationId);
           if (fallbackConv) {
             applyMessagesToConversation(conversationId, fallbackConv.messages);
           }
@@ -390,7 +485,7 @@ const Forum = () => {
       if (cached?.length) {
         applyMessagesToConversation(conversationId, cached);
       } else {
-        const fallbackConv = FALLBACK_CONVERSATIONS.find((c) => c.id === conversationId);
+        const fallbackConv = fallbackConversations.find((c) => c.id === conversationId);
         if (fallbackConv) {
           applyMessagesToConversation(conversationId, fallbackConv.messages);
         }
@@ -401,8 +496,9 @@ const Forum = () => {
   };
 
   useEffect(() => {
+    setSelectedConversation(null);
     loadConversations();
-  }, []);
+  }, [audience]);
 
   useEffect(() => {
     if (!selectedConversation?.messages.length) return;
@@ -426,7 +522,7 @@ const Forum = () => {
 
     const res = await apiPost<{ data?: { id: number; title: string; description: string; created_at: string; creator_username: string; message_count: number } }>(
       "/api/forum/conversations",
-      { title: newConvTitle.trim(), description: newConvDescription.trim() },
+      { title: newConvTitle.trim(), description: newConvDescription.trim(), audience },
     );
     let newConversation: ForumConversation | null = null;
     if (res.success) {
@@ -460,7 +556,7 @@ const Forum = () => {
 
     setConversations((prev) => [newConversation, ...prev]);
     if (isLocalForumConversationId(newConversation.id)) {
-      writeLocalConversations([newConversation, ...readLocalConversations()]);
+      writeLocalConversations(audience, [newConversation, ...readLocalConversations(audience)]);
     }
     setNewConvTitle("");
     setNewConvDescription("");
@@ -539,11 +635,11 @@ const Forum = () => {
     );
 
     if (isLocalForumConversationId(convId)) {
-      const localConvs = readLocalConversations();
+      const localConvs = readLocalConversations(audience);
       const updatedLocal = localConvs.map((conv) =>
         conv.id === convId ? { ...conv, messages: nextMessages, messageCount: nextMessages.length } : conv,
       );
-      writeLocalConversations(updatedLocal);
+      writeLocalConversations(audience, updatedLocal);
     }
 
     setMessageInput("");
@@ -573,11 +669,11 @@ const Forum = () => {
         prev ? { ...prev, messages: prev.messages.map(mark) } : prev,
       );
       if (isLocalForumConversationId(selectedConversation.id)) {
-        const localConvs = readLocalConversations();
+        const localConvs = readLocalConversations(audience);
         const updated = localConvs.map((c) =>
           c.id === selectedConversation.id ? { ...c, messages: c.messages.map(mark) } : c,
         );
-        writeLocalConversations(updated);
+        writeLocalConversations(audience, updated);
       }
       return;
     }
@@ -636,14 +732,14 @@ const Forum = () => {
       prev ? { ...prev, messages: prev.messages.map(updateMsg) } : prev,
     );
     if (isLocalForumConversationId(selectedConversation.id)) {
-      const localConvs = readLocalConversations();
+      const localConvs = readLocalConversations(audience);
       if (localConvs.length) {
         const updatedLocal = localConvs.map((conv) =>
           conv.id === selectedConversation.id
             ? { ...conv, messages: conv.messages.map(updateMsg) }
             : conv,
         );
-        writeLocalConversations(updatedLocal);
+        writeLocalConversations(audience, updatedLocal);
       }
     }
   };
@@ -706,10 +802,12 @@ const Forum = () => {
                 </span>
               </div>
               <h1 className="mt-2 text-balance text-2xl font-bold tracking-tight text-foreground sm:text-3xl md:text-4xl">
-                Forum za učenike
+                {isJunior ? "Forum o srednjoj školi" : "Forum za učenike"}
               </h1>
               <p className="mt-1.5 max-w-2xl text-pretty text-sm leading-relaxed text-muted-foreground sm:text-base">
-                Razmijeni iskustva i postavi pitanja o maturi, fakultetima i studentskom životu — sve jasno poredano, brzo za pronalazak.
+                {isJunior
+                  ? "Razmijeni iskustva i postavi pitanja o odabiru srednje škole, smjerovima i upisu — sve jasno poredano, brzo za pronalazak."
+                  : "Razmijeni iskustva i postavi pitanja o maturi, fakultetima i studentskom životu — sve jasno poredano, brzo za pronalazak."}
               </p>
 
               <div className="mt-4 grid grid-cols-3 gap-2 sm:max-w-lg sm:gap-3">
@@ -1276,7 +1374,9 @@ const Forum = () => {
               >
                 <h3 className="mb-1 text-lg font-bold text-foreground">Novi razgovor</h3>
                 <p className="mb-5 text-sm text-muted-foreground">
-                  Postavi pitanje ili otvori temu o maturi, fakultetima ili studentskom životu.
+                  {isJunior
+                    ? "Postavi pitanje ili otvori temu o odabiru srednje škole, smjerovima i iskustvima učenika."
+                    : "Postavi pitanje ili otvori temu o maturi, fakultetima ili studentskom životu."}
                 </p>
                 <form onSubmit={handleCreateConversation} className="space-y-4">
                   <div>
@@ -1288,7 +1388,7 @@ const Forum = () => {
                       type="text"
                       value={newConvTitle}
                       onChange={(e) => setNewConvTitle(e.target.value)}
-                      placeholder="npr. Koji fakultet za IT?"
+                      placeholder={isJunior ? "npr. Gimnazija ili strukovna?" : "npr. Koji fakultet za IT?"}
                       className="w-full rounded-xl border-2 border-input bg-background px-4 py-2.5 text-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-ring"
                     />
                   </div>

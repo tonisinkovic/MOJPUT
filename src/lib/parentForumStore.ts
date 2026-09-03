@@ -1,7 +1,8 @@
-import { forumSeed } from "@/data/parentHub";
+import { forumSeedFor } from "@/data/parentHub";
+import type { MojPutExperienceMode } from "@/lib/experience";
 
-const STORAGE_KEY = "mojput_parent_forum_conversations_v1";
-const LIKED_IDS_KEY = "mojput_parent_forum_liked_message_ids_v1";
+const STORAGE_KEY_PREFIX = "mojput_parent_forum_conversations_v1";
+const LIKED_IDS_KEY_PREFIX = "mojput_parent_forum_liked_message_ids_v1";
 export const PARENT_FORUM_DISPLAY_NAME_KEY = "mojput_parent_forum_display_name";
 
 export type ParentForumMessage = {
@@ -21,13 +22,21 @@ export type ParentForumConversation = {
   messages: ParentForumMessage[];
 };
 
+function storageKey(audience: MojPutExperienceMode): string {
+  return `${STORAGE_KEY_PREFIX}_${audience}`;
+}
+
+function likedIdsKey(audience: MojPutExperienceMode): string {
+  return `${LIKED_IDS_KEY_PREFIX}_${audience}`;
+}
+
 function makeId(prefix: string) {
   return `${prefix}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 9)}`;
 }
 
 /** Početni sadržaj iz seed podataka — svaka tema postaje razgovor s porukama. */
-export function buildInitialConversations(): ParentForumConversation[] {
-  return forumSeed.map((topic) => {
+export function buildInitialConversations(audience: MojPutExperienceMode): ParentForumConversation[] {
+  return forumSeedFor(audience).map((topic) => {
     const opening: ParentForumMessage = {
       id: `${topic.id}-opening`,
       text: topic.content,
@@ -55,25 +64,25 @@ export function buildInitialConversations(): ParentForumConversation[] {
   });
 }
 
-export function loadConversations(): ParentForumConversation[] {
+export function loadConversations(audience: MojPutExperienceMode): ParentForumConversation[] {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
+    const raw = localStorage.getItem(storageKey(audience));
     if (!raw) {
-      const initial = buildInitialConversations();
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(initial));
+      const initial = buildInitialConversations(audience);
+      localStorage.setItem(storageKey(audience), JSON.stringify(initial));
       return initial;
     }
     const parsed = JSON.parse(raw) as ParentForumConversation[];
     if (!Array.isArray(parsed) || parsed.length === 0) {
-      const initial = buildInitialConversations();
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(initial));
+      const initial = buildInitialConversations(audience);
+      localStorage.setItem(storageKey(audience), JSON.stringify(initial));
       return initial;
     }
     return parsed;
   } catch {
-    const initial = buildInitialConversations();
+    const initial = buildInitialConversations(audience);
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(initial));
+      localStorage.setItem(storageKey(audience), JSON.stringify(initial));
     } catch {
       /* ignore */
     }
@@ -81,17 +90,17 @@ export function loadConversations(): ParentForumConversation[] {
   }
 }
 
-export function saveConversations(conversations: ParentForumConversation[]) {
+export function saveConversations(audience: MojPutExperienceMode, conversations: ParentForumConversation[]) {
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(conversations));
+    localStorage.setItem(storageKey(audience), JSON.stringify(conversations));
   } catch {
     /* ignore quota */
   }
 }
 
-export function readLikedMessageIds(): Set<string> {
+export function readLikedMessageIds(audience: MojPutExperienceMode): Set<string> {
   try {
-    const raw = localStorage.getItem(LIKED_IDS_KEY);
+    const raw = localStorage.getItem(likedIdsKey(audience));
     if (!raw) return new Set();
     const arr = JSON.parse(raw) as string[];
     return new Set(Array.isArray(arr) ? arr : []);
@@ -100,9 +109,9 @@ export function readLikedMessageIds(): Set<string> {
   }
 }
 
-export function writeLikedMessageIds(ids: Set<string>) {
+export function writeLikedMessageIds(audience: MojPutExperienceMode, ids: Set<string>) {
   try {
-    localStorage.setItem(LIKED_IDS_KEY, JSON.stringify([...ids]));
+    localStorage.setItem(likedIdsKey(audience), JSON.stringify([...ids]));
   } catch {
     /* ignore */
   }

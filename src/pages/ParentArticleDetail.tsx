@@ -1,23 +1,31 @@
 import Layout from "@/components/Layout";
 import { Button } from "@/components/ui/button";
-import { parentArticles } from "@/data/parentHub";
+import { parentArticlesFor } from "@/data/parentHub";
+import { resolveExperienceMode } from "@/lib/experience";
 import { getTotalViews, incrementViewDeduped, readParentHubState, setLastVisited, toggleFavorite } from "@/lib/parentHubStore";
 import { ArrowLeft, Bookmark, ChevronRight, FileText, Lightbulb, Link2, Share2 } from "lucide-react";
 import { motion } from "framer-motion";
 import { useEffect, useMemo, useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useParams, useSearchParams } from "react-router-dom";
 
 const ParentArticleDetail = () => {
   const { slug = "" } = useParams();
-  const article = useMemo(() => parentArticles.find((item) => item.slug === slug), [slug]);
+  const [searchParams] = useSearchParams();
+  const audience = resolveExperienceMode(searchParams);
+  const isJunior = audience === "junior";
+  const hubPath = isJunior ? "/roditelji?experience=junior" : "/roditeljski-kutak";
+  const expQ = isJunior ? "?experience=junior" : "";
+
+  const articles = useMemo(() => parentArticlesFor(audience), [audience]);
+  const article = useMemo(() => articles.find((item) => item.slug === slug), [articles, slug]);
   const [state, setState] = useState(readParentHubState());
 
   useEffect(() => {
     if (!article) return;
     incrementViewDeduped(article.slug);
-    setLastVisited(`/roditeljski-kutak/preporuceni-clanak/${article.slug}`);
+    setLastVisited(`/roditeljski-kutak/preporuceni-clanak/${article.slug}${expQ}`);
     setState(readParentHubState());
-  }, [article]);
+  }, [article, expQ]);
 
   if (!article) {
     return (
@@ -29,7 +37,7 @@ const ParentArticleDetail = () => {
     );
   }
 
-  const related = parentArticles.filter((item) => article.relatedSlugs.includes(item.slug));
+  const related = articles.filter((item) => article.relatedSlugs.includes(item.slug));
 
   const totalViews = getTotalViews(article.slug, article.views);
 
@@ -37,7 +45,7 @@ const ParentArticleDetail = () => {
     <Layout>
       <section className="container max-w-4xl px-3 py-8 sm:px-4 sm:py-10 md:py-14 pb-[max(2rem,env(safe-area-inset-bottom))]">
         <Link
-          to="/roditeljski-kutak"
+          to={hubPath}
           className="inline-flex min-h-10 items-center gap-1.5 rounded-lg px-1 text-sm text-muted-foreground transition-colors hover:bg-muted/60 hover:text-foreground active:bg-muted/80"
         >
           <ArrowLeft className="h-4 w-4 shrink-0" /> Natrag na Roditeljski kutak
@@ -134,7 +142,7 @@ const ParentArticleDetail = () => {
             {related.map((item) => (
               <Link
                 key={item.id}
-                to={`/roditeljski-kutak/preporuceni-clanak/${item.slug}`}
+                to={`/roditeljski-kutak/preporuceni-clanak/${item.slug}${expQ}`}
                 className="flex min-h-12 items-center justify-between gap-3 rounded-xl border-2 border-border/80 bg-background/80 px-4 py-3 text-sm font-medium transition-all hover:border-primary/35 hover:bg-muted/50 hover:shadow-sm active:scale-[0.99]"
               >
                 <span className="text-pretty">{item.title}</span>

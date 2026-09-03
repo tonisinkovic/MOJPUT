@@ -25,6 +25,14 @@ export function storeExperience(mode: MojPutExperienceMode | null): void {
   window.dispatchEvent(new CustomEvent(CHANGE_EVENT));
 }
 
+export function resolveExperienceMode(
+  searchParams?: URLSearchParams | null,
+): MojPutExperienceMode {
+  const fromUrl = searchParams?.get("experience");
+  if (fromUrl === "junior" || fromUrl === "senior") return fromUrl;
+  return getStoredExperience() ?? "senior";
+}
+
 export function onExperienceChange(callback: () => void): () => void {
   window.addEventListener(CHANGE_EVENT, callback);
   window.addEventListener("storage", callback);

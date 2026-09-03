@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useCallback, useMemo } from "react";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import Layout from "@/components/Layout";
 import { motion } from "framer-motion";
 import {
@@ -27,6 +27,8 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { facultyInstitutions } from "@/data/faculties";
+import { highSchools } from "@/data/highSchools";
+import { resolveExperienceMode } from "@/lib/experience";
 import { API_BASE_URL } from "@/config/apiBase";
 import { apiGet, getStoredAuthToken, setStoredAuthToken } from "@/lib/api";
 import { authMe, userFromAuthMe, type AuthUser } from "@/lib/auth";
@@ -34,11 +36,18 @@ import { cn } from "@/lib/utils";
 
 const API_BASE = API_BASE_URL;
 
-const SUGGESTIONS = [
+const SENIOR_SUGGESTIONS = [
   "Usporedi FER i FOI za računarstvo — prednosti i mane",
   "Je li TVZ ili FOI bolji izbor ako želim brzo raditi praktične projekte?",
   "Što znači ići na PMF ako volim matematiku, a i programiranje?",
   "Kako bih odabrao između FER-a i TVZ-a za karijeru u IT-u?",
+];
+
+const JUNIOR_SUGGESTIONS = [
+  "Koje su najbolje gimnazije u Zagrebu?",
+  "Strukovna ili gimnazija za informatiku — što je bolje?",
+  "Koja srednja škola u Splitu ima medicinski smjer?",
+  "Kako odabrati između opće gimnazije i jezične?",
 ];
 
 type ChatAttachment = {
@@ -242,10 +251,12 @@ function buildUserSearchQuery(text: string, attachments: ChatAttachment[] | unde
 }
 
 const AI_NAME = "Dražen";
-const AI_WELCOME = `Bok! Ja sam ${AI_NAME} 👋
+const AI_WELCOME_SENIOR = `Bok! Ja sam ${AI_NAME} 👋
 Pomažem ti sa svim pitanjima o fakultetima u Hrvatskoj. Što te zanima?`;
+const AI_WELCOME_JUNIOR = `Bok! Ja sam ${AI_NAME} 👋
+Pomažem ti sa svim pitanjima o srednjim školama u Hrvatskoj. Što te zanima?`;
 
-function buildLocalChatReply(question: string): string {
+function buildLocalChatReplySenior(question: string): string {
   const q = question.toLowerCase();
   const cities = Array.from(new Set(facultyInstitutions.map((f) => f.city)));
   const matchedCity = cities.find((city) => q.includes(city.toLowerCase()));
@@ -277,6 +288,56 @@ function buildLocalChatReply(question: string): string {
   return `Trenutno radim u lokalnom modu (bez backenda), ali i dalje mogu pomoći kroz podatke iz baze.\n\nPrimjeri koje mogu odmah odgovoriti:\n- Fakulteti u određenom gradu (npr. Zagreb, Split, Rijeka)\n- Studiji računarstva/informatike\n- Osnovni popis fakulteta po području\n\nPrimjer ustanova iz baze:\n- ${sample.map((f) => `${f.name} (${f.city})`).join("\n- ")}`;
 }
 
+function buildLocalChatReplyJunior(question: string): string {
+  const q = question.toLowerCase();
+  const cities = Array.from(new Set(highSchools.map((s) => s.city)));
+  const matchedCity = cities.find((city) => q.includes(city.toLowerCase()));
+
+  if (matchedCity) {
+    const inCity = highSchools.filter((s) => s.city.toLowerCase() === matchedCity.toLowerCase()).slice(0, 10);
+    if (inCity.length) {
+      return `U gradu ${matchedCity} sam pronašao ove srednje škole:\n- ${inCity.map((s) => s.name).join("\n- ")}\n\nMogu ti reći više o bilo kojoj školi ili smjerovima.`;
+    }
+  }
+
+  if (q.includes("gimnazij")) {
+    const matches = highSchools.filter((s) => /gimnazij/i.test(s.name)).slice(0, 10);
+    if (matches.length) {
+      return `Pronašao sam ove gimnazije:\n- ${matches.map((s) => `${s.name} (${s.city})`).join("\n- ")}`;
+    }
+  }
+
+  if (q.includes("strukovna") || q.includes("strukovno") || q.includes("obrt")) {
+    const matches = highSchools
+      .filter((s) => /strukovna|strukovn|obrt/i.test(s.name))
+      .slice(0, 10);
+    if (matches.length) {
+      return `Strukovne škole koje sam pronašao:\n- ${matches.map((s) => `${s.name} (${s.city})`).join("\n- ")}`;
+    }
+  }
+
+  if (q.includes("medicin") || q.includes("zdrav")) {
+    const matches = highSchools
+      .filter((s) => /medicin|zdrav|bolničar/i.test(s.name))
+      .slice(0, 10);
+    if (matches.length) {
+      return `Škole s medicinskim/zdravstvenim smjerom:\n- ${matches.map((s) => `${s.name} (${s.city})`).join("\n- ")}`;
+    }
+  }
+
+  if (q.includes("informatič") || q.includes("računar") || q.includes("it")) {
+    const matches = highSchools
+      .filter((s) => /informatič|računar|tehničk|elektrotehni/i.test(s.name))
+      .slice(0, 10);
+    if (matches.length) {
+      return `Škole s IT/tehničkim smjerovima:\n- ${matches.map((s) => `${s.name} (${s.city})`).join("\n- ")}`;
+    }
+  }
+
+  const sample = highSchools.slice(0, 8);
+  return `Trenutno radim u lokalnom modu (bez backenda), ali i dalje mogu pomoći kroz podatke o 443 srednje škole u Hrvatskoj.\n\nPrimjeri pitanja:\n- Srednje škole u određenom gradu (npr. Zagreb, Split, Rijeka)\n- Gimnazije ili strukovne škole\n- Škole s određenim smjerom (IT, medicina, jezici)\n\nPrimjeri škola:\n- ${sample.map((s) => `${s.name} (${s.city})`).join("\n- ")}`;
+}
+
 type ChatQuotaState = {
   authenticated: boolean;
   limit: number;
@@ -290,10 +351,16 @@ type ChatQuotaState = {
 const STATIC_NO_API = !API_BASE && !import.meta.env.DEV;
 
 const Chatbot = () => {
+  const [searchParams] = useSearchParams();
+  const audience = resolveExperienceMode(searchParams);
+  const isJunior = audience === "junior";
+  const suggestions = isJunior ? JUNIOR_SUGGESTIONS : SENIOR_SUGGESTIONS;
+  const aiWelcome = isJunior ? AI_WELCOME_JUNIOR : AI_WELCOME_SENIOR;
+
   const [messages, setMessages] = useState<Message[]>([]);
   useEffect(() => {
-    setMessages([{ role: "assistant", content: AI_WELCOME }]);
-  }, []);
+    setMessages([{ role: "assistant", content: aiWelcome }]);
+  }, [aiWelcome]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [authLoading, setAuthLoading] = useState(true);
@@ -485,7 +552,9 @@ const Chatbot = () => {
     // Static hosting fallback: when backend is unavailable, answer from local dataset.
     const shouldUseLocalFallback = !API_BASE && !import.meta.env.DEV;
     if (shouldUseLocalFallback) {
-      const localReply = buildLocalChatReply(buildUserSearchQuery(content, userMsg.attachments));
+      const localReply = isJunior
+        ? buildLocalChatReplyJunior(buildUserSearchQuery(content, userMsg.attachments))
+        : buildLocalChatReplySenior(buildUserSearchQuery(content, userMsg.attachments));
       setMessages((m) => {
         const next = [...m];
         next[assistantIdx] = { role: "assistant", content: localReply };
@@ -504,7 +573,7 @@ const Chatbot = () => {
           "Content-Type": "application/json",
           ...(authHdr ? { Authorization: `Bearer ${authHdr}` } : {}),
         },
-        body: JSON.stringify({ messages: conversationHistory }),
+        body: JSON.stringify({ messages: conversationHistory, audience }),
       });
 
       if (res.status === 401) {
@@ -605,7 +674,9 @@ const Chatbot = () => {
     } catch (err) {
       let msg = err instanceof Error ? err.message : "Došlo je do greške. Pokušajte ponovo.";
       if (msg.includes("404") || msg.includes("502") || msg.includes("Failed to fetch")) {
-        msg = buildLocalChatReply(buildUserSearchQuery(content, userMsg.attachments));
+        msg = isJunior
+          ? buildLocalChatReplyJunior(buildUserSearchQuery(content, userMsg.attachments))
+          : buildLocalChatReplySenior(buildUserSearchQuery(content, userMsg.attachments));
       } else if (msg.includes("429") || msg.includes("quota") || msg.includes("OpenAI")) {
         msg = "OpenAI trenutno nije dostupan (kvota ili limit). Pokušaj za chvili ili provjeri račun na platform.openai.com.";
       }
@@ -831,7 +902,7 @@ const Chatbot = () => {
                     size="sm"
                     className="chat-new-btn text-xs"
                     onClick={() => {
-                      setMessages([{ role: "assistant", content: AI_WELCOME }]);
+                      setMessages([{ role: "assistant", content: aiWelcome }]);
                       setPendingAttachments([]);
                       void refreshQuota();
                     }}
@@ -883,7 +954,7 @@ const Chatbot = () => {
                     </p>
                     <div className="chat-suggestions">
                       <p className="chat-suggestions-label">Brzi primjeri</p>
-                      {SUGGESTIONS.map((s) => (
+                      {suggestions.map((s) => (
                         <button
                           key={s}
                           type="button"
@@ -916,7 +987,9 @@ const Chatbot = () => {
                             msg.content &&
                             !msg.content.includes("Backend nije") &&
                             !msg.content.includes("Greška pri") && (
-                            <div className="chat-source-tag">📚 Podaci iz baze u kontekstu · ✨ tekst (OpenAI) — provjeri službene uvjete na fakultetu</div>
+                            <div className="chat-source-tag">
+                              📚 Podaci iz {isJunior ? "baze srednjih škola" : "baze"} u kontekstu · ✨ tekst (OpenAI) — provjeri službene uvjete na {isJunior ? "školi" : "fakultetu"}
+                            </div>
                           )}
                         </>
                       ) : (

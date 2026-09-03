@@ -1,6 +1,7 @@
 import Layout from "@/components/Layout";
 import { Button } from "@/components/ui/button";
-import { parentArticles, type ParentArticle } from "@/data/parentHub";
+import { parentArticlesFor, type ParentArticle } from "@/data/parentHub";
+import { resolveExperienceMode } from "@/lib/experience";
 import { getTotalViews, readParentHubState, setLastVisited, toggleFavorite } from "@/lib/parentHubStore";
 import { motion } from "framer-motion";
 import {
@@ -19,9 +20,13 @@ import {
   X,
 } from "lucide-react";
 import { useMemo, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 
-const mainSections = [
+function experienceQuery(isJunior: boolean): string {
+  return isJunior ? "?experience=junior" : "";
+}
+
+const seniorMainSections = [
   {
     id: "vodic",
     emoji: "📘",
@@ -60,7 +65,44 @@ const mainSections = [
   },
 ] as const;
 
-const recommended = parentArticles.slice(0, 3);
+const juniorMainSections = [
+  {
+    id: "vodic",
+    emoji: "📘",
+    title: "Vodič za roditelje",
+    description: "Savjeti i koraci za razgovor o odabiru srednje škole, smjerovima i upisu bez pritiska.",
+    advice: "Krenite od jednog kratkog tjednog razgovora o interesima djeteta i jedne škole koju zajedno istražite.",
+    href: "/roditeljski-kutak/vodic-za-roditelje",
+    icon: BookOpen,
+  },
+  {
+    id: "mentalno",
+    emoji: "💚",
+    title: "Mentalno zdravlje",
+    description: "Stres oko upisa u srednju, anksioznost i podrška kad dijete osjeća pritisak oko odluke.",
+    advice: "Prvo primijetite promjenu u ponašanju oko rokova za upis, zatim otvorite miran razgovor bez usporedbe s drugima.",
+    href: "/roditeljski-kutak/mentalno-zdravlje",
+    icon: Heart,
+  },
+  {
+    id: "forum",
+    emoji: "💬",
+    title: "Forum za roditelje",
+    description: "Razgovori o srednjoj školi — gimnazija ili strukovna, smjerovi, iskustva i savjeti drugih roditelja.",
+    advice: "Forum je za ideje o upisu u srednju; konačnu odluku prilagodite interesima i tempu vašeg djeteta.",
+    href: "/roditeljski-kutak/forum",
+    icon: MessageSquare,
+  },
+  {
+    id: "procjena",
+    emoji: "📊",
+    title: "Zajednička procjena",
+    description: "Kratak alat prije upisa u srednju — uskladite očekivanja, interese i sljedeće korake.",
+    advice: "Najkorisnije je kada roditelj i dijete najprije razmisle odvojeno, pa usporede odgovore o smjeru i školi.",
+    href: "/roditeljski-kutak/zajednicka-procjena",
+    icon: BarChart3,
+  },
+] as const;
 
 const categoryLabels: Record<ParentArticle["category"], string> = {
   vodic: "Vodič",
@@ -74,7 +116,7 @@ const categoryEmoji: Record<ParentArticle["category"], string> = {
   procjena: "📊",
 };
 
-const recommendedInsights: Record<string, { label: string; advice: string }> = {
+const seniorRecommendedInsights: Record<string, { label: string; advice: string }> = {
   "kako-razgovarati-s-djetetom-o-karijeri": {
     label: "Profesionalni fokus",
     advice:
@@ -89,6 +131,24 @@ const recommendedInsights: Record<string, { label: string; advice: string }> = {
     label: "Kako koristiti",
     advice:
       "Procjena je najkorisnija kada otvara razgovor o prioritetima i razlikama, a ne kada služi kao brz način da se donese konačna odluka.",
+  },
+};
+
+const juniorRecommendedInsights: Record<string, { label: string; advice: string }> = {
+  "kako-razgovarati-s-djetetom-o-srednjoj": {
+    label: "Profesionalni fokus",
+    advice:
+      "Najviše pomaže razgovor u kojem roditelj ne nudi odmah rješenje, nego prvo pomaže djetetu razjasniti interese, strahove i smjerove u srednjoj.",
+  },
+  "stres-kod-upisa-u-srednju": {
+    label: "Što prvo učiniti",
+    advice:
+      "Obratite pažnju na promjene sna i razdražljivost oko rokova za upis. Reagirajte rano, smireno i bez umanjivanja pritiska.",
+  },
+  "zajednicka-procjena-srednja-skola": {
+    label: "Kako koristiti",
+    advice:
+      "Procjena je najkorisnija kada otvara razgovor o smjeru i školi, a ne kada služi kao brz način da se odmah donese konačna odluka.",
   },
 };
 
@@ -113,18 +173,28 @@ const listItem = {
 };
 
 const Roditelji = () => {
+  const [searchParams] = useSearchParams();
+  const audience = resolveExperienceMode(searchParams);
+  const isJunior = audience === "junior";
+  const expQ = experienceQuery(isJunior);
+
+  const articles = useMemo(() => parentArticlesFor(audience), [audience]);
+  const recommended = useMemo(() => articles.slice(0, 3), [articles]);
+  const mainSections = isJunior ? juniorMainSections : seniorMainSections;
+  const recommendedInsights = isJunior ? juniorRecommendedInsights : seniorRecommendedInsights;
+
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState<"sve" | "vodic" | "mentalno" | "procjena">("sve");
   const [state, setState] = useState(readParentHubState());
 
   const filtered = useMemo(() => {
     const term = query.trim().toLowerCase();
-    return parentArticles.filter((item) => {
+    return articles.filter((item) => {
       const bySearch = !term || item.title.toLowerCase().includes(term) || item.excerpt.toLowerCase().includes(term);
       const byCategory = category === "sve" || item.category === category;
       return bySearch && byCategory;
     });
-  }, [category, query]);
+  }, [articles, category, query]);
 
   return (
     <Layout>
@@ -152,13 +222,15 @@ const Roditelji = () => {
             <div className="min-w-0 flex-1">
               <span className="inline-flex items-center gap-1 rounded-full border border-primary/25 bg-primary/10 px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-primary">
                 <Sparkles className="h-3 w-3" />
-                Za roditelje maturanata
+                {isJunior ? "Za roditelje učenika osnovne škole" : "Za roditelje maturanata"}
               </span>
               <h1 className="mt-2 text-balance text-2xl font-bold leading-tight tracking-tight sm:text-3xl md:text-4xl">
                 Roditeljski kutak
               </h1>
               <p className="mt-1.5 max-w-2xl text-pretty text-sm leading-relaxed text-muted-foreground sm:text-base">
-                Vodiči, mentalno zdravlje, forum i zajednička procjena — sve na jednom mjestu.
+                {isJunior
+                  ? "Vodiči, mentalno zdravlje, forum i procjena — sve za podršku pri odabiru srednje škole."
+                  : "Vodiči, mentalno zdravlje, forum i zajednička procjena — sve na jednom mjestu."}
               </p>
             </div>
           </div>
@@ -274,8 +346,10 @@ const Roditelji = () => {
               return (
                 <motion.div key={item.id} variants={listItem}>
                   <Link
-                    to={`/roditeljski-kutak/preporuceni-clanak/${item.slug}`}
-                    onClick={() => setLastVisited(`/roditeljski-kutak/preporuceni-clanak/${item.slug}`)}
+                    to={`/roditeljski-kutak/preporuceni-clanak/${item.slug}${expQ}`}
+                    onClick={() =>
+                      setLastVisited(`/roditeljski-kutak/preporuceni-clanak/${item.slug}${expQ}`)
+                    }
                     className="group relative flex h-full flex-col overflow-hidden rounded-2xl border-2 border-border/70 bg-card shadow-card transition-all active:scale-[0.99] sm:hover:-translate-y-0.5 sm:hover:border-primary/30 sm:hover:shadow-card-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   >
                     <div className="h-1 w-full gradient-hero" aria-hidden />
@@ -352,7 +426,9 @@ const Roditelji = () => {
                 Glavni odjeljci
               </h2>
               <p className="text-xs text-muted-foreground sm:text-sm">
-                Četiri brzo dostupna kutka za roditelje maturanata.
+                {isJunior
+                  ? "Četiri brzo dostupna kutka za roditelje djece koja biraju srednju školu."
+                  : "Četiri brzo dostupna kutka za roditelje maturanata."}
               </p>
             </div>
           </div>
@@ -369,8 +445,8 @@ const Roditelji = () => {
               return (
                 <motion.div key={section.id} variants={listItem}>
                   <Link
-                    to={section.href}
-                    onClick={() => setLastVisited(section.href)}
+                    to={`${section.href}${expQ}`}
+                    onClick={() => setLastVisited(`${section.href}${expQ}`)}
                     className="group flex h-full flex-col rounded-2xl border-2 border-border/70 bg-card p-4 shadow-card transition-all active:bg-muted/30 sm:p-5 sm:hover:-translate-y-0.5 sm:hover:border-primary/30 sm:hover:shadow-card-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   >
                     <div className="flex items-start gap-3 sm:gap-4">
@@ -465,8 +541,10 @@ const Roditelji = () => {
               filtered.map((article) => (
                 <Link
                   key={article.id}
-                  to={`/roditeljski-kutak/preporuceni-clanak/${article.slug}`}
-                  onClick={() => setLastVisited(`/roditeljski-kutak/preporuceni-clanak/${article.slug}`)}
+                  to={`/roditeljski-kutak/preporuceni-clanak/${article.slug}${expQ}`}
+                  onClick={() =>
+                    setLastVisited(`/roditeljski-kutak/preporuceni-clanak/${article.slug}${expQ}`)
+                  }
                   className="group flex min-h-[4.25rem] items-center gap-3 rounded-2xl border-2 border-border/70 bg-card p-3 shadow-card transition-colors active:bg-muted/50 sm:min-h-0 sm:p-4 sm:hover:border-primary/30 sm:hover:shadow-card-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 >
                   <div

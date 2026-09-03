@@ -96,6 +96,15 @@ const HERO_QUICK_ACTIONS: HeroQuickAction[] = [
       "from-fuchsia-500/14 via-fuchsia-500/5 to-background/90 border-fuchsia-400/30 shadow-[0_10px_28px_-12px_hsl(300_70%_50%/0.3)]",
     iconWrap: "bg-fuchsia-500/15 text-fuchsia-600 dark:text-fuchsia-400 ring-fuchsia-500/25",
   },
+  {
+    to: "/forum",
+    label: "Forum",
+    hook: "Razgovori",
+    Icon: MessageSquare,
+    shell:
+      "from-sky-500/14 via-sky-500/5 to-background/90 border-sky-400/30 shadow-[0_10px_28px_-12px_hsl(200_80%_50%/0.3)]",
+    iconWrap: "bg-sky-500/15 text-sky-600 dark:text-sky-400 ring-sky-500/25",
+  },
 ];
 
 const heroQuickStagger = {
@@ -196,6 +205,13 @@ const features: HomeFeature[] = [
     path: "/chatbot",
   },
 ];
+
+/** Alati relevantni samo za Senior (matura, fakulteti, domovi). */
+const JUNIOR_EXCLUDED_FEATURE_PATHS = new Set([
+  "/kalkulator-doma",
+  "/mature",
+  "/kalkulator",
+]);
 
 const seniorStats: StatItem[] = [
   { value: 120, suffix: "+", label: "Fakulteta", icon: <GraduationCap className="w-5 h-5" /> },
@@ -1440,22 +1456,59 @@ const Index = () => {
   const mapPath = isJunior ? "/srednje-skole" : "/karta";
 
   const quickActions = isJunior
-    ? HERO_QUICK_ACTIONS.map((a) =>
-        a.to === "/karta" ? { ...a, to: "/srednje-skole", hook: "443 škole" } : a,
-      )
+    ? HERO_QUICK_ACTIONS.filter((a) => a.to !== "/kalkulator")
+        .map((a) => {
+          if (a.to === "/karta") return { ...a, to: "/srednje-skole", hook: "443 škole" };
+          if (a.to === "/forum") return { ...a, to: "/forum?experience=junior" };
+          return a;
+        })
     : HERO_QUICK_ACTIONS;
 
   const featureList = isJunior
-    ? features.map((f) =>
-        f.path === "/karta"
-          ? {
+    ? features
+        .filter((f) => !JUNIOR_EXCLUDED_FEATURE_PATHS.has(f.path))
+        .map((f) => {
+          if (f.path === "/karta") {
+            return {
               ...f,
               title: "Karta srednjih škola",
-              description: "Pregled svih srednjih škola u Hrvatskoj s kontaktima, adresama i web stranicama.",
+              description:
+                "Pregled svih srednjih škola u Hrvatskoj s kontaktima, adresama i web stranicama.",
               path: "/srednje-skole",
-            }
-          : f,
-      )
+            };
+          }
+          if (f.path === "/forum") {
+            return {
+              ...f,
+              path: "/forum?experience=junior",
+              description:
+                "Razmijeni iskustva s učenicima koji biraju srednju školu — smjerovi, škole i savjeti.",
+            };
+          }
+          if (f.path === "/kviz") {
+            return {
+              ...f,
+              title: "Koja je srednja škola za mene?",
+            };
+          }
+          if (f.path === "/roditelji") {
+            return {
+              ...f,
+              path: "/roditelji?experience=junior",
+              description:
+                "Resursi i alati za roditelje koji podržavaju dijete pri odabiru srednje škole.",
+            };
+          }
+          if (f.path === "/chatbot") {
+            return {
+              ...f,
+              path: "/chatbot?experience=junior",
+              description:
+                "Razgovaraj s umjetnom inteligencijom o odabiru srednje škole — samo baza hrvatskih srednjih škola.",
+            };
+          }
+          return f;
+        })
     : features;
   const scrollRevealGroup = {
     hidden: {},
@@ -2075,10 +2128,10 @@ const Index = () => {
                 <div>
                   <div className="flex items-baseline gap-2">
                     <span className="text-[22px] font-extrabold leading-none tracking-[-0.02em] text-foreground tabular-nums">
-                      {features.filter((f) => !f.locked).length}
+                      {featureList.filter((f) => !f.locked).length}
                     </span>
                     <span className="text-[13px] font-semibold text-muted-foreground/80 tabular-nums">
-                      ({features.filter((f) => f.locked).length} u izradi)
+                      ({featureList.filter((f) => f.locked).length} u izradi)
                     </span>
                   </div>
                   <p className="mt-1 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">

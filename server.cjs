@@ -1986,7 +1986,9 @@ async function main() {
   });
 
   // Forum
-  app.get("/api/forum/conversations", async (_req, res) => {
+  app.get("/api/forum/conversations", async (req, res) => {
+    const audienceRaw = String(req.query.audience || "senior").trim().toLowerCase();
+    const audience = audienceRaw === "junior" ? "junior" : "senior";
     const rows = await db
       .prepare(
         `
@@ -1994,22 +1996,26 @@ async function main() {
                (SELECT COUNT(*) FROM forum_messages m WHERE m.conversation_id = c.id) as message_count
         FROM forum_conversations c
         JOIN users u ON u.id = c.creator_user_id
+        WHERE COALESCE(c.audience, 'senior') = ?
         ORDER BY c.created_at DESC
       `,
       )
-      .all();
+      .all(audience);
     return res.json({ success: true, data: rows });
   });
 
   app.post("/api/forum/conversations", authMiddleware(db), async (req, res) => {
-    const { title, description } = req.body || {};
+    const { title, description, audience: audienceRaw } = req.body || {};
     const cleanTitle = String(title || "").trim();
     const cleanDescription = String(description || "").trim();
+    const audience = String(audienceRaw || "senior").trim().toLowerCase() === "junior" ? "junior" : "senior";
     if (!cleanTitle) return res.status(400).json({ success: false, message: "Unesi naziv razgovora!" });
 
     const info = await db
-      .prepare("INSERT INTO forum_conversations (title, description, creator_user_id) VALUES (?, ?, ?)")
-      .run(cleanTitle, cleanDescription, req.user.id);
+      .prepare(
+        "INSERT INTO forum_conversations (title, description, creator_user_id, audience) VALUES (?, ?, ?, ?)",
+      )
+      .run(cleanTitle, cleanDescription, req.user.id, audience);
 
     const conv = await db
       .prepare(
@@ -2270,10 +2276,12 @@ async function main() {
     });
 
     app.post("/api/chat", authMiddleware(db), async (req, res) => {
-      const { messages } = req.body || {};
+      const { messages, audience } = req.body || {};
       if (!Array.isArray(messages) || messages.length === 0) {
         return res.status(400).json({ success: false, message: "Potrebna je poruka." });
       }
+
+      const mode = audience === "junior" ? "junior" : "senior";
 
       if (!(await reserveChatSlot(req.user.id))) {
         const used = await getChatUsageToday(req.user.id);
@@ -2288,7 +2296,7 @@ async function main() {
       }
 
       try {
-        const response = await chatService.chatLocal(messages);
+        const response = await chatService.chatLocal(messages, mode);
         res.json({ success: true, content: response });
       } catch (err) {
         await refundChatSlot(req.user.id);

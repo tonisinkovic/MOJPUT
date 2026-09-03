@@ -1,3 +1,5 @@
+import type { MojPutExperienceMode } from "@/lib/experience";
+
 export type ParentArticle = {
   id: string;
   slug: string;
@@ -221,3 +223,168 @@ export const assessmentQuestions = [
     options: ["Slabije", "Ponekad", "Jako voli"],
   },
 ];
+
+/** Junior (MojPut): teme za roditelje djece koja biraju srednju školu. */
+export const parentArticlesJunior: ParentArticle[] = [
+  {
+    id: "j1",
+    slug: "kako-razgovarati-s-djetetom-o-srednjoj",
+    title: "Kako biti prava podrška djetetu pri odabiru srednje škole",
+    excerpt: "Roditelj kao partner: više slušanja, manje pritiska i više povjerenja u proces odluke.",
+    description:
+      "Odabir srednje škole jedna je od prvih većih obrazovnih odluka, a roditeljska podrška najviše pomaže kada smanjuje pritisak i jača osjećaj sigurnosti.",
+    content: [
+      "Odabir srednje škole često je prva ozbiljna obrazovna odluka koju dijete donosi uz podršku obitelji. Roditelj nije tu da bira umjesto djeteta, nego da pomogne razjasniti interese, mogućnosti i strahove.",
+      "Korisnije je pitati 'Što te privlači kod tog smjera?' nego odmah govoriti 'Od toga nema posla' ili 'To je najbolja škola u gradu'. Otvorena pitanja otvaraju razgovor; gotovi sudovi ga zatvaraju.",
+      "Važno je razlikovati gimnaziju, strukovne smjerove i umjetničke programe — ne kao rang listu, nego kao različite načine učenja. Dijete koje voli praktičan rad može biti puno uspješnije u strukovnoj nego u programu koji je roditelj smatrao 'prestižnijim'.",
+      "Nesigurnost je normalna. Mnogi učenici osmog razreda ne znaju točno što žele, a to ne znači da kasne. Podrška u istraživanju škola, posjeta danima otvorenih vrata i razgovoru sa starijim učenicima daje realniju sliku nego pritisak da odmah sve bude jasno.",
+    ],
+    practicalTips: [
+      "Dogovorite jedan tjedni razgovor od 20 minuta bez mobitela i usporedbe s rodbinom.",
+      "Zajedno pregledajte barem tri škole ili smjera prije nego suzite izbor.",
+      "Nakon svakog razgovora zapišite: što dijete želi, što ga brine i koji je sljedeći mali korak.",
+      "Posjetite dan otvorenih vrata ili web stranicu škole prije nego donesete zaključak.",
+    ],
+    relatedSlugs: ["zajednicka-procjena-srednja-skola", "stres-kod-upisa-u-srednju"],
+    category: "vodic",
+    isNew: true,
+    views: 1840,
+  },
+  {
+    id: "j2",
+    slug: "stres-kod-upisa-u-srednju",
+    title: "Prepoznajte znakove stresa kod djeteta pri upisu u srednju",
+    excerpt: "Kako uočiti rane signale i reagirati prije nego pritisak oko upisa postane prevelik.",
+    description:
+      "Stres se oko upisa u srednju često ne vidi kroz riječi, nego kroz promjene sna, razdražljivost i povlačenje.",
+    content: [
+      "Upis u srednju školu može biti stresan i za roditelje i za dijete. Dijete često osjeća pritisak da 'ne pogriješi', usporedbe s vršnjacima i strah od razočaranja obitelji.",
+      "Rani signali uključuju loš san, razdražljivost, izbjegavanje razgovora o školi, pad koncentracije ili fizičke simptome poput glavobolje prije važnih rokova.",
+      "Prva reakcija treba biti smirena: 'Vidim da ti je teško' pomaže više nego 'Svi moraju odlučiti, nije to velika stvar'.",
+      "Ako simptomi traju duže ili jače utječu na svakodnevni život, potražite podršku školskog savjetnika ili stručnjaka za mentalno zdravlje.",
+    ],
+    practicalTips: [
+      "Uvedite kratki dnevni check-in: Kako si danas? Što ti je bilo najteže?",
+      "Smanjite broj paralelnih obaveza u tjednima oko rokova za upis.",
+      "Ne uspoređujte dijete s braćom, sestrama ili prijateljima koji su već 'sve odlučili'.",
+    ],
+    relatedSlugs: ["kako-razgovarati-s-djetetom-o-srednjoj"],
+    category: "mentalno",
+    views: 1520,
+  },
+  {
+    id: "j3",
+    slug: "zajednicka-procjena-srednja-skola",
+    title: "Zajednička procjena prije upisa u srednju",
+    excerpt: "15 minuta koje otvaraju razgovor o interesima, očekivanjima i sljedećim koracima.",
+    description:
+      "Zajednička procjena pomaže uskladiti perspektive roditelja i djeteta prije odluke o smjeru i školi.",
+    content: [
+      "Procjena nije test s točnim odgovorima, nego način da roditelj i dijete usporede što svaki smatra važnim: praktičnost, blizina škole, budući studij, sigurnost zaposlenja.",
+      "Najbolje funkcionira kad svatko prvo razmisli sam, pa tek onda usporedite odgovore bez rasprave tko je u pravu.",
+      "Cilj nije odmah odabrati školu, nego prepoznati gdje se slažete, gdje se razilazite i koje informacije još nedostaju.",
+    ],
+    practicalTips: [
+      "Procjenu radite u mirnom terminu, ne dan prije roka za prijavu.",
+      "Dogovorite jedan konkretan sljedeći korak — npr. posjet jedne škole ili razgovor s učiteljem.",
+      "Koristite procjenu kao početak razgovora, ne kao konačnu odluku.",
+    ],
+    relatedSlugs: ["kako-razgovarati-s-djetetom-o-srednjoj"],
+    category: "procjena",
+    isNew: true,
+    views: 980,
+  },
+  {
+    id: "j4",
+    slug: "gimnazija-ili-strukovna-roditeljski-vodic",
+    title: "Gimnazija ili strukovna — kako roditelju pomoći u odluci",
+    excerpt: "Bez mitova o 'boljoj' školi: fokus na način učenja, interese i realne sljedeće korake.",
+    description: "Usporedba gimnazije i strukovnog smjera kroz pitanja koja roditelj može postaviti djetetu.",
+    content: [
+      "Nema univerzalno 'bolje' rješenje — gimnazija i strukovna škola vode različitim putevima, a oba mogu biti odličan izbor.",
+      "Pitajte dijete voli li teorijsko učenje, praktičan rad, timski rad ili samostalan rad. Odgovori često jasnije upućuju na smjer nego reputacija škole.",
+      "Strukovna škola ne zatvara vrata fakultetu, a gimnazija ne garantira uspjeh — važna je usklađenost s interesima i tempom djeteta.",
+    ],
+    practicalTips: [
+      "Razgovarajte s učiteljima i savjetnikom u osnovnoj školi o realnim opcijama.",
+      "Pogledajte nastavne planove i predmete oba smjera koja dijete razmatra.",
+      "Izbjegavajte rečenice poput 'Samo gimnazija je prava škola'.",
+    ],
+    relatedSlugs: ["kako-razgovarati-s-djetetom-o-srednjoj", "zajednicka-procjena-srednja-skola"],
+    category: "vodic",
+    views: 720,
+  },
+  {
+    id: "j5",
+    slug: "roditeljske-greske-kod-odabira-srednje",
+    title: "5 roditeljskih grešaka kod odabira srednje škole",
+    excerpt: "Najčešće greške iz najbolje namjere i kako ih pretvoriti u stvarnu podršku.",
+    description: "Od nametanja vlastite vizije do usporedbe s drugima — što izbjegavati.",
+    content: [
+      "Biranje škole 'jer smo mi tako krenuli' često ne odgovara djetetu danas.",
+      "Donošenje odluke umjesto djeteta smanjuje osjećaj odgovornosti i motivacije za učenje.",
+      "Fokus samo na 'prestiž' škole zanemaruje smjer, način rada i dobrobit djeteta.",
+    ],
+    practicalTips: [
+      "U svakom razgovoru prvo pitajte, pa tek onda predložite.",
+      "Ne uspoređujte dijete s vršnjacima na društvenim mrežama ili u obitelji.",
+      "Slavite istraživanje i promišljanje, ne samo konačnu odluku.",
+    ],
+    relatedSlugs: ["kako-razgovarati-s-djetetom-o-srednjoj"],
+    category: "vodic",
+    isNew: true,
+    views: 540,
+  },
+];
+
+export const forumSeedJunior: ForumTopic[] = [
+  {
+    id: "jf1",
+    title: "Kako pomoći djetetu odabrati srednju školu bez pritiska?",
+    content: "Koje metode kod kuće stvarno pomažu osmaku da razmisli, a ne da se zatvori?",
+    author: "Ana, roditelj",
+    createdAt: "2026-03-20T09:00:00.000Z",
+    likes: 14,
+    comments: [
+      {
+        id: "jc1",
+        author: "Marko, roditelj",
+        content: "Kod nas je pomoglo da svaki tjedan pogledamo samo jednu školu, bez žurbe.",
+        createdAt: "2026-03-20T12:00:00.000Z",
+      },
+    ],
+  },
+  {
+    id: "jf2",
+    title: "Gimnazija ili strukovna — što biste preporučili?",
+    content: "Dijete voli praktične stvari, ali roditelji misle da je gimnazija 'sigurnija'. Imate li iskustva?",
+    author: "Ivana, roditelj",
+    createdAt: "2026-03-18T15:30:00.000Z",
+    likes: 22,
+    comments: [
+      {
+        id: "jc2",
+        author: "Petra, roditelj",
+        content: "Na strukovnoj je sin konačno pronašao smjer koji ga stvarno zanima.",
+        createdAt: "2026-03-19T10:15:00.000Z",
+      },
+    ],
+  },
+  {
+    id: "jf3",
+    title: "Kako istražiti smjerove i škole prije upisa?",
+    content: "Od dana otvorenih vrata do razgovora s učiteljima — što vam je najviše pomoglo?",
+    author: "Tomislav, roditelj",
+    createdAt: "2026-03-15T11:00:00.000Z",
+    likes: 9,
+    comments: [],
+  },
+];
+
+export function parentArticlesFor(mode: MojPutExperienceMode): ParentArticle[] {
+  return mode === "junior" ? parentArticlesJunior : parentArticles;
+}
+
+export function forumSeedFor(mode: MojPutExperienceMode): ForumTopic[] {
+  return mode === "junior" ? forumSeedJunior : forumSeed;
+}

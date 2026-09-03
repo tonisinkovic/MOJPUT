@@ -17,6 +17,7 @@ import {
   writeLikedMessageIds,
   type ParentForumConversation,
 } from "@/lib/parentForumStore";
+import { resolveExperienceMode } from "@/lib/experience";
 import { AnimatePresence, motion } from "framer-motion";
 import {
   ArrowLeft,
@@ -30,7 +31,7 @@ import {
   Users,
 } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 
 type SortMode = "newest" | "popular";
 
@@ -44,8 +45,15 @@ function porukaOznaka(n: number): string {
 }
 
 const ParentForum = () => {
-  const [conversations, setConversations] = useState<ParentForumConversation[]>(() => loadConversations());
-  const [likedIds, setLikedIds] = useState(() => readLikedMessageIds());
+  const [searchParams] = useSearchParams();
+  const audience = resolveExperienceMode(searchParams);
+  const isJunior = audience === "junior";
+  const hubPath = isJunior ? "/roditelji?experience=junior" : "/roditeljski-kutak";
+
+  const [conversations, setConversations] = useState<ParentForumConversation[]>(() =>
+    loadConversations(audience),
+  );
+  const [likedIds, setLikedIds] = useState(() => readLikedMessageIds(audience));
   const [displayName, setDisplayName] = useState(() => readDisplayName());
 
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -59,12 +67,18 @@ const ParentForum = () => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    saveConversations(conversations);
-  }, [conversations]);
+    saveConversations(audience, conversations);
+  }, [audience, conversations]);
 
   useEffect(() => {
-    writeLikedMessageIds(likedIds);
-  }, [likedIds]);
+    writeLikedMessageIds(audience, likedIds);
+  }, [audience, likedIds]);
+
+  useEffect(() => {
+    setSelectedId(null);
+    setConversations(loadConversations(audience));
+    setLikedIds(readLikedMessageIds(audience));
+  }, [audience]);
 
   const selected = useMemo(
     () => conversations.find((c) => c.id === selectedId) ?? null,
@@ -128,7 +142,7 @@ const ParentForum = () => {
         <div className="mb-6 flex flex-wrap items-start justify-between gap-4">
           <div>
             <Link
-              to="/roditeljski-kutak"
+              to={hubPath}
               className="mb-2 inline-flex items-center gap-1 text-sm text-muted-foreground transition-colors hover:text-foreground"
             >
               <ArrowLeft className="h-4 w-4" />
@@ -143,10 +157,13 @@ const ParentForum = () => {
                 <Users className="h-5 w-5" />
                 <span className="text-xs font-semibold uppercase tracking-wider">Zajednica</span>
               </div>
-              <h1 className="mt-2 text-balance text-2xl font-bold tracking-tight sm:text-3xl">Forum za roditelje</h1>
+              <h1 className="mt-2 text-balance text-2xl font-bold tracking-tight sm:text-3xl">
+                {isJunior ? "Forum za roditelje — srednja škola" : "Forum za roditelje"}
+              </h1>
               <p className="mt-2 max-w-2xl text-pretty text-sm leading-relaxed text-muted-foreground sm:text-base">
-                Otvorite novu temu ili se pridružite razgovoru. Poruke i lajkovi spremaju se u vašem pregledniku (bez
-                slanja na poslužitelj).
+                {isJunior
+                  ? "Razgovori o odabiru srednje škole, smjerovima i upisu. Poruke i lajkovi spremaju se u vašem pregledniku (bez slanja na poslužitelj)."
+                  : "Otvorite novu temu ili se pridružite razgovoru. Poruke i lajkovi spremaju se u vašem pregledniku (bez slanja na poslužitelj)."}
               </p>
             </motion.div>
           </div>
