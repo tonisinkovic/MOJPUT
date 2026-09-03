@@ -1,11 +1,16 @@
-import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { motion, AnimatePresence, useScroll, useTransform } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import Layout from "@/components/Layout";
 import AnimatedStatsGrid, { type StatItem } from "@/components/AnimatedStatsGrid";
 import { scrollDocumentToTopInstant } from "@/components/ScrollToTop";
-import { storeExperience } from "@/lib/experience";
+import {
+  getPreferredExperience,
+  getStoredExperience,
+  storeExperience,
+  storePreferredExperience,
+} from "@/lib/experience";
 import { authMe, userFromAuthMe, type AuthUser } from "@/lib/auth";
 import FeatureCard from "@/components/FeatureCard";
 import {
@@ -210,7 +215,6 @@ const features: HomeFeature[] = [
 const JUNIOR_EXCLUDED_FEATURE_PATHS = new Set([
   "/kalkulator-doma",
   "/mature",
-  "/kalkulator",
 ]);
 
 const seniorStats: StatItem[] = [
@@ -231,11 +235,18 @@ const juniorStats: StatItem[] = [
 type MojPutEntryIntroProps = {
   onEnterJunior: () => void;
   onEnterSenior: () => void;
+  user?: AuthUser | null;
+  preferredExperience?: "junior" | "senior" | null;
 };
 
 type MojPutExperience = "junior" | "senior";
 
-const MojPutEntryIntro = ({ onEnterJunior, onEnterSenior }: MojPutEntryIntroProps) => {
+const MojPutEntryIntro = ({
+  onEnterJunior,
+  onEnterSenior,
+  user,
+  preferredExperience,
+}: MojPutEntryIntroProps) => {
   const [introStage, setIntroStage] = useState<"logo" | "welcome" | "choose">("logo");
   const [isLeaving, setIsLeaving] = useState(false);
   const [launchExperience, setLaunchExperience] = useState<MojPutExperience | null>(null);
@@ -250,6 +261,13 @@ const MojPutEntryIntro = ({ onEnterJunior, onEnterSenior }: MojPutEntryIntroProp
       window.clearTimeout(chooseTimer);
     };
   }, []);
+
+  // Prijavljeni korisnik — brže do profila i pitanja "Nastavi u MojPut X"
+  useEffect(() => {
+    if (!user) return;
+    const fastTimer = window.setTimeout(() => setIntroStage("choose"), 1400);
+    return () => window.clearTimeout(fastTimer);
+  }, [user]);
 
   const enterExperience = (experience: MojPutExperience, onEnter: () => void) => {
     if (isLeaving || introStage !== "choose") return;
@@ -266,6 +284,12 @@ const MojPutEntryIntro = ({ onEnterJunior, onEnterSenior }: MojPutEntryIntroProp
   };
 
   const showChoice = introStage === "choose";
+
+  // Prijavljeni korisnik — profil + "Nastavi u MojPut X"
+  const preferredMode: MojPutExperience = preferredExperience ?? "senior";
+  const preferredIsJunior = preferredMode === "junior";
+  const userInitial = (user?.username || user?.email || "?").trim().charAt(0).toUpperCase();
+
   const decisionToolGroups = [
     {
       label: "MojPut Junior",
@@ -573,6 +597,114 @@ const MojPutEntryIntro = ({ onEnterJunior, onEnterSenior }: MojPutEntryIntroProp
                 transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
                 aria-hidden
               />
+
+              {/* Profil prijavljenog korisnika + "Nastavi u MojPut X" */}
+              <AnimatePresence>
+                {user && (
+                  <motion.div
+                    key="welcome-back-profile"
+                    initial={{ opacity: 0, y: -16, scale: 0.97, filter: "blur(10px)" }}
+                    animate={{ opacity: 1, y: 0, scale: 1, filter: "blur(0px)" }}
+                    exit={{ opacity: 0, y: -12, filter: "blur(8px)" }}
+                    transition={{ duration: 0.62, ease: [0.22, 1, 0.36, 1] }}
+                    className={cn(
+                      "relative mx-auto mb-3 max-w-3xl overflow-hidden rounded-[1.5rem] border px-4 py-4 shadow-[0_26px_90px_-58px_hsl(215_30%_12%/0.55)] backdrop-blur-2xl sm:mb-4 sm:rounded-[2rem] sm:px-6 sm:py-5",
+                      preferredIsJunior
+                        ? "border-amber-200/80 bg-[radial-gradient(circle_at_90%_0%,hsl(38_92%_58%/0.16),transparent_38%),linear-gradient(145deg,hsl(0_0%_100%/0.94),hsl(42_85%_97%/0.88))]"
+                        : "border-primary/20 bg-[radial-gradient(circle_at_90%_0%,hsl(174_62%_42%/0.14),transparent_38%),linear-gradient(145deg,hsl(0_0%_100%/0.94),hsl(180_55%_97%/0.9))]",
+                    )}
+                  >
+                    <motion.span
+                      className={cn(
+                        "pointer-events-none absolute inset-x-10 top-0 h-px bg-gradient-to-r from-transparent to-transparent",
+                        preferredIsJunior ? "via-amber-400/60" : "via-primary/55",
+                      )}
+                      animate={{ opacity: [0.4, 1, 0.4], scaleX: [0.7, 1, 0.7] }}
+                      transition={{ duration: 3.2, repeat: Infinity, ease: "easeInOut" }}
+                      aria-hidden
+                    />
+                    <motion.span
+                      className={cn(
+                        "pointer-events-none absolute -right-14 -top-14 h-36 w-36 rounded-full blur-3xl",
+                        preferredIsJunior ? "bg-amber-300/30" : "bg-primary/18",
+                      )}
+                      animate={{ scale: [1, 1.15, 1], opacity: [0.4, 0.75, 0.4] }}
+                      transition={{ duration: 4.6, repeat: Infinity, ease: "easeInOut" }}
+                      aria-hidden
+                    />
+
+                    <div className="relative flex flex-col items-center gap-4 text-center sm:flex-row sm:text-left">
+                      {/* Avatar */}
+                      <motion.span
+                        className={cn(
+                          "relative flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl text-xl font-extrabold text-white shadow-lg sm:h-16 sm:w-16 sm:text-2xl",
+                          preferredIsJunior
+                            ? "bg-gradient-to-br from-amber-500 to-orange-500 shadow-amber-500/35"
+                            : "bg-gradient-to-br from-primary to-teal-600 shadow-primary/35",
+                        )}
+                        animate={{ y: [0, -3, 0] }}
+                        transition={{ duration: 3.8, repeat: Infinity, ease: "easeInOut" }}
+                      >
+                        {userInitial}
+                        <span
+                          className="absolute -bottom-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full border-2 border-white bg-emerald-500"
+                          title="Prijavljen/a"
+                          aria-hidden
+                        >
+                          <span className="h-1.5 w-1.5 rounded-full bg-white" />
+                        </span>
+                      </motion.span>
+
+                      {/* Ime + email + pitanje */}
+                      <div className="min-w-0 flex-1">
+                        <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400">
+                          Dobrodošao/la natrag
+                        </p>
+                        <p className="mt-0.5 truncate text-lg font-extrabold tracking-[-0.02em] text-slate-950 sm:text-xl">
+                          {user.username} 👋
+                        </p>
+                        <p className="truncate text-xs font-medium text-slate-500">{user.email}</p>
+                        <p className="mt-1.5 text-[13px] font-semibold text-slate-700">
+                          Želiš li nastaviti u{" "}
+                          <span className={preferredIsJunior ? "text-amber-700" : "text-primary"}>
+                            MojPut {preferredIsJunior ? "Junior" : "Senior"}
+                          </span>
+                          ?
+                        </p>
+                      </div>
+
+                      {/* CTA */}
+                      <div className="flex shrink-0 flex-col items-center gap-1.5 sm:items-end">
+                        <motion.button
+                          type="button"
+                          disabled={isLeaving}
+                          onClick={() =>
+                            enterExperience(
+                              preferredMode,
+                              preferredIsJunior ? onEnterJunior : onEnterSenior,
+                            )
+                          }
+                          whileHover={isLeaving ? undefined : { y: -2, scale: 1.02 }}
+                          whileTap={isLeaving ? undefined : { scale: 0.97 }}
+                          className={cn(
+                            "group inline-flex h-11 items-center gap-2 rounded-xl px-5 text-sm font-bold text-white shadow-lg transition-all focus-visible:outline-none focus-visible:ring-4 disabled:cursor-wait disabled:opacity-70",
+                            preferredIsJunior
+                              ? "bg-gradient-to-br from-amber-500 to-orange-500 shadow-amber-500/35 focus-visible:ring-amber-400/30"
+                              : "bg-gradient-to-br from-primary to-teal-600 shadow-primary/35 focus-visible:ring-primary/30",
+                          )}
+                        >
+                          Nastavi u MojPut {preferredIsJunior ? "Junior" : "Senior"}
+                          <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-0.5" />
+                        </motion.button>
+                        <span className="text-[11px] font-medium text-slate-400">
+                          ili odaberi drugu opciju ispod
+                        </span>
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
               <motion.div
                 variants={revealItem}
                 transition={{ duration: 0.74, ease: [0.22, 1, 0.36, 1] }}
@@ -1407,12 +1539,20 @@ const Index = () => {
     setSearchParams(nextParams, { replace: true });
   };
 
+  /** Preferirani MojPut — odabran pri registraciji ili zadnjim ulaskom (za "Nastavi u MojPut X"). */
+  const preferredExperience = useMemo(
+    () => getPreferredExperience(user?.email) ?? getStoredExperience(),
+    [user],
+  );
+
   const openExperience = (experience: MojPutExperience) => {
     scrollDocumentToTopInstant();
     setSelectedExperience(experience);
     setShowEntryIntro(false);
     updateExperienceUrl(experience);
     storeExperience(experience);
+    // Zapamti kao preferirani mod za sljedeći ulazak ("Nastavi u MojPut X")
+    storePreferredExperience(experience, user?.email);
   };
 
   const returnToExperienceChoice = () => {
@@ -1456,8 +1596,7 @@ const Index = () => {
   const mapPath = isJunior ? "/srednje-skole" : "/karta";
 
   const quickActions = isJunior
-    ? HERO_QUICK_ACTIONS.filter((a) => a.to !== "/kalkulator")
-        .map((a) => {
+    ? HERO_QUICK_ACTIONS.map((a) => {
           if (a.to === "/karta") return { ...a, to: "/srednje-skole", hook: "443 škole" };
           if (a.to === "/forum") return { ...a, to: "/forum?experience=junior" };
           return a;
@@ -1489,6 +1628,16 @@ const Index = () => {
             return {
               ...f,
               title: "Koja je srednja škola za mene?",
+            };
+          }
+          if (f.path === "/kalkulator") {
+            return {
+              ...f,
+              title: "Kalkulator bodova",
+              description:
+                "Izračunaj bodove za upis u srednju školu i saznaj koje škole i programe možeš upisati.",
+              path: "/kalkulator",
+              highlighted: true,
             };
           }
           if (f.path === "/roditelji") {
@@ -1535,6 +1684,8 @@ const Index = () => {
       <MojPutEntryIntro
         onEnterJunior={() => openExperience("junior")}
         onEnterSenior={() => openExperience("senior")}
+        user={user}
+        preferredExperience={preferredExperience}
       />
     );
   }

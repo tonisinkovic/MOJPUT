@@ -1,5 +1,21 @@
 import { useMemo, useState, type ChangeEvent } from "react";
-import { Calculator, GraduationCap, School, Trophy } from "lucide-react";
+import {
+  BookOpen,
+  Calculator,
+  CheckCircle2,
+  GraduationCap,
+  MapPin,
+  School,
+  TrendingUp,
+  Trophy,
+  Users,
+} from "lucide-react";
+import {
+  kalkulatorSchools,
+  type KalkulatorPrag,
+  type KalkulatorProgram,
+  type KalkulatorSchool,
+} from "@/data/srednjaKalkulator";
 
 type ProgramType = "gimnazija4" | "trogodisnji" | "kraci";
 
@@ -13,82 +29,6 @@ type SevenEightGrades = {
   predmet3: string;
 };
 
-type SchoolThreshold = {
-  naziv: string;
-  zupanija: string;
-  program: ProgramType;
-  minBodovi: number;
-  prosjekBodovi: number;
-  maxBodovi: number;
-};
-
-const SCHOOLS: SchoolThreshold[] = [
-  {
-    naziv: "XV. gimnazija",
-    zupanija: "Grad Zagreb",
-    program: "gimnazija4",
-    minBodovi: 76,
-    prosjekBodovi: 78.4,
-    maxBodovi: 80,
-  },
-  {
-    naziv: "Tehnička škola Ruđera Boškovića",
-    zupanija: "Grad Zagreb",
-    program: "gimnazija4",
-    minBodovi: 64,
-    prosjekBodovi: 70.2,
-    maxBodovi: 80,
-  },
-  {
-    naziv: "Ekonomska i upravna škola Split",
-    zupanija: "Splitsko-dalmatinska",
-    program: "gimnazija4",
-    minBodovi: 58,
-    prosjekBodovi: 65.1,
-    maxBodovi: 80,
-  },
-  {
-    naziv: "Obrtnička škola Osijek",
-    zupanija: "Osječko-baranjska",
-    program: "trogodisnji",
-    minBodovi: 31,
-    prosjekBodovi: 39.5,
-    maxBodovi: 50,
-  },
-  {
-    naziv: "Industrijsko-obrtnička škola Rijeka",
-    zupanija: "Primorsko-goranska",
-    program: "kraci",
-    minBodovi: 12,
-    prosjekBodovi: 16.2,
-    maxBodovi: 20,
-  },
-];
-
-const ZUPANIJE = [
-  "Bjelovarsko-bilogorska",
-  "Brodsko-posavska",
-  "Dubrovačko-neretvanska",
-  "Grad Zagreb",
-  "Istarska",
-  "Karlovačka",
-  "Koprivničko-križevačka",
-  "Krapinsko-zagorska",
-  "Ličko-senjska",
-  "Međimurska",
-  "Osječko-baranjska",
-  "Požeško-slavonska",
-  "Primorsko-goranska",
-  "Šibensko-kninska",
-  "Sisačko-moslavačka",
-  "Splitsko-dalmatinska",
-  "Varaždinska",
-  "Virovitičko-podravska",
-  "Vukovarsko-srijemska",
-  "Zadarska",
-  "Zagrebačka",
-];
-
 const PROGRAM_LABELS: Record<ProgramType, string> = {
   gimnazija4: "Gimnazija / 4-godišnji program",
   trogodisnji: "Trogodišnji strukovni program",
@@ -99,6 +39,74 @@ const MAX_BY_PROGRAM: Record<ProgramType, number> = {
   gimnazija4: 80,
   trogodisnji: 50,
   kraci: 20,
+};
+
+/** Procijeni tip programa iz maksimalnih bodova prošlogodišnjeg upisa. */
+function programTypeFromPrag(prag: KalkulatorPrag | null): ProgramType | null {
+  const reference = prag?.max ?? prag?.min ?? null;
+  if (reference == null) return null;
+  if (reference > 50) return "gimnazija4";
+  if (reference > 20) return "trogodisnji";
+  return "kraci";
+}
+
+type Chance = {
+  label: string;
+  desc: string;
+  tone: "emerald" | "lime" | "amber" | "rose";
+};
+
+function chanceFor(points: number, pragMin: number): Chance {
+  const diff = points - pragMin;
+  if (diff >= 5) {
+    return {
+      label: "Velike šanse",
+      desc: `Imaš ${diff.toFixed(2)} bodova više od prošlogodišnjeg praga. S ovakvim bodovima lani bi bio/la sigurno iznad crte.`,
+      tone: "emerald",
+    };
+  }
+  if (diff >= 0) {
+    return {
+      label: "Dobre šanse",
+      desc: `Iznad si prošlogodišnjeg praga za ${diff.toFixed(2)} bodova. Prag se iz godine u godinu mijenja, pa pripremi i rezervnu opciju.`,
+      tone: "lime",
+    };
+  }
+  if (diff >= -3) {
+    return {
+      label: "Granične šanse",
+      desc: `Nedostaje ti ${Math.abs(diff).toFixed(2)} bodova do prošlogodišnjeg praga. Ako prag padne ili se poveća kvota, još uvijek imaš priliku.`,
+      tone: "amber",
+    };
+  }
+  return {
+    label: "Male šanse",
+    desc: `Nedostaje ti ${Math.abs(diff).toFixed(2)} bodova do prošlogodišnjeg praga. Razmisli o sličnim programima s nižim pragom — provjeri ih u bazi.`,
+    tone: "rose",
+  };
+}
+
+const CHANCE_TONE: Record<Chance["tone"], { box: string; badge: string; bar: string }> = {
+  emerald: {
+    box: "border-emerald-500/40 bg-emerald-500/5",
+    badge: "bg-emerald-500 text-white",
+    bar: "from-emerald-500 to-emerald-400",
+  },
+  lime: {
+    box: "border-lime-500/40 bg-lime-500/5",
+    badge: "bg-lime-600 text-white",
+    bar: "from-lime-500 to-emerald-400",
+  },
+  amber: {
+    box: "border-amber-500/40 bg-amber-500/5",
+    badge: "bg-amber-500 text-white",
+    bar: "from-amber-500 to-amber-400",
+  },
+  rose: {
+    box: "border-rose-500/40 bg-rose-500/5",
+    badge: "bg-rose-500 text-white",
+    bar: "from-rose-500 to-rose-400",
+  },
 };
 
 const emptySevenEight = (): SevenEightGrades => ({
@@ -120,6 +128,10 @@ function clamp(value: number, min: number, max: number): number {
   return Math.min(max, Math.max(min, value));
 }
 
+function fmt(n: number | null): string {
+  return n == null ? "—" : n.toLocaleString("hr-HR", { maximumFractionDigits: 2 });
+}
+
 export default function SrednjaKalkulator() {
   const [program, setProgram] = useState<ProgramType>("gimnazija4");
   const [prosjek5, setProsjek5] = useState("");
@@ -127,8 +139,60 @@ export default function SrednjaKalkulator() {
   const [razred7, setRazred7] = useState<SevenEightGrades>(emptySevenEight());
   const [razred8, setRazred8] = useState<SevenEightGrades>(emptySevenEight());
   const [dodatniBodovi, setDodatniBodovi] = useState("");
-  const [filterZupanija, setFilterZupanija] = useState("");
   const [rezultatIzracunat, setRezultatIzracunat] = useState(false);
+
+  // Odabir škole i programa (baza: srednja.hr kalkulator)
+  const [selCounty, setSelCounty] = useState("");
+  const [selSchoolId, setSelSchoolId] = useState<number | null>(null);
+  const [selProgramId, setSelProgramId] = useState<number | null>(null);
+
+  const counties = useMemo(
+    () => [...new Set(kalkulatorSchools.map((s) => s.county))].sort((a, b) => a.localeCompare(b, "hr")),
+    [],
+  );
+
+  const schoolsInCounty = useMemo<KalkulatorSchool[]>(() => {
+    const list = selCounty ? kalkulatorSchools.filter((s) => s.county === selCounty) : kalkulatorSchools;
+    return [...list].sort(
+      (a, b) => a.city.localeCompare(b.city, "hr") || a.name.localeCompare(b.name, "hr"),
+    );
+  }, [selCounty]);
+
+  const selSchool = useMemo<KalkulatorSchool | null>(
+    () => (selSchoolId != null ? kalkulatorSchools.find((s) => s.id === selSchoolId) ?? null : null),
+    [selSchoolId],
+  );
+
+  const selProgram = useMemo<KalkulatorProgram | null>(
+    () => (selSchool && selProgramId != null ? selSchool.programs.find((p) => p.id === selProgramId) ?? null : null),
+    [selSchool, selProgramId],
+  );
+
+  const selPrag = selProgram?.prag ?? null;
+
+  const handleCountyChange = (value: string) => {
+    setSelCounty(value);
+    setSelSchoolId(null);
+    setSelProgramId(null);
+  };
+
+  const handleSchoolChange = (value: string) => {
+    const id = Number(value);
+    setSelSchoolId(Number.isFinite(id) && id > 0 ? id : null);
+    setSelProgramId(null);
+  };
+
+  const handleProgramChange = (value: string) => {
+    const id = Number(value);
+    const nextId = Number.isFinite(id) && id > 0 ? id : null;
+    setSelProgramId(nextId);
+    // Automatski uskladi tip programa s pragom (korisnik i dalje može promijeniti)
+    if (nextId != null && selSchool) {
+      const prog = selSchool.programs.find((p) => p.id === nextId);
+      const inferred = programTypeFromPrag(prog?.prag ?? null);
+      if (inferred) setProgram(inferred);
+    }
+  };
 
   const rezultat = useMemo(() => {
     const opciUspjeh = clamp(
@@ -181,10 +245,10 @@ export default function SrednjaKalkulator() {
     };
   }, [dodatniBodovi, program, prosjek5, prosjek6, razred7, razred8]);
 
-  const filtriraneSkole = useMemo(
-    () => SCHOOLS.filter((school) => !filterZupanija || school.zupanija === filterZupanija),
-    [filterZupanija],
-  );
+  const chance = useMemo(() => {
+    if (!rezultatIzracunat || selPrag?.min == null) return null;
+    return chanceFor(rezultat.ukupno, selPrag.min);
+  }, [rezultat.ukupno, rezultatIzracunat, selPrag]);
 
   const updateSeven = (field: keyof SevenEightGrades, value: string) =>
     setRazred7((prev) => ({ ...prev, [field]: value }));
@@ -205,11 +269,130 @@ export default function SrednjaKalkulator() {
             Kalkulator bodova
           </h1>
           <p className="mt-3 max-w-2xl text-pretty text-sm leading-relaxed text-muted-foreground sm:text-base">
-            Unesi ocjene iz osnovne škole i dodatne bodove. Formula se prilagođava odabranom tipu programa i računa
-            zajednički element prema javnoj metodologiji za upis u 1. razred srednje škole.
+            Odaberi školu i program, unesi ocjene iz osnovne škole i saznaj prošlogodišnji prag bodova te
+            svoje šanse za upis. Baza pokriva sve srednje škole i programe u Hrvatskoj.
           </p>
         </div>
       </header>
+
+      {/* Odabir škole i programa */}
+      <section className="mb-5 rounded-2xl border bg-card p-4 shadow-card sm:p-5">
+        <div className="mb-4 flex items-start gap-3">
+          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+            <GraduationCap className="h-5 w-5" />
+          </div>
+          <div>
+            <h2 className="text-lg font-bold">Škola i program</h2>
+            <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
+              Odaberi željenu školu i program — prikazat ćemo prošlogodišnji prag bodova s ljetnog upisnog roka.
+            </p>
+          </div>
+        </div>
+
+        <div className="grid gap-4 sm:grid-cols-2">
+          <label className="block text-sm font-semibold">
+            Županija
+            <select
+              value={selCounty}
+              onChange={(event: ChangeEvent<HTMLSelectElement>) => handleCountyChange(event.target.value)}
+              className="mt-2 h-11 w-full rounded-xl border border-input bg-background px-3 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20"
+            >
+              <option value="">Sve županije</option>
+              {counties.map((county) => (
+                <option key={county} value={county}>
+                  {county}
+                </option>
+              ))}
+            </select>
+          </label>
+
+          <label className="block text-sm font-semibold">
+            Škola
+            <select
+              value={selSchoolId ?? 0}
+              onChange={(event: ChangeEvent<HTMLSelectElement>) => handleSchoolChange(event.target.value)}
+              className="mt-2 h-11 w-full rounded-xl border border-input bg-background px-3 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20"
+            >
+              <option value={0}>Odaberi školu ({schoolsInCounty.length})</option>
+              {schoolsInCounty.map((school) => (
+                <option key={school.id} value={school.id}>
+                  {school.name} — {school.city}
+                </option>
+              ))}
+            </select>
+          </label>
+
+          <label className="block text-sm font-semibold sm:col-span-2">
+            Program
+            <select
+              value={selProgramId ?? 0}
+              onChange={(event: ChangeEvent<HTMLSelectElement>) => handleProgramChange(event.target.value)}
+              disabled={!selSchool}
+              className="mt-2 h-11 w-full rounded-xl border border-input bg-background px-3 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20 disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              <option value={0}>
+                {selSchool ? `Odaberi program (${selSchool.programs.length})` : "Prvo odaberi školu"}
+              </option>
+              {selSchool?.programs.map((prog) => (
+                <option key={prog.id} value={prog.id}>
+                  {prog.name}
+                </option>
+              ))}
+            </select>
+          </label>
+        </div>
+
+        {selProgram && selSchool && (
+          <div className="mt-4 rounded-2xl border border-primary/25 bg-primary/5 p-4">
+            <div className="flex flex-wrap items-start justify-between gap-3">
+              <div className="min-w-0">
+                <p className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                  <BookOpen className="h-3.5 w-3.5 text-primary" />
+                  Odabrani program
+                </p>
+                <p className="mt-1 text-base font-bold text-foreground">{selProgram.name}</p>
+                <p className="mt-0.5 flex items-center gap-1 text-sm text-muted-foreground">
+                  <MapPin className="h-3.5 w-3.5" />
+                  {selSchool.name}, {selSchool.city}
+                </p>
+                {selProgram.sector && (
+                  <p className="mt-0.5 text-xs text-muted-foreground">Sektor: {selProgram.sector}</p>
+                )}
+              </div>
+              {selPrag && (
+                <span className="rounded-full bg-primary/10 px-3 py-1 text-xs font-bold text-primary">
+                  Upisni rok {selPrag.year}
+                </span>
+              )}
+            </div>
+
+            {selPrag && selPrag.min != null ? (
+              <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-5 sm:gap-3">
+                <PragStat label="Prag (min.)" value={fmt(selPrag.min)} highlight />
+                <PragStat label="Prosječni" value={fmt(selPrag.avg)} />
+                <PragStat label="Maksimalni" value={fmt(selPrag.max)} />
+                <PragStat label="Kvota" value={fmt(selPrag.kvota)} />
+                <PragStat label="Upisani" value={fmt(selPrag.upisani)} />
+              </div>
+            ) : (
+              <p className="mt-4 rounded-xl bg-muted/50 p-3 text-sm text-muted-foreground">
+                Za ovaj program nema objavljenih pragova za prošlu školsku godinu.
+              </p>
+            )}
+            <p className="mt-2 text-[11px] text-muted-foreground">
+              * Bodovi se odnose na ljetni upisni rok. Izvor:{" "}
+              <a
+                href="https://www.srednja.hr/srednja-kalkulator"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="font-medium text-primary hover:underline"
+              >
+                srednja.hr
+              </a>
+            </p>
+          </div>
+        )}
+      </section>
 
       <section className="mb-5 rounded-2xl border bg-card p-4 shadow-card sm:p-5">
         <div className="mb-4 flex items-center justify-between gap-4">
@@ -229,7 +412,19 @@ export default function SrednjaKalkulator() {
             className="h-full rounded-full bg-gradient-to-r from-emerald-500 to-primary transition-all duration-500"
             style={{ width: `${rezultat.postotak}%` }}
           />
+          {selPrag?.min != null && (
+            <div
+              className="absolute top-0 h-full w-0.5 bg-foreground/70"
+              style={{ left: `${clamp((selPrag.min / rezultat.max) * 100, 0, 100)}%` }}
+              title={`Prošlogodišnji prag: ${fmt(selPrag.min)}`}
+            />
+          )}
         </div>
+        {selPrag?.min != null && (
+          <p className="mt-2 text-xs text-muted-foreground">
+            Crna crtica označava prošlogodišnji prag ({fmt(selPrag.min)} bodova) za odabrani program.
+          </p>
+        )}
       </section>
 
       <section className="mb-5 rounded-2xl border bg-card p-4 shadow-card sm:p-5">
@@ -250,6 +445,11 @@ export default function SrednjaKalkulator() {
             </button>
           ))}
         </div>
+        {selProgram && (
+          <p className="mt-2 text-xs text-muted-foreground">
+            Tip programa automatski je postavljen prema odabranom programu — po potrebi ga promijeni.
+          </p>
+        )}
       </section>
 
       <section className="mb-5 rounded-2xl border bg-card p-4 shadow-card sm:p-5">
@@ -316,67 +516,113 @@ export default function SrednjaKalkulator() {
         </section>
       )}
 
-      <section className="rounded-2xl border bg-card p-4 shadow-card sm:p-5">
-        <div className="mb-4 flex items-start gap-3">
-          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-amber-500/10 text-amber-700">
-            <Trophy className="h-5 w-5" />
+      {/* Usporedba s prošlogodišnjim pragom i procjena šansi */}
+      {rezultatIzracunat && selProgram && selSchool && selPrag?.min != null && chance && (
+        <section className={`mb-5 rounded-2xl border-2 p-4 shadow-card sm:p-5 ${CHANCE_TONE[chance.tone].box}`}>
+          <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
+            <div className="flex items-start gap-3">
+              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-background text-foreground shadow-sm">
+                <Trophy className="h-5 w-5" />
+              </div>
+              <div className="min-w-0">
+                <h2 className="text-lg font-bold">Tvoje šanse za upis</h2>
+                <p className="mt-0.5 text-sm text-muted-foreground">
+                  {selProgram.name} · {selSchool.name}, {selSchool.city}
+                </p>
+              </div>
+            </div>
+            <span className={`rounded-full px-4 py-1.5 text-sm font-bold shadow-sm ${CHANCE_TONE[chance.tone].badge}`}>
+              {chance.label}
+            </span>
           </div>
-          <div>
-            <h2 className="text-lg font-bold">Škole i pragovi</h2>
-            <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
-              Tablica je spremna za podatke o školama i pragovima. Kad se niz `SCHOOLS` popuni, ovdje će se prikazati
-              filtrirani rezultati po županiji.
-            </p>
+
+          <div className="grid gap-3 sm:grid-cols-3">
+            <div className="rounded-2xl bg-background p-4 text-center">
+              <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Tvoji bodovi</p>
+              <p className="mt-1 text-2xl font-extrabold tabular-nums text-primary">{rezultat.ukupno.toFixed(2)}</p>
+            </div>
+            <div className="rounded-2xl bg-background p-4 text-center">
+              <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                Prag {selPrag.year}
+              </p>
+              <p className="mt-1 text-2xl font-extrabold tabular-nums text-foreground">{fmt(selPrag.min)}</p>
+            </div>
+            <div className="rounded-2xl bg-background p-4 text-center">
+              <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Razlika</p>
+              <p
+                className={`mt-1 text-2xl font-extrabold tabular-nums ${
+                  rezultat.ukupno >= selPrag.min ? "text-emerald-600" : "text-rose-600"
+                }`}
+              >
+                {rezultat.ukupno >= selPrag.min ? "+" : ""}
+                {(rezultat.ukupno - selPrag.min).toFixed(2)}
+              </p>
+            </div>
           </div>
-        </div>
 
-        <label className="mb-4 block max-w-xs text-sm font-semibold">
-          Županija
-          <select
-            value={filterZupanija}
-            onChange={(event: ChangeEvent<HTMLSelectElement>) => setFilterZupanija(event.target.value)}
-            className="mt-2 h-11 w-full rounded-xl border border-input bg-background px-3 text-sm"
-          >
-            <option value="">Sve županije</option>
-            {ZUPANIJE.map((zupanija) => (
-              <option key={zupanija} value={zupanija}>
-                {zupanija}
-              </option>
-            ))}
-          </select>
-        </label>
+          {/* Vizualna usporedba */}
+          <div className="mt-4">
+            <div className="relative h-5 overflow-hidden rounded-full bg-muted">
+              <div
+                className={`h-full rounded-full bg-gradient-to-r transition-all duration-700 ${CHANCE_TONE[chance.tone].bar}`}
+                style={{ width: `${clamp((rezultat.ukupno / rezultat.max) * 100, 0, 100)}%` }}
+              />
+              <div
+                className="absolute top-0 h-full w-1 rounded-full bg-foreground/80"
+                style={{ left: `${clamp((selPrag.min / rezultat.max) * 100, 0, 100)}%` }}
+              />
+            </div>
+            <div className="mt-1.5 flex justify-between text-[11px] text-muted-foreground">
+              <span>0</span>
+              <span>
+                Prag: {fmt(selPrag.min)} · Max: {rezultat.max}
+              </span>
+            </div>
+          </div>
 
-        {filtriraneSkole.length === 0 ? (
-          <p className="rounded-2xl bg-muted/50 p-4 text-sm text-muted-foreground">
-            Nema unesenih škola za odabrani filter.
+          <p className="mt-4 flex items-start gap-2 rounded-2xl bg-background p-4 text-sm leading-relaxed text-muted-foreground">
+            {chance.tone === "emerald" || chance.tone === "lime" ? (
+              <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600" />
+            ) : (
+              <TrendingUp className="mt-0.5 h-4 w-4 shrink-0 text-amber-600" />
+            )}
+            {chance.desc}
           </p>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full min-w-[560px] text-left text-sm">
-              <thead className="text-xs uppercase tracking-wide text-muted-foreground">
-                <tr>
-                  <th className="border-b px-3 py-2">Škola</th>
-                  <th className="border-b px-3 py-2">Županija</th>
-                  <th className="border-b px-3 py-2">Min.</th>
-                  <th className="border-b px-3 py-2">Prosjek</th>
-                  <th className="border-b px-3 py-2">Max.</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filtriraneSkole.map((school) => (
-                  <tr key={school.naziv}>
-                    <td className="border-b px-3 py-2">{school.naziv}</td>
-                    <td className="border-b px-3 py-2">{school.zupanija}</td>
-                    <td className="border-b px-3 py-2">{school.minBodovi}</td>
-                    <td className="border-b px-3 py-2">{school.prosjekBodovi}</td>
-                    <td className="border-b px-3 py-2">{school.maxBodovi}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </section>
+
+          {(selPrag.kvota != null || selPrag.upisani != null) && (
+            <p className="mt-2 flex items-center gap-2 text-xs text-muted-foreground">
+              <Users className="h-3.5 w-3.5" />
+              Prošle godine: kvota {fmt(selPrag.kvota)}, upisano {fmt(selPrag.upisani)} učenika.
+            </p>
+          )}
+
+          <p className="mt-3 text-[11px] leading-relaxed text-muted-foreground">
+            Procjena je informativna — pragovi se svake godine mijenjaju ovisno o interesu i kvoti. Podaci o
+            pragovima: srednja.hr (ljetni upisni rok).
+          </p>
+        </section>
+      )}
+
+      {rezultatIzracunat && !selProgram && (
+        <section className="mb-5 rounded-2xl border border-dashed bg-muted/30 p-4 text-center text-sm text-muted-foreground sm:p-5">
+          Odaberi školu i program na vrhu stranice da vidiš prošlogodišnji prag i svoje šanse za upis.
+        </section>
+      )}
+    </div>
+  );
+}
+
+function PragStat({ label, value, highlight }: { label: string; value: string; highlight?: boolean }) {
+  return (
+    <div
+      className={`rounded-xl border p-3 text-center ${
+        highlight ? "border-primary/40 bg-background shadow-sm" : "border-border/60 bg-background/70"
+      }`}
+    >
+      <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">{label}</p>
+      <p className={`mt-0.5 text-lg font-extrabold tabular-nums ${highlight ? "text-primary" : "text-foreground"}`}>
+        {value}
+      </p>
     </div>
   );
 }
