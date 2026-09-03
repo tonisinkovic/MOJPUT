@@ -1,14 +1,18 @@
-import { useMemo, useState, type ChangeEvent } from "react";
+import { useMemo, useRef, useState, type ChangeEvent } from "react";
 import {
   BookOpen,
   Calculator,
   CheckCircle2,
+  ChevronsUpDown,
   GraduationCap,
+  Landmark,
   MapPin,
   School,
+  Search,
   TrendingUp,
   Trophy,
   Users,
+  X,
 } from "lucide-react";
 import {
   kalkulatorSchools,
@@ -16,6 +20,7 @@ import {
   type KalkulatorProgram,
   type KalkulatorSchool,
 } from "@/data/srednjaKalkulator";
+import { cn } from "@/lib/utils";
 
 type ProgramType = "gimnazija4" | "trogodisnji" | "kraci";
 
@@ -130,6 +135,177 @@ function clamp(value: number, min: number, max: number): number {
 
 function fmt(n: number | null): string {
   return n == null ? "—" : n.toLocaleString("hr-HR", { maximumFractionDigits: 2 });
+}
+
+/** Pretraživi dropdown za odabir škole */
+function SearchableSchoolSelect({
+  schools,
+  selectedId,
+  onSelect,
+}: {
+  schools: KalkulatorSchool[];
+  selectedId: number | null;
+  onSelect: (id: number | null) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const [query, setQuery] = useState("");
+  const inputRef = useRef<HTMLInputElement>(null);
+  const listRef = useRef<HTMLDivElement>(null);
+
+  const selected = selectedId != null ? schools.find((s) => s.id === selectedId) ?? null : null;
+
+  const q = query.trim().toLowerCase();
+  const filtered = useMemo(() => {
+    if (!q) return schools;
+    return schools.filter(
+      (s) =>
+        s.name.toLowerCase().includes(q) ||
+        s.city.toLowerCase().includes(q),
+    );
+  }, [schools, q]);
+
+  const handleOpen = () => {
+    setOpen(true);
+    setQuery("");
+    requestAnimationFrame(() => inputRef.current?.focus());
+  };
+
+  const handleSelect = (school: KalkulatorSchool) => {
+    onSelect(school.id);
+    setOpen(false);
+    setQuery("");
+  };
+
+  const handleClear = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    onSelect(null);
+    setOpen(false);
+    setQuery("");
+  };
+
+  return (
+    <div className="relative">
+      {/* Trigger */}
+      <button
+        type="button"
+        onClick={handleOpen}
+        className={cn(
+          "flex h-12 w-full items-center gap-3 rounded-xl border bg-background px-4 text-left text-sm transition",
+          "hover:border-primary/40 focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none",
+          open ? "border-primary ring-2 ring-primary/20" : "border-input",
+        )}
+      >
+        {selected ? (
+          <>
+            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-xs font-bold text-primary">
+              {selected.name.charAt(0).toUpperCase()}
+            </div>
+            <div className="min-w-0 flex-1">
+              <span className="block truncate font-semibold text-foreground">{selected.name}</span>
+              <span className="block truncate text-xs text-muted-foreground">
+                {selected.city} · {selected.programs.length} programa
+              </span>
+            </div>
+            <button
+              type="button"
+              onClick={handleClear}
+              className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-muted-foreground hover:bg-muted hover:text-foreground"
+              aria-label="Očisti odabir"
+            >
+              <X className="h-3.5 w-3.5" />
+            </button>
+          </>
+        ) : (
+          <>
+            <Search className="h-4 w-4 shrink-0 text-muted-foreground" />
+            <span className="flex-1 text-muted-foreground">
+              Pretraži i odaberi školu ({schools.length})
+            </span>
+            <ChevronsUpDown className="h-4 w-4 shrink-0 text-muted-foreground" />
+          </>
+        )}
+      </button>
+
+      {/* Dropdown */}
+      {open && (
+        <>
+          {/* Backdrop */}
+          <div className="fixed inset-0 z-40" onClick={() => { setOpen(false); setQuery(""); }} />
+          <div className="absolute left-0 right-0 top-[calc(100%+4px)] z-50 overflow-hidden rounded-xl border border-border bg-card shadow-xl">
+            {/* Search input */}
+            <div className="flex items-center gap-2 border-b border-border/60 px-3 py-2.5">
+              <Search className="h-4 w-4 shrink-0 text-muted-foreground" />
+              <input
+                ref={inputRef}
+                type="text"
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder="Naziv škole ili grad..."
+                className="h-7 w-full bg-transparent text-sm outline-none placeholder:text-muted-foreground"
+              />
+              {query && (
+                <button
+                  type="button"
+                  onClick={() => setQuery("")}
+                  className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-muted-foreground hover:bg-muted"
+                >
+                  <X className="h-3 w-3" />
+                </button>
+              )}
+            </div>
+
+            {/* Results */}
+            <div ref={listRef} className="max-h-64 overflow-y-auto p-1.5">
+              {filtered.length === 0 ? (
+                <div className="px-3 py-6 text-center text-sm text-muted-foreground">
+                  Nema rezultata za „{query}"
+                </div>
+              ) : (
+                filtered.slice(0, 80).map((school) => {
+                  const isActive = selectedId === school.id;
+                  return (
+                    <button
+                      key={school.id}
+                      type="button"
+                      onClick={() => handleSelect(school)}
+                      className={cn(
+                        "flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm transition-colors",
+                        isActive
+                          ? "bg-primary/10 text-primary"
+                          : "text-foreground hover:bg-muted/70",
+                      )}
+                    >
+                      <div className={cn(
+                        "flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-xs font-bold",
+                        isActive ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground",
+                      )}>
+                        {school.name.charAt(0).toUpperCase()}
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <span className="block truncate font-medium">{school.name}</span>
+                        <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                          <MapPin className="h-3 w-3 shrink-0" />
+                          {school.city}
+                          <span className="text-muted-foreground/50">·</span>
+                          {school.programs.length} programa
+                        </span>
+                      </div>
+                      {isActive && <CheckCircle2 className="h-4 w-4 shrink-0 text-primary" />}
+                    </button>
+                  );
+                })
+              )}
+              {filtered.length > 80 && (
+                <p className="px-3 py-2 text-center text-xs text-muted-foreground">
+                  Prikazano 80 od {filtered.length} — suzi pretragu
+                </p>
+              )}
+            </div>
+          </div>
+        </>
+      )}
+    </div>
+  );
 }
 
 export default function SrednjaKalkulator() {
@@ -289,57 +465,115 @@ export default function SrednjaKalkulator() {
           </div>
         </div>
 
-        <div className="grid gap-4 sm:grid-cols-2">
-          <label className="block text-sm font-semibold">
+        {/* Županija: čipovi */}
+        <div className="mb-4">
+          <p className="mb-2 flex items-center gap-1.5 text-sm font-semibold">
+            <Landmark className="h-3.5 w-3.5 text-primary" />
             Županija
-            <select
-              value={selCounty}
-              onChange={(event: ChangeEvent<HTMLSelectElement>) => handleCountyChange(event.target.value)}
-              className="mt-2 h-11 w-full rounded-xl border border-input bg-background px-3 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20"
+          </p>
+          <div className="flex flex-wrap gap-1.5">
+            <button
+              type="button"
+              onClick={() => handleCountyChange("")}
+              className={cn(
+                "rounded-full border px-3 py-1.5 text-xs font-semibold transition-all",
+                !selCounty
+                  ? "border-primary bg-primary text-primary-foreground shadow-sm"
+                  : "border-border/70 bg-background text-muted-foreground hover:border-primary/40 hover:text-foreground",
+              )}
             >
-              <option value="">Sve županije</option>
-              {counties.map((county) => (
-                <option key={county} value={county}>
-                  {county}
-                </option>
-              ))}
-            </select>
-          </label>
+              Sve ({kalkulatorSchools.length})
+            </button>
+            {counties.map((county) => {
+              const cnt = kalkulatorSchools.filter((s) => s.county === county).length;
+              return (
+                <button
+                  key={county}
+                  type="button"
+                  onClick={() => handleCountyChange(selCounty === county ? "" : county)}
+                  className={cn(
+                    "rounded-full border px-3 py-1.5 text-xs font-semibold transition-all",
+                    selCounty === county
+                      ? "border-primary bg-primary text-primary-foreground shadow-sm"
+                      : "border-border/70 bg-background text-muted-foreground hover:border-primary/40 hover:text-foreground",
+                  )}
+                >
+                  {county.replace("ačka", ".").replace("ska", ".").replace("-", "‑")}
+                  <span className={cn(
+                    "ml-1 rounded-full px-1.5 py-0.5 text-[10px] font-bold",
+                    selCounty === county ? "bg-white/20" : "bg-muted",
+                  )}>
+                    {cnt}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
 
-          <label className="block text-sm font-semibold">
+        {/* Škola: pretraživi dropdown */}
+        <div className="mb-4">
+          <p className="mb-2 flex items-center gap-1.5 text-sm font-semibold">
+            <School className="h-3.5 w-3.5 text-primary" />
             Škola
-            <select
-              value={selSchoolId ?? 0}
-              onChange={(event: ChangeEvent<HTMLSelectElement>) => handleSchoolChange(event.target.value)}
-              className="mt-2 h-11 w-full rounded-xl border border-input bg-background px-3 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20"
-            >
-              <option value={0}>Odaberi školu ({schoolsInCounty.length})</option>
-              {schoolsInCounty.map((school) => (
-                <option key={school.id} value={school.id}>
-                  {school.name} — {school.city}
-                </option>
-              ))}
-            </select>
-          </label>
+          </p>
+          <SearchableSchoolSelect
+            schools={schoolsInCounty}
+            selectedId={selSchoolId}
+            onSelect={(id) => { handleSchoolChange(String(id ?? 0)); }}
+          />
+        </div>
 
-          <label className="block text-sm font-semibold sm:col-span-2">
+        {/* Program */}
+        <div>
+          <p className="mb-2 flex items-center gap-1.5 text-sm font-semibold">
+            <BookOpen className="h-3.5 w-3.5 text-primary" />
             Program
-            <select
-              value={selProgramId ?? 0}
-              onChange={(event: ChangeEvent<HTMLSelectElement>) => handleProgramChange(event.target.value)}
-              disabled={!selSchool}
-              className="mt-2 h-11 w-full rounded-xl border border-input bg-background px-3 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20 disabled:cursor-not-allowed disabled:opacity-60"
-            >
-              <option value={0}>
-                {selSchool ? `Odaberi program (${selSchool.programs.length})` : "Prvo odaberi školu"}
-              </option>
-              {selSchool?.programs.map((prog) => (
-                <option key={prog.id} value={prog.id}>
-                  {prog.name}
-                </option>
-              ))}
-            </select>
-          </label>
+          </p>
+          {!selSchool ? (
+            <div className="flex h-11 items-center rounded-xl border border-dashed border-border/80 bg-muted/30 px-4 text-sm text-muted-foreground">
+              Prvo odaberi školu ↑
+            </div>
+          ) : (
+            <div className="flex flex-wrap gap-2">
+              {selSchool.programs.map((prog) => {
+                const isActive = selProgramId === prog.id;
+                const hasPrag = prog.prag?.min != null;
+                return (
+                  <button
+                    key={prog.id}
+                    type="button"
+                    onClick={() => handleProgramChange(String(isActive ? 0 : prog.id))}
+                    className={cn(
+                      "group relative flex items-center gap-2 rounded-xl border px-3.5 py-2.5 text-left text-sm font-medium transition-all",
+                      isActive
+                        ? "border-primary bg-primary/10 text-primary shadow-sm ring-1 ring-primary/20"
+                        : "border-border/70 bg-background text-foreground hover:border-primary/40 hover:bg-primary/5",
+                    )}
+                  >
+                    <GraduationCap className={cn(
+                      "h-4 w-4 shrink-0",
+                      isActive ? "text-primary" : "text-muted-foreground",
+                    )} />
+                    <span className="min-w-0">
+                      <span className="block leading-snug">{prog.name}</span>
+                      {hasPrag && (
+                        <span className={cn(
+                          "block text-[11px]",
+                          isActive ? "text-primary/70" : "text-muted-foreground",
+                        )}>
+                          Prag: {prog.prag!.min!.toLocaleString("hr-HR", { maximumFractionDigits: 2 })} bod.
+                        </span>
+                      )}
+                    </span>
+                    {isActive && (
+                      <CheckCircle2 className="h-4 w-4 shrink-0 text-primary" />
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+          )}
         </div>
 
         {selProgram && selSchool && (
