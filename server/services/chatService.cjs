@@ -665,7 +665,27 @@ function getMessageTextForRag(m) {
   return "";
 }
 
-async function chatLocal(messages) {
+async function chatLocal(messages, mode = "senior") {
+  // Junior mode: High schools chatbot - simplified for now
+  if (mode === "junior") {
+    const lastUserMsg = [...messages].reverse().find((m) => m.role === "user");
+    const query = getMessageTextForRag(lastUserMsg) || "";
+    
+    return `Hvala na pitanju o srednjim školama! 
+
+Za sada preporučujem da koristiš **Kartu srednjih škola** na MojPut Junior platformi gdje možeš pregledati sve 443 srednje škole u Hrvatskoj, filtrirati ih po gradu i tipu škole, te vidjeti kontakte i web stranice.
+
+Naprednije odgovore temeljene na AI-ju za srednje škole trenutno razvijamo. Uskoro ćeš moći postavljati detaljnija pitanja o upisu, smjerovima i usporedbi škola.
+
+Možeš pitati:
+- "Koje gimnazije ima u Zagrebu?"
+- "Pokaz mi strukovne škole u Splitu"
+- "Škole s IT smjerom"
+
+U međuvremenu, karta srednjih škola i Forum za roditelje su ti na raspolaganju! 🎓`;
+  }
+
+  // Senior mode: Universities/faculties
   const lastUserMsg = [...messages].reverse().find((m) => m.role === "user");
   const query = getMessageTextForRag(lastUserMsg) || "";
 
