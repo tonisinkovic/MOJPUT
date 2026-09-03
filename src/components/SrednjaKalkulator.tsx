@@ -610,6 +610,65 @@ export default function SrednjaKalkulator() {
     <div className="mx-auto max-w-4xl">
       <header className="relative mb-6 overflow-hidden rounded-[2rem] border border-primary/20 bg-gradient-to-br from-primary/10 via-card to-amber-500/10 p-5 shadow-card sm:p-8">
         <div className="pointer-events-none absolute -right-16 -top-16 h-44 w-44 rounded-full bg-primary/15 blur-3xl" />
+
+        {/* Animirani kalkulator u pozadini */}
+        <div className="pointer-events-none absolute -right-4 bottom-2 top-2 aspect-[3/4] w-44 opacity-[0.07] sm:right-4 sm:w-56 md:w-64" aria-hidden>
+          <svg viewBox="0 0 200 260" fill="none" className="h-full w-full">
+            {/* Tijelo kalkulatora */}
+            <rect x="10" y="10" width="180" height="240" rx="24" className="fill-current text-foreground" />
+            {/* Ekran */}
+            <rect x="26" y="26" width="148" height="48" rx="12" className="fill-current text-background opacity-40" />
+            {/* Tipke — 4×4 grid */}
+            {[0, 1, 2, 3].map((row) =>
+              [0, 1, 2, 3].map((col) => (
+                <rect
+                  key={`${row}-${col}`}
+                  x={26 + col * 38}
+                  y={90 + row * 40}
+                  width="32"
+                  height="32"
+                  rx="8"
+                  className="fill-current text-background opacity-25"
+                >
+                  {/* Animacija pritiska tipki — svaka tipka ima drugačiji delay */}
+                  <animate
+                    attributeName="opacity"
+                    values="0.25;0.55;0.25"
+                    dur={`${2.2 + (row * 4 + col) * 0.3}s`}
+                    begin={`${(row * 4 + col) * 0.4}s`}
+                    repeatCount="indefinite"
+                  />
+                  <animateTransform
+                    attributeName="transform"
+                    type="scale"
+                    values="1;0.92;1"
+                    dur={`${2.2 + (row * 4 + col) * 0.3}s`}
+                    begin={`${(row * 4 + col) * 0.4}s`}
+                    repeatCount="indefinite"
+                    additive="sum"
+                  />
+                </rect>
+              )),
+            )}
+            {/* Tekst na ekranu koji se "tipka" */}
+            <text x="160" y="58" textAnchor="end" className="fill-current text-foreground" fontSize="20" fontWeight="bold" fontFamily="monospace">
+              <animate
+                attributeName="textLength"
+                values="0;80"
+                dur="6s"
+                repeatCount="indefinite"
+              />
+              78.45
+              <animate
+                attributeName="opacity"
+                values="0;0;1;1;1;1;0"
+                dur="6s"
+                repeatCount="indefinite"
+              />
+            </text>
+          </svg>
+        </div>
+
         <div className="relative">
           <span className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.16em] text-primary">
             <School className="h-3.5 w-3.5" />
