@@ -282,7 +282,7 @@ function CalculatorAnimation() {
                 <text
                   x={kx + 16.5} y={ky + 20} textAnchor="middle"
                   className="fill-current text-foreground"
-                  fontSize="12" fontWeight="600" fontFamily="system-ui" opacity="0.45"
+                  fontSize="13" fontWeight="700" fontFamily="system-ui" opacity="0.8"
                 >
                   {keyLabels[row][col]}
                 </text>
