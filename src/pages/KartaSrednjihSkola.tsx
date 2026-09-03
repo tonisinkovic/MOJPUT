@@ -832,7 +832,7 @@ const KartaSrednjihSkola = () => {
                       {detailSchool.address}, {detailSchool.postalCode} {detailSchool.city}
                     </p>
                     <a
-                      href={mapsUrl(selectedSchool)}
+                      href={mapsUrl(detailSchool)}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="mt-1 inline-flex items-center gap-1 text-xs font-semibold text-primary hover:underline"

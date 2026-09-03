@@ -79,6 +79,21 @@ function loadFromJson() {
   }
 }
 
+function loadHighSchoolsFromJson() {
+  const jsonPath = path.join(__dirname, "..", "..", "high_schools_data.json");
+  if (!fs.existsSync(jsonPath)) {
+    console.warn("[chatService] high_schools_data.json ne postoji");
+    return [];
+  }
+  try {
+    const raw = JSON.parse(fs.readFileSync(jsonPath, "utf-8"));
+    return Array.isArray(raw) ? raw : [];
+  } catch (e) {
+    console.error("[chatService] Greška učitavanja high_schools_data.json:", e?.message);
+    return [];
+  }
+}
+
 const FAKULTET_TIPOVI = [
   "pravni", "ekonomski", "medicinski", "filozofski", "elektrotehnike", "računarstva", "informatike",
   "kemijskog", "građevinski", "prometnih", "političkih", "organizacije", "strojarstva", "geodetski",
@@ -665,24 +680,202 @@ function getMessageTextForRag(m) {
   return "";
 }
 
+// ============ JUNIOR MODE: High Schools ============
+
+function parseHighSchoolQuery(query) {
+  const q = String(query || "").trim();
+  const qNorm = normalizeForMatch(q);
+  const keywords = extractKeywords(query);
+
+  const parsed = {
+    grad: null,
+    category: null,
+    keyword: null,
+  };
+
+  // Gradovi — top 30 gradova u Hrvatskoj
+  const gradovi = [
+    "Zagreb", "Split", "Rijeka", "Osijek", "Zadar", "Pula", "Slavonski Brod", 
+    "Dubrovnik", "Karlovac", "Varaždin", "Šibenik", "Sisak", "Koprivnica", 
+    "Bjelovar", "Vukovar", "Vinkovci", "Čakovec", "Požega", "Velika Gorica",
+    "Samobor", "Kaštela", "Solin", "Krapina", "Virovitica", "Đakovo", "Gospić",
+    "Nova Gradiška", "Kutina", "Opatija", "Pazin"
+  ];
+
+  for (const g of gradovi) {
+    const gNorm = normalizeForMatch(g);
+    if (qNorm.includes(gNorm) || keywords.some(k => normalizeForMatch(k) === gNorm)) {
+      parsed.grad = g;
+      break;
+    }
+  }
+
+  // Kategorije — gimnazija, strukovna, umjetnička
+  if (/gimnazij/i.test(q)) {
+    parsed.category = "Gimnazija";
+  } else if (/strukovna|strukovn|zanatlij/i.test(q)) {
+    parsed.category = "Strukovna škola";
+  } else if (/umjetnic|umjetnick/i.test(q)) {
+    parsed.category = "Umjetnička škola";
+  }
+
+  // Ključne riječi za smjer/tip
+  if (/\bit\b|informatic|racunarst|programiran/i.test(q)) {
+    parsed.keyword = "it";
+  } else if (/medicin|zdrav|sestrinst/i.test(q)) {
+    parsed.keyword = "medicina";
+  } else if (/ekonom|trgovac|poslovan/i.test(q)) {
+    parsed.keyword = "ekonomija";
+  } else if (/jezic|strani|englesk|njemack|francouzsk/i.test(q)) {
+    parsed.keyword = "jezici";
+  } else if (/elektrotehni|elektro/i.test(q)) {
+    parsed.keyword = "elektrotehnika";
+  } else if (/strojarst|mehanica/i.test(q)) {
+    parsed.keyword = "strojarstvo";
+  }
+
+  return parsed;
+}
+
+function searchHighSchools(query) {
+  const allSchools = loadHighSchoolsFromJson();
+  if (allSchools.length === 0) {
+    return [];
+  }
+
+  const parsed = parseHighSchoolQuery(query);
+  let results = allSchools;
+
+  // Filter po gradu
+  if (parsed.grad) {
+    results = results.filter(s => 
+      normalizeForMatch(s.city) === normalizeForMatch(parsed.grad) ||
+      s.city.toLowerCase().includes(parsed.grad.toLowerCase())
+    );
+  }
+
+  // Filter po kategoriji
+  if (parsed.category) {
+    results = results.filter(s => s.category === parsed.category);
+  }
+
+  // Filter po ključnoj riječi u nazivu
+  if (parsed.keyword) {
+    results = results.filter(s => {
+      const name = normalizeForMatch(s.name);
+      const kw = parsed.keyword;
+      if (kw === "it") {
+        return /informatic|racunarst|programiran/.test(name);
+      } else if (kw === "medicina") {
+        return /medicin|zdrav|sestrinst/.test(name);
+      } else if (kw === "ekonomija") {
+        return /ekonom|trgovac|poslovan/.test(name);
+      } else if (kw === "jezici") {
+        return /jezic|strani|englesk|njemack|francouzsk/.test(name);
+      } else if (kw === "elektrotehnika") {
+        return /elektrotehni|elektro/.test(name);
+      } else if (kw === "strojarstvo") {
+        return /strojarst|mehanica/.test(name);
+      }
+      return false;
+    });
+  }
+
+  return { schools: results, parsed };
+}
+
+function formatHighSchoolResponse(query, searchResults) {
+  const { schools, parsed } = searchResults;
+
+  if (schools.length === 0) {
+    let msg = "Nisam pronašao srednje škole";
+    if (parsed.grad) msg += ` u ${parsed.grad}`;
+    if (parsed.category) msg += ` kategorije "${parsed.category}"`;
+    if (parsed.keyword) msg += ` vezane uz ${parsed.keyword}`;
+    msg += ".\n\nProvjeri pravopis ili probaj širu pretragu. Možeš pregledati sve škole na **Karti srednjih škola**.";
+    return msg;
+  }
+
+  // Formatiranje rezultata
+  let response = "";
+
+  if (parsed.grad && parsed.category) {
+    response = `${parsed.category === "Gimnazija" ? "Gimnazije" : parsed.category + " škole"} u gradu ${parsed.grad}:\n\n`;
+  } else if (parsed.grad) {
+    response = `Srednje škole u gradu ${parsed.grad}:\n\n`;
+  } else if (parsed.category) {
+    const cat = parsed.category === "Gimnazija" ? "Gimnazije" : parsed.category + " škole";
+    response = `${cat} u Hrvatskoj:\n\n`;
+  } else if (parsed.keyword) {
+    response = `Srednje škole vezane uz ${parsed.keyword}:\n\n`;
+  } else {
+    response = `Pronađene srednje škole:\n\n`;
+  }
+
+  // Ograniči na prvih 15 škola za čitljivost
+  const toShow = schools.slice(0, 15);
+  
+  for (let i = 0; i < toShow.length; i++) {
+    const s = toShow[i];
+    response += `${i + 1}. **${s.name}** (${s.city})`;
+    if (s.category && s.category !== "Srednja škola") {
+      response += ` — ${s.category}`;
+    }
+    response += "\n";
+    if (s.website) {
+      response += `   Web: ${s.website}\n`;
+    }
+    if (s.phones && s.phones.length > 0) {
+      response += `   Tel: ${s.phones[0]}\n`;
+    }
+    response += "\n";
+  }
+
+  if (schools.length > 15) {
+    response += `\n... i još ${schools.length - 15} škola. Pogledaj sve na **Karti srednjih škola**.`;
+  }
+
+  response += `\n\nUkupno: **${schools.length}** ${schools.length === 1 ? 'škola' : schools.length < 5 ? 'škole' : 'škola'}.`;
+
+  return response;
+}
+
 async function chatLocal(messages, mode = "senior") {
-  // Junior mode: High schools chatbot - simplified for now
+  // Junior mode: High schools chatbot
   if (mode === "junior") {
     const lastUserMsg = [...messages].reverse().find((m) => m.role === "user");
     const query = getMessageTextForRag(lastUserMsg) || "";
     
-    return `Hvala na pitanju o srednjim školama! 
+    // Pretraži srednje škole
+    try {
+      const results = searchHighSchools(query);
+      if (results.schools.length > 0 || results.parsed.grad || results.parsed.category || results.parsed.keyword) {
+        return formatHighSchoolResponse(query, results);
+      }
+    } catch (err) {
+      console.warn("[chatLocal] Junior mode search error:", err?.message);
+    }
+    
+    // Fallback za općenita pitanja
+    const allSchools = loadHighSchoolsFromJson();
+    const totalCount = allSchools.length;
+    const cities = [...new Set(allSchools.map(s => s.city))].sort();
+    const topCities = cities.slice(0, 10);
+    
+    return `Imam podatke o **${totalCount} srednje škole** u Hrvatskoj! 🎓
 
-Za sada preporučujem da koristiš **Kartu srednjih škola** na MojPut Junior platformi gdje možeš pregledati sve 443 srednje škole u Hrvatskoj, filtrirati ih po gradu i tipu škole, te vidjeti kontakte i web stranice.
+Mogu ti pomoći pronaći:
+- Škole u određenom gradu (npr. "Srednje škole u Zagrebu")
+- Gimnazije ili strukovne škole (npr. "Gimnazije u Splitu")
+- Škole s određenim smjerom (npr. "IT škole u Rijeci")
 
-Naprednije odgovore temeljene na AI-ju za srednje škole trenutno razvijamo. Uskoro ćeš moći postavljati detaljnija pitanja o upisu, smjerovima i usporedbi škola.
+**Primjeri gradova**: ${topCities.slice(0, 5).join(", ")}...
 
-Možeš pitati:
-- "Koje gimnazije ima u Zagrebu?"
-- "Pokaz mi strukovne škole u Splitu"
-- "Škole s IT smjerom"
+**Kategorije**: Gimnazije, strukovne škole, umjetničke škole
 
-U međuvremenu, karta srednjih škola i Forum za roditelje su ti na raspolaganju! 🎓`;
+**Smjerovi**: IT/informatika, medicina/zdravstvo, ekonomija, jezici, elektrotehnika, strojarstvo
+
+Pitaj me konkretno, npr: "Koje gimnazije ima u Osijeku?" ili "Strukovne škole u Zadru"`;
   }
 
   // Senior mode: Universities/faculties

@@ -1110,7 +1110,9 @@ const Chatbot = () => {
                               ? "Dnevni limit poruka (12) iscrpljen…"
                               : pendingAttachments.length > 0
                                 ? "Napiši poruku uz prilog (opcionalno)…"
-                                : "Npr. FER ili FOI za računarstvo?"
+                                : isJunior
+                                  ? "Npr. Gimnazije u Zagrebu?"
+                                  : "Npr. FER ili FOI za računarstvo?"
                       }
                       rows={1}
                       className="chat-textarea"
