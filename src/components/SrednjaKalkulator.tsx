@@ -137,6 +137,151 @@ function fmt(n: number | null): string {
   return n == null ? "—" : n.toLocaleString("hr-HR", { maximumFractionDigits: 2 });
 }
 
+/** SVG kalkulator s prstom koji tipka po tipkama */
+function CalculatorAnimation() {
+  // Redoslijed tipkanja: tipka index (row*4+col), sekvenca kao da tipka "78.45"
+  const keySequence = [
+    { row: 1, col: 2 }, // 7
+    { row: 1, col: 3 }, // 8
+    { row: 3, col: 0 }, // .
+    { row: 0, col: 3 }, // 4
+    { row: 1, col: 0 }, // 5
+  ];
+  const totalDur = 6; // sekundi za cijeli ciklus
+  const pressTime = 0.35;
+  const keyLabels = [
+    ["1", "2", "3", "+"],
+    ["4", "5", "6", "−"],
+    ["7", "8", "9", "×"],
+    [".", "0", "=", "÷"],
+  ];
+
+  return (
+    <svg viewBox="0 0 220 290" fill="none" className="h-full w-full">
+      {/* Tijelo kalkulatora */}
+      <rect x="20" y="20" width="180" height="250" rx="22" className="fill-current text-foreground" opacity="0.85" />
+      {/* Ekran */}
+      <rect x="34" y="34" width="152" height="50" rx="10" className="fill-current text-background" opacity="0.35" />
+      {/* Tekst na ekranu */}
+      <text
+        x="174" y="66" textAnchor="end"
+        className="fill-current text-foreground"
+        fontSize="22" fontWeight="bold" fontFamily="monospace"
+        opacity="0.7"
+      >
+        <animate attributeName="opacity" values="0;0.15;0.4;0.55;0.65;0.7;0.7;0.7;0" dur={`${totalDur}s`} repeatCount="indefinite" />
+        78.45
+      </text>
+
+      {/* Tipke */}
+      {[0, 1, 2, 3].map((row) =>
+        [0, 1, 2, 3].map((col) => {
+          const kx = 34 + col * 39;
+          const ky = 100 + row * 38;
+          const pressIdx = keySequence.findIndex((k) => k.row === row && k.col === col);
+          const isPressed = pressIdx >= 0;
+          const pressDelay = isPressed ? (pressIdx / keySequence.length) * (totalDur * 0.7) : 0;
+
+          return (
+            <g key={`${row}-${col}`}>
+              <rect
+                x={kx} y={ky} width="33" height="30" rx="7"
+                className="fill-current text-background"
+                opacity="0.3"
+              >
+                {isPressed && (
+                  <animate
+                    attributeName="opacity"
+                    values="0.3;0.3;0.65;0.3;0.3"
+                    keyTimes="0;0.4;0.5;0.6;1"
+                    dur={`${totalDur}s`}
+                    begin={`${pressDelay}s`}
+                    repeatCount="indefinite"
+                  />
+                )}
+              </rect>
+              <text
+                x={kx + 16.5} y={ky + 20}
+                textAnchor="middle"
+                className="fill-current text-foreground"
+                fontSize="12" fontWeight="600" fontFamily="system-ui"
+                opacity="0.4"
+              >
+                {keyLabels[row][col]}
+              </text>
+            </g>
+          );
+        }),
+      )}
+
+      {/* Prst koji se pomiče i tipka */}
+      {(() => {
+        // Pozicije centra svake tipke u sekvenci
+        const positions = keySequence.map((k) => ({
+          cx: 34 + k.col * 39 + 16.5,
+          cy: 100 + k.row * 38 + 15,
+        }));
+        // Dodaj početnu i krajnju poziciju (izvan kalkulatora)
+        const startPos = { cx: 200, cy: 260 };
+        const allPos = [startPos, ...positions, startPos];
+
+        const stepFraction = 1 / (allPos.length);
+        const xValues = allPos.map((p) => p.cx).join(";");
+        const yValues = allPos.map((p) => p.cy).join(";");
+        // Keyframes: brzi pomak, kratka pauza na tipki
+        const keyTimes = allPos.map((_, i) => (i * stepFraction).toFixed(3)).join(";");
+
+        return (
+          <g opacity="0.55">
+            {/* Sjena prsta */}
+            <ellipse rx="12" ry="6" className="fill-current text-foreground" opacity="0.15">
+              <animate attributeName="cx" values={xValues} keyTimes={keyTimes} dur={`${totalDur}s`} repeatCount="indefinite" />
+              <animate attributeName="cy" values={yValues} keyTimes={keyTimes} dur={`${totalDur}s`} repeatCount="indefinite" />
+            </ellipse>
+            {/* Vrh prsta — krug */}
+            <circle r="10" className="fill-current text-foreground" opacity="0.45">
+              <animate attributeName="cx" values={xValues} keyTimes={keyTimes} dur={`${totalDur}s`} repeatCount="indefinite" />
+              <animate
+                attributeName="cy"
+                values={allPos.map((p) => p.cy - 18).join(";")}
+                keyTimes={keyTimes}
+                dur={`${totalDur}s`}
+                repeatCount="indefinite"
+              />
+              {/* Prst se spušta/diže na pritisak */}
+              <animate
+                attributeName="r"
+                values={allPos.map((_, i) => (i === 0 || i === allPos.length - 1 ? "8" : "11;9;11")).join(";")}
+                dur={`${totalDur}s`}
+                repeatCount="indefinite"
+              />
+            </circle>
+            {/* Linija prsta (od vrha do pozicije tipke) */}
+            <line strokeWidth="8" strokeLinecap="round" className="stroke-current text-foreground" opacity="0.25">
+              <animate attributeName="x1" values={xValues} keyTimes={keyTimes} dur={`${totalDur}s`} repeatCount="indefinite" />
+              <animate
+                attributeName="y1"
+                values={allPos.map((p) => p.cy - 18).join(";")}
+                keyTimes={keyTimes}
+                dur={`${totalDur}s`}
+                repeatCount="indefinite"
+              />
+              <animate attributeName="x2" values={allPos.map((p) => p.cx + 14).join(";")} keyTimes={keyTimes} dur={`${totalDur}s`} repeatCount="indefinite" />
+              <animate
+                attributeName="y2"
+                values={allPos.map((p) => p.cy - 50).join(";")}
+                keyTimes={keyTimes}
+                dur={`${totalDur}s`}
+                repeatCount="indefinite"
+              />
+            </line>
+          </g>
+        );
+      })()}
+    </svg>
+  );
+}
+
 /** Pretraživi dropdown za odabir županije */
 function SearchableCountySelect({
   counties,
@@ -611,62 +756,9 @@ export default function SrednjaKalkulator() {
       <header className="relative mb-6 overflow-hidden rounded-[2rem] border border-primary/20 bg-gradient-to-br from-primary/10 via-card to-amber-500/10 p-5 shadow-card sm:p-8">
         <div className="pointer-events-none absolute -right-16 -top-16 h-44 w-44 rounded-full bg-primary/15 blur-3xl" />
 
-        {/* Animirani kalkulator u pozadini */}
-        <div className="pointer-events-none absolute -right-4 bottom-2 top-2 aspect-[3/4] w-44 opacity-[0.07] sm:right-4 sm:w-56 md:w-64" aria-hidden>
-          <svg viewBox="0 0 200 260" fill="none" className="h-full w-full">
-            {/* Tijelo kalkulatora */}
-            <rect x="10" y="10" width="180" height="240" rx="24" className="fill-current text-foreground" />
-            {/* Ekran */}
-            <rect x="26" y="26" width="148" height="48" rx="12" className="fill-current text-background opacity-40" />
-            {/* Tipke — 4×4 grid */}
-            {[0, 1, 2, 3].map((row) =>
-              [0, 1, 2, 3].map((col) => (
-                <rect
-                  key={`${row}-${col}`}
-                  x={26 + col * 38}
-                  y={90 + row * 40}
-                  width="32"
-                  height="32"
-                  rx="8"
-                  className="fill-current text-background opacity-25"
-                >
-                  {/* Animacija pritiska tipki — svaka tipka ima drugačiji delay */}
-                  <animate
-                    attributeName="opacity"
-                    values="0.25;0.55;0.25"
-                    dur={`${2.2 + (row * 4 + col) * 0.3}s`}
-                    begin={`${(row * 4 + col) * 0.4}s`}
-                    repeatCount="indefinite"
-                  />
-                  <animateTransform
-                    attributeName="transform"
-                    type="scale"
-                    values="1;0.92;1"
-                    dur={`${2.2 + (row * 4 + col) * 0.3}s`}
-                    begin={`${(row * 4 + col) * 0.4}s`}
-                    repeatCount="indefinite"
-                    additive="sum"
-                  />
-                </rect>
-              )),
-            )}
-            {/* Tekst na ekranu koji se "tipka" */}
-            <text x="160" y="58" textAnchor="end" className="fill-current text-foreground" fontSize="20" fontWeight="bold" fontFamily="monospace">
-              <animate
-                attributeName="textLength"
-                values="0;80"
-                dur="6s"
-                repeatCount="indefinite"
-              />
-              78.45
-              <animate
-                attributeName="opacity"
-                values="0;0;1;1;1;1;0"
-                dur="6s"
-                repeatCount="indefinite"
-              />
-            </text>
-          </svg>
+        {/* Animirani kalkulator u pozadini s prstom koji tipka */}
+        <div className="pointer-events-none absolute -right-2 bottom-0 top-0 aspect-[3/4] w-48 opacity-[0.13] sm:right-6 sm:w-60 md:w-72" aria-hidden>
+          <CalculatorAnimation />
         </div>
 
         <div className="relative">
