@@ -137,6 +137,172 @@ function fmt(n: number | null): string {
   return n == null ? "—" : n.toLocaleString("hr-HR", { maximumFractionDigits: 2 });
 }
 
+/** Pretraživi dropdown za odabir županije */
+function SearchableCountySelect({
+  counties,
+  schoolCounts,
+  selectedCounty,
+  onSelect,
+}: {
+  counties: string[];
+  schoolCounts: Map<string, number>;
+  selectedCounty: string;
+  onSelect: (county: string) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const [query, setQuery] = useState("");
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  const q = query.trim().toLowerCase();
+  const filtered = useMemo(() => {
+    if (!q) return counties;
+    return counties.filter((c) => c.toLowerCase().includes(q));
+  }, [counties, q]);
+
+  const handleOpen = () => {
+    setOpen(true);
+    setQuery("");
+    requestAnimationFrame(() => inputRef.current?.focus());
+  };
+
+  const handleSelect = (county: string) => {
+    onSelect(county);
+    setOpen(false);
+    setQuery("");
+  };
+
+  return (
+    <div className="relative">
+      <button
+        type="button"
+        onClick={handleOpen}
+        className={cn(
+          "flex h-12 w-full items-center gap-3 rounded-xl border bg-background px-4 text-left text-sm transition",
+          "hover:border-primary/40 focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none",
+          open ? "border-primary ring-2 ring-primary/20" : "border-input",
+        )}
+      >
+        {selectedCounty ? (
+          <>
+            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+              <Landmark className="h-4 w-4" />
+            </div>
+            <div className="min-w-0 flex-1">
+              <span className="block truncate font-semibold text-foreground">{selectedCounty}</span>
+              <span className="block text-xs text-muted-foreground">
+                {schoolCounts.get(selectedCounty) || 0} škola
+              </span>
+            </div>
+            <button
+              type="button"
+              onClick={(e) => { e.stopPropagation(); onSelect(""); setOpen(false); }}
+              className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-muted-foreground hover:bg-muted hover:text-foreground"
+              aria-label="Očisti odabir"
+            >
+              <X className="h-3.5 w-3.5" />
+            </button>
+          </>
+        ) : (
+          <>
+            <Landmark className="h-4 w-4 shrink-0 text-muted-foreground" />
+            <span className="flex-1 text-muted-foreground">
+              Sve županije ({kalkulatorSchools.length} škola)
+            </span>
+            <ChevronsUpDown className="h-4 w-4 shrink-0 text-muted-foreground" />
+          </>
+        )}
+      </button>
+
+      {open && (
+        <>
+          <div className="fixed inset-0 z-40" onClick={() => { setOpen(false); setQuery(""); }} />
+          <div className="absolute left-0 right-0 top-[calc(100%+4px)] z-50 overflow-hidden rounded-xl border border-border bg-card shadow-xl">
+            <div className="flex items-center gap-2 border-b border-border/60 px-3 py-2.5">
+              <Search className="h-4 w-4 shrink-0 text-muted-foreground" />
+              <input
+                ref={inputRef}
+                type="text"
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder="Pretraži županiju..."
+                className="h-7 w-full bg-transparent text-sm outline-none placeholder:text-muted-foreground"
+              />
+              {query && (
+                <button
+                  type="button"
+                  onClick={() => setQuery("")}
+                  className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-muted-foreground hover:bg-muted"
+                >
+                  <X className="h-3 w-3" />
+                </button>
+              )}
+            </div>
+            <div className="max-h-64 overflow-y-auto p-1.5">
+              {/* "Sve županije" opcija */}
+              <button
+                type="button"
+                onClick={() => handleSelect("")}
+                className={cn(
+                  "flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm transition-colors",
+                  !selectedCounty
+                    ? "bg-primary/10 text-primary"
+                    : "text-foreground hover:bg-muted/70",
+                )}
+              >
+                <div className={cn(
+                  "flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-xs font-bold",
+                  !selectedCounty ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground",
+                )}>
+                  <MapPin className="h-4 w-4" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <span className="block font-medium">Sve županije</span>
+                  <span className="text-xs text-muted-foreground">{kalkulatorSchools.length} škola</span>
+                </div>
+                {!selectedCounty && <CheckCircle2 className="h-4 w-4 shrink-0 text-primary" />}
+              </button>
+
+              {filtered.length === 0 ? (
+                <div className="px-3 py-6 text-center text-sm text-muted-foreground">
+                  Nema rezultata za „{query}"
+                </div>
+              ) : (
+                filtered.map((county) => {
+                  const isActive = selectedCounty === county;
+                  const cnt = schoolCounts.get(county) || 0;
+                  return (
+                    <button
+                      key={county}
+                      type="button"
+                      onClick={() => handleSelect(county)}
+                      className={cn(
+                        "flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm transition-colors",
+                        isActive ? "bg-primary/10 text-primary" : "text-foreground hover:bg-muted/70",
+                      )}
+                    >
+                      <div className={cn(
+                        "flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-xs font-bold",
+                        isActive ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground",
+                      )}>
+                        <Landmark className="h-4 w-4" />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <span className="block truncate font-medium">{county}</span>
+                        <span className="text-xs text-muted-foreground">{cnt} škola</span>
+                      </div>
+                      {isActive && <CheckCircle2 className="h-4 w-4 shrink-0 text-primary" />}
+                    </button>
+                  );
+                })
+              )}
+            </div>
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
 /** Pretraživi dropdown za odabir škole */
 function SearchableSchoolSelect({
   schools,
@@ -327,6 +493,14 @@ export default function SrednjaKalkulator() {
     [],
   );
 
+  const countySchoolCounts = useMemo(() => {
+    const map = new Map<string, number>();
+    for (const s of kalkulatorSchools) {
+      map.set(s.county, (map.get(s.county) || 0) + 1);
+    }
+    return map;
+  }, []);
+
   const schoolsInCounty = useMemo<KalkulatorSchool[]>(() => {
     const list = selCounty ? kalkulatorSchools.filter((s) => s.county === selCounty) : kalkulatorSchools;
     return [...list].sort(
@@ -465,50 +639,18 @@ export default function SrednjaKalkulator() {
           </div>
         </div>
 
-        {/* Županija: čipovi */}
+        {/* Županija: pretraživi dropdown */}
         <div className="mb-4">
           <p className="mb-2 flex items-center gap-1.5 text-sm font-semibold">
             <Landmark className="h-3.5 w-3.5 text-primary" />
             Županija
           </p>
-          <div className="flex flex-wrap gap-1.5">
-            <button
-              type="button"
-              onClick={() => handleCountyChange("")}
-              className={cn(
-                "rounded-full border px-3 py-1.5 text-xs font-semibold transition-all",
-                !selCounty
-                  ? "border-primary bg-primary text-primary-foreground shadow-sm"
-                  : "border-border/70 bg-background text-muted-foreground hover:border-primary/40 hover:text-foreground",
-              )}
-            >
-              Sve ({kalkulatorSchools.length})
-            </button>
-            {counties.map((county) => {
-              const cnt = kalkulatorSchools.filter((s) => s.county === county).length;
-              return (
-                <button
-                  key={county}
-                  type="button"
-                  onClick={() => handleCountyChange(selCounty === county ? "" : county)}
-                  className={cn(
-                    "rounded-full border px-3 py-1.5 text-xs font-semibold transition-all",
-                    selCounty === county
-                      ? "border-primary bg-primary text-primary-foreground shadow-sm"
-                      : "border-border/70 bg-background text-muted-foreground hover:border-primary/40 hover:text-foreground",
-                  )}
-                >
-                  {county.replace("ačka", ".").replace("ska", ".").replace("-", "‑")}
-                  <span className={cn(
-                    "ml-1 rounded-full px-1.5 py-0.5 text-[10px] font-bold",
-                    selCounty === county ? "bg-white/20" : "bg-muted",
-                  )}>
-                    {cnt}
-                  </span>
-                </button>
-              );
-            })}
-          </div>
+          <SearchableCountySelect
+            counties={counties}
+            schoolCounts={countySchoolCounts}
+            selectedCounty={selCounty}
+            onSelect={handleCountyChange}
+          />
         </div>
 
         {/* Škola: pretraživi dropdown */}
