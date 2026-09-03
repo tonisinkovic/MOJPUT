@@ -1599,7 +1599,7 @@ const Index = () => {
                     <span className="relative inline-flex h-2 w-2 rounded-full bg-primary" />
                   </span>
                   <Sparkles className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                  Tvoj vodič za budućnost
+                  Tvoj vodič za budućnost · 2026/2027
                 </div>
               </motion.div>
 
