@@ -187,25 +187,29 @@ function CalculatorAnimation() {
     pressKFs[i] += `${(pressAt + 3).toFixed(1)}% { opacity: 0.45; transform: scale(1); }`;
     pressKFs[i] += `100% { opacity: 0.3; transform: scale(1); }`;
 
-    // Broj koji iskoči iz tipke i leti prema ekranu, pa nestaje
-    const ekranY = -(p.y - 55); // ekran je na y~55, tipka na p.y
-    popKFs[i] += `0% { opacity: 0; transform: translate(-50%, 0) scale(0.3); }`;
-    popKFs[i] += `${arriveAt.toFixed(1)}% { opacity: 0; transform: translate(-50%, 0) scale(0.3); }`;
-    popKFs[i] += `${pressAt.toFixed(1)}% { opacity: 1; transform: translate(-50%, -8px) scale(1.4); }`;
-    popKFs[i] += `${(pressAt + 4).toFixed(1)}% { opacity: 0.7; transform: translate(-50%, ${ekranY * 0.6}px) scale(0.9); }`;
-    popKFs[i] += `${(pressAt + 6).toFixed(1)}% { opacity: 0; transform: translate(-50%, ${ekranY * 0.8}px) scale(0.5); }`;
-    popKFs[i] += `100% { opacity: 0; transform: translate(-50%, 0) scale(0.3); }`;
+    // Ripple efekt na tipki (kratki bljesak, ne leti)
+    popKFs[i] += `0% { opacity: 0; transform: scale(0.5); }`;
+    popKFs[i] += `${arriveAt.toFixed(1)}% { opacity: 0; transform: scale(0.5); }`;
+    popKFs[i] += `${pressAt.toFixed(1)}% { opacity: 0.5; transform: scale(1.8); }`;
+    popKFs[i] += `${(pressAt + 4).toFixed(1)}% { opacity: 0; transform: scale(2.2); }`;
+    popKFs[i] += `100% { opacity: 0; transform: scale(0.5); }`;
 
     // Ekran: svaki karakter se pojavi nakon svog pritiska
     screenKFs.push(`${pressAt.toFixed(1)}`);
   }
 
-  // Ekran — tekst koji se gradi
-  let screenTextKF = `0% { width: 0; }\n`;
-  for (let i = 0; i < screenKFs.length; i++) {
-    screenTextKF += `${screenKFs[i]}% { width: ${((i + 1) / seq.length) * 100}%; }\n`;
+  // Svaki znak na ekranu: nevidljiv → vidljiv u trenutku pritiska, ostaje vidljiv do kraja ciklusa
+  const charKFs: string[] = [];
+  for (let i = 0; i < seq.length; i++) {
+    const showAt = Number(screenKFs[i]);
+    let kf = `0% { opacity: 0; transform: scale(0.5); }\n`;
+    kf += `${(showAt - 0.1).toFixed(1)}% { opacity: 0; transform: scale(0.5); }\n`;
+    kf += `${showAt}% { opacity: 0.8; transform: scale(1.15); }\n`;
+    kf += `${(showAt + 2).toFixed(1)}% { opacity: 0.65; transform: scale(1); }\n`;
+    kf += `92% { opacity: 0.65; transform: scale(1); }\n`;
+    kf += `100% { opacity: 0; transform: scale(0.5); }`;
+    charKFs.push(kf);
   }
-  screenTextKF += `92% { width: 100%; }\n100% { width: 0; }`;
 
   fingerKF = `0% { left: ${positions[0].x}px; top: ${positions[0].y + 40}px; opacity: 0; }\n4% { opacity: 1; }\n${fingerKF}95% { opacity: 1; }\n100% { left: ${positions[seq.length - 1].x + 30}px; top: ${positions[seq.length - 1].y - 60}px; opacity: 0; }`;
 
@@ -215,11 +219,11 @@ function CalculatorAnimation() {
         @keyframes calcFinger { ${fingerKF} }
         ${pressKFs.map((kf, i) => `@keyframes calcGlow${i} { ${kf} }`).join("\n")}
         ${popKFs.map((kf, i) => `@keyframes calcPop${i} { ${kf} }`).join("\n")}
-        @keyframes calcScreen { ${screenTextKF} }
+        ${charKFs.map((kf, i) => `@keyframes calcChar${i} { ${kf} }`).join("\n")}
         .calc-finger { animation: calcFinger ${animDur} cubic-bezier(.4,0,.2,1) infinite; }
         ${pressKFs.map((_, i) => `.calc-glow-${i} { animation: calcGlow${i} ${animDur} ease-out infinite; transform-origin: center; }`).join("\n")}
         ${popKFs.map((_, i) => `.calc-pop-${i} { animation: calcPop${i} ${animDur} ease-out infinite; }`).join("\n")}
-        .calc-screen-mask { animation: calcScreen ${animDur} steps(${seq.length}) infinite; overflow: hidden; white-space: nowrap; }
+        ${charKFs.map((_, i) => `.calc-char-${i} { animation: calcChar${i} ${animDur} ease-out infinite; }`).join("\n")}
       `}</style>
       <svg viewBox="0 0 220 290" fill="none" className="h-full w-full">
         {/* Tijelo */}
@@ -236,6 +240,23 @@ function CalculatorAnimation() {
             <stop offset="100%" stopColor="currentColor" stopOpacity="0.5" />
           </linearGradient>
         </defs>
+
+        {/* Brojevi na ekranu: pojavljuju se jedan po jedan i ostaju */}
+        {seq.map((s, i) => (
+          <text
+            key={i}
+            x={108 + i * 18}
+            y="66"
+            textAnchor="middle"
+            className={`fill-current text-foreground calc-char-${i}`}
+            fontSize="22"
+            fontWeight="bold"
+            fontFamily="monospace"
+            opacity="0"
+          >
+            {s.ch}
+          </text>
+        ))}
 
         {/* Tipke */}
         {[0, 1, 2, 3].map((row) =>
@@ -270,41 +291,6 @@ function CalculatorAnimation() {
           }),
         )}
       </svg>
-
-      {/* Brojevi koji iskaču iz tipki */}
-      {seq.map((s, i) => {
-        const p = positions[i];
-        return (
-          <div
-            key={i}
-            className={`calc-pop-${i} absolute text-foreground`}
-            style={{
-              left: p.x,
-              top: p.y - 8,
-              fontSize: 22,
-              fontWeight: 800,
-              fontFamily: "monospace",
-              opacity: 0,
-              pointerEvents: "none",
-            }}
-          >
-            {s.ch}
-          </div>
-        );
-      })}
-
-      {/* Ekran tekst koji se gradi */}
-      <div
-        className="calc-screen-mask absolute"
-        style={{
-          left: 76, top: 46, width: 0,
-          fontSize: 20, fontWeight: 800, fontFamily: "monospace",
-          color: "currentColor", opacity: 0.6,
-          direction: "rtl",
-        }}
-      >
-        78.45
-      </div>
 
       {/* Prst */}
       <div
