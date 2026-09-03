@@ -25,6 +25,43 @@ export function storeExperience(mode: MojPutExperienceMode | null): void {
   window.dispatchEvent(new CustomEvent(CHANGE_EVENT));
 }
 
+const PREFERRED_KEY_PREFIX = "mojput-preferred-experience";
+
+function preferredKeyFor(email?: string | null): string {
+  const em = String(email || "").trim().toLowerCase();
+  return em ? `${PREFERRED_KEY_PREFIX}:${em}` : PREFERRED_KEY_PREFIX;
+}
+
+/**
+ * Preferirani MojPut (Junior/Senior) odabran pri registraciji ili zadnjim ulaskom.
+ * Sprema se po emailu korisnika + globalni fallback (za tijek registracija → prijava).
+ */
+export function getPreferredExperience(email?: string | null): MojPutExperienceMode | null {
+  try {
+    const v =
+      window.localStorage.getItem(preferredKeyFor(email)) ??
+      window.localStorage.getItem(PREFERRED_KEY_PREFIX);
+    return v === "junior" || v === "senior" ? v : null;
+  } catch {
+    return null;
+  }
+}
+
+export function storePreferredExperience(
+  mode: MojPutExperienceMode,
+  email?: string | null,
+): void {
+  try {
+    window.localStorage.setItem(PREFERRED_KEY_PREFIX, mode);
+    const keyed = preferredKeyFor(email);
+    if (keyed !== PREFERRED_KEY_PREFIX) {
+      window.localStorage.setItem(keyed, mode);
+    }
+  } catch {
+    // localStorage nedostupan — ignoriraj
+  }
+}
+
 export function resolveExperienceMode(
   searchParams?: URLSearchParams | null,
 ): MojPutExperienceMode {

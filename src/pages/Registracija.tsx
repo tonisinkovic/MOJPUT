@@ -26,6 +26,8 @@ import {
 import { authRegister, authResendVerification } from "@/lib/auth";
 import { setStoredLastLoginEmail, warmupApiHealth } from "@/lib/api";
 import { trackEvent } from "@/lib/analytics";
+import { storePreferredExperience } from "@/lib/experience";
+import { cn } from "@/lib/utils";
 
 const Registracija = () => {
   const [verifyInfo, setVerifyInfo] = useState<{
@@ -38,6 +40,7 @@ const Registracija = () => {
     password: "",
     confirmPassword: "",
     status: "",
+    experience: "",
   });
   const [submitted, setSubmitted] = useState(false);
   const [registeredEmail, setRegisteredEmail] = useState<string | null>(null);
@@ -139,6 +142,10 @@ const Registracija = () => {
     };
     const sentTo = data.email?.trim() || data.user?.email?.trim() || formData.email.trim();
     if (sentTo) setStoredLastLoginEmail(sentTo);
+    // Zapamti odabrani MojPut (Junior/Senior) — koristi se pri sljedećem ulasku na početnu
+    if (formData.experience === "junior" || formData.experience === "senior") {
+      storePreferredExperience(formData.experience, sentTo || submittedEmail);
+    }
     setRegisteredEmail(sentTo || null);
     setResendInfo("");
     setVerifyInfo({
@@ -156,6 +163,7 @@ const Registracija = () => {
       password: "",
       confirmPassword: "",
       status: "",
+      experience: "",
     });
   };
 
@@ -439,6 +447,97 @@ const Registracija = () => {
                           );
                         })}
                       </div>
+                    </div>
+
+                    {/* MojPut Junior ili Senior */}
+                    <div>
+                      <label className="auth-label">
+                        <GraduationCap className="h-3.5 w-3.5 auth-label-icon" aria-hidden />
+                        Koji MojPut želiš koristiti?
+                      </label>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5" role="radiogroup">
+                        {(
+                          [
+                            {
+                              value: "junior",
+                              title: "MojPut Junior",
+                              desc: "Biram srednju školu — za učenike osnovnih škola.",
+                              Icon: UsersIcon,
+                              active: {
+                                card: "border-amber-400 bg-amber-50/80 shadow-[0_10px_30px_-14px_hsl(38_85%_48%/0.55)] dark:border-amber-500/60 dark:bg-amber-950/25",
+                                icon: "bg-gradient-to-br from-amber-500 to-orange-500 text-white shadow-sm",
+                                check: "text-amber-600 dark:text-amber-400",
+                              },
+                              idle: {
+                                card: "border-border bg-background/60 hover:border-amber-300/70 hover:bg-amber-50/40 dark:hover:bg-amber-950/15",
+                                icon: "bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-400",
+                              },
+                            },
+                            {
+                              value: "senior",
+                              title: "MojPut Senior",
+                              desc: "Biram fakultet — za srednjoškolce i maturante.",
+                              Icon: GraduationCap,
+                              active: {
+                                card: "border-primary bg-primary/8 shadow-[0_10px_30px_-14px_hsl(174_62%_42%/0.6)]",
+                                icon: "bg-gradient-to-br from-primary to-teal-600 text-white shadow-sm",
+                                check: "text-primary",
+                              },
+                              idle: {
+                                card: "border-border bg-background/60 hover:border-primary/40 hover:bg-primary/5",
+                                icon: "bg-primary/10 text-primary",
+                              },
+                            },
+                          ] as const
+                        ).map((opt) => {
+                          const active = formData.experience === opt.value;
+                          const tone = active ? opt.active : opt.idle;
+                          const Icon = opt.Icon;
+                          return (
+                            <label
+                              key={opt.value}
+                              className={cn(
+                                "group relative flex cursor-pointer flex-col gap-1.5 overflow-hidden rounded-xl border-2 p-3.5 transition-all duration-200",
+                                tone.card,
+                              )}
+                            >
+                              <input
+                                type="radio"
+                                name="experience"
+                                value={opt.value}
+                                checked={active}
+                                onChange={handleChange}
+                                required
+                                className="sr-only"
+                              />
+                              <span className="flex items-center gap-2.5">
+                                <span
+                                  className={cn(
+                                    "flex h-8 w-8 shrink-0 items-center justify-center rounded-lg transition-transform duration-200 group-hover:scale-105",
+                                    tone.icon,
+                                  )}
+                                >
+                                  <Icon className="h-4 w-4" />
+                                </span>
+                                <span className="text-sm font-bold tracking-[-0.01em] text-foreground">
+                                  {opt.title}
+                                </span>
+                                {active && (
+                                  <CheckCircle2
+                                    className={cn("ml-auto h-5 w-5 shrink-0", opt.active.check)}
+                                  />
+                                )}
+                              </span>
+                              <span className="text-[11.5px] leading-snug text-muted-foreground">
+                                {opt.desc}
+                              </span>
+                            </label>
+                          );
+                        })}
+                      </div>
+                      <p className="mt-1.5 text-[11px] text-muted-foreground">
+                        Ne brini — kasnije možeš koristiti oba. Ovo je samo tvoj početni odabir.
+                      </p>
                     </div>
 
                     {/* Lozinke */}
