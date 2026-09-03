@@ -137,7 +137,7 @@ function fmt(n: number | null): string {
   return n == null ? "—" : n.toLocaleString("hr-HR", { maximumFractionDigits: 2 });
 }
 
-/** Animirani kalkulator s prstom koji tipka — CSS keyframes umjesto SVG animate */
+/** Animirani kalkulator s prstom i brojevima koji iskaču */
 function CalculatorAnimation() {
   const keyLabels = [
     ["1", "2", "3", "+"],
@@ -145,65 +145,95 @@ function CalculatorAnimation() {
     ["7", "8", "9", "×"],
     [".", "0", "=", "÷"],
   ];
-  // Sekvenca tipkanja "78.45": (row, col)
   const seq = [
-    { r: 2, c: 0 }, // 7
-    { r: 2, c: 1 }, // 8
-    { r: 3, c: 0 }, // .
-    { r: 1, c: 0 }, // 4
-    { r: 1, c: 1 }, // 5
+    { r: 2, c: 0, ch: "7" },
+    { r: 2, c: 1, ch: "8" },
+    { r: 3, c: 0, ch: "." },
+    { r: 1, c: 0, ch: "4" },
+    { r: 1, c: 1, ch: "5" },
   ];
 
-  // Generiraj CSS keyframes za prst — pomiče se od tipke do tipke
   const positions = seq.map((k) => ({
     x: 34 + k.c * 39 + 16.5,
     y: 100 + k.r * 38 + 15,
   }));
 
-  // Keyframes: pomak → pauza → pomak → pauza ...
-  // Svaki korak: 8% pomak + 12% pauza na tipki = 20% po tipki, 5 tipki = 100%
+  const animDur = "5.5s";
   const stepPct = 100 / seq.length;
   const movePct = 6;
-  let fingerKeyframes = "";
-  let pressKeyframes: string[] = seq.map(() => "");
+
+  let fingerKF = "";
+  const pressKFs: string[] = seq.map(() => "");
+  const popKFs: string[] = seq.map(() => "");
+  // Ekran: brojevi se pojavljuju jedan po jedan
+  const screenKFs: string[] = [];
 
   for (let i = 0; i < seq.length; i++) {
     const arriveAt = i * stepPct + movePct;
-    const leaveAt = (i + 1) * stepPct;
+    const pressAt = arriveAt + 3;
+    const leaveAt = (i + 1) * stepPct - 1;
     const p = positions[i];
-    // Prst dolazi
-    fingerKeyframes += `${arriveAt.toFixed(1)}% { left: ${p.x}px; top: ${p.y - 24}px; }\n`;
-    // Prst pritišće (spušta se dolje)
-    fingerKeyframes += `${(arriveAt + 3).toFixed(1)}% { left: ${p.x}px; top: ${p.y - 16}px; }\n`;
-    // Prst se diže
-    fingerKeyframes += `${(leaveAt - 2).toFixed(1)}% { left: ${p.x}px; top: ${p.y - 24}px; }\n`;
 
-    // Tipka highlight
-    pressKeyframes[i] += `${arriveAt.toFixed(1)}% { opacity: 0.3; }\n`;
-    pressKeyframes[i] += `${(arriveAt + 3).toFixed(1)}% { opacity: 0.7; }\n`;
-    pressKeyframes[i] += `${(leaveAt - 2).toFixed(1)}% { opacity: 0.3; }\n`;
+    // Prst
+    fingerKF += `${arriveAt.toFixed(1)}% { left: ${p.x}px; top: ${p.y - 26}px; }\n`;
+    fingerKF += `${pressAt.toFixed(1)}% { left: ${p.x}px; top: ${p.y - 16}px; }\n`;
+    fingerKF += `${(pressAt + 2).toFixed(1)}% { left: ${p.x}px; top: ${p.y - 24}px; }\n`;
+    fingerKF += `${leaveAt.toFixed(1)}% { left: ${p.x}px; top: ${p.y - 24}px; }\n`;
+
+    // Tipka glow
+    pressKFs[i] += `0% { opacity: 0.3; transform: scale(1); }`;
+    pressKFs[i] += `${arriveAt.toFixed(1)}% { opacity: 0.3; transform: scale(1); }`;
+    pressKFs[i] += `${pressAt.toFixed(1)}% { opacity: 0.85; transform: scale(0.92); }`;
+    pressKFs[i] += `${(pressAt + 3).toFixed(1)}% { opacity: 0.45; transform: scale(1); }`;
+    pressKFs[i] += `100% { opacity: 0.3; transform: scale(1); }`;
+
+    // Broj koji iskoči (pop-up efekt)
+    popKFs[i] += `0% { opacity: 0; transform: translate(-50%, 0) scale(0.3); }`;
+    popKFs[i] += `${arriveAt.toFixed(1)}% { opacity: 0; transform: translate(-50%, 0) scale(0.3); }`;
+    popKFs[i] += `${pressAt.toFixed(1)}% { opacity: 1; transform: translate(-50%, -20px) scale(1.3); }`;
+    popKFs[i] += `${(pressAt + 5).toFixed(1)}% { opacity: 0; transform: translate(-50%, -40px) scale(0.8); }`;
+    popKFs[i] += `100% { opacity: 0; transform: translate(-50%, 0) scale(0.3); }`;
+
+    // Ekran: svaki karakter se pojavi nakon svog pritiska
+    screenKFs.push(`${pressAt.toFixed(1)}`);
   }
-  // Početak i kraj prsta
-  fingerKeyframes = `0% { left: ${positions[0].x}px; top: ${positions[0].y + 30}px; opacity: 0; }\n3% { opacity: 1; }\n${fingerKeyframes}97% { opacity: 1; }\n100% { left: ${positions[positions.length - 1].x}px; top: ${positions[positions.length - 1].y + 30}px; opacity: 0; }`;
 
-  const animDur = "5s";
+  // Ekran — tekst koji se gradi
+  let screenTextKF = `0% { width: 0; }\n`;
+  for (let i = 0; i < screenKFs.length; i++) {
+    screenTextKF += `${screenKFs[i]}% { width: ${((i + 1) / seq.length) * 100}%; }\n`;
+  }
+  screenTextKF += `92% { width: 100%; }\n100% { width: 0; }`;
+
+  fingerKF = `0% { left: ${positions[0].x}px; top: ${positions[0].y + 40}px; opacity: 0; }\n4% { opacity: 1; }\n${fingerKF}95% { opacity: 1; }\n100% { left: ${positions[seq.length - 1].x + 30}px; top: ${positions[seq.length - 1].y - 60}px; opacity: 0; }`;
 
   return (
     <div className="relative h-full w-full">
       <style>{`
-        @keyframes calcFinger { ${fingerKeyframes} }
-        ${seq.map((_, i) => `@keyframes calcPress${i} { ${pressKeyframes[i]} }`).join("\n")}
-        .calc-finger { animation: calcFinger ${animDur} ease-in-out infinite; }
-        ${seq.map((_, i) => `.calc-key-${i} { animation: calcPress${i} ${animDur} ease-in-out infinite; }`).join("\n")}
+        @keyframes calcFinger { ${fingerKF} }
+        ${pressKFs.map((kf, i) => `@keyframes calcGlow${i} { ${kf} }`).join("\n")}
+        ${popKFs.map((kf, i) => `@keyframes calcPop${i} { ${kf} }`).join("\n")}
+        @keyframes calcScreen { ${screenTextKF} }
+        .calc-finger { animation: calcFinger ${animDur} cubic-bezier(.4,0,.2,1) infinite; }
+        ${pressKFs.map((_, i) => `.calc-glow-${i} { animation: calcGlow${i} ${animDur} ease-out infinite; transform-origin: center; }`).join("\n")}
+        ${popKFs.map((_, i) => `.calc-pop-${i} { animation: calcPop${i} ${animDur} ease-out infinite; }`).join("\n")}
+        .calc-screen-mask { animation: calcScreen ${animDur} steps(${seq.length}) infinite; overflow: hidden; white-space: nowrap; }
       `}</style>
       <svg viewBox="0 0 220 290" fill="none" className="h-full w-full">
         {/* Tijelo */}
         <rect x="20" y="20" width="180" height="250" rx="22" className="fill-current text-foreground" opacity="0.85" />
         {/* Ekran */}
         <rect x="34" y="34" width="152" height="50" rx="10" className="fill-current text-background" opacity="0.35" />
-        <text x="174" y="66" textAnchor="end" className="fill-current text-foreground" fontSize="22" fontWeight="bold" fontFamily="monospace" opacity="0.6">
-          78.45
-        </text>
+        {/* Ekran glow kada se pritisne */}
+        <rect x="34" y="34" width="152" height="50" rx="10" fill="url(#screenGlow)" opacity="0.15">
+          <animate attributeName="opacity" values="0.05;0.05;0.2;0.05;0.05;0.2;0.05;0.05;0.2;0.05;0.05;0.2;0.05;0.05;0.2;0.05" dur={animDur} repeatCount="indefinite" />
+        </rect>
+        <defs>
+          <linearGradient id="screenGlow" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0%" stopColor="currentColor" stopOpacity="0" />
+            <stop offset="100%" stopColor="currentColor" stopOpacity="0.5" />
+          </linearGradient>
+        </defs>
 
         {/* Tipke */}
         {[0, 1, 2, 3].map((row) =>
@@ -215,9 +245,17 @@ function CalculatorAnimation() {
               <g key={`${row}-${col}`}>
                 <rect
                   x={kx} y={ky} width="33" height="30" rx="7"
-                  className={cn("fill-current text-background", pressIdx >= 0 && `calc-key-${pressIdx}`)}
+                  className={cn("fill-current text-background", pressIdx >= 0 && `calc-glow-${pressIdx}`)}
                   opacity="0.3"
                 />
+                {/* Ripple za pritisnute tipke */}
+                {pressIdx >= 0 && (
+                  <circle
+                    cx={kx + 16.5} cy={ky + 15} r="16"
+                    className={`fill-current text-background calc-pop-${pressIdx}`}
+                    opacity="0"
+                  />
+                )}
                 <text
                   x={kx + 16.5} y={ky + 20} textAnchor="middle"
                   className="fill-current text-foreground"
@@ -231,25 +269,59 @@ function CalculatorAnimation() {
         )}
       </svg>
 
-      {/* Prst — apsolutno pozicioniran div s CSS animacijom */}
+      {/* Brojevi koji iskaču iz tipki */}
+      {seq.map((s, i) => {
+        const p = positions[i];
+        return (
+          <div
+            key={i}
+            className={`calc-pop-${i} absolute text-foreground`}
+            style={{
+              left: p.x,
+              top: p.y - 8,
+              fontSize: 22,
+              fontWeight: 800,
+              fontFamily: "monospace",
+              opacity: 0,
+              pointerEvents: "none",
+            }}
+          >
+            {s.ch}
+          </div>
+        );
+      })}
+
+      {/* Ekran tekst koji se gradi */}
+      <div
+        className="calc-screen-mask absolute"
+        style={{
+          left: 76, top: 46, width: 0,
+          fontSize: 20, fontWeight: 800, fontFamily: "monospace",
+          color: "currentColor", opacity: 0.6,
+          direction: "rtl",
+        }}
+      >
+        78.45
+      </div>
+
+      {/* Prst */}
       <div
         className="calc-finger absolute"
-        style={{ width: 28, height: 40, marginLeft: -14, marginTop: -20 }}
+        style={{ width: 30, height: 44, marginLeft: -15, marginTop: -22 }}
       >
-        {/* Prst kao SVG oblik */}
-        <svg viewBox="0 0 28 40" fill="none" className="h-full w-full">
+        <svg viewBox="0 0 30 44" fill="none" className="h-full w-full drop-shadow-md">
           {/* Sjena */}
-          <ellipse cx="14" cy="37" rx="10" ry="3" className="fill-current text-foreground" opacity="0.2" />
+          <ellipse cx="15" cy="41" rx="11" ry="3" className="fill-current text-foreground" opacity="0.25" />
           {/* Tijelo prsta */}
           <path
-            d="M8 36 C8 36 6 28 6 20 C6 12 10 6 14 6 C18 6 22 12 22 20 C22 28 20 36 20 36 Z"
+            d="M9 40 C9 40 6 30 6 20 C6 11 10 4 15 4 C20 4 24 11 24 20 C24 30 21 40 21 40 Z"
             className="fill-current text-foreground"
-            opacity="0.55"
+            opacity="0.6"
           />
           {/* Nokat */}
-          <ellipse cx="14" cy="12" rx="5" ry="4" className="fill-current text-foreground" opacity="0.25" />
-          {/* Vrh prsta (svjetliji) */}
-          <ellipse cx="14" cy="34" rx="6" ry="4" className="fill-current text-foreground" opacity="0.7" />
+          <ellipse cx="15" cy="10" rx="5.5" ry="4.5" className="fill-current text-foreground" opacity="0.3" />
+          {/* Vrh prsta */}
+          <ellipse cx="15" cy="37" rx="6.5" ry="4.5" className="fill-current text-foreground" opacity="0.8" />
         </svg>
       </div>
     </div>
