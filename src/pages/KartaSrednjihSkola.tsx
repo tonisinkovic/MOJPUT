@@ -1,6 +1,7 @@
 import Layout from "@/components/Layout";
 import { motion } from "framer-motion";
 import {
+  BookOpen,
   Building2,
   ChevronDown,
   ChevronUp,
@@ -22,6 +23,17 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { lazy, Suspense, useMemo, useState } from "react";
 import { highSchools, type HighSchool, type HighSchoolCategory } from "@/data/highSchools";
+import {
+  srednjaProgramCounties,
+  type SrednjaProgramCounty,
+  type SrednjaProgramSchool,
+} from "@/data/srednjaPrograms";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 
 const HighSchoolMap = lazy(() => import("@/components/HighSchoolMap"));
 import {
@@ -127,6 +139,80 @@ function mapsUrl(s: HighSchool): string {
   return `https://www.google.com/maps/search/?api=1&query=${q}`;
 }
 
+/** Redak škole u sekciji programa: sklopivi popis programa te škole. */
+const ProgramSchoolRow = ({
+  school,
+  expanded,
+}: {
+  school: SrednjaProgramSchool;
+  expanded: boolean;
+}) => {
+  const [open, setOpen] = useState(false);
+  const isOpen = expanded || open;
+  const initial = school.name.trim().charAt(0).toUpperCase() || "?";
+
+  return (
+    <div
+      className={cn(
+        "overflow-hidden rounded-xl border bg-card transition-colors",
+        isOpen ? "border-sky-500/30" : "border-border/60 hover:border-sky-500/30",
+      )}
+    >
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        className="flex w-full items-center gap-3 px-3.5 py-3 text-left"
+        aria-expanded={isOpen}
+      >
+        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-sky-500/10 text-sm font-bold text-sky-700 dark:text-sky-400">
+          {initial}
+        </span>
+        <span className="min-w-0 flex-1">
+          <span className="block truncate text-sm font-semibold text-foreground">
+            {school.name}
+          </span>
+          <span className="mt-0.5 flex items-center gap-1 text-xs text-muted-foreground">
+            <MapPin className="h-3 w-3 shrink-0" />
+            {school.city}
+          </span>
+        </span>
+        <span className="flex shrink-0 items-center gap-2">
+          <span className="rounded-full bg-sky-500/10 px-2 py-0.5 text-[11px] font-semibold text-sky-700 dark:text-sky-400">
+            {school.programs.length} {school.programs.length === 1 ? "program" : "programa"}
+          </span>
+          <ChevronDown
+            className={cn(
+              "h-4 w-4 text-muted-foreground transition-transform",
+              isOpen && "rotate-180",
+            )}
+          />
+        </span>
+      </button>
+      {isOpen && (
+        <div className="border-t border-border/50 px-3.5 pb-3.5 pt-3">
+          {school.programs.length === 0 ? (
+            <p className="text-xs text-muted-foreground">
+              Za ovu školu trenutno nema objavljenih programa.
+            </p>
+          ) : (
+            <div className="flex flex-wrap gap-1.5">
+              {school.programs.map((program) => (
+                <span
+                  key={program}
+                  className="inline-flex items-center gap-1.5 rounded-lg border border-border/60 bg-background px-2.5 py-1 text-xs font-medium text-foreground"
+                >
+                  <GraduationCap className="h-3 w-3 shrink-0 text-sky-600 dark:text-sky-400" />
+                  {program}
+                </span>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+};
+
 const KartaSrednjihSkola = () => {
   const [search, setSearch] = useState("");
   const [filterCategory, setFilterCategory] = useState<HighSchoolCategory | null>(null);
@@ -193,6 +279,56 @@ const KartaSrednjihSkola = () => {
   const detailSchool = useMemo(
     () => (detailSchoolId ? highSchools.find((s) => s.id === detailSchoolId) ?? null : null),
     [detailSchoolId],
+  );
+
+  // ---- Programi po županijama i školama (izvor: srednja.hr kalkulator) ----
+  const [programQuery, setProgramQuery] = useState("");
+  const [openProgramCounties, setOpenProgramCounties] = useState<string[]>([]);
+
+  const programStats = useMemo(() => {
+    const schoolsCount = srednjaProgramCounties.reduce((n, c) => n + c.schools.length, 0);
+    const programsCount = srednjaProgramCounties.reduce(
+      (n, c) => n + c.schools.reduce((m, s) => m + s.programs.length, 0),
+      0,
+    );
+    return { counties: srednjaProgramCounties.length, schoolsCount, programsCount };
+  }, []);
+
+  const programQ = programQuery.trim().toLowerCase();
+
+  const filteredProgramCounties = useMemo(() => {
+    if (!programQ) return srednjaProgramCounties;
+    return srednjaProgramCounties
+      .map((county) => {
+        const schools = county.schools
+          .map((school) => {
+            const schoolHit =
+              school.name.toLowerCase().includes(programQ) ||
+              school.city.toLowerCase().includes(programQ);
+            const matched = school.programs.filter((p) => p.toLowerCase().includes(programQ));
+            if (!schoolHit && matched.length === 0) return null;
+            // Ako je pogodak preko programa, prikaži samo pogođene programe
+            return { ...school, programs: matched.length > 0 ? matched : school.programs };
+          })
+          .filter((s): s is SrednjaProgramSchool => s !== null);
+        if (schools.length === 0) return null;
+        return { ...county, schools };
+      })
+      .filter((c): c is SrednjaProgramCounty => c !== null);
+  }, [programQ]);
+
+  // Tijekom pretrage automatski otvori sve pogođene županije
+  const programAccordionValue = programQ
+    ? filteredProgramCounties.map((c) => c.name)
+    : openProgramCounties;
+
+  const filteredProgramCount = useMemo(
+    () =>
+      filteredProgramCounties.reduce(
+        (n, c) => n + c.schools.reduce((m, s) => m + s.programs.length, 0),
+        0,
+      ),
+    [filteredProgramCounties],
   );
 
   // Na `lg+` uvijek otvoreno (bočna traka); na mobitelu pritiskom na "Filtriraj".
@@ -778,6 +914,150 @@ const KartaSrednjihSkola = () => {
                   })}
                 </div>
               )}
+            </motion.div>
+
+            {/* Programi po županijama i školama */}
+            <motion.div
+              initial={{ opacity: 0, y: 8 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-40px" }}
+              transition={{ duration: 0.3 }}
+              className="rounded-2xl border border-border/60 bg-card/50 p-4 shadow-sm backdrop-blur-sm sm:p-5"
+            >
+              {/* Header */}
+              <div className="mb-4 flex flex-col gap-3 sm:mb-5 sm:flex-row sm:items-start sm:justify-between">
+                <div>
+                  <h3 className="flex items-center gap-2.5 text-lg font-bold text-foreground sm:text-xl">
+                    <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-sky-500 to-sky-600 text-white shadow-sm">
+                      <BookOpen className="h-5 w-5" />
+                    </span>
+                    Programi po županijama i školama
+                  </h3>
+                  <p className="mt-1 text-sm text-muted-foreground">
+                    Svi upisni programi srednjih škola — istraži što se gdje upisuje
+                  </p>
+                </div>
+                <div className="flex flex-wrap items-center gap-2">
+                  <Badge variant="outline" className="rounded-lg border-primary/25 bg-primary/5 px-2.5 py-1 text-xs font-semibold text-primary">
+                    {programStats.counties} županija
+                  </Badge>
+                  <Badge variant="outline" className="rounded-lg border-sky-500/25 bg-sky-500/5 px-2.5 py-1 text-xs font-semibold text-sky-700 dark:text-sky-400">
+                    {programStats.schoolsCount} škola
+                  </Badge>
+                  <Badge variant="outline" className="rounded-lg border-emerald-500/25 bg-emerald-500/5 px-2.5 py-1 text-xs font-semibold text-emerald-700 dark:text-emerald-400">
+                    {programStats.programsCount} programa
+                  </Badge>
+                </div>
+              </div>
+
+              {/* Pretraga programa */}
+              <div className="relative mb-4 sm:mb-5">
+                <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                <Input
+                  value={programQuery}
+                  onChange={(e) => setProgramQuery(e.target.value)}
+                  placeholder="Pretraži programe, škole ili gradove… (npr. medicinska sestra, kuhar, gimnazija)"
+                  className="h-11 rounded-xl border-border/80 bg-background pl-10 pr-10 text-sm shadow-sm"
+                  aria-label="Pretraži programe"
+                />
+                {programQuery && (
+                  <button
+                    type="button"
+                    onClick={() => setProgramQuery("")}
+                    className="absolute right-3 top-1/2 flex h-6 w-6 -translate-y-1/2 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                    aria-label="Očisti pretragu programa"
+                  >
+                    <X className="h-3.5 w-3.5" />
+                  </button>
+                )}
+              </div>
+
+              {programQ && (
+                <p className="mb-3 text-sm text-muted-foreground">
+                  Pronađeno{" "}
+                  <span className="font-semibold text-foreground">{filteredProgramCount}</span>{" "}
+                  programa u{" "}
+                  <span className="font-semibold text-foreground">
+                    {filteredProgramCounties.reduce((n, c) => n + c.schools.length, 0)}
+                  </span>{" "}
+                  škola
+                </p>
+              )}
+
+              {filteredProgramCounties.length === 0 ? (
+                <div className="rounded-2xl border border-dashed border-border bg-muted/20 px-6 py-14 text-center">
+                  <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-muted/60 text-muted-foreground">
+                    <Search className="h-7 w-7" />
+                  </div>
+                  <p className="text-base font-semibold text-foreground">Nema rezultata</p>
+                  <p className="mt-1.5 text-sm text-muted-foreground">
+                    Pokušaj s drugim pojmom, npr. "tehničar" ili "frizer"
+                  </p>
+                </div>
+              ) : (
+                <Accordion
+                  type="multiple"
+                  value={programAccordionValue}
+                  onValueChange={(v) => {
+                    if (!programQ) setOpenProgramCounties(v);
+                  }}
+                  className="space-y-2"
+                >
+                  {filteredProgramCounties.map((county) => {
+                    const countySchools = county.schools.length;
+                    const countyPrograms = county.schools.reduce((n, s) => n + s.programs.length, 0);
+                    return (
+                      <AccordionItem
+                        key={county.name}
+                        value={county.name}
+                        className="overflow-hidden rounded-xl border border-border/70 bg-background/60 px-0 data-[state=open]:border-primary/30 data-[state=open]:shadow-sm"
+                      >
+                        <AccordionTrigger className="px-4 py-3.5 text-left hover:no-underline sm:px-5">
+                          <div className="flex min-w-0 flex-1 flex-wrap items-center gap-x-3 gap-y-1.5 pr-2">
+                            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                              <Landmark className="h-4 w-4" />
+                            </span>
+                            <span className="min-w-0 text-sm font-semibold text-foreground sm:text-base">
+                              {county.name}
+                            </span>
+                            <span className="ml-auto flex shrink-0 items-center gap-1.5">
+                              <span className="rounded-full bg-muted px-2 py-0.5 text-[11px] font-semibold text-muted-foreground">
+                                {countySchools} {countySchools === 1 ? "škola" : "škola"}
+                              </span>
+                              <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[11px] font-semibold text-primary">
+                                {countyPrograms} programa
+                              </span>
+                            </span>
+                          </div>
+                        </AccordionTrigger>
+                        <AccordionContent className="border-t border-border/50 bg-muted/10 px-3 pb-3 pt-3 sm:px-4">
+                          <div className="space-y-2">
+                            {county.schools.map((school) => (
+                              <ProgramSchoolRow
+                                key={`${school.name}-${school.city}`}
+                                school={school}
+                                expanded={!!programQ}
+                              />
+                            ))}
+                          </div>
+                        </AccordionContent>
+                      </AccordionItem>
+                    );
+                  })}
+                </Accordion>
+              )}
+
+              <p className="mt-4 text-right text-[11px] text-muted-foreground">
+                Izvor podataka:{" "}
+                <a
+                  href="https://www.srednja.hr/srednja-kalkulator"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="font-medium text-primary hover:underline"
+                >
+                  srednja.hr — Kalkulator bodova
+                </a>
+              </p>
             </motion.div>
           </div>
         </div>
