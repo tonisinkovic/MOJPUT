@@ -187,11 +187,13 @@ function CalculatorAnimation() {
     pressKFs[i] += `${(pressAt + 3).toFixed(1)}% { opacity: 0.45; transform: scale(1); }`;
     pressKFs[i] += `100% { opacity: 0.3; transform: scale(1); }`;
 
-    // Broj koji iskoči (pop-up efekt)
+    // Broj koji iskoči iz tipke i leti prema ekranu, pa nestaje
+    const ekranY = -(p.y - 55); // ekran je na y~55, tipka na p.y
     popKFs[i] += `0% { opacity: 0; transform: translate(-50%, 0) scale(0.3); }`;
     popKFs[i] += `${arriveAt.toFixed(1)}% { opacity: 0; transform: translate(-50%, 0) scale(0.3); }`;
-    popKFs[i] += `${pressAt.toFixed(1)}% { opacity: 1; transform: translate(-50%, -20px) scale(1.3); }`;
-    popKFs[i] += `${(pressAt + 5).toFixed(1)}% { opacity: 0; transform: translate(-50%, -40px) scale(0.8); }`;
+    popKFs[i] += `${pressAt.toFixed(1)}% { opacity: 1; transform: translate(-50%, -8px) scale(1.4); }`;
+    popKFs[i] += `${(pressAt + 4).toFixed(1)}% { opacity: 0.7; transform: translate(-50%, ${ekranY * 0.6}px) scale(0.9); }`;
+    popKFs[i] += `${(pressAt + 6).toFixed(1)}% { opacity: 0; transform: translate(-50%, ${ekranY * 0.8}px) scale(0.5); }`;
     popKFs[i] += `100% { opacity: 0; transform: translate(-50%, 0) scale(0.3); }`;
 
     // Ekran: svaki karakter se pojavi nakon svog pritiska
