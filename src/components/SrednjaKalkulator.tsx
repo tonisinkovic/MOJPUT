@@ -137,148 +137,122 @@ function fmt(n: number | null): string {
   return n == null ? "—" : n.toLocaleString("hr-HR", { maximumFractionDigits: 2 });
 }
 
-/** SVG kalkulator s prstom koji tipka po tipkama */
+/** Animirani kalkulator s prstom koji tipka — CSS keyframes umjesto SVG animate */
 function CalculatorAnimation() {
-  // Redoslijed tipkanja: tipka index (row*4+col), sekvenca kao da tipka "78.45"
-  const keySequence = [
-    { row: 1, col: 2 }, // 7
-    { row: 1, col: 3 }, // 8
-    { row: 3, col: 0 }, // .
-    { row: 0, col: 3 }, // 4
-    { row: 1, col: 0 }, // 5
-  ];
-  const totalDur = 6; // sekundi za cijeli ciklus
-  const pressTime = 0.35;
   const keyLabels = [
     ["1", "2", "3", "+"],
     ["4", "5", "6", "−"],
     ["7", "8", "9", "×"],
     [".", "0", "=", "÷"],
   ];
+  // Sekvenca tipkanja "78.45": (row, col)
+  const seq = [
+    { r: 2, c: 0 }, // 7
+    { r: 2, c: 1 }, // 8
+    { r: 3, c: 0 }, // .
+    { r: 1, c: 0 }, // 4
+    { r: 1, c: 1 }, // 5
+  ];
+
+  // Generiraj CSS keyframes za prst — pomiče se od tipke do tipke
+  const positions = seq.map((k) => ({
+    x: 34 + k.c * 39 + 16.5,
+    y: 100 + k.r * 38 + 15,
+  }));
+
+  // Keyframes: pomak → pauza → pomak → pauza ...
+  // Svaki korak: 8% pomak + 12% pauza na tipki = 20% po tipki, 5 tipki = 100%
+  const stepPct = 100 / seq.length;
+  const movePct = 6;
+  let fingerKeyframes = "";
+  let pressKeyframes: string[] = seq.map(() => "");
+
+  for (let i = 0; i < seq.length; i++) {
+    const arriveAt = i * stepPct + movePct;
+    const leaveAt = (i + 1) * stepPct;
+    const p = positions[i];
+    // Prst dolazi
+    fingerKeyframes += `${arriveAt.toFixed(1)}% { left: ${p.x}px; top: ${p.y - 24}px; }\n`;
+    // Prst pritišće (spušta se dolje)
+    fingerKeyframes += `${(arriveAt + 3).toFixed(1)}% { left: ${p.x}px; top: ${p.y - 16}px; }\n`;
+    // Prst se diže
+    fingerKeyframes += `${(leaveAt - 2).toFixed(1)}% { left: ${p.x}px; top: ${p.y - 24}px; }\n`;
+
+    // Tipka highlight
+    pressKeyframes[i] += `${arriveAt.toFixed(1)}% { opacity: 0.3; }\n`;
+    pressKeyframes[i] += `${(arriveAt + 3).toFixed(1)}% { opacity: 0.7; }\n`;
+    pressKeyframes[i] += `${(leaveAt - 2).toFixed(1)}% { opacity: 0.3; }\n`;
+  }
+  // Početak i kraj prsta
+  fingerKeyframes = `0% { left: ${positions[0].x}px; top: ${positions[0].y + 30}px; opacity: 0; }\n3% { opacity: 1; }\n${fingerKeyframes}97% { opacity: 1; }\n100% { left: ${positions[positions.length - 1].x}px; top: ${positions[positions.length - 1].y + 30}px; opacity: 0; }`;
+
+  const animDur = "5s";
 
   return (
-    <svg viewBox="0 0 220 290" fill="none" className="h-full w-full">
-      {/* Tijelo kalkulatora */}
-      <rect x="20" y="20" width="180" height="250" rx="22" className="fill-current text-foreground" opacity="0.85" />
-      {/* Ekran */}
-      <rect x="34" y="34" width="152" height="50" rx="10" className="fill-current text-background" opacity="0.35" />
-      {/* Tekst na ekranu */}
-      <text
-        x="174" y="66" textAnchor="end"
-        className="fill-current text-foreground"
-        fontSize="22" fontWeight="bold" fontFamily="monospace"
-        opacity="0.7"
+    <div className="relative h-full w-full">
+      <style>{`
+        @keyframes calcFinger { ${fingerKeyframes} }
+        ${seq.map((_, i) => `@keyframes calcPress${i} { ${pressKeyframes[i]} }`).join("\n")}
+        .calc-finger { animation: calcFinger ${animDur} ease-in-out infinite; }
+        ${seq.map((_, i) => `.calc-key-${i} { animation: calcPress${i} ${animDur} ease-in-out infinite; }`).join("\n")}
+      `}</style>
+      <svg viewBox="0 0 220 290" fill="none" className="h-full w-full">
+        {/* Tijelo */}
+        <rect x="20" y="20" width="180" height="250" rx="22" className="fill-current text-foreground" opacity="0.85" />
+        {/* Ekran */}
+        <rect x="34" y="34" width="152" height="50" rx="10" className="fill-current text-background" opacity="0.35" />
+        <text x="174" y="66" textAnchor="end" className="fill-current text-foreground" fontSize="22" fontWeight="bold" fontFamily="monospace" opacity="0.6">
+          78.45
+        </text>
+
+        {/* Tipke */}
+        {[0, 1, 2, 3].map((row) =>
+          [0, 1, 2, 3].map((col) => {
+            const kx = 34 + col * 39;
+            const ky = 100 + row * 38;
+            const pressIdx = seq.findIndex((k) => k.r === row && k.c === col);
+            return (
+              <g key={`${row}-${col}`}>
+                <rect
+                  x={kx} y={ky} width="33" height="30" rx="7"
+                  className={cn("fill-current text-background", pressIdx >= 0 && `calc-key-${pressIdx}`)}
+                  opacity="0.3"
+                />
+                <text
+                  x={kx + 16.5} y={ky + 20} textAnchor="middle"
+                  className="fill-current text-foreground"
+                  fontSize="12" fontWeight="600" fontFamily="system-ui" opacity="0.45"
+                >
+                  {keyLabels[row][col]}
+                </text>
+              </g>
+            );
+          }),
+        )}
+      </svg>
+
+      {/* Prst — apsolutno pozicioniran div s CSS animacijom */}
+      <div
+        className="calc-finger absolute"
+        style={{ width: 28, height: 40, marginLeft: -14, marginTop: -20 }}
       >
-        <animate attributeName="opacity" values="0;0.15;0.4;0.55;0.65;0.7;0.7;0.7;0" dur={`${totalDur}s`} repeatCount="indefinite" />
-        78.45
-      </text>
-
-      {/* Tipke */}
-      {[0, 1, 2, 3].map((row) =>
-        [0, 1, 2, 3].map((col) => {
-          const kx = 34 + col * 39;
-          const ky = 100 + row * 38;
-          const pressIdx = keySequence.findIndex((k) => k.row === row && k.col === col);
-          const isPressed = pressIdx >= 0;
-          const pressDelay = isPressed ? (pressIdx / keySequence.length) * (totalDur * 0.7) : 0;
-
-          return (
-            <g key={`${row}-${col}`}>
-              <rect
-                x={kx} y={ky} width="33" height="30" rx="7"
-                className="fill-current text-background"
-                opacity="0.3"
-              >
-                {isPressed && (
-                  <animate
-                    attributeName="opacity"
-                    values="0.3;0.3;0.65;0.3;0.3"
-                    keyTimes="0;0.4;0.5;0.6;1"
-                    dur={`${totalDur}s`}
-                    begin={`${pressDelay}s`}
-                    repeatCount="indefinite"
-                  />
-                )}
-              </rect>
-              <text
-                x={kx + 16.5} y={ky + 20}
-                textAnchor="middle"
-                className="fill-current text-foreground"
-                fontSize="12" fontWeight="600" fontFamily="system-ui"
-                opacity="0.4"
-              >
-                {keyLabels[row][col]}
-              </text>
-            </g>
-          );
-        }),
-      )}
-
-      {/* Prst koji se pomiče i tipka */}
-      {(() => {
-        // Pozicije centra svake tipke u sekvenci
-        const positions = keySequence.map((k) => ({
-          cx: 34 + k.col * 39 + 16.5,
-          cy: 100 + k.row * 38 + 15,
-        }));
-        // Dodaj početnu i krajnju poziciju (izvan kalkulatora)
-        const startPos = { cx: 200, cy: 260 };
-        const allPos = [startPos, ...positions, startPos];
-
-        const stepFraction = 1 / (allPos.length);
-        const xValues = allPos.map((p) => p.cx).join(";");
-        const yValues = allPos.map((p) => p.cy).join(";");
-        // Keyframes: brzi pomak, kratka pauza na tipki
-        const keyTimes = allPos.map((_, i) => (i * stepFraction).toFixed(3)).join(";");
-
-        return (
-          <g opacity="0.55">
-            {/* Sjena prsta */}
-            <ellipse rx="12" ry="6" className="fill-current text-foreground" opacity="0.15">
-              <animate attributeName="cx" values={xValues} keyTimes={keyTimes} dur={`${totalDur}s`} repeatCount="indefinite" />
-              <animate attributeName="cy" values={yValues} keyTimes={keyTimes} dur={`${totalDur}s`} repeatCount="indefinite" />
-            </ellipse>
-            {/* Vrh prsta — krug */}
-            <circle r="10" className="fill-current text-foreground" opacity="0.45">
-              <animate attributeName="cx" values={xValues} keyTimes={keyTimes} dur={`${totalDur}s`} repeatCount="indefinite" />
-              <animate
-                attributeName="cy"
-                values={allPos.map((p) => p.cy - 18).join(";")}
-                keyTimes={keyTimes}
-                dur={`${totalDur}s`}
-                repeatCount="indefinite"
-              />
-              {/* Prst se spušta/diže na pritisak */}
-              <animate
-                attributeName="r"
-                values={allPos.map((_, i) => (i === 0 || i === allPos.length - 1 ? "8" : "11;9;11")).join(";")}
-                dur={`${totalDur}s`}
-                repeatCount="indefinite"
-              />
-            </circle>
-            {/* Linija prsta (od vrha do pozicije tipke) */}
-            <line strokeWidth="8" strokeLinecap="round" className="stroke-current text-foreground" opacity="0.25">
-              <animate attributeName="x1" values={xValues} keyTimes={keyTimes} dur={`${totalDur}s`} repeatCount="indefinite" />
-              <animate
-                attributeName="y1"
-                values={allPos.map((p) => p.cy - 18).join(";")}
-                keyTimes={keyTimes}
-                dur={`${totalDur}s`}
-                repeatCount="indefinite"
-              />
-              <animate attributeName="x2" values={allPos.map((p) => p.cx + 14).join(";")} keyTimes={keyTimes} dur={`${totalDur}s`} repeatCount="indefinite" />
-              <animate
-                attributeName="y2"
-                values={allPos.map((p) => p.cy - 50).join(";")}
-                keyTimes={keyTimes}
-                dur={`${totalDur}s`}
-                repeatCount="indefinite"
-              />
-            </line>
-          </g>
-        );
-      })()}
-    </svg>
+        {/* Prst kao SVG oblik */}
+        <svg viewBox="0 0 28 40" fill="none" className="h-full w-full">
+          {/* Sjena */}
+          <ellipse cx="14" cy="37" rx="10" ry="3" className="fill-current text-foreground" opacity="0.2" />
+          {/* Tijelo prsta */}
+          <path
+            d="M8 36 C8 36 6 28 6 20 C6 12 10 6 14 6 C18 6 22 12 22 20 C22 28 20 36 20 36 Z"
+            className="fill-current text-foreground"
+            opacity="0.55"
+          />
+          {/* Nokat */}
+          <ellipse cx="14" cy="12" rx="5" ry="4" className="fill-current text-foreground" opacity="0.25" />
+          {/* Vrh prsta (svjetliji) */}
+          <ellipse cx="14" cy="34" rx="6" ry="4" className="fill-current text-foreground" opacity="0.7" />
+        </svg>
+      </div>
+    </div>
   );
 }
 
