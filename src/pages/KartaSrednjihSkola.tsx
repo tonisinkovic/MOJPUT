@@ -28,6 +28,7 @@ import {
   type SrednjaProgramCounty,
   type SrednjaProgramSchool,
 } from "@/data/srednjaPrograms";
+import { getSchoolPrograms } from "@/lib/schoolPrograms";
 import {
   Accordion,
   AccordionContent,
@@ -279,6 +280,11 @@ const KartaSrednjihSkola = () => {
   const detailSchool = useMemo(
     () => (detailSchoolId ? highSchools.find((s) => s.id === detailSchoolId) ?? null : null),
     [detailSchoolId],
+  );
+
+  const detailPrograms = useMemo(
+    () => (detailSchool ? getSchoolPrograms(detailSchool.name, detailSchool.city) : []),
+    [detailSchool],
   );
 
   // ---- Programi po županijama i školama (izvor: srednja.hr kalkulator) ----
@@ -814,6 +820,7 @@ const KartaSrednjihSkola = () => {
                 <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 xl:grid-cols-3">
                   {filtered.map((school, i) => {
                     const initial = school.name.trim().charAt(0).toUpperCase() || "?";
+                    const cardPrograms = getSchoolPrograms(school.name, school.city);
                     return (
                       <motion.div
                         key={school.id}
@@ -888,6 +895,24 @@ const KartaSrednjihSkola = () => {
                                 <span className="truncate">
                                   {school.website.replace(/^https?:\/\//, "").replace(/\/$/, "")}
                                 </span>
+                              </div>
+                            )}
+                            {cardPrograms.length > 0 && (
+                              <div className="flex flex-wrap items-center gap-1 pt-1">
+                                {cardPrograms.slice(0, 2).map((program) => (
+                                  <span
+                                    key={program}
+                                    className="inline-flex max-w-full items-center gap-1 rounded-md border border-sky-500/20 bg-sky-500/5 px-1.5 py-0.5 text-[10px] font-medium text-sky-700 dark:text-sky-400"
+                                  >
+                                    <BookOpen className="h-2.5 w-2.5 shrink-0" />
+                                    <span className="truncate">{program}</span>
+                                  </span>
+                                ))}
+                                {cardPrograms.length > 2 && (
+                                  <span className="inline-flex items-center rounded-md bg-muted px-1.5 py-0.5 text-[10px] font-semibold text-muted-foreground">
+                                    +{cardPrograms.length - 2} programa
+                                  </span>
+                                )}
                               </div>
                             )}
                           </div>
@@ -1193,6 +1218,39 @@ const KartaSrednjihSkola = () => {
                     <div className="min-w-0 flex-1">
                       <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">Osnivač</p>
                       <p className="text-sm font-medium text-foreground">{detailSchool.founder}</p>
+                    </div>
+                  </div>
+                )}
+
+                {detailPrograms.length > 0 && (
+                  <div className="flex items-start gap-3 rounded-xl border border-sky-500/25 bg-sky-500/5 p-3">
+                    <BookOpen className="mt-0.5 h-4 w-4 shrink-0 text-sky-600 dark:text-sky-400" />
+                    <div className="min-w-0 flex-1">
+                      <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+                        Upisni programi ({detailPrograms.length})
+                      </p>
+                      <div className="mt-2 flex flex-wrap gap-1.5">
+                        {detailPrograms.map((program) => (
+                          <span
+                            key={program}
+                            className="inline-flex items-center gap-1.5 rounded-lg border border-border/60 bg-background px-2.5 py-1 text-xs font-medium text-foreground"
+                          >
+                            <GraduationCap className="h-3 w-3 shrink-0 text-sky-600 dark:text-sky-400" />
+                            {program}
+                          </span>
+                        ))}
+                      </div>
+                      <p className="mt-2 text-[10px] text-muted-foreground">
+                        Izvor:{" "}
+                        <a
+                          href="https://www.srednja.hr/srednja-kalkulator"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="font-medium text-primary hover:underline"
+                        >
+                          srednja.hr
+                        </a>
+                      </p>
                     </div>
                   </div>
                 )}
