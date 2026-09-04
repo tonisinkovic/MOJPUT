@@ -21,6 +21,85 @@ import {
 } from "lucide-react";
 import { useMemo, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
+import HeaderDecor, { headerDecorTextPad } from "@/components/header-animations/HeaderDecor";
+
+/** Dvoje roditelja i dijete — prepoznatljivi likovi (glava, tijelo, ruke, noge). */
+function FamilyAnimation() {
+  return (
+    <div className="relative h-full w-full">
+      <style>{`
+        @keyframes familySwayL { 0%,100% { transform: translateY(0) rotate(-1.2deg); } 50% { transform: translateY(-3px) rotate(1deg); } }
+        @keyframes familySwayC { 0%,100% { transform: translateY(1px) rotate(1.2deg); } 50% { transform: translateY(-5px) rotate(-1.2deg); } }
+        @keyframes familySwayR { 0%,100% { transform: translateY(0) rotate(1.1deg); } 50% { transform: translateY(-3px) rotate(-0.9deg); } }
+        @keyframes familyHeart { 0%,100% { opacity: 0.25; transform: translateY(3px) scale(0.9); } 50% { opacity: 0.7; transform: translateY(-5px) scale(1.1); } }
+        .family-l { transform-origin: 36px 128px; animation: familySwayL 3.6s ease-in-out infinite; }
+        .family-c { transform-origin: 80px 128px; animation: familySwayC 3.1s ease-in-out infinite 0.12s; }
+        .family-r { transform-origin: 124px 128px; animation: familySwayR 3.7s ease-in-out infinite 0.22s; }
+        .family-heart { animation: familyHeart 2.8s ease-in-out infinite; }
+      `}</style>
+      <svg viewBox="0 0 160 140" fill="none" className="h-full w-full">
+        {/* Lijevi roditelj */}
+        <g className="family-l">
+          <ellipse cx="36" cy="129" rx="10" ry="2.4" className="fill-current text-foreground" opacity="0.18" />
+          <path d="M30 128 L30 100 L34 100 L36 128 Z" className="fill-current text-foreground" opacity="0.72" />
+          <path d="M38 128 L38 100 L42 100 L42 128 Z" className="fill-current text-foreground" opacity="0.72" />
+          <ellipse cx="31" cy="128" rx="4.2" ry="2.1" className="fill-current text-foreground" opacity="0.78" />
+          <ellipse cx="41" cy="128" rx="4.2" ry="2.1" className="fill-current text-foreground" opacity="0.78" />
+          <path d="M27 64 H45 L47 100 H25 Z" className="fill-current text-foreground" opacity="0.8" />
+          <path d="M27 64 C22 74 21 88 24 98" className="stroke-current text-foreground" strokeWidth="4.2" strokeLinecap="round" opacity="0.75" />
+          <path d="M45 66 C54 74 62 82 68 90" className="stroke-current text-foreground" strokeWidth="4.2" strokeLinecap="round" opacity="0.75" />
+          <rect x="31" y="58" width="10" height="7" rx="2" className="fill-current text-foreground" opacity="0.7" />
+          <circle cx="36" cy="42" r="11" className="fill-current text-foreground" opacity="0.88" />
+          <path d="M26 40 C26 30 31 26 36 26 C41 26 46 30 46 39 C43 34 39 33 36 33 C32 33 28 35 26 40 Z" className="fill-current text-foreground" opacity="0.95" />
+          <circle cx="32.4" cy="43" r="1.15" className="fill-current text-background" />
+          <circle cx="39.6" cy="43" r="1.15" className="fill-current text-background" />
+          <path d="M33.2 48.2 C35 50 37 50 38.8 48.2" className="stroke-current text-background" strokeWidth="1.15" strokeLinecap="round" />
+        </g>
+
+        {/* Dijete u sredini */}
+        <g className="family-c">
+          <ellipse cx="80" cy="129" rx="8" ry="2" className="fill-current text-foreground" opacity="0.16" />
+          <path d="M75 128 L75 106 L78.5 106 L80 128 Z" className="fill-current text-foreground" opacity="0.7" />
+          <path d="M81.5 128 L81.5 106 L85 106 L85 128 Z" className="fill-current text-foreground" opacity="0.7" />
+          <ellipse cx="76" cy="128" rx="3.4" ry="1.8" className="fill-current text-foreground" opacity="0.78" />
+          <ellipse cx="84" cy="128" rx="3.4" ry="1.8" className="fill-current text-foreground" opacity="0.78" />
+          <path d="M73 78 H87 L88.5 106 H71.5 Z" className="fill-current text-foreground" opacity="0.82" />
+          <path d="M73 80 C68 84 66 88 68 91" className="stroke-current text-foreground" strokeWidth="3.4" strokeLinecap="round" opacity="0.75" />
+          <path d="M87 80 C92 84 94 88 92 91" className="stroke-current text-foreground" strokeWidth="3.4" strokeLinecap="round" opacity="0.75" />
+          <rect x="76" y="73" width="8" height="6" rx="1.6" className="fill-current text-foreground" opacity="0.68" />
+          <circle cx="80" cy="62" r="8.4" className="fill-current text-foreground" opacity="0.9" />
+          <path d="M72.4 60 C73 54 76 51 80 51 C84 51 87 54 87.6 60 C85 56.5 82.4 55.5 80 55.5 C77.6 55.5 75 56.5 72.4 60 Z" className="fill-current text-foreground" opacity="0.96" />
+          <circle cx="77.2" cy="62.6" r="1" className="fill-current text-background" />
+          <circle cx="82.8" cy="62.6" r="1" className="fill-current text-background" />
+          <path d="M77.8 66.4 C79 67.8 81 67.8 82.2 66.4" className="stroke-current text-background" strokeWidth="1.05" strokeLinecap="round" />
+        </g>
+
+        {/* Desni roditelj */}
+        <g className="family-r">
+          <ellipse cx="124" cy="129" rx="10" ry="2.4" className="fill-current text-foreground" opacity="0.18" />
+          <path d="M118 128 L118 100 L122 100 L124 128 Z" className="fill-current text-foreground" opacity="0.72" />
+          <path d="M126 128 L126 100 L130 100 L130 128 Z" className="fill-current text-foreground" opacity="0.72" />
+          <ellipse cx="119" cy="128" rx="4.2" ry="2.1" className="fill-current text-foreground" opacity="0.78" />
+          <ellipse cx="129" cy="128" rx="4.2" ry="2.1" className="fill-current text-foreground" opacity="0.78" />
+          <path d="M113 66 H135 L137 100 H111 Z" className="fill-current text-foreground" opacity="0.8" />
+          <path d="M135 66 C140 76 141 88 138 98" className="stroke-current text-foreground" strokeWidth="4.2" strokeLinecap="round" opacity="0.75" />
+          <path d="M113 68 C104 76 96 83 92 90" className="stroke-current text-foreground" strokeWidth="4.2" strokeLinecap="round" opacity="0.75" />
+          <rect x="119" y="60" width="10" height="7" rx="2" className="fill-current text-foreground" opacity="0.7" />
+          <circle cx="124" cy="42" r="11" className="fill-current text-foreground" opacity="0.88" />
+          <path d="M113 36 C114 26 119 23 124 23 C130 23 135 27 136 37 C136 44 134 48 132 50 C130 44 127 41 124 41 C120 41 116 44 114 50 C112 46 112 40 113 36 Z" className="fill-current text-foreground" opacity="0.95" />
+          <circle cx="120.4" cy="43" r="1.15" className="fill-current text-background" />
+          <circle cx="127.6" cy="43" r="1.15" className="fill-current text-background" />
+          <path d="M121.2 48.2 C123 50 125 50 126.8 48.2" className="stroke-current text-background" strokeWidth="1.15" strokeLinecap="round" />
+        </g>
+
+        <path
+          className="family-heart fill-current text-foreground"
+          d="M80 20 C78.2 16.4 73 16.6 73 21.2 C73 25 80 30 80 30 C80 30 87 25 87 21.2 C87 16.6 81.8 16.4 80 20 Z"
+        />
+      </svg>
+    </div>
+  );
+}
 
 function experienceQuery(isJunior: boolean): string {
   return isJunior ? "?experience=junior" : "";
@@ -215,11 +294,15 @@ const Roditelji = () => {
             className="pointer-events-none absolute -bottom-14 -left-10 h-32 w-32 rounded-full bg-primary/10 blur-3xl sm:h-48 sm:w-48"
           />
 
+          <HeaderDecor className="opacity-[0.34] sm:opacity-[0.26]">
+            <FamilyAnimation />
+          </HeaderDecor>
+
           <div className="relative flex flex-col gap-4 sm:flex-row sm:items-start sm:gap-5">
             <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl gradient-hero text-primary-foreground shadow-md sm:h-14 sm:w-14">
               <Users className="h-6 w-6 sm:h-7 sm:w-7" />
             </div>
-            <div className="min-w-0 flex-1">
+            <div className={`min-w-0 flex-1 ${headerDecorTextPad}`}>
               <span className="inline-flex items-center gap-1 rounded-full border border-primary/25 bg-primary/10 px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-primary">
                 <Sparkles className="h-3 w-3" />
                 {isJunior ? "Za roditelje učenika osnovne škole" : "Za roditelje maturanata"}

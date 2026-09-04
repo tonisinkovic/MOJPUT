@@ -45,6 +45,7 @@ import {
   CheckCircle2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import HeaderDecor, { headerDecorTextPad } from "@/components/header-animations/HeaderDecor";
 import {
   dorms,
   INCOME_BANDS,
@@ -100,6 +101,56 @@ const defaultInput = (): DormCalculatorInput => ({
   ectsCurrentYear: null,
   invaliditet1: false,
 });
+
+/** Kuća se gradi od temelja do krova, pa se ciklus ponavlja. */
+function HouseBuildAnimation() {
+  const dur = "7.5s";
+  return (
+    <div className="relative h-full w-full">
+      <style>{`
+        @keyframes houseGround { 0% { opacity: 0; transform: scaleX(0.2); } 8% { opacity: 0.55; transform: scaleX(1); } 90% { opacity: 0.55; transform: scaleX(1); } 100% { opacity: 0; transform: scaleX(1); } }
+        @keyframes houseSlab { 0%,8% { opacity: 0; transform: scaleX(0.15) scaleY(0.4); } 18% { opacity: 0.85; transform: scaleX(1) scaleY(1); } 90% { opacity: 0.85; transform: scaleX(1) scaleY(1); } 100% { opacity: 0; transform: scaleX(1) scaleY(1); } }
+        @keyframes houseWall { 0%,18% { opacity: 0; transform: scaleY(0.06); } 38% { opacity: 0.9; transform: scaleY(1); } 90% { opacity: 0.9; transform: scaleY(1); } 100% { opacity: 0; transform: scaleY(1); } }
+        @keyframes houseRoof { 0%,36% { opacity: 0; transform: translateY(18px) scale(0.72); } 52% { opacity: 0.95; transform: translateY(0) scale(1); } 90% { opacity: 0.95; transform: translateY(0) scale(1); } 100% { opacity: 0; transform: translateY(0) scale(1); } }
+        @keyframes houseChimney { 0%,50% { opacity: 0; transform: scaleY(0.1); } 60% { opacity: 0.8; transform: scaleY(1); } 90% { opacity: 0.8; transform: scaleY(1); } 100% { opacity: 0; transform: scaleY(1); } }
+        @keyframes houseDoor { 0%,58% { opacity: 0; transform: scaleY(0.08); } 68% { opacity: 0.9; transform: scaleY(1); } 90% { opacity: 0.9; transform: scaleY(1); } 100% { opacity: 0; transform: scaleY(1); } }
+        @keyframes houseWindow { 0%,64% { opacity: 0; transform: scale(0.2); } 74% { opacity: 0.85; transform: scale(1.08); } 78% { opacity: 0.75; transform: scale(1); } 90% { opacity: 0.75; transform: scale(1); } 100% { opacity: 0; transform: scale(1); } }
+        @keyframes houseSmoke { 0%,68% { opacity: 0; transform: translateY(8px) scale(0.4); } 78% { opacity: 0.45; transform: translateY(0) scale(1); } 90% { opacity: 0.15; transform: translateY(-10px) scale(1.15); } 100% { opacity: 0; transform: translateY(-14px) scale(1.2); } }
+        @keyframes houseBrick { 0%,22% { opacity: 0; transform: translate(18px,-28px) rotate(-12deg); } 30% { opacity: 0.7; transform: translate(0,0) rotate(0deg); } 40% { opacity: 0; transform: translate(0,0) rotate(0deg); } 100% { opacity: 0; } }
+        .house-ground { transform-origin: 80px 168px; animation: houseGround ${dur} cubic-bezier(.4,0,.2,1) infinite; }
+        .house-slab { transform-origin: 80px 156px; animation: houseSlab ${dur} cubic-bezier(.4,0,.2,1) infinite; }
+        .house-wall { transform-origin: 80px 150px; animation: houseWall ${dur} cubic-bezier(.4,0,.2,1) infinite; }
+        .house-roof { transform-origin: 80px 78px; animation: houseRoof ${dur} cubic-bezier(.34,1.4,.64,1) infinite; }
+        .house-chimney { transform-origin: 118px 86px; animation: houseChimney ${dur} cubic-bezier(.4,0,.2,1) infinite; }
+        .house-door { transform-origin: 80px 150px; animation: houseDoor ${dur} cubic-bezier(.4,0,.2,1) infinite; }
+        .house-window { transform-origin: center; animation: houseWindow ${dur} cubic-bezier(.34,1.4,.64,1) infinite; }
+        .house-smoke { animation: houseSmoke ${dur} ease-out infinite; }
+        .house-brick { animation: houseBrick ${dur} cubic-bezier(.4,0,.2,1) infinite; }
+      `}</style>
+      <svg viewBox="0 0 160 180" fill="none" className="h-full w-full">
+        <ellipse className="house-ground fill-current text-foreground" cx="80" cy="166" rx="58" ry="7" opacity="0" />
+        <rect className="house-slab fill-current text-foreground" x="36" y="148" width="88" height="10" rx="3" opacity="0" />
+        <rect className="house-brick fill-current text-foreground" x="52" y="118" width="16" height="8" rx="1.5" opacity="0" />
+        <path
+          className="house-wall fill-current text-foreground"
+          d="M42 150 V86 H118 V150 H42 Z"
+          opacity="0"
+        />
+        <path
+          className="house-roof fill-current text-foreground"
+          d="M28 90 L80 42 L132 90 L122 90 L80 54 L38 90 Z"
+          opacity="0"
+        />
+        <rect className="house-chimney fill-current text-foreground" x="108" y="50" width="12" height="28" rx="2" opacity="0" />
+        <circle className="house-smoke fill-current text-foreground" cx="114" cy="40" r="5" opacity="0" />
+        <circle className="house-smoke fill-current text-foreground" cx="121" cy="32" r="3.5" opacity="0" />
+        <rect className="house-door fill-current text-background" x="70" y="118" width="20" height="32" rx="3" opacity="0" />
+        <rect className="house-window fill-current text-background" x="50" y="98" width="16" height="16" rx="2" opacity="0" />
+        <rect className="house-window fill-current text-background" x="94" y="98" width="16" height="16" rx="2" opacity="0" />
+      </svg>
+    </div>
+  );
+}
 
 function stepValid(step: number, input: DormCalculatorInput): boolean {
   if (step === 0) return true;
@@ -271,11 +322,15 @@ export default function KalkulatorDoma() {
             className="pointer-events-none absolute -bottom-14 -left-10 h-32 w-32 rounded-full bg-primary/10 blur-3xl sm:h-48 sm:w-48"
           />
 
+          <HeaderDecor className="opacity-[0.28] sm:opacity-[0.16]">
+            <HouseBuildAnimation />
+          </HeaderDecor>
+
           <div className="relative flex flex-col gap-4 sm:flex-row sm:items-start sm:gap-5">
             <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl gradient-hero text-primary-foreground shadow-md sm:h-14 sm:w-14">
               <Home className="h-6 w-6 sm:h-7 sm:w-7" strokeWidth={2} aria-hidden />
             </div>
-            <div className="min-w-0 flex-1">
+            <div className={cn("min-w-0 flex-1", headerDecorTextPad)}>
               <span className="inline-flex items-center gap-1 rounded-full border border-primary/25 bg-primary/10 px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-primary">
                 <Sparkles className="h-3 w-3" aria-hidden />
                 Natječaj · studentski smještaj

@@ -58,6 +58,8 @@ import {
 } from "@/components/ui/command";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
+import CalculatorAnimation from "@/components/header-animations/CalculatorAnimation";
+import HeaderDecor, { headerDecorTextPad } from "@/components/header-animations/HeaderDecor";
 import {
   scoringFormulas,
   calculateTotal,
@@ -487,11 +489,15 @@ const Kalkulator = () => {
                 className="pointer-events-none absolute -bottom-14 -left-10 h-32 w-32 rounded-full bg-primary/10 blur-3xl sm:h-48 sm:w-48"
               />
 
+              <HeaderDecor className="opacity-[0.26] sm:opacity-[0.14]">
+                <CalculatorAnimation />
+              </HeaderDecor>
+
               <div className="relative flex flex-col gap-4 sm:flex-row sm:items-start sm:gap-5">
                 <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl gradient-hero text-primary-foreground shadow-md sm:h-14 sm:w-14">
                   <CalcIcon className="h-6 w-6 sm:h-7 sm:w-7" />
                 </div>
-                <div className="min-w-0 flex-1">
+                <div className={cn("min-w-0 flex-1", headerDecorTextPad)}>
                   <span className="inline-flex items-center gap-1 rounded-full border border-primary/25 bg-primary/10 px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-primary">
                     <Sparkles className="h-3 w-3" />
                     <span className="tabular-nums">{PROGRAM_OPTIONS.length} programa ┬Ě bodovne formule 2025.</span>

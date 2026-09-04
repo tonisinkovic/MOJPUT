@@ -29,6 +29,7 @@ import { Link, useLocation, useSearchParams } from "react-router-dom";
 import { authLogout, authMe, userFromAuthMe, type AuthUser } from "@/lib/auth";
 import { resolveExperienceMode, type MojPutExperienceMode } from "@/lib/experience";
 import { cn } from "@/lib/utils";
+import HeaderDecor, { headerDecorTextPad } from "@/components/header-animations/HeaderDecor";
 
 type ForumMessage = {
   id: number;
@@ -315,6 +316,164 @@ function writeForumMessagesCache(conversationId: number, messages: ForumMessage[
   } catch {
     /* kvota / privatni način */
   }
+}
+
+/** Animirana tipkovnica s prstom koji tipka „hej!” — kao kalkulator na /kalkulator. */
+function KeyboardTypingAnimation() {
+  const rows = [
+    ["Q", "W", "E", "R", "T", "Y", "U"],
+    ["A", "S", "D", "F", "G", "H", "J"],
+    ["Z", "X", "C", "V", "B", "N", "M"],
+  ];
+  const keyW = 22;
+  const keyH = 20;
+  const gap = 3.5;
+  const startY = 78;
+  const startX = [30, 38, 46];
+  const keyCenter = (row: number, col: number) => ({
+    x: startX[row] + col * (keyW + gap) + keyW / 2,
+    y: startY + row * (keyH + gap) + keyH / 2,
+  });
+  const bang = { x: 168, y: startY + 3 * (keyH + gap) + keyH / 2 };
+
+  const seq = [
+    { ...keyCenter(1, 5), ch: "h" },
+    { ...keyCenter(0, 2), ch: "e" },
+    { ...keyCenter(1, 6), ch: "j" },
+    { ...bang, ch: "!" },
+  ];
+
+  const animDur = "5.8s";
+  const stepPct = 100 / seq.length;
+  const movePct = 6;
+  let fingerKF = "";
+  const pressKFs: string[] = [];
+  const popKFs: string[] = [];
+  const charKFs: string[] = [];
+
+  for (let i = 0; i < seq.length; i++) {
+    const arriveAt = i * stepPct + movePct;
+    const pressAt = arriveAt + 3;
+    const leaveAt = (i + 1) * stepPct - 1;
+    const p = seq[i];
+    const lx = (p.x / 220) * 100;
+    const ty = (p.y / 190) * 100;
+    fingerKF += `${arriveAt.toFixed(1)}% { left: ${lx.toFixed(2)}%; top: ${(ty - 11).toFixed(2)}%; }\n`;
+    fingerKF += `${pressAt.toFixed(1)}% { left: ${lx.toFixed(2)}%; top: ${(ty - 6).toFixed(2)}%; }\n`;
+    fingerKF += `${(pressAt + 2).toFixed(1)}% { left: ${lx.toFixed(2)}%; top: ${(ty - 10).toFixed(2)}%; }\n`;
+    fingerKF += `${leaveAt.toFixed(1)}% { left: ${lx.toFixed(2)}%; top: ${(ty - 10).toFixed(2)}%; }\n`;
+
+    pressKFs.push(
+      `0% { opacity: 0.28; transform: scale(1); } ${arriveAt.toFixed(1)}% { opacity: 0.28; transform: scale(1); } ${pressAt.toFixed(1)}% { opacity: 0.9; transform: scale(0.9); } ${(pressAt + 3).toFixed(1)}% { opacity: 0.4; transform: scale(1); } 100% { opacity: 0.28; transform: scale(1); }`,
+    );
+    popKFs.push(
+      `0% { opacity: 0; transform: scale(0.4); } ${arriveAt.toFixed(1)}% { opacity: 0; transform: scale(0.4); } ${pressAt.toFixed(1)}% { opacity: 0.55; transform: scale(1.7); } ${(pressAt + 4).toFixed(1)}% { opacity: 0; transform: scale(2.1); } 100% { opacity: 0; transform: scale(0.4); }`,
+    );
+    charKFs.push(
+      `0% { opacity: 0; transform: scale(0.5); } ${(pressAt - 0.1).toFixed(1)}% { opacity: 0; transform: scale(0.5); } ${pressAt.toFixed(1)}% { opacity: 0.9; transform: scale(1.2); } ${(pressAt + 2).toFixed(1)}% { opacity: 0.75; transform: scale(1); } 90% { opacity: 0.75; transform: scale(1); } 100% { opacity: 0; transform: scale(0.5); }`,
+    );
+  }
+  fingerKF = `0% { left: ${((seq[0].x / 220) * 100).toFixed(2)}%; top: ${(((seq[0].y + 36) / 190) * 100).toFixed(2)}%; opacity: 0; }\n5% { opacity: 1; }\n${fingerKF}94% { opacity: 1; }\n100% { left: ${(((seq[3].x + 24) / 220) * 100).toFixed(2)}%; top: ${(((seq[3].y - 50) / 190) * 100).toFixed(2)}%; opacity: 0; }`;
+
+  return (
+    <div className="relative h-full w-full">
+      <style>{`
+        @keyframes forumKbFinger { ${fingerKF} }
+        ${pressKFs.map((kf, i) => `@keyframes forumKbGlow${i} { ${kf} }`).join("\n")}
+        ${popKFs.map((kf, i) => `@keyframes forumKbPop${i} { ${kf} }`).join("\n")}
+        ${charKFs.map((kf, i) => `@keyframes forumKbChar${i} { ${kf} }`).join("\n")}
+        .forum-kb-finger { animation: forumKbFinger ${animDur} cubic-bezier(.4,0,.2,1) infinite; }
+        ${pressKFs.map((_, i) => `.forum-kb-glow-${i} { animation: forumKbGlow${i} ${animDur} ease-out infinite; transform-origin: center; }`).join("\n")}
+        ${popKFs.map((_, i) => `.forum-kb-pop-${i} { animation: forumKbPop${i} ${animDur} ease-out infinite; }`).join("\n")}
+        ${charKFs.map((_, i) => `.forum-kb-char-${i} { animation: forumKbChar${i} ${animDur} ease-out infinite; }`).join("\n")}
+      `}</style>
+      <svg viewBox="0 0 220 190" fill="none" className="h-full w-full">
+        <rect x="18" y="10" width="184" height="170" rx="16" className="fill-current text-foreground" opacity="0.88" />
+        <rect x="30" y="20" width="160" height="42" rx="8" className="fill-current text-background" opacity="0.38" />
+        {seq.map((s, i) => (
+          <text
+            key={s.ch}
+            x={78 + i * 18}
+            y="48"
+            textAnchor="middle"
+            className={`fill-current text-foreground forum-kb-char-${i}`}
+            fontSize="20"
+            fontWeight="700"
+            fontFamily="ui-monospace, monospace"
+            opacity="0"
+          >
+            {s.ch}
+          </text>
+        ))}
+        {rows.map((row, r) =>
+          row.map((label, c) => {
+            const x = startX[r] + c * (keyW + gap);
+            const y = startY + r * (keyH + gap);
+            const pressIdx = seq.findIndex((s) => Math.abs(s.x - (x + keyW / 2)) < 0.5 && Math.abs(s.y - (y + keyH / 2)) < 0.5);
+            return (
+              <g key={`${r}-${label}`}>
+                <rect
+                  x={x}
+                  y={y}
+                  width={keyW}
+                  height={keyH}
+                  rx="5"
+                  className={cn("fill-current text-background", pressIdx >= 0 && `forum-kb-glow-${pressIdx}`)}
+                  opacity="0.32"
+                />
+                {pressIdx >= 0 && (
+                  <circle
+                    cx={x + keyW / 2}
+                    cy={y + keyH / 2}
+                    r="12"
+                    className={`fill-current text-background forum-kb-pop-${pressIdx}`}
+                    opacity="0"
+                  />
+                )}
+                <text
+                  x={x + keyW / 2}
+                  y={y + 14}
+                  textAnchor="middle"
+                  className="fill-current text-foreground"
+                  fontSize="9"
+                  fontWeight="700"
+                  opacity="0.8"
+                >
+                  {label}
+                </text>
+              </g>
+            );
+          }),
+        )}
+        <rect x="46" y={startY + 3 * (keyH + gap)} width="88" height={keyH} rx="5" className="fill-current text-background" opacity="0.28" />
+        <rect
+          x={bang.x - keyW / 2}
+          y={bang.y - keyH / 2}
+          width={keyW}
+          height={keyH}
+          rx="5"
+          className="fill-current text-background forum-kb-glow-3"
+          opacity="0.32"
+        />
+        <circle cx={bang.x} cy={bang.y} r="12" className="fill-current text-background forum-kb-pop-3" opacity="0" />
+        <text x={bang.x} y={bang.y + 4} textAnchor="middle" className="fill-current text-foreground" fontSize="11" fontWeight="700" opacity="0.85">
+          !
+        </text>
+      </svg>
+      <div className="forum-kb-finger absolute h-6 w-4 -translate-x-1/2 -translate-y-1/2 sm:h-10 sm:w-7">
+        <svg viewBox="0 0 30 44" fill="none" className="h-full w-full drop-shadow-md">
+          <ellipse cx="15" cy="41" rx="11" ry="3" className="fill-current text-foreground" opacity="0.25" />
+          <path
+            d="M9 40 C9 40 6 30 6 20 C6 11 10 4 15 4 C20 4 24 11 24 20 C24 30 21 40 21 40 Z"
+            className="fill-current text-foreground"
+            opacity="0.6"
+          />
+          <ellipse cx="15" cy="10" rx="5.5" ry="4.5" className="fill-current text-foreground" opacity="0.3" />
+          <ellipse cx="15" cy="37" rx="6.5" ry="4.5" className="fill-current text-foreground" opacity="0.8" />
+        </svg>
+      </div>
+    </div>
+  );
 }
 
 const Forum = () => {
@@ -790,11 +949,15 @@ const Forum = () => {
             className="pointer-events-none absolute -bottom-14 -left-10 h-36 w-36 rounded-full bg-primary/10 blur-3xl sm:h-48 sm:w-48"
           />
 
+          <HeaderDecor className="opacity-[0.3] sm:opacity-[0.18]">
+            <KeyboardTypingAnimation />
+          </HeaderDecor>
+
           <div className="relative flex flex-col gap-4 sm:flex-row sm:items-start sm:gap-5">
             <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl gradient-hero text-primary-foreground shadow-md sm:h-14 sm:w-14">
               <MessagesSquare className="h-6 w-6 sm:h-7 sm:w-7" />
             </div>
-            <div className="min-w-0 flex-1">
+            <div className={cn("min-w-0 flex-1", headerDecorTextPad)}>
               <div className="flex flex-wrap items-center gap-2">
                 <span className="inline-flex items-center gap-1 rounded-full border border-primary/25 bg-primary/10 px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-primary">
                   <Sparkles className="h-3 w-3" />
