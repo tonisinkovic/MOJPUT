@@ -9,7 +9,7 @@ const footerLinks = [
     links: [
       { label: "Karta fakulteta", path: "/karta" },
       { label: "Kviz", path: "/kviz" },
-      { label: "Kalkulator bodova", path: "/kalkulator" },
+      { label: "Kalkulator bodova", path: "/kalkulator-fakulteti" },
       { label: "Samoprocjena", path: "/samoprocjena" },
     ],
   },
@@ -54,6 +54,7 @@ const Footer = () => {
     if (link.path === "/roditelji") return { label: "Roditeljski kutak", path: "/roditelji?experience=junior" };
     if (link.path === "/chatbot") return { label: "Chatbot", path: "/chatbot?experience=junior" };
     if (link.path === "/samoprocjena") return { label: "Programi", path: "/programi" };
+    if (link.path === "/kalkulator-fakulteti") return { label: "Kalkulator bodova", path: "/kalkulator" };
     return link;
   };
 

@@ -66,7 +66,7 @@ const HERO_QUICK_ACTIONS: HeroQuickAction[] = [
     iconWrap: "bg-blue-500/15 text-blue-600 dark:text-blue-400 ring-blue-500/25",
   },
   {
-    to: "/kalkulator",
+    to: "/kalkulator-fakulteti",
     label: "Bodovi",
     hook: "Izračunaj",
     Icon: Calculator,
@@ -164,7 +164,7 @@ const features: HomeFeature[] = [
     icon: <Calculator className="h-6 w-6 text-primary" />,
     title: "Kalkulator bodova",
     description: "Izračunaj bodove za upis i saznaj koje fakultete možeš upisati.",
-    path: "/kalkulator",
+    path: "/kalkulator-fakulteti",
     highlighted: true,
   },
   {
@@ -357,7 +357,7 @@ const MojPutEntryIntro = ({
       }
       transition={{ duration: isLeaving ? 0.9 : 0.45, ease: [0.76, 0, 0.24, 1] }}
       className="relative min-h-screen overflow-x-hidden overflow-y-auto bg-[linear-gradient(135deg,hsl(210_38%_99%),hsl(216_30%_98%)_48%,hsl(190_38%_97%))] text-foreground"
-      style={{ fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", system-ui, sans-serif' }}
+      style={{ fontFamily: "'Plus Jakarta Sans', system-ui, sans-serif" }}
     >
       <motion.div
         className="absolute inset-0 bg-[radial-gradient(circle_at_50%_-12%,hsl(174_62%_42%/0.2),transparent_32%),radial-gradient(circle_at_12%_24%,hsl(205_82%_54%/0.1),transparent_25%),radial-gradient(circle_at_88%_24%,hsl(14_90%_62%/0.08),transparent_24%)]"
@@ -1611,6 +1611,7 @@ const Index = () => {
           if (a.to === "/karta") return { ...a, to: "/srednje-skole", hook: "443 škole" };
           if (a.to === "/forum") return { ...a, to: "/forum?experience=junior" };
           if (a.to === "/kviz") return { ...a, to: "/kviz-srednja" };
+          if (a.to === "/kalkulator-fakulteti") return { ...a, to: "/kalkulator" };
           return a;
         })
     : HERO_QUICK_ACTIONS;
@@ -1645,7 +1646,7 @@ const Index = () => {
               path: "/kviz-srednja",
             };
           }
-          if (f.path === "/kalkulator") {
+          if (f.path === "/kalkulator" || f.path === "/kalkulator-fakulteti") {
             return {
               ...f,
               title: "Kalkulator bodova",

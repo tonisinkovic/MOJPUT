@@ -44,16 +44,17 @@ const navPath = (path: string) => path.split("?")[0];
 const primaryNavSenior: NavEntry[] = [
   { label: "Karta fakulteta", path: "/karta", icon: Map },
   { label: "Kviz", path: "/kviz", icon: HelpCircle },
-  { label: "Kalkulator", path: "/kalkulator", icon: Calculator },
+  { label: "Kalkulator", path: "/kalkulator-fakulteti", icon: Calculator },
   { label: "Forum", path: "/forum", icon: MessageSquare },
 ];
 
-// U Junior modu karta vodi na srednje škole, a kviz na kviz za 8. razred.
+// U Junior modu karta vodi na srednje škole, kviz na 8. razred, kalkulator na srednju.
 const primaryNavJunior: NavEntry[] = [
   { label: "Srednje škole", path: "/srednje-skole", icon: Map },
   { label: "Kviz", path: "/kviz-srednja", icon: HelpCircle },
   { label: "Pedagog", path: "/razred", icon: Users },
-  ...primaryNavSenior.slice(2),
+  { label: "Kalkulator", path: "/kalkulator", icon: Calculator },
+  { label: "Forum", path: "/forum", icon: MessageSquare },
 ];
 
 // Sekundarne - u "Više" padajućem na desktopu, lista na mobitelu.
