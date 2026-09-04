@@ -42,11 +42,17 @@ const Footer = () => {
     return onExperienceChange(sync);
   }, []);
 
+  const juniorHidden = new Set(["/video", "/kalkulator-doma"]);
+
   /** U Junior modu kviz i karta vode na verzije za srednju školu. */
   const resolveLink = (link: { label: string; path: string }) => {
     if (!isJunior) return link;
     if (link.path === "/kviz") return { label: "Kviz za srednju", path: "/kviz-srednja" };
     if (link.path === "/karta") return { label: "Karta srednjih škola", path: "/srednje-skole" };
+    if (link.path === "/forum") return { label: "Forum", path: "/forum?experience=junior" };
+    if (link.path === "/roditelji") return { label: "Roditeljski kutak", path: "/roditelji?experience=junior" };
+    if (link.path === "/chatbot") return { label: "Chatbot", path: "/chatbot?experience=junior" };
+    if (link.path === "/samoprocjena") return { label: "Programi", path: "/programi" };
     return link;
   };
 
@@ -78,7 +84,9 @@ const Footer = () => {
               <span className="text-gradient">MojPut</span>
             </Link>
             <p className="text-sm text-muted-foreground leading-relaxed">
-              Centralno digitalno mjesto za maturante koji donose odluku o budućem studiju i karijeri.
+              {isJunior
+                ? "Putokaz za 8. razred — srednje škole, smjerovi i upis, bez Senior alata koji zbunjuju."
+                : "Centralno digitalno mjesto za maturante koji donose odluku o budućem studiju i karijeri."}
             </p>
           </div>
 
@@ -88,7 +96,10 @@ const Footer = () => {
                 {group.title}
               </h4>
               <ul className="space-y-2.5">
-                {group.links.map(resolveLink).map((link) => (
+                {group.links
+                  .filter((link) => !isJunior || !juniorHidden.has(link.path))
+                  .map(resolveLink)
+                  .map((link) => (
                   <li key={link.path}>
                     <Link
                       to={link.path}
@@ -123,7 +134,7 @@ const Footer = () => {
               © {new Date().getFullYear()} MojPut. Sva prava pridržana.
             </p>
             <p className="inline-flex items-center gap-1.5 rounded-full border border-border/60 bg-background/60 px-3 py-1 text-xs text-muted-foreground shadow-sm backdrop-blur">
-              Izrađeno sa ❤️ za maturante Hrvatske!
+              {isJunior ? "Izrađeno sa ❤️ za osmaše Hrvatske!" : "Izrađeno sa ❤️ za maturante Hrvatske!"}
             </p>
           </div>
         </div>

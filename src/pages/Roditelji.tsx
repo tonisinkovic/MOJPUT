@@ -21,7 +21,7 @@ import {
 } from "lucide-react";
 import { useMemo, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
-import HeaderDecor, { headerDecorTextPad } from "@/components/header-animations/HeaderDecor";
+import HeaderDecor, { HeaderHero } from "@/components/header-animations/HeaderDecor";
 
 /** Dvoje roditelja i dijete — prepoznatljivi likovi (glava, tijelo, ruke, noge). */
 function FamilyAnimation() {
@@ -294,15 +294,18 @@ const Roditelji = () => {
             className="pointer-events-none absolute -bottom-14 -left-10 h-32 w-32 rounded-full bg-primary/10 blur-3xl sm:h-48 sm:w-48"
           />
 
-          <HeaderDecor className="opacity-[0.34] sm:opacity-[0.26]">
-            <FamilyAnimation />
-          </HeaderDecor>
-
-          <div className="relative flex flex-col gap-4 sm:flex-row sm:items-start sm:gap-5">
-            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl gradient-hero text-primary-foreground shadow-md sm:h-14 sm:w-14">
-              <Users className="h-6 w-6 sm:h-7 sm:w-7" />
-            </div>
-            <div className={`min-w-0 flex-1 ${headerDecorTextPad}`}>
+          <HeaderHero
+            icon={
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl gradient-hero text-primary-foreground shadow-md sm:h-14 sm:w-14">
+                <Users className="h-6 w-6 sm:h-7 sm:w-7" />
+              </div>
+            }
+            decor={
+              <HeaderDecor className="opacity-[0.48] sm:opacity-[0.26]">
+                <FamilyAnimation />
+              </HeaderDecor>
+            }
+          >
               <span className="inline-flex items-center gap-1 rounded-full border border-primary/25 bg-primary/10 px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-primary">
                 <Sparkles className="h-3 w-3" />
                 {isJunior ? "Za roditelje učenika osnovne škole" : "Za roditelje maturanata"}
@@ -315,9 +318,21 @@ const Roditelji = () => {
                   ? "Vodiči, mentalno zdravlje, forum i procjena — sve za podršku pri odabiru srednje škole."
                   : "Vodiči, mentalno zdravlje, forum i zajednička procjena — sve na jednom mjestu."}
               </p>
-            </div>
-          </div>
+          </HeaderHero>
         </motion.div>
+
+        {isJunior ? (
+          <div className="rounded-2xl border border-primary/20 bg-primary/[0.04] px-4 py-3 text-sm">
+            <p className="font-semibold">Dijete je riješilo kviz?</p>
+            <p className="mt-1 text-muted-foreground">
+              Pogledajte isti rezultat drugim jezikom — programi, škole u blizini i 4 pitanja za razgovor.
+              Vi ne rješavate kviz umjesto djeteta.
+            </p>
+            <Button asChild size="sm" className="mt-3 rounded-xl">
+              <Link to="/roditeljski-rezultat">Otvori rezultat za roditelje</Link>
+            </Button>
+          </div>
+        ) : null}
 
         {/* Toolbar: pretraga + favoriti + kategorije + nastavi */}
         <motion.div

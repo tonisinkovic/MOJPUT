@@ -1,4 +1,5 @@
 import Layout from "@/components/Layout";
+import JuniorLaterNotice from "@/components/junior/JuniorLaterNotice";
 import VideoCard from "@/components/VideoCard";
 import { VIDEOS, CATEGORIES, featuredYouTubeVideoId, secondFeaturedYouTubeVideoId } from "@/data/videos";
 import { motion, AnimatePresence } from "framer-motion";
@@ -181,6 +182,7 @@ const VideoPage = () => {
   return (
     <Layout>
       <section className="container max-w-7xl mx-auto px-3 sm:px-4 py-4 sm:py-8 md:py-12 pb-[max(1.5rem,env(safe-area-inset-bottom))]">
+        <JuniorLaterNotice tool="Video" />
         {/* Hero */}
         <motion.div
           initial={{ opacity: 0, y: 12 }}

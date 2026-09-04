@@ -1985,6 +1985,125 @@ async function main() {
     }
   });
 
+  const JUNIOR_CLASS_ALPHABET = "23456789ABCDEFGHJKMNPQRSTUVWXYZ";
+  const makeJuniorClassCode = () => {
+    let out = "";
+    for (let i = 0; i < 6; i += 1) out += JUNIOR_CLASS_ALPHABET[crypto.randomInt(JUNIOR_CLASS_ALPHABET.length)];
+    return out;
+  };
+  const normalizeJuniorClassCode = (raw) => {
+    const code = String(raw || "").toUpperCase().replace(/[^A-Z0-9]/g, "");
+    if (code.length !== 6) return null;
+    if (![...code].every((ch) => JUNIOR_CLASS_ALPHABET.includes(ch))) return null;
+    return code;
+  };
+  const mapJuniorClassEntry = (row) => ({
+    alias: row.alias || null,
+    programId: Number(row.program_id ?? row.programId),
+    programName: String(row.program_name ?? row.programName ?? ""),
+    pathway: row.pathway || null,
+    city: row.city || null,
+  });
+  const buildJuniorClassBoard = (klass, rows) => {
+    const entries = (rows || []).map(mapJuniorClassEntry);
+    const counts = new Map();
+    for (const entry of entries) {
+      const prev = counts.get(entry.programId);
+      if (prev) prev.count += 1;
+      else counts.set(entry.programId, { programId: entry.programId, name: entry.programName, count: 1 });
+    }
+    const tracks = [...counts.values()].sort((a, b) => b.count - a.count || a.name.localeCompare(b.name, "hr"));
+    return {
+      code: klass.code,
+      label: klass.label || null,
+      doneCount: entries.length,
+      tracks,
+      entries,
+    };
+  };
+
+  app.post("/api/junior/classes", async (req, res) => {
+    const label = String(req.body?.label || "").trim().slice(0, 40) || null;
+    try {
+      for (let attempt = 0; attempt < 8; attempt += 1) {
+        const code = makeJuniorClassCode();
+        try {
+          await db.prepare("INSERT INTO junior_classes (code, label) VALUES (?, ?)").run(code, label);
+          return res.json({ success: true, data: { code, label } });
+        } catch (err) {
+          if (attempt === 7) throw err;
+        }
+      }
+      return res.status(500).json({ success: false, message: "Nije uspjelo stvoriti kod." });
+    } catch (err) {
+      console.error("[junior-class:create]", err?.message || err);
+      return res.status(500).json({ success: false, message: "Kod razreda nije spremljen." });
+    }
+  });
+
+  app.get("/api/junior/classes/:code", async (req, res) => {
+    const code = normalizeJuniorClassCode(req.params.code);
+    if (!code) return res.status(400).json({ success: false, message: "Kod mora imati 6 znakova." });
+    try {
+      const klass = await db.prepare("SELECT id, code, label FROM junior_classes WHERE code = ?").get(code);
+      if (!klass) return res.status(404).json({ success: false, message: "Taj kod ne postoji." });
+      const rows = await db
+        .prepare(
+          "SELECT alias, program_id, program_name, pathway, city FROM junior_class_entries WHERE class_id = ? ORDER BY created_at ASC",
+        )
+        .all(klass.id);
+      return res.json({ success: true, data: buildJuniorClassBoard(klass, rows) });
+    } catch (err) {
+      console.error("[junior-class:get]", err?.message || err);
+      return res.status(500).json({ success: false, message: "Ploča razreda nije dostupna." });
+    }
+  });
+
+  app.post("/api/junior/classes/:code/join", async (req, res) => {
+    const code = normalizeJuniorClassCode(req.params.code);
+    if (!code) return res.status(400).json({ success: false, message: "Kod mora imati 6 znakova." });
+    const clientKey = String(req.body?.clientKey || "").trim().slice(0, 80);
+    const programId = Number(req.body?.programId);
+    const programName = String(req.body?.programName || "").trim().slice(0, 80);
+    const pathway = String(req.body?.pathway || "").trim().slice(0, 80) || null;
+    const city = String(req.body?.city || "").trim().slice(0, 40) || null;
+    const alias = String(req.body?.alias || "").trim().slice(0, 24) || null;
+    if (clientKey.length < 8) return res.status(400).json({ success: false, message: "Nedostaje ključ uređaja." });
+    if (!Number.isFinite(programId) || !programName) {
+      return res.status(400).json({ success: false, message: "Pošalji program iz kviza." });
+    }
+    try {
+      const klass = await db.prepare("SELECT id, code FROM junior_classes WHERE code = ?").get(code);
+      if (!klass) return res.status(404).json({ success: false, message: "Taj kod ne postoji." });
+      const existing = await db
+        .prepare("SELECT id FROM junior_class_entries WHERE class_id = ? AND client_key = ?")
+        .get(klass.id, clientKey);
+      if (existing) {
+        await db
+          .prepare(
+            "UPDATE junior_class_entries SET alias = ?, program_id = ?, program_name = ?, pathway = ?, city = ? WHERE id = ?",
+          )
+          .run(alias, programId, programName, pathway, city, existing.id);
+        return res.json({ success: true, data: { already: true } });
+      }
+      const counted = await db
+        .prepare("SELECT COUNT(*) AS n FROM junior_class_entries WHERE class_id = ?")
+        .get(klass.id);
+      if (Number(counted?.n ?? counted?.count ?? 0) >= 45) {
+        return res.status(400).json({ success: false, message: "Razred je pun (45 učenika)." });
+      }
+      await db
+        .prepare(
+          "INSERT INTO junior_class_entries (class_id, client_key, alias, program_id, program_name, pathway, city) VALUES (?, ?, ?, ?, ?, ?, ?)",
+        )
+        .run(klass.id, clientKey, alias, programId, programName, pathway, city);
+      return res.json({ success: true, data: { already: false } });
+    } catch (err) {
+      console.error("[junior-class:join]", err?.message || err);
+      return res.status(500).json({ success: false, message: "Prijava u razred nije spremljena." });
+    }
+  });
+
   // Forum
   app.get("/api/forum/conversations", async (req, res) => {
     const audienceRaw = String(req.query.audience || "senior").trim().toLowerCase();

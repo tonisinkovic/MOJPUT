@@ -1,4 +1,5 @@
-import { useMemo, useRef, useState, type ChangeEvent } from "react";
+import { useEffect, useMemo, useRef, useState, type ChangeEvent } from "react";
+import { useSearchParams } from "react-router-dom";
 import {
   BookOpen,
   Calculator,
@@ -16,25 +17,25 @@ import {
 } from "lucide-react";
 import {
   kalkulatorSchools,
-  type KalkulatorPrag,
   type KalkulatorProgram,
   type KalkulatorSchool,
 } from "@/data/srednjaKalkulator";
 import { cn } from "@/lib/utils";
 import CalculatorAnimation from "@/components/header-animations/CalculatorAnimation";
-import HeaderDecor, { headerDecorTextPad } from "@/components/header-animations/HeaderDecor";
+import HeaderDecor, { HeaderHero } from "@/components/header-animations/HeaderDecor";
+import JuniorNumbersNote from "@/components/junior/JuniorNumbersNote";
+import {
+  chanceFor,
+  computeSrednjaPoints,
+  emptySevenEight,
+  loadJuniorGrades,
+  programTypeFromPrag,
+  saveJuniorGrades,
+  type SevenEightGrades,
+  type SrednjaProgramType,
+} from "@/lib/juniorPath";
 
-type ProgramType = "gimnazija4" | "trogodisnji" | "kraci";
-
-type SevenEightGrades = {
-  prosjek: string;
-  matematika: string;
-  hrvatski: string;
-  strani: string;
-  predmet1: string;
-  predmet2: string;
-  predmet3: string;
-};
+type ProgramType = SrednjaProgramType;
 
 const PROGRAM_LABELS: Record<ProgramType, string> = {
   gimnazija4: "Gimnazija / 4-godišnji program",
@@ -42,56 +43,11 @@ const PROGRAM_LABELS: Record<ProgramType, string> = {
   kraci: "Program kraći od 3 godine",
 };
 
-const MAX_BY_PROGRAM: Record<ProgramType, number> = {
-  gimnazija4: 80,
-  trogodisnji: 50,
-  kraci: 20,
-};
-
-/** Procijeni tip programa iz maksimalnih bodova prošlogodišnjeg upisa. */
-function programTypeFromPrag(prag: KalkulatorPrag | null): ProgramType | null {
-  const reference = prag?.max ?? prag?.min ?? null;
-  if (reference == null) return null;
-  if (reference > 50) return "gimnazija4";
-  if (reference > 20) return "trogodisnji";
-  return "kraci";
-}
-
 type Chance = {
   label: string;
   desc: string;
   tone: "emerald" | "lime" | "amber" | "rose";
 };
-
-function chanceFor(points: number, pragMin: number): Chance {
-  const diff = points - pragMin;
-  if (diff >= 5) {
-    return {
-      label: "Velike šanse",
-      desc: `Imaš ${diff.toFixed(2)} bodova više od prošlogodišnjeg praga. S ovakvim bodovima lani bi bio/la sigurno iznad crte.`,
-      tone: "emerald",
-    };
-  }
-  if (diff >= 0) {
-    return {
-      label: "Dobre šanse",
-      desc: `Iznad si prošlogodišnjeg praga za ${diff.toFixed(2)} bodova. Prag se iz godine u godinu mijenja, pa pripremi i rezervnu opciju.`,
-      tone: "lime",
-    };
-  }
-  if (diff >= -3) {
-    return {
-      label: "Granične šanse",
-      desc: `Nedostaje ti ${Math.abs(diff).toFixed(2)} bodova do prošlogodišnjeg praga. Ako prag padne ili se poveća kvota, još uvijek imaš priliku.`,
-      tone: "amber",
-    };
-  }
-  return {
-    label: "Male šanse",
-    desc: `Nedostaje ti ${Math.abs(diff).toFixed(2)} bodova do prošlogodišnjeg praga. Razmisli o sličnim programima s nižim pragom — provjeri ih u bazi.`,
-    tone: "rose",
-  };
-}
 
 const CHANCE_TONE: Record<Chance["tone"], { box: string; badge: string; bar: string }> = {
   emerald: {
@@ -115,21 +71,6 @@ const CHANCE_TONE: Record<Chance["tone"], { box: string; badge: string; bar: str
     bar: "from-rose-500 to-rose-400",
   },
 };
-
-const emptySevenEight = (): SevenEightGrades => ({
-  prosjek: "",
-  matematika: "",
-  hrvatski: "",
-  strani: "",
-  predmet1: "",
-  predmet2: "",
-  predmet3: "",
-});
-
-function toNum(value: string): number {
-  const parsed = Number.parseFloat(value.replace(",", "."));
-  return Number.isFinite(parsed) ? parsed : 0;
-}
 
 function clamp(value: number, min: number, max: number): number {
   return Math.min(max, Math.max(min, value));
@@ -477,18 +418,48 @@ function SearchableSchoolSelect({
 }
 
 export default function SrednjaKalkulator() {
-  const [program, setProgram] = useState<ProgramType>("gimnazija4");
-  const [prosjek5, setProsjek5] = useState("");
-  const [prosjek6, setProsjek6] = useState("");
-  const [razred7, setRazred7] = useState<SevenEightGrades>(emptySevenEight());
-  const [razred8, setRazred8] = useState<SevenEightGrades>(emptySevenEight());
-  const [dodatniBodovi, setDodatniBodovi] = useState("");
-  const [rezultatIzracunat, setRezultatIzracunat] = useState(false);
+  const [searchParams] = useSearchParams();
+  const savedGrades = useMemo(() => loadJuniorGrades(), []);
+
+  const [program, setProgram] = useState<ProgramType>(savedGrades?.program ?? "gimnazija4");
+  const [prosjek5, setProsjek5] = useState(savedGrades?.prosjek5 ?? "");
+  const [prosjek6, setProsjek6] = useState(savedGrades?.prosjek6 ?? "");
+  const [razred7, setRazred7] = useState<SevenEightGrades>(savedGrades?.razred7 ?? emptySevenEight());
+  const [razred8, setRazred8] = useState<SevenEightGrades>(savedGrades?.razred8 ?? emptySevenEight());
+  const [dodatniBodovi, setDodatniBodovi] = useState(savedGrades?.dodatniBodovi ?? "");
+  const [rezultatIzracunat, setRezultatIzracunat] = useState(Boolean(savedGrades));
 
   // Odabir škole i programa (baza: srednja.hr kalkulator)
   const [selCounty, setSelCounty] = useState("");
   const [selSchoolId, setSelSchoolId] = useState<number | null>(null);
   const [selProgramId, setSelProgramId] = useState<number | null>(null);
+
+  useEffect(() => {
+    const schoolId = Number(searchParams.get("skola"));
+    const programId = Number(searchParams.get("program"));
+    if (!Number.isFinite(schoolId) || schoolId <= 0) return;
+    const school = kalkulatorSchools.find((s) => s.id === schoolId);
+    if (!school) return;
+    setSelCounty(school.county);
+    setSelSchoolId(school.id);
+    if (Number.isFinite(programId) && programId > 0 && school.programs.some((p) => p.id === programId)) {
+      setSelProgramId(programId);
+      const prog = school.programs.find((p) => p.id === programId);
+      const inferred = programTypeFromPrag(prog?.prag ?? null);
+      if (inferred) setProgram(inferred);
+    }
+  }, [searchParams]);
+
+  useEffect(() => {
+    saveJuniorGrades({
+      program,
+      prosjek5,
+      prosjek6,
+      razred7,
+      razred8,
+      dodatniBodovi,
+    });
+  }, [program, prosjek5, prosjek6, razred7, razred8, dodatniBodovi]);
 
   const counties = useMemo(
     () => [...new Set(kalkulatorSchools.map((s) => s.county))].sort((a, b) => a.localeCompare(b, "hr")),
@@ -547,53 +518,17 @@ export default function SrednjaKalkulator() {
   };
 
   const rezultat = useMemo(() => {
-    const opciUspjeh = clamp(
-      clamp(toNum(prosjek5), 0, 5) +
-        clamp(toNum(prosjek6), 0, 5) +
-        clamp(toNum(razred7.prosjek), 0, 5) +
-        clamp(toNum(razred8.prosjek), 0, 5),
-      0,
-      20,
-    );
-
-    const kljucniPredmeti = clamp(
-      clamp(toNum(razred7.matematika), 0, 5) +
-        clamp(toNum(razred8.matematika), 0, 5) +
-        clamp(toNum(razred7.hrvatski), 0, 5) +
-        clamp(toNum(razred8.hrvatski), 0, 5) +
-        clamp(toNum(razred7.strani), 0, 5) +
-        clamp(toNum(razred8.strani), 0, 5),
-      0,
-      30,
-    );
-
-    const posebniPredmeti = clamp(
-      clamp(toNum(razred7.predmet1), 0, 5) +
-        clamp(toNum(razred8.predmet1), 0, 5) +
-        clamp(toNum(razred7.predmet2), 0, 5) +
-        clamp(toNum(razred8.predmet2), 0, 5) +
-        clamp(toNum(razred7.predmet3), 0, 5) +
-        clamp(toNum(razred8.predmet3), 0, 5),
-      0,
-      30,
-    );
-
-    let zajednicki = opciUspjeh;
-    if (program === "gimnazija4" || program === "trogodisnji") zajednicki += kljucniPredmeti;
-    if (program === "gimnazija4") zajednicki += posebniPredmeti;
-
-    const max = MAX_BY_PROGRAM[program];
-    const dodatni = Math.max(0, toNum(dodatniBodovi));
-
+    const scored = computeSrednjaPoints({
+      program,
+      prosjek5,
+      prosjek6,
+      razred7,
+      razred8,
+      dodatniBodovi,
+    });
     return {
-      opciUspjeh,
-      kljucniPredmeti,
-      posebniPredmeti,
-      dodatni,
-      zajednicki,
-      ukupno: zajednicki + dodatni,
-      max,
-      postotak: clamp((zajednicki / max) * 100, 0, 100),
+      ...scored,
+      postotak: clamp((scored.zajednicki / scored.max) * 100, 0, 100),
     };
   }, [dodatniBodovi, program, prosjek5, prosjek6, razred7, razred8]);
 
@@ -613,24 +548,26 @@ export default function SrednjaKalkulator() {
       <header className="relative mb-6 overflow-hidden rounded-[2rem] border border-primary/20 bg-gradient-to-br from-primary/10 via-card to-amber-500/10 p-5 shadow-card sm:p-8">
         <div className="pointer-events-none absolute -right-16 -top-16 h-44 w-44 rounded-full bg-primary/15 blur-3xl" />
 
-        {/* Animirani kalkulator u pozadini s prstom koji tipka */}
-        <HeaderDecor className="opacity-[0.26] sm:opacity-[0.14] md:opacity-[0.13]">
-          <CalculatorAnimation />
-        </HeaderDecor>
-
-        <div className={`relative ${headerDecorTextPad}`}>
+        <HeaderHero
+          decor={
+            <HeaderDecor className="opacity-[0.42] sm:opacity-[0.16] md:opacity-[0.14]">
+              <CalculatorAnimation />
+            </HeaderDecor>
+          }
+        >
           <span className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.16em] text-primary">
             <School className="h-3.5 w-3.5" />
             Upis u srednju školu
           </span>
-          <h1 className="mt-3 text-balance text-3xl font-extrabold tracking-tight sm:text-5xl">
+          <h1 className="mt-2.5 text-balance text-2xl font-extrabold tracking-tight sm:mt-3 sm:text-5xl">
             Kalkulator bodova
           </h1>
-          <p className="mt-3 max-w-2xl text-pretty text-sm leading-relaxed text-muted-foreground sm:text-base">
+          <p className="mt-2 max-w-2xl text-pretty text-sm leading-relaxed text-muted-foreground sm:mt-3 sm:text-base">
             Odaberi školu i program, unesi ocjene iz osnovne škole i saznaj prošlogodišnji prag bodova te
             svoje šanse za upis. Baza pokriva sve srednje škole i programe u Hrvatskoj.
           </p>
-        </div>
+          <JuniorNumbersNote className="mt-3 max-w-2xl" />
+        </HeaderHero>
       </header>
 
       {/* Odabir škole i programa */}

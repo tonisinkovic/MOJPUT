@@ -1,4 +1,5 @@
 import Layout from "@/components/Layout";
+import JuniorLaterNotice from "@/components/junior/JuniorLaterNotice";
 import MaturaHrvatskiCitankaKviz from "@/components/matura/MaturaHrvatskiCitankaKviz";
 import MaturaHrvatskiPismenoReadOnly from "@/components/matura/MaturaHrvatskiPismenoReadOnly";
 import MaturaMatematikaKviz from "@/components/matura/MaturaMatematikaKviz";
@@ -70,6 +71,9 @@ function MatureInner() {
   return (
     <Layout>
       <div className="relative min-h-[calc(100vh-4rem)] overflow-hidden pt-20 pb-20 sm:pt-24 sm:pb-24">
+        <div className="container relative z-10 mb-4 max-w-6xl px-3 sm:px-4">
+          <JuniorLaterNotice tool="Matura" />
+        </div>
         <div
           className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(ellipse_80%_50%_at_50%_-20%,hsl(var(--primary)/0.12),transparent)]"
           aria-hidden

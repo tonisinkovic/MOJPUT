@@ -29,7 +29,17 @@ import { Link, useLocation, useSearchParams } from "react-router-dom";
 import { authLogout, authMe, userFromAuthMe, type AuthUser } from "@/lib/auth";
 import { resolveExperienceMode, type MojPutExperienceMode } from "@/lib/experience";
 import { cn } from "@/lib/utils";
-import HeaderDecor, { headerDecorTextPad } from "@/components/header-animations/HeaderDecor";
+import HeaderDecor, { HeaderHero } from "@/components/header-animations/HeaderDecor";
+import {
+  JUNIOR_FORUM_CITIES,
+  JUNIOR_FORUM_TRACKS,
+  attachForumMeta,
+  emptyForumMeta,
+  forumTrackLabel,
+  stripForumMeta,
+  type JuniorForumMeta,
+  type JuniorForumTrackId,
+} from "@/lib/juniorForum";
 
 type ForumMessage = {
   id: number;
@@ -167,8 +177,11 @@ const SENIOR_FALLBACK_CONVERSATIONS: ForumConversation[] = [
 const JUNIOR_FALLBACK_CONVERSATIONS: ForumConversation[] = [
   {
     id: 2001,
-    title: "Kako odabrati srednju školu ako nisam siguran što želim?",
-    description: "Pitanja o interesima, smjerovima i savjetima starijih učenika.",
+    title: "Gimnazija ili strukovna — kako ste odlučili?",
+    description: attachForumMeta(
+      "Ne znam je li bolje ići na gimnaziju ili strukovnu. Tko je u 3. razredu i što bi danas drugačije odabrao?",
+      { city: null, track: "gimnazija", askSenior: true },
+    ),
     creator: "Petra",
     creatorId: -1,
     createdAt: new Date("2026-03-13T12:00:00+01:00"),
@@ -187,8 +200,11 @@ const JUNIOR_FALLBACK_CONVERSATIONS: ForumConversation[] = [
   },
   {
     id: 2002,
-    title: "Gimnazija ili strukovna škola — kako ste odlučili?",
-    description: "Iskustva, praksa u učenju i što biste danas drugačije odabrali.",
+    title: "IT u Zagrebu: gimnazija ili tehnička?",
+    description: attachForumMeta(
+      "Tko je u 3. razredu na informatičkom ili elektrotehničkom? Kako izgleda tjedan, ima li prakse?",
+      { city: "Zagreb", track: "it", askSenior: true },
+    ),
     creator: "LukaSS",
     creatorId: -1,
     createdAt: new Date("2026-03-11T15:20:00+01:00"),
@@ -216,8 +232,11 @@ const JUNIOR_FALLBACK_CONVERSATIONS: ForumConversation[] = [
   },
   {
     id: 2003,
-    title: "Koji smjer u srednjoj za medicinu, IT ili ekonomiju?",
-    description: "Preporuke smjera, škola i savjeti za daljnji put nakon srednje.",
+    title: "Split, medicinska — treba li dodatna provjera?",
+    description: attachForumMeta(
+      "Zanima me medicinska u Splitu. Tko je već u školi — kakav je prijemni i kako ste se pripremali?",
+      { city: "Split", track: "medicinska", askSenior: true },
+    ),
     creator: "IvanaUpis",
     creatorId: -1,
     createdAt: new Date("2026-03-09T10:00:00+01:00"),
@@ -239,6 +258,29 @@ const JUNIOR_FALLBACK_CONVERSATIONS: ForumConversation[] = [
         text: "Prirodoslovna gimnazija je klasičan put, ali znam i ljude koji su krenuli preko medicinske sestre u strukovnoj.",
         timestamp: new Date("2026-03-09T11:30:00+01:00"),
         likeCount: 3,
+        userLiked: false,
+      },
+    ],
+  },
+  {
+    id: 2004,
+    title: "Dodatna provjera — što stvarno traže?",
+    description: attachForumMeta(
+      "Koji programi imaju dodatnu provjeru i kako izgleda priprema? Pitam treći razred.",
+      { city: null, track: "upis", askSenior: true },
+    ),
+    creator: "Ena8",
+    creatorId: -1,
+    createdAt: new Date("2026-03-08T09:00:00+01:00"),
+    messageCount: 1,
+    messages: [
+      {
+        id: 6301,
+        userId: -11,
+        username: "Ena8",
+        text: "Gdje ste našli točan raspored dodatnih provjera za svoju školu?",
+        timestamp: new Date("2026-03-08T09:10:00+01:00"),
+        likeCount: 2,
         userLiked: false,
       },
     ],
@@ -498,6 +540,12 @@ const Forum = () => {
   const [showNewConversationModal, setShowNewConversationModal] = useState(false);
   const [newConvTitle, setNewConvTitle] = useState("");
   const [newConvDescription, setNewConvDescription] = useState("");
+  const [newConvCity, setNewConvCity] = useState("");
+  const [newConvTrack, setNewConvTrack] = useState<JuniorForumTrackId | "">("");
+  const [newConvAsk, setNewConvAsk] = useState(false);
+  const [forumCity, setForumCity] = useState("all");
+  const [forumTrack, setForumTrack] = useState("all");
+  const [forumAskOnly, setForumAskOnly] = useState(false);
   const [messageInput, setMessageInput] = useState("");
   const [replyingTo, setReplyingTo] = useState<ForumMessage | null>(null);
   const [sendingMessage, setSendingMessage] = useState(false);
@@ -679,9 +727,20 @@ const Forum = () => {
     if (!currentUser) return;
     if (!newConvTitle.trim()) return;
 
+    const meta: JuniorForumMeta = isJunior
+      ? {
+          city: newConvCity.trim() || null,
+          track: newConvTrack || null,
+          askSenior: newConvAsk,
+        }
+      : emptyForumMeta();
+    const description = isJunior
+      ? attachForumMeta(newConvDescription.trim(), meta)
+      : newConvDescription.trim();
+
     const res = await apiPost<{ data?: { id: number; title: string; description: string; created_at: string; creator_username: string; message_count: number } }>(
       "/api/forum/conversations",
-      { title: newConvTitle.trim(), description: newConvDescription.trim(), audience },
+      { title: newConvTitle.trim(), description, audience },
     );
     let newConversation: ForumConversation | null = null;
     if (res.success) {
@@ -703,7 +762,7 @@ const Forum = () => {
       newConversation = {
         id: Date.now(),
         title: newConvTitle.trim(),
-        description: newConvDescription.trim(),
+        description,
         creator: currentUser.username,
         creatorId: currentUser.id,
         createdAt: new Date(),
@@ -719,6 +778,9 @@ const Forum = () => {
     }
     setNewConvTitle("");
     setNewConvDescription("");
+    setNewConvCity("");
+    setNewConvTrack("");
+    setNewConvAsk(false);
     setShowNewConversationModal(false);
     setSelectedConversation(newConversation);
   };
@@ -905,10 +967,19 @@ const Forum = () => {
 
   const sortedConversations = useMemo(() => {
     const term = searchTerm.trim().toLowerCase();
-    const filtered = conversations.filter(
-      (conv) =>
-        conv.title.toLowerCase().includes(term) || conv.description.toLowerCase().includes(term),
-    );
+    const filtered = conversations.filter((conv) => {
+      const { meta, body } = stripForumMeta(conv.description || "");
+      const textHit =
+        conv.title.toLowerCase().includes(term) ||
+        body.toLowerCase().includes(term) ||
+        (meta.city ?? "").toLowerCase().includes(term);
+      if (!textHit) return false;
+      if (!isJunior) return true;
+      if (forumCity !== "all" && meta.city !== forumCity) return false;
+      if (forumTrack !== "all" && meta.track !== forumTrack) return false;
+      if (forumAskOnly && !meta.askSenior) return false;
+      return true;
+    });
     const copy = [...filtered];
     if (sortMode === "recent") {
       copy.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
@@ -919,7 +990,7 @@ const Forum = () => {
       );
     }
     return copy;
-  }, [conversations, searchTerm, sortMode]);
+  }, [conversations, searchTerm, sortMode, isJunior, forumCity, forumTrack, forumAskOnly]);
 
   const forumStats = useMemo(() => {
     const totalConversations = conversations.length;
@@ -949,15 +1020,18 @@ const Forum = () => {
             className="pointer-events-none absolute -bottom-14 -left-10 h-36 w-36 rounded-full bg-primary/10 blur-3xl sm:h-48 sm:w-48"
           />
 
-          <HeaderDecor className="opacity-[0.3] sm:opacity-[0.18]">
-            <KeyboardTypingAnimation />
-          </HeaderDecor>
-
-          <div className="relative flex flex-col gap-4 sm:flex-row sm:items-start sm:gap-5">
-            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl gradient-hero text-primary-foreground shadow-md sm:h-14 sm:w-14">
-              <MessagesSquare className="h-6 w-6 sm:h-7 sm:w-7" />
-            </div>
-            <div className={cn("min-w-0 flex-1", headerDecorTextPad)}>
+          <HeaderHero
+            icon={
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl gradient-hero text-primary-foreground shadow-md sm:h-14 sm:w-14">
+                <MessagesSquare className="h-6 w-6 sm:h-7 sm:w-7" />
+              </div>
+            }
+            decor={
+              <HeaderDecor className="opacity-[0.42] sm:opacity-[0.18]">
+                <KeyboardTypingAnimation />
+              </HeaderDecor>
+            }
+          >
               <div className="flex flex-wrap items-center gap-2">
                 <span className="inline-flex items-center gap-1 rounded-full border border-primary/25 bg-primary/10 px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-primary">
                   <Sparkles className="h-3 w-3" />
@@ -1002,8 +1076,7 @@ const Forum = () => {
                   </p>
                 </div>
               </div>
-            </div>
-          </div>
+          </HeaderHero>
         </motion.div>
 
         {authChecked && !canUseForum && (
@@ -1155,6 +1228,52 @@ const Forum = () => {
                 </div>
               </div>
 
+              {isJunior ? (
+                <div className="border-b border-border px-3 py-2">
+                  <p className="mb-2 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+                    Grad i smjer
+                  </p>
+                  <div className="flex flex-wrap gap-1.5">
+                    <button
+                      type="button"
+                      onClick={() => setForumAskOnly((v) => !v)}
+                      className={cn(
+                        "rounded-full border px-2.5 py-1 text-[11px] font-semibold",
+                        forumAskOnly
+                          ? "border-primary bg-primary text-primary-foreground"
+                          : "border-border bg-background",
+                      )}
+                    >
+                      Pitaj 3. razred
+                    </button>
+                    <select
+                      value={forumCity}
+                      onChange={(e) => setForumCity(e.target.value)}
+                      className="h-8 rounded-full border border-border bg-background px-2 text-[11px] font-semibold"
+                    >
+                      <option value="all">Svi gradovi</option>
+                      {JUNIOR_FORUM_CITIES.map((c) => (
+                        <option key={c} value={c}>
+                          {c}
+                        </option>
+                      ))}
+                    </select>
+                    <select
+                      value={forumTrack}
+                      onChange={(e) => setForumTrack(e.target.value)}
+                      className="h-8 rounded-full border border-border bg-background px-2 text-[11px] font-semibold"
+                    >
+                      <option value="all">Svi smjerovi</option>
+                      {JUNIOR_FORUM_TRACKS.map((t) => (
+                        <option key={t.id} value={t.id}>
+                          {t.label}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+              ) : null}
+
               <div className="min-h-0 flex-1 md:overflow-y-auto">
                 {loadingConversations ? (
                   <div className="p-8 text-center">
@@ -1173,6 +1292,7 @@ const Forum = () => {
                     {sortedConversations.map((conv) => {
                       const isActive = selectedConversation?.id === conv.id;
                       const initial = (conv.creator?.[0] || "?").toUpperCase();
+                      const { meta, body } = stripForumMeta(conv.description || "");
                       return (
                         <button
                           key={conv.id}
@@ -1203,8 +1323,27 @@ const Forum = () => {
                               {conv.title}
                             </p>
                             <p className="mt-0.5 line-clamp-1 text-xs text-muted-foreground">
-                              {conv.description || "Bez opisa"}
+                              {body || "Bez opisa"}
                             </p>
+                            {isJunior && (meta.city || meta.track || meta.askSenior) ? (
+                              <div className="mt-1 flex flex-wrap gap-1">
+                                {meta.city ? (
+                                  <span className="rounded-full bg-sky-500/15 px-1.5 py-0.5 text-[10px] font-bold text-sky-700 dark:text-sky-300">
+                                    {meta.city}
+                                  </span>
+                                ) : null}
+                                {forumTrackLabel(meta.track) ? (
+                                  <span className="rounded-full bg-violet-500/15 px-1.5 py-0.5 text-[10px] font-bold text-violet-700 dark:text-violet-300">
+                                    {forumTrackLabel(meta.track)}
+                                  </span>
+                                ) : null}
+                                {meta.askSenior ? (
+                                  <span className="rounded-full bg-amber-500/15 px-1.5 py-0.5 text-[10px] font-bold text-amber-800 dark:text-amber-200">
+                                    3. razred
+                                  </span>
+                                ) : null}
+                              </div>
+                            ) : null}
                             <div className="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-[11px] text-muted-foreground">
                               <span
                                 className={cn(
@@ -1268,7 +1407,7 @@ const Forum = () => {
                             {selectedConversation.title}
                           </h2>
                           <p className="mt-0.5 line-clamp-2 text-xs text-muted-foreground sm:text-sm">
-                            {selectedConversation.description || "Bez opisa"}
+                            {stripForumMeta(selectedConversation.description || "").body || "Bez opisa"}
                           </p>
                           <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-muted-foreground">
                             <span className="inline-flex items-center gap-1 rounded-full bg-primary/15 px-2 py-0.5 font-semibold text-primary">
@@ -1551,10 +1690,59 @@ const Forum = () => {
                       type="text"
                       value={newConvTitle}
                       onChange={(e) => setNewConvTitle(e.target.value)}
-                      placeholder={isJunior ? "npr. Gimnazija ili strukovna?" : "npr. Koji fakultet za IT?"}
+                      placeholder={isJunior ? "npr. Split, medicinska — prijemni?" : "npr. Koji fakultet za IT?"}
                       className="w-full rounded-xl border-2 border-input bg-background px-4 py-2.5 text-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-ring"
                     />
                   </div>
+                  {isJunior ? (
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="mb-1.5 block text-sm font-semibold" htmlFor="forum-city">
+                          Grad
+                        </label>
+                        <select
+                          id="forum-city"
+                          value={newConvCity}
+                          onChange={(e) => setNewConvCity(e.target.value)}
+                          className="w-full rounded-xl border-2 border-input bg-background px-3 py-2.5 text-sm"
+                        >
+                          <option value="">Svi / nije važno</option>
+                          {JUNIOR_FORUM_CITIES.map((c) => (
+                            <option key={c} value={c}>
+                              {c}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                      <div>
+                        <label className="mb-1.5 block text-sm font-semibold" htmlFor="forum-track">
+                          Smjer
+                        </label>
+                        <select
+                          id="forum-track"
+                          value={newConvTrack}
+                          onChange={(e) => setNewConvTrack(e.target.value as JuniorForumTrackId | "")}
+                          className="w-full rounded-xl border-2 border-input bg-background px-3 py-2.5 text-sm"
+                        >
+                          <option value="">Odaberi</option>
+                          {JUNIOR_FORUM_TRACKS.map((t) => (
+                            <option key={t.id} value={t.id}>
+                              {t.label}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                      <label className="col-span-2 flex items-center gap-2 text-sm">
+                        <input
+                          type="checkbox"
+                          checked={newConvAsk}
+                          onChange={(e) => setNewConvAsk(e.target.checked)}
+                          className="h-4 w-4 accent-primary"
+                        />
+                        Pitaj treći razred
+                      </label>
+                    </div>
+                  ) : null}
                   <div>
                     <label className="mb-1.5 block text-sm font-semibold text-foreground" htmlFor="forum-new-desc">
                       Opis (opcionalno)
@@ -1581,6 +1769,9 @@ const Forum = () => {
                         setShowNewConversationModal(false);
                         setNewConvTitle("");
                         setNewConvDescription("");
+                        setNewConvCity("");
+                        setNewConvTrack("");
+                        setNewConvAsk(false);
                       }}
                       className="flex-1 rounded-xl border-2 border-border bg-muted py-2.5 text-sm font-semibold text-foreground transition-colors hover:bg-muted/80"
                     >

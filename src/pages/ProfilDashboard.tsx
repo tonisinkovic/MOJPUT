@@ -53,13 +53,16 @@ import careersJson from "@/data/career-quiz/careers-database.json";
 import type { CareerRow } from "@/lib/careerQuizEngine";
 import { labelForUserType, USER_TYPE_OPTIONS } from "@/components/profile/userTypes";
 import { getStoredExperience, onExperienceChange } from "@/lib/experience";
+import { loadJuniorSnapshot, loadShortlist } from "@/lib/juniorPath";
 import { cn } from "@/lib/utils";
+import JuniorProfilHome from "@/components/junior/JuniorProfilHome";
+import JuniorSchoolCompare from "@/components/junior/JuniorSchoolCompare";
 
 const interests = interestsJson.interests;
 const competencies = competenciesJson.competencies;
 const careers = careersJson.careers as CareerRow[];
 
-type TabId = "pregled" | "kviz" | "fakulteti" | "postavke";
+type TabId = "pregled" | "kviz" | "fakulteti" | "skole" | "postavke";
 
 const MOCK_SUGGESTIONS = [
   {
@@ -113,7 +116,7 @@ function DashboardSkeleton() {
 
 export default function ProfilDashboard() {
   const [searchParams, setSearchParams] = useSearchParams();
-  const tab = (searchParams.get("tab") as TabId) || "pregled";
+  const rawTab = (searchParams.get("tab") as TabId) || "pregled";
   const setTab = (t: TabId) => setSearchParams({ tab: t }, { replace: true });
 
   const [isJunior, setIsJunior] = useState(false);
@@ -124,6 +127,8 @@ export default function ProfilDashboard() {
   }, []);
   /** Junior korisnike kviz vodi na kviz za srednju školu. */
   const quizPath = isJunior ? "/kviz-srednja" : "/kviz";
+  const tab: TabId =
+    isJunior && rawTab === "fakulteti" ? "skole" : !isJunior && rawTab === "skole" ? "fakulteti" : rawTab;
 
   const { theme, setTheme } = useTheme();
 
@@ -305,12 +310,19 @@ export default function ProfilDashboard() {
     return <Navigate to="/prijava?next=/profil" replace />;
   }
 
-  const navItems: { id: TabId; label: string; icon: React.ElementType }[] = [
-    { id: "pregled", label: "Profil", icon: LayoutDashboard },
-    { id: "kviz", label: "Kviz", icon: Sparkles },
-    { id: "fakulteti", label: "Fakulteti", icon: GraduationCap },
-    { id: "postavke", label: "Postavke", icon: Settings },
-  ];
+  const navItems: { id: TabId; label: string; icon: React.ElementType }[] = isJunior
+    ? [
+        { id: "pregled", label: "Profil", icon: LayoutDashboard },
+        { id: "kviz", label: "Kviz", icon: Sparkles },
+        { id: "skole", label: "Moje škole", icon: Bookmark },
+        { id: "postavke", label: "Postavke", icon: Settings },
+      ]
+    : [
+        { id: "pregled", label: "Profil", icon: LayoutDashboard },
+        { id: "kviz", label: "Kviz", icon: Sparkles },
+        { id: "fakulteti", label: "Fakulteti", icon: GraduationCap },
+        { id: "postavke", label: "Postavke", icon: Settings },
+      ];
 
   return (
     <Layout>
@@ -331,12 +343,16 @@ export default function ProfilDashboard() {
             transition={{ duration: 0.35 }}
             className="mb-6 md:mb-8"
           >
-            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary/80">Moj račun</p>
+            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary/80">
+              {isJunior ? "MojPut Junior" : "Moj račun"}
+            </p>
             <h1 className="mt-1 text-balance bg-gradient-to-br from-foreground via-foreground to-foreground/70 bg-clip-text text-3xl font-bold tracking-tight md:text-4xl">
-              Moj profil
+              {isJunior ? "Moj put do srednje" : "Moj profil"}
             </h1>
             <p className="mt-2 text-sm leading-relaxed text-muted-foreground md:text-base">
-              Sve što ti treba na jednom mjestu.
+              {isJunior
+                ? "Kviz, spremljene škole, bodovi i sljedeći upisni rok — na jednom mjestu."
+                : "Sve što ti treba na jednom mjestu."}
             </p>
           </motion.div>
 
@@ -397,11 +413,11 @@ export default function ProfilDashboard() {
                     className="h-auto w-full justify-start gap-3 rounded-2xl py-2.5 text-muted-foreground hover:text-foreground"
                     asChild
                   >
-                    <Link to="/karta">
+                    <Link to={isJunior ? "/srednje-skole" : "/karta"}>
                       <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-sky-500/10 text-sky-700 dark:text-sky-400">
                         <GraduationCap className="h-4 w-4" />
                       </span>
-                      Karta fakulteta
+                      {isJunior ? "Karta srednjih škola" : "Karta fakulteta"}
                     </Link>
                   </Button>
                   <Button
@@ -456,7 +472,9 @@ export default function ProfilDashboard() {
                   transition={{ duration: 0.2 }}
                   className="space-y-8"
                 >
-                  {tab === "pregled" && (
+                  {tab === "pregled" && isJunior && <JuniorProfilHome />}
+
+                  {tab === "pregled" && !isJunior && (
                     <>
                       {/* Profil kartica - kompaktna, s integriranim progresom */}
                       <Card className="overflow-hidden border-border/50 bg-gradient-to-br from-card via-card to-primary/[0.03] shadow-lg ring-1 ring-border/40">

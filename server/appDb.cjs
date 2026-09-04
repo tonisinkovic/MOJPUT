@@ -65,6 +65,8 @@ const INSERT_RETURNING_TABLES = new Set([
   "career_quiz_results",
   "site_feedback",
   "user_saved_faculties",
+  "junior_classes",
+  "junior_class_entries",
 ]);
 
 function needsReturningId(sql) {
@@ -305,6 +307,32 @@ function migrateSqlite(db) {
     `);
   }
 
+  try {
+    db.prepare("SELECT 1 FROM junior_classes LIMIT 1").get();
+  } catch {
+    db.exec(`
+      CREATE TABLE junior_classes (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        code TEXT NOT NULL UNIQUE,
+        label TEXT,
+        created_at TEXT NOT NULL DEFAULT (datetime('now'))
+      );
+      CREATE TABLE junior_class_entries (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        class_id INTEGER NOT NULL,
+        client_key TEXT NOT NULL,
+        alias TEXT,
+        program_id INTEGER NOT NULL,
+        program_name TEXT NOT NULL,
+        pathway TEXT,
+        city TEXT,
+        created_at TEXT NOT NULL DEFAULT (datetime('now')),
+        UNIQUE(class_id, client_key),
+        FOREIGN KEY (class_id) REFERENCES junior_classes(id)
+      )
+    `);
+  }
+
   const migrated = db.prepare("SELECT 1 FROM app_meta WHERE key = 'pending_registration_flow_v1'").get();
   if (!migrated) {
     db.prepare("INSERT INTO app_meta (key, value) VALUES ('pending_registration_flow_v1', '1')").run();
@@ -404,6 +432,24 @@ async function migratePg(pool) {
       day TEXT NOT NULL,
       message_count INTEGER NOT NULL DEFAULT 0,
       PRIMARY KEY (user_id, day)
+    )`,
+    `CREATE TABLE IF NOT EXISTS junior_classes (
+      id SERIAL PRIMARY KEY,
+      code TEXT NOT NULL UNIQUE,
+      label TEXT,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
+    )`,
+    `CREATE TABLE IF NOT EXISTS junior_class_entries (
+      id SERIAL PRIMARY KEY,
+      class_id INTEGER NOT NULL REFERENCES junior_classes(id),
+      client_key TEXT NOT NULL,
+      alias TEXT,
+      program_id INTEGER NOT NULL,
+      program_name TEXT NOT NULL,
+      pathway TEXT,
+      city TEXT,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      UNIQUE(class_id, client_key)
     )`,
   ];
   for (const sql of ddl) await run(sql);

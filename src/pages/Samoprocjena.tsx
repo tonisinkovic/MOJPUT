@@ -1,4 +1,5 @@
 import Layout from "@/components/Layout";
+import JuniorLaterNotice from "@/components/junior/JuniorLaterNotice";
 import { motion } from "framer-motion";
 import {
   Target,
@@ -3198,6 +3199,7 @@ const Samoprocjena = () => {
   return (
     <Layout>
       <section className="mx-auto max-w-6xl space-y-5 px-3 pb-10 pt-6 sm:space-y-8 sm:px-4 sm:pb-12 sm:pt-8 md:py-14 md:pb-16 [padding-bottom:max(2.5rem,env(safe-area-inset-bottom))]">
+        <JuniorLaterNotice tool="Samoprocjena" />
         {/* Hero */}
         <motion.div
           initial={{ opacity: 0, y: 12 }}

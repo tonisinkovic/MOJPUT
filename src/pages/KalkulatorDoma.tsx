@@ -1,4 +1,5 @@
 import Layout from "@/components/Layout";
+import JuniorLaterNotice from "@/components/junior/JuniorLaterNotice";
 import { motion, AnimatePresence } from "framer-motion";
 import { useCallback, useMemo, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -45,7 +46,7 @@ import {
   CheckCircle2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import HeaderDecor, { headerDecorTextPad } from "@/components/header-animations/HeaderDecor";
+import HeaderDecor, { HeaderHero } from "@/components/header-animations/HeaderDecor";
 import {
   dorms,
   INCOME_BANDS,
@@ -306,6 +307,7 @@ export default function KalkulatorDoma() {
   return (
     <Layout>
       <div className="mx-auto max-w-lg px-4 pb-10 pt-6 md:max-w-3xl md:pt-10 [padding-bottom:max(2.5rem,env(safe-area-inset-bottom))]">
+        <JuniorLaterNotice tool="Kalkulator domova" />
         {/* Hero header */}
         <motion.header
           initial={{ opacity: 0, y: 14 }}
@@ -322,15 +324,18 @@ export default function KalkulatorDoma() {
             className="pointer-events-none absolute -bottom-14 -left-10 h-32 w-32 rounded-full bg-primary/10 blur-3xl sm:h-48 sm:w-48"
           />
 
-          <HeaderDecor className="opacity-[0.28] sm:opacity-[0.16]">
-            <HouseBuildAnimation />
-          </HeaderDecor>
-
-          <div className="relative flex flex-col gap-4 sm:flex-row sm:items-start sm:gap-5">
-            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl gradient-hero text-primary-foreground shadow-md sm:h-14 sm:w-14">
-              <Home className="h-6 w-6 sm:h-7 sm:w-7" strokeWidth={2} aria-hidden />
-            </div>
-            <div className={cn("min-w-0 flex-1", headerDecorTextPad)}>
+          <HeaderHero
+            icon={
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl gradient-hero text-primary-foreground shadow-md sm:h-14 sm:w-14">
+                <Home className="h-6 w-6 sm:h-7 sm:w-7" strokeWidth={2} aria-hidden />
+              </div>
+            }
+            decor={
+              <HeaderDecor className="opacity-[0.42] sm:opacity-[0.16]">
+                <HouseBuildAnimation />
+              </HeaderDecor>
+            }
+          >
               <span className="inline-flex items-center gap-1 rounded-full border border-primary/25 bg-primary/10 px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-primary">
                 <Sparkles className="h-3 w-3" aria-hidden />
                 Natječaj · studentski smještaj
@@ -343,8 +348,7 @@ export default function KalkulatorDoma() {
                 Okvirni broj bodova za natječaj. Za Zagreb usporedba s objavljenim pragom; za ostale gradove procjena
                 šanse bez službenog praga u aplikaciji.
               </p>
-            </div>
-          </div>
+          </HeaderHero>
         </motion.header>
 
         {/* Važna napomena */}

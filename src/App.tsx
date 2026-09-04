@@ -45,6 +45,11 @@ import { trackPageView } from "./lib/analytics";
 const queryClient = new QueryClient();
 const KalkulatorFakulteti = lazy(() => import("./pages/KalkulatorFakulteti"));
 const KvizSrednja = lazy(() => import("./pages/KvizSrednja"));
+const UsporediSkole = lazy(() => import("./pages/UsporediSkole"));
+const RoditeljskiRezultat = lazy(() => import("./pages/RoditeljskiRezultat"));
+const JuniorProgrami = lazy(() => import("./pages/JuniorProgrami"));
+const JuniorProgramDetail = lazy(() => import("./pages/JuniorProgramDetail"));
+const Razred = lazy(() => import("./pages/Razred"));
 
 /** Usklađeno s `base` u vite.config (`import.meta.env.BASE_URL`). */
 const routerBasename =
@@ -103,6 +108,10 @@ const App = () => (
             <Route path="/srednje-skole" element={<KartaSrednjihSkola />} />
             <Route path="/kviz" element={<Kviz />} />
             <Route path="/kviz-srednja" element={<KvizSrednja />} />
+            <Route path="/usporedi-skole" element={<UsporediSkole />} />
+            <Route path="/programi" element={<JuniorProgrami />} />
+            <Route path="/programi/:slug" element={<JuniorProgramDetail />} />
+            <Route path="/razred" element={<Razred />} />
             <Route path="/samoprocjena" element={<Samoprocjena />} />
             <Route path="/kalkulator" element={<Kalkulator />} />
             <Route path="/kalkulator-fakulteti" element={<KalkulatorFakulteti />} />
@@ -111,6 +120,7 @@ const App = () => (
             <Route path="/forum" element={<Forum />} />
             <Route path="/kalendar" element={<Kalendar />} />
             <Route path="/mature" element={<Mature />} />
+            <Route path="/roditeljski-rezultat" element={<RoditeljskiRezultat />} />
             <Route path="/roditelji" element={<Roditelji />} />
             <Route path="/roditeljski-kutak" element={<Roditelji />} />
             <Route path="/roditeljski-kutak/vodic-za-roditelje" element={<ParentGuide />} />

@@ -19,6 +19,8 @@ import {
   MessageSquare,
   Calendar,
   Users,
+  Bot,
+  BookOpen,
   MoreHorizontal,
   ChevronDown,
 } from "lucide-react";
@@ -36,6 +38,8 @@ import { cn } from "@/lib/utils";
 
 type NavEntry = { label: string; path: string; icon: LucideIcon };
 
+const navPath = (path: string) => path.split("?")[0];
+
 // Primarne - najčešće korištene stavke.
 const primaryNavSenior: NavEntry[] = [
   { label: "Karta fakulteta", path: "/karta", icon: Map },
@@ -52,12 +56,20 @@ const primaryNavJunior: NavEntry[] = [
 ];
 
 // Sekundarne - u "Više" padajućem na desktopu, lista na mobitelu.
-const secondaryNav: NavEntry[] = [
+const secondaryNavSenior: NavEntry[] = [
   { label: "Samoprocjena", path: "/samoprocjena", icon: Target },
   { label: "Domovi", path: "/kalkulator-doma", icon: Home },
   { label: "Video", path: "/video", icon: Video },
   { label: "Kalendar", path: "/kalendar", icon: Calendar },
   { label: "Roditelji", path: "/roditelji", icon: Users },
+];
+
+const secondaryNavJunior: NavEntry[] = [
+  { label: "Programi", path: "/programi", icon: BookOpen },
+  { label: "Kalendar", path: "/kalendar", icon: Calendar },
+  { label: "Razred", path: "/razred", icon: Users },
+  { label: "Roditelji", path: "/roditelji?experience=junior", icon: Users },
+  { label: "Chatbot", path: "/chatbot?experience=junior", icon: Bot },
 ];
 
 const Navbar = () => {
@@ -73,6 +85,7 @@ const Navbar = () => {
   }, []);
 
   const primaryNav = isJunior ? primaryNavJunior : primaryNavSenior;
+  const secondaryNav = isJunior ? secondaryNavJunior : secondaryNavSenior;
   // Cijela lista za mobitel (redoslijed važnosti).
   const navItems: NavEntry[] = [...primaryNav, ...secondaryNav];
 
@@ -149,7 +162,7 @@ const Navbar = () => {
           >
             {primaryNav.map((item) => {
               const Icon = item.icon;
-              const active = location.pathname === item.path;
+              const active = location.pathname === navPath(item.path);
               return (
                 <Link
                   key={item.path}
@@ -177,7 +190,7 @@ const Navbar = () => {
                   type="button"
                   className={cn(
                     "flex shrink-0 items-center gap-1 rounded-full px-2.5 py-1.5 text-[11px] font-semibold tracking-tight transition-all duration-200 xl:px-3 xl:text-[13px]",
-                    secondaryNav.some((i) => i.path === location.pathname)
+                    secondaryNav.some((i) => navPath(i.path) === location.pathname)
                       ? "bg-primary text-primary-foreground shadow-md shadow-primary/25 dark:shadow-primary/20"
                       : "text-muted-foreground hover:bg-background/90 hover:text-foreground hover:shadow-sm dark:hover:bg-background/60",
                   )}
@@ -191,7 +204,7 @@ const Navbar = () => {
               <DropdownMenuContent align="end" className="w-56 rounded-xl p-1">
                 {secondaryNav.map((item) => {
                   const Icon = item.icon;
-                  const active = location.pathname === item.path;
+                  const active = location.pathname === navPath(item.path);
                   return (
                     <DropdownMenuItem key={item.path} asChild>
                       <Link
@@ -339,7 +352,7 @@ const Navbar = () => {
               <div className="grid gap-1.5">
                 {navItems.map((item) => {
                   const Icon = item.icon;
-                  const active = location.pathname === item.path;
+                  const active = location.pathname === navPath(item.path);
                   return (
                     <Link
                       key={item.path}

@@ -29,6 +29,7 @@ import {
 import { facultyInstitutions } from "@/data/faculties";
 import { highSchools } from "@/data/highSchools";
 import { resolveExperienceMode } from "@/lib/experience";
+import { answerJuniorFromBase } from "@/lib/juniorChat";
 import { API_BASE_URL } from "@/config/apiBase";
 import { apiGet, getStoredAuthToken, setStoredAuthToken } from "@/lib/api";
 import { authMe, userFromAuthMe, type AuthUser } from "@/lib/auth";
@@ -44,10 +45,10 @@ const SENIOR_SUGGESTIONS = [
 ];
 
 const JUNIOR_SUGGESTIONS = [
-  "Koje su najbolje gimnazije u Zagrebu?",
-  "Strukovna ili gimnazija za informatiku — što je bolje?",
-  "Koja srednja škola u Splitu ima medicinski smjer?",
-  "Kako odabrati između opće gimnazije i jezične?",
+  "Gimnazije u Zagrebu",
+  "Medicinska u Splitu — koje škole i prag?",
+  "Kad su upisni rokovi?",
+  "Opća gimnazija u Bjelovaru",
 ];
 
 type ChatAttachment = {
@@ -254,7 +255,7 @@ const AI_NAME = "Dražen";
 const AI_WELCOME_SENIOR = `Bok! Ja sam ${AI_NAME} 👋
 Pomažem ti sa svim pitanjima o fakultetima u Hrvatskoj. Što te zanima?`;
 const AI_WELCOME_JUNIOR = `Bok! Ja sam ${AI_NAME} 👋
-Pomažem ti sa svim pitanjima o srednjim školama u Hrvatskoj. Što te zanima?`;
+Odgovaram samo iz naše baze: škole, smjerovi, lanjski prag gdje ga imamo i upisni rokovi. Ako nešto nije u bazi, reći ću da ne znam — ne izmišljam.`;
 
 function buildLocalChatReplySenior(question: string): string {
   const q = question.toLowerCase();
@@ -289,53 +290,7 @@ function buildLocalChatReplySenior(question: string): string {
 }
 
 function buildLocalChatReplyJunior(question: string): string {
-  const q = question.toLowerCase();
-  const cities = Array.from(new Set(highSchools.map((s) => s.city)));
-  const matchedCity = cities.find((city) => q.includes(city.toLowerCase()));
-
-  if (matchedCity) {
-    const inCity = highSchools.filter((s) => s.city.toLowerCase() === matchedCity.toLowerCase()).slice(0, 10);
-    if (inCity.length) {
-      return `U gradu ${matchedCity} sam pronašao ove srednje škole:\n- ${inCity.map((s) => s.name).join("\n- ")}\n\nMogu ti reći više o bilo kojoj školi ili smjerovima.`;
-    }
-  }
-
-  if (q.includes("gimnazij")) {
-    const matches = highSchools.filter((s) => /gimnazij/i.test(s.name)).slice(0, 10);
-    if (matches.length) {
-      return `Pronašao sam ove gimnazije:\n- ${matches.map((s) => `${s.name} (${s.city})`).join("\n- ")}`;
-    }
-  }
-
-  if (q.includes("strukovna") || q.includes("strukovno") || q.includes("obrt")) {
-    const matches = highSchools
-      .filter((s) => /strukovna|strukovn|obrt/i.test(s.name))
-      .slice(0, 10);
-    if (matches.length) {
-      return `Strukovne škole koje sam pronašao:\n- ${matches.map((s) => `${s.name} (${s.city})`).join("\n- ")}`;
-    }
-  }
-
-  if (q.includes("medicin") || q.includes("zdrav")) {
-    const matches = highSchools
-      .filter((s) => /medicin|zdrav|bolničar/i.test(s.name))
-      .slice(0, 10);
-    if (matches.length) {
-      return `Škole s medicinskim/zdravstvenim smjerom:\n- ${matches.map((s) => `${s.name} (${s.city})`).join("\n- ")}`;
-    }
-  }
-
-  if (q.includes("informatič") || q.includes("računar") || q.includes("it")) {
-    const matches = highSchools
-      .filter((s) => /informatič|računar|tehničk|elektrotehni/i.test(s.name))
-      .slice(0, 10);
-    if (matches.length) {
-      return `Škole s IT/tehničkim smjerovima:\n- ${matches.map((s) => `${s.name} (${s.city})`).join("\n- ")}`;
-    }
-  }
-
-  const sample = highSchools.slice(0, 8);
-  return `Trenutno radim u lokalnom modu (bez backenda), ali i dalje mogu pomoći kroz podatke o 443 srednje škole u Hrvatskoj.\n\nPrimjeri pitanja:\n- Srednje škole u određenom gradu (npr. Zagreb, Split, Rijeka)\n- Gimnazije ili strukovne škole\n- Škole s određenim smjerom (IT, medicina, jezici)\n\nPrimjeri škola:\n- ${sample.map((s) => `${s.name} (${s.city})`).join("\n- ")}`;
+  return answerJuniorFromBase(question);
 }
 
 type ChatQuotaState = {
@@ -503,6 +458,7 @@ const Chatbot = () => {
 
   const formatMessage = (text: string) => {
     return text
+      .replace(/\[([^\]]+)\]\((\/programi\/[a-z0-9-]+)\)/g, '<a href="$2" class="font-semibold underline underline-offset-2">$1</a>')
       .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
       .replace(/\*(.*?)\*/g, "<em>$1</em>")
       .replace(/`(.*?)`/g, '<code class="chat-code">$1</code>')
@@ -548,6 +504,18 @@ const Chatbot = () => {
 
     setMessages((m) => [...m, { role: "assistant", content: "" }]);
     const assistantIdx = conversationHistory.length;
+
+    // Junior: uvijek samo lokalna baza — bez OpenAI eseja.
+    if (isJunior) {
+      const localReply = answerJuniorFromBase(buildUserSearchQuery(content, userMsg.attachments));
+      setMessages((m) => {
+        const next = [...m];
+        next[assistantIdx] = { role: "assistant", content: localReply };
+        return next;
+      });
+      setIsLoading(false);
+      return;
+    }
 
     // Static hosting fallback: when backend is unavailable, answer from local dataset.
     const shouldUseLocalFallback = !API_BASE && !import.meta.env.DEV;
@@ -829,7 +797,9 @@ const Chatbot = () => {
                         ? "Lokalni način (bez API)"
                         : showLoginGate
                           ? "Samo za prijavljene korisnike"
-                          : "Online · baza + OpenAI"}
+                          : isJunior
+                            ? "Samo baza škola"
+                            : "Online · baza + OpenAI"}
                   </p>
                 </div>
                 {user && !STATIC_NO_API && !authLoading && (quotaLoading || quotaError || quota?.authenticated) && (
@@ -988,7 +958,9 @@ const Chatbot = () => {
                             !msg.content.includes("Backend nije") &&
                             !msg.content.includes("Greška pri") && (
                             <div className="chat-source-tag">
-                              📚 Podaci iz {isJunior ? "baze srednjih škola" : "baze"} u kontekstu · ✨ tekst (OpenAI) — provjeri službene uvjete na {isJunior ? "školi" : "fakultetu"}
+                              {isJunior
+                                ? "📚 Samo naša baza: škole, smjerovi, pragovi, rokovi — bez izmišljanja"
+                                : "📚 Podaci iz baze u kontekstu · ✨ tekst (OpenAI) — provjeri službene uvjete na fakultetu"}
                             </div>
                           )}
                         </>

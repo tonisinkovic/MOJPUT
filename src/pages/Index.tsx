@@ -215,7 +215,11 @@ const features: HomeFeature[] = [
 const JUNIOR_EXCLUDED_FEATURE_PATHS = new Set([
   "/kalkulator-doma",
   "/mature",
+  "/samoprocjena",
+  "/video",
 ]);
+
+const JUNIOR_HIDDEN_QUICK = new Set(["/samoprocjena", "/video"]);
 
 const seniorStats: StatItem[] = [
   { value: 120, suffix: "+", label: "Fakulteta", icon: <GraduationCap className="w-5 h-5" /> },
@@ -1596,7 +1600,7 @@ const Index = () => {
   const mapPath = isJunior ? "/srednje-skole" : "/karta";
 
   const quickActions = isJunior
-    ? HERO_QUICK_ACTIONS.map((a) => {
+    ? HERO_QUICK_ACTIONS.filter((a) => !JUNIOR_HIDDEN_QUICK.has(a.to)).map((a) => {
           if (a.to === "/karta") return { ...a, to: "/srednje-skole", hook: "443 škole" };
           if (a.to === "/forum") return { ...a, to: "/forum?experience=junior" };
           if (a.to === "/kviz") return { ...a, to: "/kviz-srednja" };

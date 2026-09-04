@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import {
   ArrowLeft,
@@ -28,12 +28,27 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
 import { cn } from "@/lib/utils";
+import JuniorPointsBox from "@/components/junior-quiz/JuniorPointsBox";
+import JuniorSchoolRow from "@/components/junior-quiz/JuniorSchoolRow";
+import JuniorNumbersNote from "@/components/junior/JuniorNumbersNote";
+import JuniorPlanBCard from "@/components/junior/JuniorPlanBCard";
+import JuniorClassJoin from "@/components/junior/JuniorClassJoin";
 import {
   analyzeNearby,
   listQuizCities,
   NEARBY_MAX_KM,
   type NearbyAnalysis,
 } from "@/lib/juniorGeo";
+import {
+  effectiveJuniorPoints,
+  enrichNearbySchool,
+  onJuniorPointsChange,
+  saveJuniorSnapshot,
+} from "@/lib/juniorPath";
+import { findPlanB } from "@/lib/juniorPlanB";
+import { programHref } from "@/lib/juniorProgramGuide";
+import { buildParentBrief, saveParentBrief } from "@/lib/juniorParentBrief";
+import JuniorShareParents from "@/components/junior/JuniorShareParents";
 import {
   analyzeJuniorQuiz,
   juniorProgramTypeLabels,
@@ -91,6 +106,7 @@ const loadStored = (): StoredState | null => {
 };
 
 const JuniorQuizFlow = () => {
+  const [searchParams] = useSearchParams();
   const stored = useMemo(loadStored, []);
   const [phase, setPhase] = useState<Phase>(stored?.phase ?? "intro");
   const [index, setIndex] = useState(stored?.index ?? 0);
@@ -98,6 +114,8 @@ const JuniorQuizFlow = () => {
   const [city, setCity] = useState<string | null>(stored?.city ?? null);
   const [cityQuery, setCityQuery] = useState("");
   const [jokeDismissed, setJokeDismissed] = useState(false);
+  const [points, setPoints] = useState<number | null>(() => effectiveJuniorPoints());
+  const classCodeFromUrl = searchParams.get("razred") ?? "";
 
   useEffect(() => {
     try {
@@ -128,6 +146,17 @@ const JuniorQuizFlow = () => {
     () => (analysis && city ? analyzeNearby(analysis.recommendations, city) : null),
     [analysis, city]
   );
+
+  useEffect(() => {
+    return onJuniorPointsChange(() => setPoints(effectiveJuniorPoints()));
+  }, []);
+
+  useEffect(() => {
+    if (phase === "results" && analysis) {
+      saveJuniorSnapshot(analysis, city);
+      saveParentBrief(buildParentBrief(analysis, city, nearby));
+    }
+  }, [phase, analysis, city, nearby]);
 
   const answeredCount = Object.keys(answers).length;
 
@@ -481,6 +510,8 @@ const JuniorQuizFlow = () => {
           </div>
         </div>
 
+        <JuniorPointsBox />
+
         {/* Recommendations */}
         <div>
           <div className="mb-3 flex items-center gap-2">
@@ -518,7 +549,11 @@ const JuniorQuizFlow = () => {
                       </span>
                       <div className="min-w-0">
                         <div className="flex flex-wrap items-center gap-2">
-                          <h4 className="text-base font-bold sm:text-lg">{rec.program.name}</h4>
+                          <h4 className="text-base font-bold sm:text-lg">
+                            <Link to={programHref(rec.program)} className="hover:underline">
+                              {rec.program.name}
+                            </Link>
+                          </h4>
                           {i === 0 ? (
                             <Badge className="bg-primary text-primary-foreground hover:bg-primary">
                               Top izbor
@@ -577,6 +612,12 @@ const JuniorQuizFlow = () => {
                     ) : null}
                   </div>
 
+                  <div className="mt-3">
+                    <Button asChild size="sm" variant="outline" className="h-8 rounded-lg px-2.5 text-xs">
+                      <Link to={programHref(rec.program)}>O programu</Link>
+                    </Button>
+                  </div>
+
                   {city && nearby ? (
                     (() => {
                       const schools = nearby.byProgram.get(rec.program.id) ?? [];
@@ -586,18 +627,17 @@ const JuniorQuizFlow = () => {
                             <MapPin className="mr-1 inline h-3 w-3" />
                             Blizu tebe ({city}, do {NEARBY_MAX_KM} km)
                           </p>
-                          <ul className="mt-1.5 space-y-1 text-sm">
+                          <ul className="mt-2 space-y-2">
                             {schools.map((s) => (
-                              <li key={`${s.name}-${s.city}`} className="flex items-baseline justify-between gap-3">
-                                <span className="min-w-0">
-                                  {s.name} <span className="text-muted-foreground">({s.city})</span>
-                                </span>
-                                <span className="shrink-0 text-xs font-semibold text-muted-foreground">
-                                  ~{s.distanceKm} km
-                                </span>
-                              </li>
+                              <JuniorSchoolRow
+                                key={`${s.name}-${s.city}`}
+                                school={enrichNearbySchool(s, rec.program)}
+                                program={rec.program}
+                                matchPercentage={rec.matchPercentage}
+                              />
                             ))}
                           </ul>
+                          <JuniorNumbersNote compact className="mt-2" />
                         </div>
                       ) : (
                         <p className="mt-2 rounded-2xl bg-amber-500/10 px-3.5 py-2.5 text-xs text-muted-foreground">
@@ -607,6 +647,18 @@ const JuniorQuizFlow = () => {
                       );
                     })()
                   ) : null}
+
+                  {(() => {
+                    const plan = findPlanB({
+                      program: rec.program,
+                      matchPercentage: rec.matchPercentage,
+                      nearby: nearby?.byProgram.get(rec.program.id) ?? [],
+                      recommendations: analysis.recommendations,
+                      city,
+                      points,
+                    });
+                    return plan ? <JuniorPlanBCard plan={plan} /> : null;
+                  })()}
                 </motion.div>
               );
             })}
@@ -631,6 +683,18 @@ const JuniorQuizFlow = () => {
               {note}
             </p>
           ))}
+          {analysis.recommendations[0] ? (
+            <div className="mt-4">
+              <JuniorClassJoin
+                programId={analysis.recommendations[0].program.id}
+                programName={analysis.recommendations[0].program.name}
+                pathway={analysis.pathway.title}
+                city={city}
+                initialCode={classCodeFromUrl}
+              />
+            </div>
+          ) : null}
+          <JuniorNumbersNote className="mt-4" />
           <div className="mt-4 flex flex-wrap gap-2.5">
             <Button asChild variant="default" size="sm">
               <Link to="/srednje-skole">
@@ -642,6 +706,12 @@ const JuniorQuizFlow = () => {
                 <Calculator className="mr-1.5 h-4 w-4" /> Kalkulator bodova
               </Link>
             </Button>
+            <Button asChild variant="outline" size="sm">
+              <Link to="/usporedi-skole">Usporedi spremljene</Link>
+            </Button>
+            {analysis ? (
+              <JuniorShareParents brief={buildParentBrief(analysis, city, nearby)} />
+            ) : null}
             <Button variant="ghost" size="sm" onClick={restart}>
               <RefreshCw className="mr-1.5 h-4 w-4" /> Riješi ponovno
             </Button>

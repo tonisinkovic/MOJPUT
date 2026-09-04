@@ -21,7 +21,8 @@ import {
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { lazy, Suspense, useMemo, useState } from "react";
+import { lazy, Suspense, useEffect, useMemo, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { highSchools, type HighSchool, type HighSchoolCategory } from "@/data/highSchools";
 import {
   srednjaProgramCounties,
@@ -215,6 +216,7 @@ const ProgramSchoolRow = ({
 };
 
 const KartaSrednjihSkola = () => {
+  const [searchParams] = useSearchParams();
   const [search, setSearch] = useState("");
   const [filterCategory, setFilterCategory] = useState<HighSchoolCategory | null>(null);
   const [filterCounty, setFilterCounty] = useState<string | null>(null);
@@ -222,6 +224,37 @@ const KartaSrednjihSkola = () => {
   const [focusedSchoolId, setFocusedSchoolId] = useState<string | null>(null);
   const [detailSchoolId, setDetailSchoolId] = useState<string | null>(null);
   const [sortBy, setSortBy] = useState<"az" | "za" | "city">("az");
+
+  useEffect(() => {
+    const id = searchParams.get("skola");
+    const q = searchParams.get("q");
+    const name = searchParams.get("name");
+    const city = searchParams.get("city");
+    if (id && highSchools.some((s) => s.id === id)) {
+      const school = highSchools.find((s) => s.id === id);
+      setFocusedSchoolId(id);
+      setDetailSchoolId(id);
+      if (school) {
+        setSearch(school.name);
+        setFilterCity(school.city);
+      }
+      return;
+    }
+    if (name) {
+      const found = highSchools.find((s) => {
+        const sameName = s.name.toLowerCase() === name.toLowerCase();
+        return sameName && (!city || s.city.toLowerCase() === city.toLowerCase());
+      });
+      if (found) {
+        setFocusedSchoolId(found.id);
+        setDetailSchoolId(found.id);
+        setSearch(found.name);
+        setFilterCity(found.city);
+        return;
+      }
+    }
+    if (q) setSearch(q);
+  }, [searchParams]);
 
   const counties = useMemo(
     () => [...new Set(highSchools.map((s) => s.county))].sort((a, b) => a.localeCompare(b, "hr")),
