@@ -52,11 +52,13 @@ const primaryNavSenior: NavEntry[] = [
 const primaryNavJunior: NavEntry[] = [
   { label: "Srednje škole", path: "/srednje-skole", icon: Map },
   { label: "Kviz", path: "/kviz-srednja", icon: HelpCircle },
+  { label: "Pedagog", path: "/razred", icon: Users },
   ...primaryNavSenior.slice(2),
 ];
 
 // Sekundarne - u "Više" padajućem na desktopu, lista na mobitelu.
 const secondaryNavSenior: NavEntry[] = [
+  { label: "Pedagog / razred", path: "/razred", icon: Users },
   { label: "Samoprocjena", path: "/samoprocjena", icon: Target },
   { label: "Domovi", path: "/kalkulator-doma", icon: Home },
   { label: "Video", path: "/video", icon: Video },
@@ -67,7 +69,6 @@ const secondaryNavSenior: NavEntry[] = [
 const secondaryNavJunior: NavEntry[] = [
   { label: "Programi", path: "/programi", icon: BookOpen },
   { label: "Kalendar", path: "/kalendar", icon: Calendar },
-  { label: "Razred", path: "/razred", icon: Users },
   { label: "Roditelji", path: "/roditelji?experience=junior", icon: Users },
   { label: "Chatbot", path: "/chatbot?experience=junior", icon: Bot },
 ];

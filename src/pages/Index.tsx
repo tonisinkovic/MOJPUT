@@ -209,6 +209,13 @@ const features: HomeFeature[] = [
     description: "Razgovaraj s umjetnom inteligencijom o odabiru fakulteta i karijere.",
     path: "/chatbot",
   },
+  {
+    icon: <Users className="h-6 w-6 text-primary" />,
+    title: "Pedagog / razred",
+    description: "Jedan kod za 8. razred: tko je riješio kviz i koji smjerovi iskaču, bez imena na ploči.",
+    path: "/razred",
+    highlighted: true,
+  },
 ];
 
 /** Alati relevantni samo za Senior (matura, fakulteti, domovi). */
@@ -1662,6 +1669,15 @@ const Index = () => {
               path: "/chatbot?experience=junior",
               description:
                 "Razgovaraj s umjetnom inteligencijom o odabiru srednje škole — samo baza hrvatskih srednjih škola.",
+            };
+          }
+          if (f.path === "/razred") {
+            return {
+              ...f,
+              title: "Pedagog / razred",
+              description:
+                "Napravi kod za cijeli 8. razred. Učenici pošalju kviz — na ploči vidiš smjerove, ne imena.",
+              highlighted: true,
             };
           }
           return f;

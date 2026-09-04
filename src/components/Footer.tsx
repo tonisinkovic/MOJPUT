@@ -19,6 +19,7 @@ const footerLinks = [
       { label: "Forum", path: "/forum" },
       { label: "Video predavanja", path: "/video" },
       { label: "Roditeljski kutak", path: "/roditelji" },
+      { label: "Pedagog / razred", path: "/razred" },
       { label: "Kalendar", path: "/kalendar" },
       { label: "Chatbot pomoćnik", path: "/chatbot" },
     ],

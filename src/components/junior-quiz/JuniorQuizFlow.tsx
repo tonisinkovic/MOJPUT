@@ -234,6 +234,12 @@ const JuniorQuizFlow = () => {
             <p className="text-xs text-muted-foreground">
               ~7 minuta · nema točnih i netočnih odgovora · rezultat je putokaz, ne presuda
             </p>
+            <p className="text-xs text-muted-foreground">
+              Pedagog ili razrednik?{" "}
+              <Link to="/razred" className="font-semibold text-primary underline-offset-2 hover:underline">
+                Napravi kod za razred
+              </Link>
+            </p>
           </div>
         </div>
       </motion.div>

@@ -322,15 +322,26 @@ const Roditelji = () => {
         </motion.div>
 
         {isJunior ? (
-          <div className="rounded-2xl border border-primary/20 bg-primary/[0.04] px-4 py-3 text-sm">
-            <p className="font-semibold">Dijete je riješilo kviz?</p>
-            <p className="mt-1 text-muted-foreground">
-              Pogledajte isti rezultat drugim jezikom — programi, škole u blizini i 4 pitanja za razgovor.
-              Vi ne rješavate kviz umjesto djeteta.
-            </p>
-            <Button asChild size="sm" className="mt-3 rounded-xl">
-              <Link to="/roditeljski-rezultat">Otvori rezultat za roditelje</Link>
-            </Button>
+          <div className="grid gap-3 sm:grid-cols-2">
+            <div className="rounded-2xl border border-primary/20 bg-primary/[0.04] px-4 py-3 text-sm">
+              <p className="font-semibold">Dijete je riješilo kviz?</p>
+              <p className="mt-1 text-muted-foreground">
+                Pogledajte isti rezultat drugim jezikom — programi, škole u blizini i 4 pitanja za razgovor.
+                Vi ne rješavate kviz umjesto djeteta.
+              </p>
+              <Button asChild size="sm" className="mt-3 rounded-xl">
+                <Link to="/roditeljski-rezultat">Otvori rezultat za roditelje</Link>
+              </Button>
+            </div>
+            <div className="rounded-2xl border border-sky-500/25 bg-sky-500/[0.06] px-4 py-3 text-sm">
+              <p className="font-semibold">Pedagog / razrednik?</p>
+              <p className="mt-1 text-muted-foreground">
+                Jedan kod za cijeli 8. razred: tko je riješio kviz i koji smjerovi iskaču, bez imena na ploči.
+              </p>
+              <Button asChild size="sm" className="mt-3 rounded-xl">
+                <Link to="/razred">Otvori ploču razreda</Link>
+              </Button>
+            </div>
           </div>
         ) : null}
 
