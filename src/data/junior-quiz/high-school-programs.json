@@ -1,0 +1,1077 @@
+[
+  {
+    "id": 1,
+    "name": "Opća gimnazija",
+    "type": "gimnazija",
+    "duration": 4,
+    "description": "Najšira opcija — svi predmeti podjednako. Idealna ako još ne znaš točno što želiš, a dobar/ra si u školi.",
+    "afterSchool": "Državna matura i upis na bilo koji fakultet.",
+    "interestWeights": {
+      "istrazivanje": 2,
+      "ljudi": 1
+    },
+    "subjectWeights": {
+      "matematika": 1,
+      "hrvatski": 2,
+      "jezici": 1,
+      "drustveni": 1
+    },
+    "academicLoad": 3,
+    "boostSignals": {},
+    "requiresSignals": {},
+    "matchKeywords": [
+      "opća gimnazija"
+    ],
+    "goodFor": [
+      "Široko znanje",
+      "Svi fakulteti otvoreni",
+      "Vrijeme za odluku"
+    ],
+    "entryBar": "visok",
+    "entryNote": "U većim gradovima prag je često 60–70 od 80 bodova; u manjim mjestima niži."
+  },
+  {
+    "id": 2,
+    "name": "Prirodoslovno-matematička gimnazija",
+    "type": "gimnazija",
+    "duration": 4,
+    "description": "Pojačana matematika, fizika i informatika. Za one kojima brojke i logika dobro leže.",
+    "afterSchool": "Odlična podloga za STEM fakultete: FER, PMF, medicinu, arhitekturu…",
+    "interestWeights": {
+      "istrazivanje": 3,
+      "prakticno": 1
+    },
+    "subjectWeights": {
+      "matematika": 3,
+      "kemija_fizika": 2,
+      "informatika": 2
+    },
+    "academicLoad": 3,
+    "boostSignals": {
+      "tech_computers": 1,
+      "science_experiments": 1,
+      "numbers_data": 1
+    },
+    "requiresSignals": {},
+    "matchKeywords": [
+      "prirodoslovno-matematička"
+    ],
+    "goodFor": [
+      "Matematika i logika",
+      "Priprema za STEM",
+      "Programiranje"
+    ],
+    "entryBar": "visok",
+    "entryNote": "Najtraženije gimnazije (MIOC i slične) traže 68+ bodova — među najvišim pragovima u HR."
+  },
+  {
+    "id": 3,
+    "name": "Jezična gimnazija",
+    "type": "gimnazija",
+    "duration": 4,
+    "description": "Više stranih jezika i književnosti. Za one koji vole riječi, kulture i komunikaciju.",
+    "afterSchool": "Matura i fakulteti — jezici, pravo, novinarstvo, turizam, diplomacija…",
+    "interestWeights": {
+      "ljudi": 2,
+      "kreativa": 1
+    },
+    "subjectWeights": {
+      "jezici": 3,
+      "hrvatski": 2,
+      "drustveni": 1
+    },
+    "academicLoad": 3,
+    "boostSignals": {
+      "languages_travel": 3
+    },
+    "requiresSignals": {},
+    "matchKeywords": [
+      "jezična gimnazija"
+    ],
+    "goodFor": [
+      "3–4 strana jezika",
+      "Komunikacija",
+      "Putovanja i kulture"
+    ],
+    "entryBar": "visok",
+    "entryNote": "Popularan izbor — pragovi često 60–70 bodova, plus se gleda ocjena stranog jezika."
+  },
+  {
+    "id": 4,
+    "name": "Klasična gimnazija",
+    "type": "gimnazija",
+    "duration": 4,
+    "description": "Latinski, grčki, povijest i filozofija. Za znatiželjne koji vole priče, jezik i dubinu.",
+    "afterSchool": "Matura i fakulteti — pravo, povijest, medicina, filozofija, jezici…",
+    "interestWeights": {
+      "istrazivanje": 2,
+      "ljudi": 1
+    },
+    "subjectWeights": {
+      "hrvatski": 2,
+      "jezici": 2,
+      "drustveni": 2
+    },
+    "academicLoad": 3,
+    "boostSignals": {
+      "languages_travel": 1
+    },
+    "requiresSignals": {},
+    "matchKeywords": [
+      "klasična gimnazija"
+    ],
+    "goodFor": [
+      "Povijest i jezici",
+      "Dubinsko razumijevanje",
+      "Široka kultura"
+    ],
+    "entryBar": "srednji",
+    "entryNote": "Prag obično nešto niži od opće gimnazije; uči se latinski i grčki od 1. razreda."
+  },
+  {
+    "id": 5,
+    "name": "Prirodoslovna gimnazija",
+    "type": "gimnazija",
+    "duration": 4,
+    "description": "Pojačana biologija i kemija s puno pokusa. Za buduće liječnike, biologe i istraživače.",
+    "afterSchool": "Matura i fakulteti — medicina, farmacija, biologija, veterina…",
+    "interestWeights": {
+      "istrazivanje": 3
+    },
+    "subjectWeights": {
+      "biologija": 3,
+      "kemija_fizika": 2
+    },
+    "academicLoad": 3,
+    "boostSignals": {
+      "science_experiments": 2,
+      "health_medicine": 1
+    },
+    "requiresSignals": {},
+    "matchKeywords": [
+      "prirodoslovna gimnazija"
+    ],
+    "goodFor": [
+      "Biologija i kemija",
+      "Pokusi",
+      "Put prema medicini"
+    ],
+    "entryBar": "visok",
+    "entryNote": "Pragovi slični općoj gimnaziji; naglasak na ocjenama iz biologije i kemije."
+  },
+  {
+    "id": 6,
+    "name": "Sportska gimnazija (odjeli za sportaše)",
+    "type": "gimnazija",
+    "duration": 4,
+    "description": "Gimnazijski program prilagođen treninzima i natjecanjima. Za aktivne sportaše.",
+    "afterSchool": "Matura i fakulteti — kineziologija ili bilo koji drugi studij.",
+    "interestWeights": {
+      "prakticno": 1,
+      "ljudi": 1
+    },
+    "subjectWeights": {
+      "tjelesni": 3,
+      "biologija": 1
+    },
+    "academicLoad": 2,
+    "boostSignals": {
+      "sport_active": 3
+    },
+    "requiresSignals": {
+      "sport_active": 3
+    },
+    "matchKeywords": [
+      "sportaš",
+      "sportska gimnazija"
+    ],
+    "goodFor": [
+      "Trening + škola",
+      "Fleksibilan raspored",
+      "Sportska karijera"
+    ],
+    "entryBar": "srednji",
+    "entryNote": "Bodovi su manje presudni — ključan je status kategoriziranog sportaša i potvrda saveza."
+  },
+  {
+    "id": 7,
+    "name": "Tehničar za računarstvo",
+    "type": "tehnicka",
+    "duration": 4,
+    "description": "Programiranje, mreže, hardver i izrada aplikacija — od prve godine praktično uz računalo.",
+    "afterSchool": "Posao u IT-u ili matura i fakultet (FER, FOI, računarstvo…).",
+    "interestWeights": {
+      "istrazivanje": 2,
+      "prakticno": 1,
+      "red": 1
+    },
+    "subjectWeights": {
+      "informatika": 3,
+      "matematika": 2
+    },
+    "academicLoad": 2,
+    "boostSignals": {
+      "tech_computers": 3
+    },
+    "requiresSignals": {
+      "tech_computers": 2
+    },
+    "matchKeywords": [
+      "računarstv",
+      "računalstv"
+    ],
+    "goodFor": [
+      "Programiranje",
+      "Igre i aplikacije",
+      "Tražena zanimanja"
+    ],
+    "entryBar": "visok",
+    "entryNote": "Jedan od najtraženijih strukovnih programa — pragovi često 60+ bodova."
+  },
+  {
+    "id": 8,
+    "name": "Tehničar za elektrotehniku / elektroniku",
+    "type": "tehnicka",
+    "duration": 4,
+    "description": "Struja, elektronika, automatika i pametni uređaji — spoj teorije i rada u praktikumu.",
+    "afterSchool": "Posao u struci ili matura i tehnički fakulteti.",
+    "interestWeights": {
+      "prakticno": 2,
+      "istrazivanje": 2
+    },
+    "subjectWeights": {
+      "matematika": 2,
+      "kemija_fizika": 2,
+      "informatika": 1
+    },
+    "academicLoad": 2,
+    "boostSignals": {
+      "hands_on_craft": 1,
+      "tech_computers": 1
+    },
+    "requiresSignals": {},
+    "matchKeywords": [
+      "elektrotehn",
+      "elektronik"
+    ],
+    "goodFor": [
+      "Elektronika i automatika",
+      "Praktikum",
+      "Sigurno zaposlenje"
+    ],
+    "entryBar": "srednji",
+    "entryNote": "Pragovi obično 50–60 bodova; potrebna liječnička potvrda za rad sa strojevima/naponom."
+  },
+  {
+    "id": 9,
+    "name": "Tehničar u strojarstvu",
+    "type": "tehnicka",
+    "duration": 4,
+    "description": "Strojevi, 3D modeliranje, CNC i konstrukcije. Za one koji vole tehniku i rad rukama uz glavu.",
+    "afterSchool": "Posao u industriji ili matura i strojarski fakulteti (FSB…).",
+    "interestWeights": {
+      "prakticno": 3,
+      "istrazivanje": 1
+    },
+    "subjectWeights": {
+      "matematika": 2,
+      "kemija_fizika": 2
+    },
+    "academicLoad": 2,
+    "boostSignals": {
+      "hands_on_craft": 2
+    },
+    "requiresSignals": {},
+    "matchKeywords": [
+      "strojarstvu",
+      "strojarsk"
+    ],
+    "goodFor": [
+      "Strojevi i tehnika",
+      "3D i CNC",
+      "Industrija"
+    ],
+    "entryBar": "srednji",
+    "entryNote": "Pragovi umjereni (45–60); traži se liječnička potvrda medicine rada."
+  },
+  {
+    "id": 10,
+    "name": "Građevinski tehničar",
+    "type": "tehnicka",
+    "duration": 4,
+    "description": "Projektiranje i gradnja — nacrti, gradilišta i materijali. Vidiš kako tvoj rad postaje zgrada.",
+    "afterSchool": "Posao u građevini ili matura i građevinski/arhitektonski fakultet.",
+    "interestWeights": {
+      "prakticno": 2,
+      "red": 1
+    },
+    "subjectWeights": {
+      "matematika": 2,
+      "likovni": 1
+    },
+    "academicLoad": 2,
+    "boostSignals": {
+      "hands_on_craft": 1
+    },
+    "requiresSignals": {},
+    "matchKeywords": [
+      "građevinski tehničar",
+      "građevinsk"
+    ],
+    "goodFor": [
+      "Nacrti i gradnja",
+      "Konkretni rezultati",
+      "Tražena struka"
+    ],
+    "entryBar": "srednji",
+    "entryNote": "Pragovi umjereni; dobro dođe solidna matematika i tehničko crtanje."
+  },
+  {
+    "id": 11,
+    "name": "Arhitektonski tehničar",
+    "type": "tehnicka",
+    "duration": 4,
+    "description": "Crtanje i projektiranje prostora — spoj kreativnosti, preciznosti i matematike.",
+    "afterSchool": "Posao u projektnim uredima ili matura i arhitektura/građevina.",
+    "interestWeights": {
+      "kreativa": 2,
+      "prakticno": 1,
+      "red": 1
+    },
+    "subjectWeights": {
+      "likovni": 2,
+      "matematika": 2
+    },
+    "academicLoad": 2,
+    "boostSignals": {
+      "art_visual": 2
+    },
+    "requiresSignals": {},
+    "matchKeywords": [
+      "arhitektonsk"
+    ],
+    "goodFor": [
+      "Dizajn prostora",
+      "Tehničko crtanje",
+      "Kreativa + tehnika"
+    ],
+    "entryBar": "srednji",
+    "entryNote": "U Zagrebu i Splitu zna biti tražen (55–65); važan je smisao za crtanje."
+  },
+  {
+    "id": 12,
+    "name": "Medicinska sestra / medicinski tehničar",
+    "type": "tehnicka",
+    "duration": 5,
+    "description": "Petogodišnji program njege i brige za pacijente s puno prakse u bolnici. Human i tražen posao.",
+    "afterSchool": "Odmah posao u zdravstvu ili matura i studij sestrinstva/medicine.",
+    "interestWeights": {
+      "ljudi": 3,
+      "prakticno": 1
+    },
+    "subjectWeights": {
+      "biologija": 3,
+      "kemija_fizika": 1
+    },
+    "academicLoad": 2,
+    "boostSignals": {
+      "health_medicine": 3,
+      "helping_people": 1
+    },
+    "requiresSignals": {
+      "health_medicine": 2
+    },
+    "matchKeywords": [
+      "medicinska sestra"
+    ],
+    "goodFor": [
+      "Pomaganje ljudima",
+      "Praksa u bolnici",
+      "Siguran posao"
+    ],
+    "entryBar": "visok",
+    "entryNote": "Medicinske škole imaju visoke pragove (65+); obavezna liječnička potvrda i cijepljenja."
+  },
+  {
+    "id": 13,
+    "name": "Farmaceutski tehničar",
+    "type": "tehnicka",
+    "duration": 4,
+    "description": "Lijekovi, kemija i rad u ljekarni ili laboratoriju. Za precizne koji vole prirodne predmete.",
+    "afterSchool": "Posao u ljekarni/laboratoriju ili matura i farmacija.",
+    "interestWeights": {
+      "istrazivanje": 2,
+      "red": 2
+    },
+    "subjectWeights": {
+      "kemija_fizika": 3,
+      "biologija": 2
+    },
+    "academicLoad": 2,
+    "boostSignals": {
+      "health_medicine": 2,
+      "science_experiments": 1
+    },
+    "requiresSignals": {},
+    "matchKeywords": [
+      "farmaceutsk"
+    ],
+    "goodFor": [
+      "Kemija u praksi",
+      "Preciznost",
+      "Zdravstvo"
+    ],
+    "entryBar": "visok",
+    "entryNote": "Vrlo tražen program — pragovi često 65+ bodova; ključne su kemija i biologija."
+  },
+  {
+    "id": 14,
+    "name": "Fizioterapeutski tehničar",
+    "type": "tehnicka",
+    "duration": 4,
+    "description": "Vježbe, rehabilitacija i pomoć ljudima da se oporave — spoj zdravstva i kretanja.",
+    "afterSchool": "Posao u struci ili matura i studij fizioterapije.",
+    "interestWeights": {
+      "ljudi": 2,
+      "prakticno": 1
+    },
+    "subjectWeights": {
+      "biologija": 2,
+      "tjelesni": 2
+    },
+    "academicLoad": 2,
+    "boostSignals": {
+      "health_medicine": 2,
+      "sport_active": 1
+    },
+    "requiresSignals": {},
+    "matchKeywords": [
+      "fizioterapeutsk"
+    ],
+    "goodFor": [
+      "Zdravlje + sport",
+      "Rad s ljudima",
+      "Rehabilitacija"
+    ],
+    "entryBar": "visok",
+    "entryNote": "Pragovi često 60+; traži se liječnička potvrda i dobra fizička spremnost."
+  },
+  {
+    "id": 15,
+    "name": "Veterinarski tehničar",
+    "type": "tehnicka",
+    "duration": 4,
+    "description": "Briga o životinjama, pomoć veterinaru i rad u ambulanti ili na terenu.",
+    "afterSchool": "Posao u struci ili matura i studij veterine.",
+    "interestWeights": {
+      "prakticno": 2,
+      "istrazivanje": 1
+    },
+    "subjectWeights": {
+      "biologija": 3
+    },
+    "academicLoad": 2,
+    "boostSignals": {
+      "animals_nature": 3
+    },
+    "requiresSignals": {
+      "animals_nature": 2
+    },
+    "matchKeywords": [
+      "veterinarsk"
+    ],
+    "goodFor": [
+      "Životinje svaki dan",
+      "Praktičan rad",
+      "Put prema veterini"
+    ],
+    "entryBar": "visok",
+    "entryNote": "Tražen program (60+); praksa uključuje stvarni rad sa životinjama — i fizički posao."
+  },
+  {
+    "id": 16,
+    "name": "Poljoprivredni / agroturistički tehničar",
+    "type": "tehnicka",
+    "duration": 4,
+    "description": "Uzgoj biljaka i životinja, moderna poljoprivreda i seoski turizam — posao u prirodi.",
+    "afterSchool": "Vlastito gospodarstvo, posao u struci ili matura i agronomija.",
+    "interestWeights": {
+      "prakticno": 2,
+      "organizacija": 1
+    },
+    "subjectWeights": {
+      "biologija": 2
+    },
+    "academicLoad": 1,
+    "boostSignals": {
+      "plants_outdoor": 3,
+      "animals_nature": 1
+    },
+    "requiresSignals": {},
+    "matchKeywords": [
+      "poljoprivredn",
+      "agrotur",
+      "agrotehn",
+      "voćar",
+      "vinogradar"
+    ],
+    "goodFor": [
+      "Rad u prirodi",
+      "Uzgoj i proizvodnja",
+      "Obiteljski posao"
+    ],
+    "entryBar": "nizi",
+    "entryNote": "Pragovi niži; velika prednost ako obitelj ima gospodarstvo ili zemljište."
+  },
+  {
+    "id": 17,
+    "name": "Šumarski tehničar",
+    "type": "tehnicka",
+    "duration": 4,
+    "description": "Briga o šumama, priroda i teren — za one koji ne žele ured nego otvoreni prostor.",
+    "afterSchool": "Posao u šumarstvu ili matura i šumarski fakultet.",
+    "interestWeights": {
+      "prakticno": 2,
+      "istrazivanje": 1
+    },
+    "subjectWeights": {
+      "biologija": 2
+    },
+    "academicLoad": 1,
+    "boostSignals": {
+      "plants_outdoor": 3
+    },
+    "requiresSignals": {},
+    "matchKeywords": [
+      "šumarsk"
+    ],
+    "goodFor": [
+      "Priroda i teren",
+      "Ekologija",
+      "Rad na otvorenom"
+    ],
+    "entryBar": "nizi",
+    "entryNote": "Pragovi niži; posao je vezan uz teren i drži se državnih šuma (HŠ najveći poslodavac)."
+  },
+  {
+    "id": 18,
+    "name": "Ekonomist",
+    "type": "tehnicka",
+    "duration": 4,
+    "description": "Poslovanje, marketing, računovodstvo i poduzetništvo — kako funkcioniraju tvrtke i novac.",
+    "afterSchool": "Posao u uredu/banci ili matura i ekonomski fakultet.",
+    "interestWeights": {
+      "organizacija": 2,
+      "red": 2
+    },
+    "subjectWeights": {
+      "matematika": 2,
+      "drustveni": 1,
+      "informatika": 1
+    },
+    "academicLoad": 2,
+    "boostSignals": {
+      "business_entrepreneur": 2,
+      "numbers_data": 2
+    },
+    "requiresSignals": {},
+    "matchKeywords": [
+      "ekonomist"
+    ],
+    "goodFor": [
+      "Poslovanje i novac",
+      "Poduzetništvo",
+      "Široke mogućnosti"
+    ],
+    "entryBar": "srednji",
+    "entryNote": "Pragovi 50–60 u većim gradovima; najčešći strukovni program u HR — ima ga skoro svaki grad."
+  },
+  {
+    "id": 19,
+    "name": "Upravni referent",
+    "type": "tehnicka",
+    "duration": 4,
+    "description": "Administracija, dokumenti i pravo u praksi — uredski posao za precizne i pouzdane.",
+    "afterSchool": "Posao u upravi/uredu ili matura i pravo/upravni studij.",
+    "interestWeights": {
+      "red": 3,
+      "ljudi": 1
+    },
+    "subjectWeights": {
+      "hrvatski": 2,
+      "drustveni": 1,
+      "informatika": 1
+    },
+    "academicLoad": 2,
+    "boostSignals": {
+      "numbers_data": 1
+    },
+    "requiresSignals": {},
+    "matchKeywords": [
+      "upravn"
+    ],
+    "goodFor": [
+      "Uredski posao",
+      "Dokumenti i propisi",
+      "Put prema pravu"
+    ],
+    "entryBar": "srednji",
+    "entryNote": "Pragovi umjereni; posao često u javnoj upravi — stabilno, ali sporije napredovanje."
+  },
+  {
+    "id": 20,
+    "name": "Hotelijersko-turistički tehničar",
+    "type": "tehnicka",
+    "duration": 4,
+    "description": "Turizam, hoteli, gosti i jezici — za komunikativne koji vole dinamiku i ljude.",
+    "afterSchool": "Posao u turizmu ili matura i studij turizma/ekonomije.",
+    "interestWeights": {
+      "ljudi": 2,
+      "organizacija": 2
+    },
+    "subjectWeights": {
+      "jezici": 3,
+      "drustveni": 1
+    },
+    "academicLoad": 2,
+    "boostSignals": {
+      "languages_travel": 2,
+      "business_entrepreneur": 1
+    },
+    "requiresSignals": {},
+    "matchKeywords": [
+      "turistič",
+      "hotelijer"
+    ],
+    "goodFor": [
+      "Jezici u praksi",
+      "Rad s gostima",
+      "Turistička zemlja"
+    ],
+    "entryBar": "srednji",
+    "entryNote": "Pragovi umjereni; obavezan drugi strani jezik, praksa u hotelima (i preko ljeta)."
+  },
+  {
+    "id": 21,
+    "name": "Tehničar cestovnog prometa / logistike",
+    "type": "tehnicka",
+    "duration": 4,
+    "description": "Promet, transport i organizacija prijevoza — kako roba i ljudi stižu na cilj.",
+    "afterSchool": "Posao u prometu/logistici ili matura i prometni fakultet.",
+    "interestWeights": {
+      "red": 2,
+      "prakticno": 1,
+      "organizacija": 1
+    },
+    "subjectWeights": {
+      "matematika": 1,
+      "drustveni": 1
+    },
+    "academicLoad": 2,
+    "boostSignals": {},
+    "requiresSignals": {},
+    "matchKeywords": [
+      "promet",
+      "logisti"
+    ],
+    "goodFor": [
+      "Organizacija prijevoza",
+      "Dinamičan posao",
+      "Logistika"
+    ],
+    "entryBar": "srednji",
+    "entryNote": "Pragovi umjereni do niži; za vozača kasnije trebaju i vozačke kategorije."
+  },
+  {
+    "id": 22,
+    "name": "Medijski / grafički tehničar i web dizajner",
+    "type": "tehnicka",
+    "duration": 4,
+    "description": "Dizajn, tisak, video i web — kreativa na računalu s konkretnim proizvodima.",
+    "afterSchool": "Posao u medijima/dizajnu ili matura i dizajnerski studiji.",
+    "interestWeights": {
+      "kreativa": 3
+    },
+    "subjectWeights": {
+      "likovni": 2,
+      "informatika": 2
+    },
+    "academicLoad": 2,
+    "boostSignals": {
+      "art_visual": 2,
+      "tech_computers": 1
+    },
+    "requiresSignals": {},
+    "matchKeywords": [
+      "grafič",
+      "medijsk",
+      "web dizajn"
+    ],
+    "goodFor": [
+      "Dizajn na računalu",
+      "Video i tisak",
+      "Kreativna industrija"
+    ],
+    "entryBar": "visok",
+    "entryNote": "Kreativni programi su traženi (60+ u ZG); dio škola traži provjeru likovnih sposobnosti."
+  },
+  {
+    "id": 23,
+    "name": "Kemijski tehničar",
+    "type": "tehnicka",
+    "duration": 4,
+    "description": "Laboratorij, analize i pokusi svaki tjedan — kemija iz prve ruke.",
+    "afterSchool": "Posao u laboratoriju/industriji ili matura i kemija/farmacija.",
+    "interestWeights": {
+      "istrazivanje": 3,
+      "red": 1
+    },
+    "subjectWeights": {
+      "kemija_fizika": 3,
+      "matematika": 1
+    },
+    "academicLoad": 2,
+    "boostSignals": {
+      "science_experiments": 2
+    },
+    "requiresSignals": {},
+    "matchKeywords": [
+      "kemijski tehničar",
+      "ekološki tehničar"
+    ],
+    "goodFor": [
+      "Laboratorij",
+      "Pokusi i analize",
+      "Znanost u praksi"
+    ],
+    "entryBar": "srednji",
+    "entryNote": "Pragovi umjereni; rad s kemikalijama traži liječničku potvrdu."
+  },
+  {
+    "id": 24,
+    "name": "Prehrambeni tehničar",
+    "type": "tehnicka",
+    "duration": 4,
+    "description": "Proizvodnja i kontrola hrane — od recepture do laboratorija.",
+    "afterSchool": "Posao u prehrambenoj industriji ili matura i prehrambena tehnologija.",
+    "interestWeights": {
+      "prakticno": 1,
+      "istrazivanje": 1,
+      "red": 1
+    },
+    "subjectWeights": {
+      "kemija_fizika": 2,
+      "biologija": 1
+    },
+    "academicLoad": 2,
+    "boostSignals": {
+      "cooking_food": 2,
+      "science_experiments": 1
+    },
+    "requiresSignals": {},
+    "matchKeywords": [
+      "prehrambeni"
+    ],
+    "goodFor": [
+      "Hrana i kvaliteta",
+      "Laboratorij",
+      "Industrija"
+    ],
+    "entryBar": "nizi",
+    "entryNote": "Pragovi niži; stabilna industrija — hrana se uvijek proizvodi."
+  },
+  {
+    "id": 25,
+    "name": "Glazbena škola (glazbenik)",
+    "type": "umjetnicka",
+    "duration": 4,
+    "description": "Instrument, teorija glazbe i nastupi — za one kojima je glazba više od hobija.",
+    "afterSchool": "Muzička akademija ili glazbena karijera; ide se paralelno ili uz drugu školu.",
+    "interestWeights": {
+      "kreativa": 3
+    },
+    "subjectWeights": {
+      "glazbeni": 3
+    },
+    "academicLoad": 2,
+    "boostSignals": {
+      "music_performance": 3
+    },
+    "requiresSignals": {
+      "music_performance": 3
+    },
+    "matchKeywords": [
+      "glazbenik",
+      "glazbena"
+    ],
+    "goodFor": [
+      "Instrument i nastupi",
+      "Umjetnička zajednica",
+      "Muzička akademija"
+    ],
+    "entryBar": "srednji",
+    "entryNote": "Presudan je PRIJEMNI (sviranje, sluh, teorija) — bodovi iz škole manje važni; kreće se ranije, često uz osnovnu glazbenu."
+  },
+  {
+    "id": 26,
+    "name": "Škola za dizajn i likovnu umjetnost",
+    "type": "umjetnicka",
+    "duration": 4,
+    "description": "Crtanje, dizajn, moda, fotografija — portfolio i prijemni ispit otvaraju vrata.",
+    "afterSchool": "Akademija likovnih umjetnosti, dizajn, arhitektura ili kreativni posao.",
+    "interestWeights": {
+      "kreativa": 3
+    },
+    "subjectWeights": {
+      "likovni": 3
+    },
+    "academicLoad": 2,
+    "boostSignals": {
+      "art_visual": 3
+    },
+    "requiresSignals": {
+      "art_visual": 3
+    },
+    "matchKeywords": [
+      "dizajn",
+      "likovn",
+      "primijenjen"
+    ],
+    "goodFor": [
+      "Crtanje svaki dan",
+      "Portfolio",
+      "Kreativna karijera"
+    ],
+    "entryBar": "visok",
+    "entryNote": "Obavezan prijemni: mapa radova (portfolio) i crtanje uživo — pripreme počinju mjesecima ranije."
+  },
+  {
+    "id": 27,
+    "name": "Frizer / kozmetičar",
+    "type": "obrtnicka",
+    "duration": 3,
+    "description": "Frizure, njega i styling s puno prakse u salonu — brzo do zanata i vlastitih klijenata.",
+    "afterSchool": "Posao u salonu, vlastiti obrt; uz doškolovanje moguća i matura.",
+    "interestWeights": {
+      "kreativa": 2,
+      "ljudi": 2
+    },
+    "subjectWeights": {
+      "likovni": 1
+    },
+    "academicLoad": 1,
+    "boostSignals": {
+      "beauty_style": 3
+    },
+    "requiresSignals": {
+      "beauty_style": 2
+    },
+    "matchKeywords": [
+      "frizer",
+      "kozmetič",
+      "pediker"
+    ],
+    "goodFor": [
+      "Praksa u salonu",
+      "Vlastiti obrt",
+      "Rad s ljudima"
+    ],
+    "entryBar": "nizi",
+    "entryNote": "Pragovi niži; ključna je spretnost ruku — praksa u salonu od 1. razreda."
+  },
+  {
+    "id": 28,
+    "name": "Kuhar / slastičar",
+    "type": "obrtnicka",
+    "duration": 3,
+    "description": "Kuhinja od prvog dana — praksa u restoranima i hotelima, tražen posao svugdje.",
+    "afterSchool": "Posao u ugostiteljstvu, vlastiti obrt; uz doškolovanje i matura.",
+    "interestWeights": {
+      "prakticno": 2,
+      "kreativa": 2
+    },
+    "subjectWeights": {},
+    "academicLoad": 1,
+    "boostSignals": {
+      "cooking_food": 3
+    },
+    "requiresSignals": {
+      "cooking_food": 2
+    },
+    "matchKeywords": [
+      "kuhar",
+      "slastičar"
+    ],
+    "goodFor": [
+      "Kuhinja i kreativnost",
+      "Posao odmah",
+      "Rad u turizmu"
+    ],
+    "entryBar": "nizi",
+    "entryNote": "Pragovi niži; deficitarno zanimanje — česte stipendije i sigurni poslovi."
+  },
+  {
+    "id": 29,
+    "name": "Konobar / turističko-ugostiteljski smjer",
+    "type": "obrtnicka",
+    "duration": 3,
+    "description": "Rad s gostima u restoranima i hotelima — komunikacija, jezici i brzina.",
+    "afterSchool": "Posao u ugostiteljstvu i turizmu, sezone i napredovanje.",
+    "interestWeights": {
+      "ljudi": 3,
+      "organizacija": 1
+    },
+    "subjectWeights": {
+      "jezici": 1
+    },
+    "academicLoad": 1,
+    "boostSignals": {
+      "languages_travel": 1,
+      "cooking_food": 1
+    },
+    "requiresSignals": {},
+    "matchKeywords": [
+      "konobar"
+    ],
+    "goodFor": [
+      "Rad s gostima",
+      "Jezici u praksi",
+      "Brzo zaposlenje"
+    ],
+    "entryBar": "nizi",
+    "entryNote": "Pragovi niži; deficitarno zanimanje s brzim zaposlenjem, posebno na moru."
+  },
+  {
+    "id": 30,
+    "name": "Automehatroničar",
+    "type": "obrtnicka",
+    "duration": 3,
+    "description": "Popravak i dijagnostika automobila — mehanika i elektronika zajedno, puno prakse.",
+    "afterSchool": "Posao u servisu, vlastiti obrt; uz doškolovanje i matura.",
+    "interestWeights": {
+      "prakticno": 3
+    },
+    "subjectWeights": {
+      "kemija_fizika": 1,
+      "informatika": 1
+    },
+    "academicLoad": 1,
+    "boostSignals": {
+      "hands_on_craft": 3
+    },
+    "requiresSignals": {
+      "hands_on_craft": 2
+    },
+    "matchKeywords": [
+      "automehatron",
+      "automehanič",
+      "autoelektr",
+      "autolimar"
+    ],
+    "goodFor": [
+      "Auti i tehnika",
+      "Dijagnostika",
+      "Vlastiti servis"
+    ],
+    "entryBar": "nizi",
+    "entryNote": "Pragovi niži; deficitarni obrt — mnogi servisi nude stipendije i plaćenu praksu."
+  },
+  {
+    "id": 31,
+    "name": "Električar / elektroinstalater",
+    "type": "obrtnicka",
+    "duration": 3,
+    "description": "Instalacije, struja i uređaji — tražen zanat s puno prakse i sigurnim poslom.",
+    "afterSchool": "Posao odmah, vlastiti obrt; uz doškolovanje i matura.",
+    "interestWeights": {
+      "prakticno": 3
+    },
+    "subjectWeights": {
+      "kemija_fizika": 1
+    },
+    "academicLoad": 1,
+    "boostSignals": {
+      "hands_on_craft": 2
+    },
+    "requiresSignals": {
+      "hands_on_craft": 2
+    },
+    "matchKeywords": [
+      "elektroinstalater",
+      "elektromehaničar",
+      "elektroničar"
+    ],
+    "goodFor": [
+      "Tražen zanat",
+      "Praktičan rad",
+      "Dobra zarada"
+    ],
+    "entryBar": "nizi",
+    "entryNote": "Pragovi niži; deficitarni obrt — stipendije i posao praktički zajamčeni."
+  },
+  {
+    "id": 32,
+    "name": "Stolar / obrada drva",
+    "type": "obrtnicka",
+    "duration": 3,
+    "description": "Izrada namještaja i konstrukcija od drva — vidiš i opipaš rezultat svog rada.",
+    "afterSchool": "Posao u radionici, vlastiti obrt; uz doškolovanje i matura.",
+    "interestWeights": {
+      "prakticno": 3,
+      "kreativa": 1
+    },
+    "subjectWeights": {
+      "likovni": 1
+    },
+    "academicLoad": 1,
+    "boostSignals": {
+      "hands_on_craft": 2
+    },
+    "requiresSignals": {
+      "hands_on_craft": 2
+    },
+    "matchKeywords": [
+      "stolar",
+      "drvodjel",
+      "drven"
+    ],
+    "goodFor": [
+      "Rad s drvom",
+      "Vlastiti proizvodi",
+      "Tražen obrt"
+    ],
+    "entryBar": "nizi",
+    "entryNote": "Pragovi niži; deficitarni obrt — drvna industrija traži ljude."
+  },
+  {
+    "id": 33,
+    "name": "Prodavač / komercijalist",
+    "type": "obrtnicka",
+    "duration": 3,
+    "description": "Prodaja, rad s kupcima i roba — komunikacija i snalažljivost svaki dan.",
+    "afterSchool": "Posao u trgovini, napredovanje do voditelja; komercijalist je 4-godišnji smjer.",
+    "interestWeights": {
+      "ljudi": 2,
+      "organizacija": 2
+    },
+    "subjectWeights": {
+      "matematika": 1
+    },
+    "academicLoad": 1,
+    "boostSignals": {
+      "business_entrepreneur": 2
+    },
+    "requiresSignals": {},
+    "matchKeywords": [
+      "prodavač",
+      "komercijalist"
+    ],
+    "goodFor": [
+      "Rad s kupcima",
+      "Brzo zaposlenje",
+      "Trgovina"
+    ],
+    "entryBar": "nizi",
+    "entryNote": "Pragovi niži; prodavač je 3-godišnji, komercijalist 4-godišnji (s maturom)."
+  }
+]

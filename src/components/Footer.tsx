@@ -1,5 +1,7 @@
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Compass, ArrowUpRight } from "lucide-react";
+import { getStoredExperience, onExperienceChange } from "@/lib/experience";
 
 const footerLinks = [
   {
@@ -33,6 +35,21 @@ const footerLinks = [
 ];
 
 const Footer = () => {
+  const [isJunior, setIsJunior] = useState(false);
+  useEffect(() => {
+    const sync = () => setIsJunior(getStoredExperience() === "junior");
+    sync();
+    return onExperienceChange(sync);
+  }, []);
+
+  /** U Junior modu kviz i karta vode na verzije za srednju školu. */
+  const resolveLink = (link: { label: string; path: string }) => {
+    if (!isJunior) return link;
+    if (link.path === "/kviz") return { label: "Kviz za srednju", path: "/kviz-srednja" };
+    if (link.path === "/karta") return { label: "Karta srednjih škola", path: "/srednje-skole" };
+    return link;
+  };
+
   return (
     <footer className="relative overflow-hidden border-t bg-gradient-to-b from-card to-card/60">
       <div
@@ -71,7 +88,7 @@ const Footer = () => {
                 {group.title}
               </h4>
               <ul className="space-y-2.5">
-                {group.links.map((link) => (
+                {group.links.map(resolveLink).map((link) => (
                   <li key={link.path}>
                     <Link
                       to={link.path}

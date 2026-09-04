@@ -44,10 +44,11 @@ const primaryNavSenior: NavEntry[] = [
   { label: "Forum", path: "/forum", icon: MessageSquare },
 ];
 
-// U Junior modu karta vodi na srednje škole umjesto na fakultete.
+// U Junior modu karta vodi na srednje škole, a kviz na kviz za 8. razred.
 const primaryNavJunior: NavEntry[] = [
   { label: "Srednje škole", path: "/srednje-skole", icon: Map },
-  ...primaryNavSenior.slice(1),
+  { label: "Kviz", path: "/kviz-srednja", icon: HelpCircle },
+  ...primaryNavSenior.slice(2),
 ];
 
 // Sekundarne - u "Više" padajućem na desktopu, lista na mobitelu.

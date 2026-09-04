@@ -40,19 +40,22 @@
       "id": 7,
       "question": "Zanimaju te materijali, metal, drvo, brod ili građevinski radovi?",
       "category": "realistic",
-      "description": "Strojarstvo, brodogradnja, građevina"
+      "description": "Strojarstvo, brodogradnja, građevina",
+      "signalKey": "materials_construction_interest"
     },
     {
       "id": 8,
       "question": "Želiš li učiti kako strojevi i tehnički sustavi rade?",
       "category": "investigative",
-      "description": "Strojarstvo, elektrotehnika, IT"
+      "description": "Strojarstvo, elektrotehnika, IT",
+      "signalKey": "machines_tech_interest"
     },
     {
       "id": 9,
       "question": "Želiš li studij s naglaskom na jezik, književnost ili kreativno pisanje?",
       "category": "artistic",
-      "description": "Filozofski, hrvatski, jezici"
+      "description": "Filozofski, hrvatski, jezici",
+      "signalKey": "language_literature_interest"
     },
     {
       "id": 10,
@@ -89,7 +92,8 @@
       "id": 15,
       "question": "Želiš li prostorni dizajn, arhitekturu ili digitalni dizajn?",
       "category": "artistic",
-      "description": "Arhitektura, dizajn"
+      "description": "Arhitektura, dizajn",
+      "signalKey": "design_visual_interest"
     },
     {
       "id": 16,
@@ -114,7 +118,8 @@
       "id": 19,
       "question": "Želiš li teren, šumu, polje ili rad izvan učionice?",
       "category": "realistic",
-      "description": "Geodezija, šumarstvo, poljoprivreda"
+      "description": "Geodezija, šumarstvo, poljoprivreda",
+      "signalKey": "nature_outdoor_interest"
     },
     {
       "id": 20,
@@ -152,7 +157,8 @@
       "id": 25,
       "question": "Želiš li sport, kineziologiju ili zdravlje kroz pokret?",
       "category": "realistic",
-      "description": "Kineziologija, fizioterapija"
+      "description": "Kineziologija, fizioterapija",
+      "signalKey": "sport_kinesiology_interest"
     },
     {
       "id": 26,
@@ -171,13 +177,15 @@
       "id": 28,
       "question": "Želiš li pomoći ljudima u teškim situacijama (savjetovanje, socijalna služba)?",
       "category": "social",
-      "description": "Socijalni rad, psihologija"
+      "description": "Socijalni rad, psihologija",
+      "signalKey": "social_help_interest"
     },
     {
       "id": 29,
       "question": "Želiš li poduzetništvo ili rad u inovacijama?",
       "category": "enterprising",
-      "description": "Ekonomija, startup"
+      "description": "Ekonomija, startup",
+      "signalKey": "entrepreneurship_interest"
     },
     {
       "id": 30,
@@ -201,7 +209,8 @@
       "id": 33,
       "question": "Želiš li fotografiju, video ili animaciju?",
       "category": "artistic",
-      "description": "Dizajn, mediji"
+      "description": "Dizajn, mediji",
+      "signalKey": "design_visual_interest"
     },
     {
       "id": 34,
@@ -235,7 +244,8 @@
       "id": 38,
       "question": "Želiš li jak matematički program?",
       "category": "investigative",
-      "description": "PMF, FER, informatika"
+      "description": "PMF, FER, informatika",
+      "signalKey": "math_interest"
     },
     {
       "id": 39,
@@ -254,7 +264,8 @@
       "id": 41,
       "question": "Želiš li učiti kako pokrenuti vlastiti posao?",
       "category": "enterprising",
-      "description": "Poduzetništvo"
+      "description": "Poduzetništvo",
+      "signalKey": "entrepreneurship_interest"
     },
     {
       "id": 42,
@@ -266,13 +277,15 @@
       "id": 43,
       "question": "Želiš li sigurnost, red ili vojsku?",
       "category": "realistic",
-      "description": "Policija, vojska"
+      "description": "Policija, vojska",
+      "signalKey": "security_defense_interest"
     },
     {
       "id": 44,
       "question": "Želiš li programiranje ili informatiku?",
       "category": "investigative",
-      "description": "FER, FOI"
+      "description": "FER, FOI",
+      "signalKey": "software_it_interest"
     },
     {
       "id": 45,

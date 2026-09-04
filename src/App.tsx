@@ -44,6 +44,7 @@ import { trackPageView } from "./lib/analytics";
 
 const queryClient = new QueryClient();
 const KalkulatorFakulteti = lazy(() => import("./pages/KalkulatorFakulteti"));
+const KvizSrednja = lazy(() => import("./pages/KvizSrednja"));
 
 /** Usklađeno s `base` u vite.config (`import.meta.env.BASE_URL`). */
 const routerBasename =
@@ -101,6 +102,7 @@ const App = () => (
             <Route path="/karta" element={<KartaFakulteta />} />
             <Route path="/srednje-skole" element={<KartaSrednjihSkola />} />
             <Route path="/kviz" element={<Kviz />} />
+            <Route path="/kviz-srednja" element={<KvizSrednja />} />
             <Route path="/samoprocjena" element={<Samoprocjena />} />
             <Route path="/kalkulator" element={<Kalkulator />} />
             <Route path="/kalkulator-fakulteti" element={<KalkulatorFakulteti />} />

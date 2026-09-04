@@ -296,7 +296,7 @@ const MojPutEntryIntro = ({
       title: "Za izbor srednje škole",
       accent: "junior",
       tools: [
-        { label: "Kviz za srednju", detail: "Interesi, smjerovi i prvi izbor", to: "/kviz", Icon: Target },
+        { label: "Kviz za srednju", detail: "Interesi, smjerovi i prvi izbor", to: "/kviz-srednja", Icon: Target },
         { label: "Karta srednjih škola", detail: "Škole i programi u Hrvatskoj", to: "/srednje-skole", Icon: Map },
         { label: "Kalkulator za srednju", detail: "Bodovi i upisne šanse", to: "/kalkulator", Icon: Calculator },
       ],
@@ -1599,6 +1599,7 @@ const Index = () => {
     ? HERO_QUICK_ACTIONS.map((a) => {
           if (a.to === "/karta") return { ...a, to: "/srednje-skole", hook: "443 škole" };
           if (a.to === "/forum") return { ...a, to: "/forum?experience=junior" };
+          if (a.to === "/kviz") return { ...a, to: "/kviz-srednja" };
           return a;
         })
     : HERO_QUICK_ACTIONS;
@@ -1628,6 +1629,9 @@ const Index = () => {
             return {
               ...f,
               title: "Koja je srednja škola za mene?",
+              description:
+                "Kviz za 8. razred: interesi, školski predmeti i stil učenja — s preporukama programa i stvarnih škola.",
+              path: "/kviz-srednja",
             };
           }
           if (f.path === "/kalkulator") {
@@ -1881,7 +1885,7 @@ const Index = () => {
                     className="group btn-primary-premium btn-primary-premium--live touch-tap border-0 rounded-xl px-5 sm:px-8 h-[3rem] sm:h-[3.25rem] text-[15px] sm:text-base font-semibold w-full sm:w-auto"
                     asChild
                   >
-                    <Link to="/kviz" className="relative inline-flex items-center justify-center overflow-hidden">
+                    <Link to={isJunior ? "/kviz-srednja" : "/kviz"} className="relative inline-flex items-center justify-center overflow-hidden">
                       <span className="relative z-[1]">Započni kviz</span>
                       <ArrowRight className="relative z-[1] w-4 h-4 ml-2 transition-transform duration-300 group-hover:translate-x-1.5" />
                     </Link>

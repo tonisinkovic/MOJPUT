@@ -52,6 +52,7 @@ import competenciesJson from "@/data/career-quiz/questions-competencies.json";
 import careersJson from "@/data/career-quiz/careers-database.json";
 import type { CareerRow } from "@/lib/careerQuizEngine";
 import { labelForUserType, USER_TYPE_OPTIONS } from "@/components/profile/userTypes";
+import { getStoredExperience, onExperienceChange } from "@/lib/experience";
 import { cn } from "@/lib/utils";
 
 const interests = interestsJson.interests;
@@ -114,6 +115,15 @@ export default function ProfilDashboard() {
   const [searchParams, setSearchParams] = useSearchParams();
   const tab = (searchParams.get("tab") as TabId) || "pregled";
   const setTab = (t: TabId) => setSearchParams({ tab: t }, { replace: true });
+
+  const [isJunior, setIsJunior] = useState(false);
+  useEffect(() => {
+    const sync = () => setIsJunior(getStoredExperience() === "junior");
+    sync();
+    return onExperienceChange(sync);
+  }, []);
+  /** Junior korisnike kviz vodi na kviz za srednju školu. */
+  const quizPath = isJunior ? "/kviz-srednja" : "/kviz";
 
   const { theme, setTheme } = useTheme();
 
@@ -375,7 +385,7 @@ export default function ProfilDashboard() {
                     className="h-auto w-full justify-start gap-3 rounded-2xl py-2.5 text-muted-foreground hover:text-foreground"
                     asChild
                   >
-                    <Link to="/kviz">
+                    <Link to={quizPath}>
                       <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-amber-500/10 text-amber-700 dark:text-amber-400">
                         <Sparkles className="h-4 w-4" />
                       </span>
@@ -501,9 +511,11 @@ export default function ProfilDashboard() {
                         const steps: { id: string; label: string; desc: string; to: string; icon: React.ElementType; done: boolean }[] = [
                           {
                             id: "quiz",
-                            label: "Riješi karijerni kviz",
-                            desc: "Saznaj koji smjer ti najviše odgovara.",
-                            to: "/kviz",
+                            label: isJunior ? "Riješi kviz za srednju" : "Riješi karijerni kviz",
+                            desc: isJunior
+                              ? "Saznaj koja srednja škola ti najviše odgovara."
+                              : "Saznaj koji smjer ti najviše odgovara.",
+                            to: quizPath,
                             icon: Sparkles,
                             done: Boolean(lastQuiz && isCareerQuizPayload(lastQuiz.payload)),
                           },
@@ -666,7 +678,7 @@ export default function ProfilDashboard() {
                               description="Karijerni kviz ti pokazuje koji smjer i zanimanje najbolje odgovaraju tvojim interesima."
                               action={
                                 <Button size="sm" className="rounded-xl" asChild>
-                                  <Link to="/kviz">Pokreni kviz</Link>
+                                  <Link to={quizPath}>Pokreni kviz</Link>
                                 </Button>
                               }
                             />

@@ -17,6 +17,7 @@ import {
   AlertTriangle,
   BookmarkCheck,
   ChevronDown,
+  MapPin,
 } from "lucide-react";
 import {
   Radar,
@@ -41,6 +42,7 @@ import { INTEREST_SECTIONS, COMPETENCY_SECTIONS } from "@/lib/careerQuizThemes";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import {
   Dialog,
@@ -67,6 +69,15 @@ import {
 import interestsJson from "@/data/career-quiz/questions-interests.json";
 import competenciesJson from "@/data/career-quiz/questions-competencies.json";
 import careersJson from "@/data/career-quiz/careers-database.json";
+import studyProgramsJson from "@/data/career-quiz/study-programs.json";
+import { analyzeStudyPrograms, type StudyProgramRow } from "@/lib/studyProgramEngine";
+import {
+  listFacultyCities,
+  locateStudyPrograms,
+  locationSummary,
+  type SeniorLocation,
+  type SeniorLocationPlan,
+} from "@/lib/seniorQuizGeo";
 import { trackEvent } from "@/lib/analytics";
 import { cn } from "@/lib/utils";
 
@@ -82,11 +93,12 @@ const LIKERT = [
   { label: "5 — U potpunosti", shortLabel: "U potpunosti", score: 5 },
 ] as const;
 
-export type CareerQuizPhase = "intro" | "interests" | "interestResults" | "competencies" | "results";
+export type CareerQuizPhase = "intro" | "interests" | "interestResults" | "competencies" | "location" | "results";
 
 const interests = interestsJson.interests;
 const competencies = competenciesJson.competencies;
 const careers = careersJson.careers as CareerRow[];
+const studyPrograms = studyProgramsJson.programs as StudyProgramRow[];
 
 const interestCategoryLabels = interestsJson.categories as Record<string, { name: string; description?: string }>;
 const competencyCategoryLabels = competenciesJson.categories as Record<string, string>;
@@ -234,6 +246,9 @@ export default function CareerQuizFlow({
   const [cIdx, setCIdx] = useState(0);
   const [guestSaveDialogOpen, setGuestSaveDialogOpen] = useState(false);
   const [saveStatus, setSaveStatus] = useState<"idle" | "saved" | "error">("idle");
+  const [location, setLocation] = useState<SeniorLocation | null>(null);
+  const [homeQuery, setHomeQuery] = useState("");
+  const [targetQuery, setTargetQuery] = useState("");
 
   const restoredRef = useRef(false);
   const postedResultHashRef = useRef<string | null>(null);
@@ -251,28 +266,35 @@ export default function CareerQuizFlow({
         phase?: string;
         interestAnswers?: number[];
         competencyAnswers?: number[];
+        location?: SeniorLocation | null;
       };
-      if (s.phase !== "results" || !Array.isArray(s.interestAnswers) || !Array.isArray(s.competencyAnswers)) return;
+      if (
+        (s.phase !== "results" && s.phase !== "location") ||
+        !Array.isArray(s.interestAnswers) ||
+        !Array.isArray(s.competencyAnswers)
+      )
+        return;
       if (s.interestAnswers.length !== interests.length || s.competencyAnswers.length !== competencies.length) return;
       setInterestAnswers(s.interestAnswers);
       setCompetencyAnswers(s.competencyAnswers);
-      setPhase("results");
+      if (s.location?.homeCity) setLocation(s.location);
+      setPhase(s.phase === "location" ? "location" : "results");
     } catch {
       /* ignore */
     }
   }, []);
 
   useEffect(() => {
-    if (phase !== "results") return;
+    if (phase !== "results" && phase !== "location") return;
     try {
       sessionStorage.setItem(
         QUIZ_RESTORE_STORAGE_KEY,
-        JSON.stringify({ phase: "results", interestAnswers, competencyAnswers }),
+        JSON.stringify({ phase, interestAnswers, competencyAnswers, location }),
       );
     } catch {
       /* ignore */
     }
-  }, [phase, interestAnswers, competencyAnswers]);
+  }, [phase, interestAnswers, competencyAnswers, location]);
 
   useEffect(() => {
     onPhaseChange?.(phase);
@@ -293,9 +315,12 @@ export default function CareerQuizFlow({
     } else if (phase === "interestResults") {
       stepName = "interest_results";
       stepNumber = interests.length + 1;
+    } else if (phase === "location") {
+      stepName = "location";
+      stepNumber = interests.length + competencies.length + 2;
     } else if (phase === "results") {
       stepName = "final_results";
-      stepNumber = interests.length + competencies.length + 2;
+      stepNumber = interests.length + competencies.length + 3;
     }
 
     trackEvent("quiz_step_viewed", {
@@ -311,6 +336,28 @@ export default function CareerQuizFlow({
     if (phase !== "results") return null;
     return analyzeHzzMojIzborV2(interests, competencies, interestAnswers, competencyAnswers, careers, QUIZ_TOP_CAREERS);
   }, [phase, interestAnswers, competencyAnswers]);
+
+  const studyAnalysis = useMemo(() => {
+    if (phase !== "results") return null;
+    return analyzeStudyPrograms(interests, competencies, interestAnswers, competencyAnswers, studyPrograms);
+  }, [phase, interestAnswers, competencyAnswers]);
+
+  const locatedPrograms = useMemo(
+    () => (studyAnalysis ? locateStudyPrograms(studyAnalysis.matches, location) : []),
+    [studyAnalysis, location],
+  );
+
+  const facultyCities = useMemo(() => listFacultyCities(), []);
+  const homeSuggestions = useMemo(() => {
+    const q = homeQuery.trim().toLowerCase();
+    if (q.length < 2) return [];
+    return facultyCities.filter((c) => c.toLowerCase().includes(q)).slice(0, 8);
+  }, [homeQuery, facultyCities]);
+  const targetSuggestions = useMemo(() => {
+    const q = targetQuery.trim().toLowerCase();
+    if (q.length < 2) return [];
+    return facultyCities.filter((c) => c.toLowerCase().includes(q)).slice(0, 8);
+  }, [targetQuery, facultyCities]);
 
   const advisor = useMemo(() => {
     if (!analysis) return null;
@@ -525,7 +572,7 @@ export default function CareerQuizFlow({
 
   const nextCompetency = () => {
     if (cIdx < competencies.length - 1) setCIdx((x) => x + 1);
-    else setPhase("results");
+    else setPhase("location");
   };
 
   const prevCompetency = () => {
@@ -632,12 +679,12 @@ export default function CareerQuizFlow({
                 <div>
                   <div className="mb-4 flex flex-wrap items-center gap-2">
                     <Badge className="border-primary/25 bg-primary/10 font-semibold text-primary hover:bg-primary/15">
-                      Upis na fakultet
-                    </Badge>
+                  Upis na fakultet
+                </Badge>
                     <Badge variant="outline" className="border-border/80 bg-background/70 text-xs backdrop-blur-sm sm:text-[0.8125rem]">
                       Personalizirani profil
-                    </Badge>
-                  </div>
+                </Badge>
+              </div>
 
                   {showIntroHeading && (
                     <p className="mb-2 text-sm font-semibold text-primary">{introTitle}</p>
@@ -840,17 +887,17 @@ export default function CareerQuizFlow({
                         <span className="rounded-full border border-border/60 bg-background/60 px-2 py-1 text-[9px] font-extrabold uppercase tracking-[0.14em] text-muted-foreground">
                           {kicker}
                         </span>
-                      </div>
+                    </div>
                       <div>
                         <p className="text-2xl font-extrabold leading-none tracking-[-0.055em] text-foreground sm:text-[1.7rem]">
                           {value}
                         </p>
                         <p className="mt-1.5 text-xs font-semibold leading-4 text-muted-foreground">{label}</p>
-                      </div>
                     </div>
+                  </div>
                   </motion.div>
                 ))}
-              </div>
+                </div>
 
               <div className="relative grid gap-3 sm:grid-cols-2">
                 <div
@@ -913,37 +960,37 @@ export default function CareerQuizFlow({
                         transition={{ duration: 4.2, repeat: Infinity, ease: "easeInOut", delay: index * 0.45 }}
                         aria-hidden
                       />
-                    </div>
+                  </div>
                   </motion.div>
                 ))}
               </div>
 
               <div className="grid gap-3 sm:grid-cols-[1fr_auto] sm:items-center">
                 <div className="flex items-start gap-2.5 rounded-2xl border border-dashed border-border/80 bg-background/58 px-3 py-2.5">
-                  <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground/80" aria-hidden />
-                  <p className="text-xs leading-snug text-muted-foreground">
+                <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground/80" aria-hidden />
+                <p className="text-xs leading-snug text-muted-foreground">
                     Odgovaraj iskreno. Kviz nije službena procjena, nego pametan početak za razgovor, istraživanje i odabir.
-                  </p>
-                </div>
+                </p>
+              </div>
 
-                <Button
-                  type="button"
-                  size="lg"
+              <Button
+                type="button"
+                size="lg"
                   className="group inline-flex h-14 w-full items-center justify-center gap-2 rounded-2xl border-0 bg-gradient-to-r from-primary via-primary to-teal-600 text-base font-semibold text-primary-foreground shadow-lg shadow-primary/25 transition hover:-translate-y-0.5 hover:shadow-xl hover:shadow-primary/30 active:scale-[0.99] sm:h-12 sm:w-auto sm:px-7"
-                  onClick={() => {
-                    trackEvent("quiz_started", {
-                      quiz_id: "career_quiz",
-                      quiz_name: "Koji je fakultet za mene?",
-                      total_questions: interests.length + competencies.length,
-                      page_path: window.location.pathname,
-                    });
-                    setPhase("interests");
-                    setIIdx(0);
-                  }}
-                >
+                onClick={() => {
+                  trackEvent("quiz_started", {
+                    quiz_id: "career_quiz",
+                    quiz_name: "Koji je fakultet za mene?",
+                    total_questions: interests.length + competencies.length,
+                    page_path: window.location.pathname,
+                  });
+                  setPhase("interests");
+                  setIIdx(0);
+                }}
+              >
                   Kreni s interesima
                   <ArrowRight className="h-5 w-5 transition-transform duration-300 group-hover:translate-x-1" aria-hidden />
-                </Button>
+              </Button>
               </div>
             </div>
           </motion.div>
@@ -1511,8 +1558,203 @@ export default function CareerQuizFlow({
                 disabled={currentCompetencyScore < 1}
                 onClick={nextCompetency}
               >
-                {cIdx < competencies.length - 1 ? "Sljedeće" : "Prikaži rezultate"}
+                {cIdx < competencies.length - 1 ? "Sljedeće" : "Dalje — gdje živiš"}
               </Button>
+            </div>
+          </motion.div>
+        )}
+
+        {phase === "location" && (
+          <motion.div
+            key="location"
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mx-auto max-w-2xl space-y-5 rounded-2xl border-2 border-primary/25 bg-card/90 p-5 shadow-card sm:rounded-3xl sm:p-8"
+          >
+            <div className="flex items-start gap-3">
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-primary/12 text-primary">
+                <MapPin className="h-6 w-6" aria-hidden />
+              </div>
+              <div>
+                <p className="text-[11px] font-semibold uppercase tracking-wide text-primary">Zadnji korak prije rezultata</p>
+                <h3 className="mt-1 text-xl font-extrabold tracking-tight sm:text-2xl">
+                  Gdje živiš — i kamo ideš na faks?
+                </h3>
+                <p className="mt-1.5 text-sm text-muted-foreground">
+                  Reci nam grad i namjeru. Preporuke smjerova onda prvo pokazuju fakultete koje stvarno
+                  možeš upisati tamo — ili sve, ako ti je svejedno.
+                </p>
+              </div>
+            </div>
+
+            <div>
+              <p className="mb-2 text-sm font-medium">U kojjem gradu živiš?</p>
+              {location?.homeCity ? (
+                <div className="flex flex-wrap items-center gap-2">
+                  <Badge className="bg-primary/10 px-3 py-1.5 text-sm text-primary hover:bg-primary/10">
+                    <MapPin className="mr-1.5 h-3.5 w-3.5" />
+                    {location.homeCity}
+                  </Badge>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => {
+                      setLocation(null);
+                      setHomeQuery("");
+                      setTargetQuery("");
+                    }}
+                  >
+                    Promijeni
+                  </Button>
+                </div>
+              ) : (
+                <>
+                  <Input
+                    value={homeQuery}
+                    onChange={(e) => setHomeQuery(e.target.value)}
+                    placeholder="Npr. Zagreb, Split, Varaždin…"
+                    className="max-w-sm rounded-xl"
+                  />
+                  {homeSuggestions.length > 0 ? (
+                    <div className="mt-2.5 flex flex-wrap gap-2">
+                      {homeSuggestions.map((c) => (
+                        <button
+                          key={c}
+                          type="button"
+                          onClick={() => {
+                            setLocation({ homeCity: c, plan: "stay", targetCity: null });
+                            setHomeQuery("");
+                          }}
+                          className="rounded-full border border-border/70 bg-background/60 px-3 py-1.5 text-sm font-semibold transition-colors hover:border-primary/50 hover:bg-primary/10"
+                        >
+                          {c}
+                        </button>
+                      ))}
+                    </div>
+                  ) : homeQuery.trim().length >= 2 ? (
+                    <p className="mt-2 text-xs text-muted-foreground">
+                      Nema fakultetskog grada s tim imenom — odaberi najbliži veći grad.
+                    </p>
+                  ) : null}
+                </>
+              )}
+            </div>
+
+            {location?.homeCity && (
+              <div>
+                <p className="mb-2 text-sm font-medium">Namjeravaš li ostati ili ići drugdje?</p>
+                <div className="grid gap-2 sm:grid-cols-1">
+                  {(
+                    [
+                      { id: "stay" as const, label: `Ostajem u mjestu ${location.homeCity}`, hint: "Prvo studiji u tvom gradu ili u krugu od 40 km." },
+                      { id: "move" as const, label: "Idem u drugi grad", hint: "Navedi točan grad u kojem želiš studirati." },
+                      { id: "anywhere" as const, label: "Svejedno mi je", hint: "Pokazujemo sve fakultete za tvoje preporuke." },
+                    ] satisfies { id: SeniorLocationPlan; label: string; hint: string }[]
+                  ).map((opt) => (
+                    <button
+                      key={opt.id}
+                      type="button"
+                      onClick={() =>
+                        setLocation((prev) =>
+                          prev
+                            ? { ...prev, plan: opt.id, targetCity: opt.id === "move" ? prev.targetCity : null }
+                            : prev,
+                        )
+                      }
+                      className={cn(
+                        "rounded-2xl border px-4 py-3 text-left transition-colors",
+                        location.plan === opt.id
+                          ? "border-primary bg-primary/12"
+                          : "border-border/70 bg-background/60 hover:border-primary/40",
+                      )}
+                    >
+                      <span className="block text-sm font-semibold">{opt.label}</span>
+                      <span className="mt-0.5 block text-xs text-muted-foreground">{opt.hint}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {location?.plan === "move" && (
+              <div>
+                <p className="mb-2 text-sm font-medium">U koji točno grad želiš ići?</p>
+                {location.targetCity ? (
+                  <div className="flex flex-wrap items-center gap-2">
+                    <Badge variant="outline" className="px-3 py-1.5 text-sm">
+                      Studij: {location.targetCity}
+                    </Badge>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => {
+                        setLocation({ ...location, targetCity: null });
+                        setTargetQuery("");
+                      }}
+                    >
+                      Promijeni
+                    </Button>
+                  </div>
+                ) : (
+                  <>
+                    <Input
+                      value={targetQuery}
+                      onChange={(e) => setTargetQuery(e.target.value)}
+                      placeholder="Npr. Zagreb, Rijeka, Osijek…"
+                      className="max-w-sm rounded-xl"
+                    />
+                    {targetSuggestions.length > 0 ? (
+                      <div className="mt-2.5 flex flex-wrap gap-2">
+                        {targetSuggestions.map((c) => (
+                          <button
+                            key={c}
+                            type="button"
+                            onClick={() => {
+                              setLocation({ ...location, targetCity: c });
+                              setTargetQuery("");
+                            }}
+                            className="rounded-full border border-border/70 bg-background/60 px-3 py-1.5 text-sm font-semibold transition-colors hover:border-primary/50 hover:bg-primary/10"
+                          >
+                            {c}
+                          </button>
+                        ))}
+                      </div>
+                    ) : targetQuery.trim().length >= 2 ? (
+                      <p className="mt-2 text-xs text-muted-foreground">
+                        Nema fakultetskog grada s tim imenom — odaberi grad u kojem stvarno postoji studij.
+                      </p>
+                    ) : null}
+                  </>
+                )}
+              </div>
+            )}
+
+            {location && (location.plan !== "move" || location.targetCity) && (
+              <p className="text-sm text-muted-foreground">{locationSummary(location)}</p>
+            )}
+
+            <div className="flex flex-col-reverse gap-3 pt-1 sm:flex-row sm:justify-between">
+              <Button variant="outline" onClick={() => setPhase("competencies")}>
+                Natrag
+              </Button>
+              <div className="flex flex-col gap-2 sm:flex-row">
+                <Button
+                  variant="ghost"
+                  onClick={() => {
+                    setLocation(null);
+                    setPhase("results");
+                  }}
+                >
+                  Preskoči
+                </Button>
+                <Button
+                  className="gradient-hero border-0 text-primary-foreground"
+                  disabled={!location?.homeCity || (location.plan === "move" && !location.targetCity)}
+                  onClick={() => setPhase("results")}
+                >
+                  Prikaži rezultate
+                </Button>
+              </div>
             </div>
           </motion.div>
         )}
@@ -1576,6 +1818,278 @@ export default function CareerQuizFlow({
               <p className="text-sm text-destructive">
                 Spremanje na server nije uspjelo — provjeri vezu ili pokušaj kasnije. Rezultat je i dalje u pregledniku.
               </p>
+            )}
+
+            <section
+              className="rounded-2xl border border-border/70 bg-card/80 p-4 shadow-sm sm:p-6"
+              aria-label="Gdje želiš studirati"
+            >
+              <div className="flex items-start gap-2.5">
+                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary/12 text-primary">
+                  <MapPin className="h-4 w-4" aria-hidden />
+                </div>
+                <div className="min-w-0">
+                  <h4 className="text-base font-semibold leading-tight text-foreground sm:text-lg">
+                    Gdje živiš — i kamo ideš na faks?
+                  </h4>
+                  <p className="mt-0.5 text-[11px] leading-snug text-muted-foreground sm:text-xs">
+                    Samo za orijentaciju. Kad kažeš grad i namjeru, preporuke smjerova prvo pokazuju fakultete
+                    koje stvarno možeš upisati tamo.
+                  </p>
+                </div>
+              </div>
+
+              {!location ? (
+                <div className="mt-4">
+                  <p className="mb-2 text-sm font-medium">U kojjem gradu živiš?</p>
+                  <Input
+                    value={homeQuery}
+                    onChange={(e) => setHomeQuery(e.target.value)}
+                    placeholder="Npr. Zagreb, Split, Varaždin…"
+                    className="max-w-sm rounded-xl"
+                  />
+                  {homeSuggestions.length > 0 ? (
+                    <div className="mt-2.5 flex flex-wrap gap-2">
+                      {homeSuggestions.map((c) => (
+                        <button
+                          key={c}
+                          type="button"
+                          onClick={() => {
+                            setLocation({ homeCity: c, plan: "stay", targetCity: null });
+                            setHomeQuery("");
+                          }}
+                          className="rounded-full border border-border/70 bg-background/60 px-3 py-1.5 text-sm font-semibold transition-colors hover:border-primary/50 hover:bg-primary/10"
+                        >
+                          {c}
+                        </button>
+                      ))}
+                    </div>
+                  ) : homeQuery.trim().length >= 2 ? (
+                    <p className="mt-2 text-xs text-muted-foreground">
+                      Nema fakultetskog grada s tim imenom — odaberi najbliži veći grad.
+                    </p>
+                  ) : null}
+                </div>
+              ) : (
+                <div className="mt-4 space-y-4">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <Badge className="bg-primary/10 px-3 py-1.5 text-sm text-primary hover:bg-primary/10">
+                      <MapPin className="mr-1.5 h-3.5 w-3.5" />
+                      Živiš: {location.homeCity}
+                    </Badge>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="text-muted-foreground"
+                      onClick={() => {
+                        setLocation(null);
+                        setHomeQuery("");
+                        setTargetQuery("");
+                      }}
+                    >
+                      Promijeni grad
+                    </Button>
+                  </div>
+
+                  <div>
+                    <p className="mb-2 text-sm font-medium">Namjeravaš li ostati ili ići drugdje?</p>
+                    <div className="flex flex-wrap gap-2">
+                      {(
+                        [
+                          { id: "stay" as const, label: `Ostajem u mjestu ${location.homeCity}` },
+                          { id: "move" as const, label: "Idem u drugi grad" },
+                          { id: "anywhere" as const, label: "Svejedno mi je" },
+                        ] satisfies { id: SeniorLocationPlan; label: string }[]
+                      ).map((opt) => (
+                        <button
+                          key={opt.id}
+                          type="button"
+                          onClick={() =>
+                            setLocation((prev) =>
+                              prev
+                                ? {
+                                    ...prev,
+                                    plan: opt.id,
+                                    targetCity: opt.id === "move" ? prev.targetCity : null,
+                                  }
+                                : prev,
+                            )
+                          }
+                          className={cn(
+                            "rounded-full border px-3 py-1.5 text-sm font-semibold transition-colors",
+                            location.plan === opt.id
+                              ? "border-primary bg-primary/12 text-primary"
+                              : "border-border/70 bg-background/60 hover:border-primary/40",
+                          )}
+                        >
+                          {opt.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {location.plan === "move" && (
+                    <div>
+                      <p className="mb-2 text-sm font-medium">U koji točno grad želiš ići?</p>
+                      {location.targetCity ? (
+                        <div className="flex flex-wrap items-center gap-2">
+                          <Badge variant="outline" className="px-3 py-1.5 text-sm">
+                            Studij: {location.targetCity}
+                          </Badge>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => {
+                              setLocation({ ...location, targetCity: null });
+                              setTargetQuery("");
+                            }}
+                          >
+                            Promijeni
+                          </Button>
+                        </div>
+                      ) : (
+                        <>
+                          <Input
+                            value={targetQuery}
+                            onChange={(e) => setTargetQuery(e.target.value)}
+                            placeholder="Npr. Zagreb, Rijeka, Osijek…"
+                            className="max-w-sm rounded-xl"
+                          />
+                          {targetSuggestions.length > 0 ? (
+                            <div className="mt-2.5 flex flex-wrap gap-2">
+                              {targetSuggestions.map((c) => (
+                                <button
+                                  key={c}
+                                  type="button"
+                                  onClick={() => {
+                                    setLocation({ ...location, targetCity: c });
+                                    setTargetQuery("");
+                                  }}
+                                  className="rounded-full border border-border/70 bg-background/60 px-3 py-1.5 text-sm font-semibold transition-colors hover:border-primary/50 hover:bg-primary/10"
+                                >
+                                  {c}
+                                </button>
+                              ))}
+                            </div>
+                          ) : targetQuery.trim().length >= 2 ? (
+                            <p className="mt-2 text-xs text-muted-foreground">
+                              Nema fakultetskog grada s tim imenom — odaberi grad u kojem stvarno postoji studij.
+                            </p>
+                          ) : null}
+                        </>
+                      )}
+                    </div>
+                  )}
+
+                  {(location.plan !== "move" || location.targetCity) && (
+                    <p className="text-sm text-muted-foreground">{locationSummary(location)}</p>
+                  )}
+                </div>
+              )}
+            </section>
+
+            {locatedPrograms.length > 0 && (
+              <section aria-labelledby="study-programs-heading">
+                <div className="mb-4 flex items-start gap-2.5">
+                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary/12 text-primary">
+                    <GraduationCap className="h-4 w-4" aria-hidden />
+                  </div>
+                  <div className="min-w-0">
+                    <h4 id="study-programs-heading" className="text-base font-semibold leading-tight text-foreground sm:text-lg">
+                      Studijski programi za tebe
+                    </h4>
+                    <p className="mt-0.5 text-[11px] leading-snug text-muted-foreground sm:text-xs">
+                      Konkretni smjerovi upisa. {location ? "Fakulteti su poredani prema tvom gradu i namjeri." : "Upiši grad iznad pa ćemo ti pokazati što se može upisati tamo."}
+                    </p>
+                  </div>
+                </div>
+                {studyAnalysis?.weakProfile ? (
+                  <p className="mb-3 rounded-xl border border-amber-500/30 bg-amber-500/[0.06] px-3 py-2 text-xs text-muted-foreground">
+                    Podudaranje je zasad slabo ili neodlučno — tretiraj ovo kao uži izbor za istraživanje, ne kao konačan odgovor.
+                  </p>
+                ) : null}
+                <ol className="list-none space-y-3">
+                  {locatedPrograms.map((rec, idx) => (
+                    <li
+                      key={rec.program.id}
+                      className="rounded-2xl border border-border/70 bg-card p-4 shadow-sm sm:p-5"
+                    >
+                      <div className="flex flex-wrap items-start justify-between gap-2">
+                        <div className="min-w-0">
+                          <div className="flex flex-wrap items-center gap-2">
+                            <span className="text-base font-bold leading-snug sm:text-lg">{rec.program.name}</span>
+                            {idx === 0 ? (
+                              <Badge className="bg-primary text-primary-foreground hover:bg-primary">Top smjer</Badge>
+                            ) : null}
+                            {location && rec.availableLocally ? (
+                              <Badge variant="secondary" className="text-[10px]">
+                                Dostupno tamo gdje ideš
+                              </Badge>
+                            ) : null}
+                          </div>
+                          <p className="mt-1 text-sm text-muted-foreground">{rec.program.description}</p>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-2xl font-extrabold tabular-nums text-primary">{rec.matchPercentage}%</p>
+                          <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+                            {rec.strength} podudarnost
+                          </p>
+                        </div>
+                      </div>
+                      {rec.reasons.length > 0 && (
+                        <ul className="mt-3 space-y-1 text-sm">
+                          {rec.reasons.map((reason) => (
+                            <li key={reason} className="flex gap-2 text-muted-foreground">
+                              <Lightbulb className="mt-0.5 h-3.5 w-3.5 shrink-0 text-emerald-500" />
+                              <span>{reason}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                      {rec.warnings.length > 0 && (
+                        <ul className="mt-2 space-y-1 text-sm">
+                          {rec.warnings.map((warning) => (
+                            <li key={warning} className="flex gap-2 text-muted-foreground">
+                              <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0 text-amber-500" />
+                              <span>{warning}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                      <div className="mt-3 rounded-xl border border-border/50 bg-muted/20 px-3 py-2.5 text-xs">
+                        {location && rec.localFaculties.length > 0 ? (
+                          <p>
+                            <span className="font-semibold text-foreground">U tvom planu: </span>
+                            {rec.localFaculties
+                              .map((f) =>
+                                f.city && f.distanceKm !== null && f.distanceKm > 0
+                                  ? `${f.label} (~${f.distanceKm} km)`
+                                  : f.label,
+                              )
+                              .join(" · ")}
+                          </p>
+                        ) : location && location.plan !== "anywhere" ? (
+                          <p className="text-muted-foreground">
+                            Ovaj smjer se ne nudi u odabranom gradu — za njega bi trebao/la ići drugdje
+                            {rec.remoteFaculties.length > 0
+                              ? ` (npr. ${rec.remoteFaculties
+                                  .slice(0, 3)
+                                  .map((f) => f.label)
+                                  .join(", ")})`
+                              : ""}
+                            .
+                          </p>
+                        ) : (
+                          <p className="text-muted-foreground">
+                            <span className="font-semibold text-foreground">Gdje se upisuje: </span>
+                            {rec.program.faculties.join(" · ")}
+                          </p>
+                        )}
+                      </div>
+                    </li>
+                  ))}
+                </ol>
+              </section>
             )}
 
             {/* Prominentna "top match" kartica. */}

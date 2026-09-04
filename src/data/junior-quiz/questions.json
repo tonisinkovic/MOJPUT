@@ -1,0 +1,324 @@
+{
+  "sections": [
+    {
+      "key": "interests",
+      "title": "Što te zanima?",
+      "blurb": "Nema točnih i netočnih odgovora — samo iskreno reci što voliš, a što baš i ne."
+    },
+    {
+      "key": "subjects",
+      "title": "Školski predmeti",
+      "blurb": "Koliko ti koji predmet ide i koliko ga voliš? Budi iskren/a — ovo pomaže da preporuke budu realne."
+    },
+    {
+      "key": "workstyle",
+      "title": "Kako voliš učiti i raditi?",
+      "blurb": "Ovo otkriva paše li ti više gimnazija, tehnička škola ili zanat — svaki put je dobar, samo je drugačiji."
+    }
+  ],
+  "questions": [
+    {
+      "id": 1,
+      "section": "interests",
+      "category": "prakticno",
+      "question": "Voliš li popravljati ili sastavljati stvari (bicikl, namještaj, tehnika)?",
+      "hint": "Rad rukama i alatom",
+      "signalKey": "hands_on_craft"
+    },
+    {
+      "id": 2,
+      "section": "interests",
+      "category": "istrazivanje",
+      "question": "Zanima te kako iznutra rade računala, aplikacije ili videoigre?",
+      "hint": "Tehnologija i programiranje",
+      "signalKey": "tech_computers"
+    },
+    {
+      "id": 3,
+      "section": "interests",
+      "category": "kreativa",
+      "question": "Voliš li crtati, dizajnirati ili uređivati fotke i videe?",
+      "hint": "Vizualno stvaranje",
+      "signalKey": "art_visual"
+    },
+    {
+      "id": 4,
+      "section": "interests",
+      "category": "ljudi",
+      "question": "Voliš li pomagati drugima kad im je teško?",
+      "hint": "Podrška prijateljima, mlađoj djeci…",
+      "signalKey": "helping_people"
+    },
+    {
+      "id": 5,
+      "section": "interests",
+      "category": "organizacija",
+      "question": "Voliš li organizirati stvari — izlet, ekipu, proslavu, raspored?",
+      "hint": "Planiranje i vođenje"
+    },
+    {
+      "id": 6,
+      "section": "interests",
+      "category": "red",
+      "question": "Paše ti kad je sve uredno posloženo i ide točno po pravilima?",
+      "hint": "Red i preciznost"
+    },
+    {
+      "id": 7,
+      "section": "interests",
+      "category": "prakticno",
+      "question": "Zanimaju te životinje i briga o njima?",
+      "hint": "Kućni ljubimci, farma, veterina",
+      "signalKey": "animals_nature"
+    },
+    {
+      "id": 8,
+      "section": "interests",
+      "category": "istrazivanje",
+      "question": "Vole li te pokusi — kemija, fizika, biologija u praksi?",
+      "hint": "Eksperimenti i laboratorij",
+      "signalKey": "science_experiments"
+    },
+    {
+      "id": 9,
+      "section": "interests",
+      "category": "kreativa",
+      "question": "Voliš li svirati, pjevati ili nastupati?",
+      "hint": "Glazba i pozornica",
+      "signalKey": "music_performance"
+    },
+    {
+      "id": 10,
+      "section": "interests",
+      "category": "ljudi",
+      "question": "Privlači te medicina — pomoći bolesnima i ozlijeđenima?",
+      "hint": "Zdravstvo i njega",
+      "signalKey": "health_medicine"
+    },
+    {
+      "id": 11,
+      "section": "interests",
+      "category": "organizacija",
+      "question": "Bi li jednog dana volio/voljela voditi svoj posao (servis, salon, trgovinu)?",
+      "hint": "Poduzetništvo",
+      "signalKey": "business_entrepreneur"
+    },
+    {
+      "id": 12,
+      "section": "interests",
+      "category": "red",
+      "question": "Voliš li raditi s brojevima i tablicama (novac, statistika, rezultati)?",
+      "hint": "Brojke i podaci",
+      "signalKey": "numbers_data"
+    },
+    {
+      "id": 13,
+      "section": "interests",
+      "category": "prakticno",
+      "question": "Voliš li boraviti vani — vrt, šuma, polje, priroda?",
+      "hint": "Rad na otvorenom",
+      "signalKey": "plants_outdoor"
+    },
+    {
+      "id": 14,
+      "section": "interests",
+      "category": "istrazivanje",
+      "question": "Voliš li istraživati nove teme i stalno pitati „zašto”?",
+      "hint": "Znatiželja i učenje"
+    },
+    {
+      "id": 15,
+      "section": "interests",
+      "category": "kreativa",
+      "question": "Voliš li kuhati ili raditi kolače?",
+      "hint": "Kuhinja i gastronomija",
+      "signalKey": "cooking_food"
+    },
+    {
+      "id": 16,
+      "section": "interests",
+      "category": "ljudi",
+      "question": "Lako razgovaraš s novim ljudima i voliš upoznavati društvo?",
+      "hint": "Komunikacija"
+    },
+    {
+      "id": 17,
+      "section": "interests",
+      "category": "kreativa",
+      "question": "Zanimaju te frizure, šminka ili styling?",
+      "hint": "Ljepota i njega",
+      "signalKey": "beauty_style"
+    },
+    {
+      "id": 18,
+      "section": "interests",
+      "category": "prakticno",
+      "question": "Voliš li sport i kretanje — treniraš li nešto ili bi volio/voljela?",
+      "hint": "Sport i tjelesna aktivnost",
+      "signalKey": "sport_active"
+    },
+    {
+      "id": 19,
+      "section": "interests",
+      "category": "ljudi",
+      "question": "Privlače te strani jezici, druge kulture i putovanja?",
+      "hint": "Jezici i svijet",
+      "signalKey": "languages_travel"
+    },
+    {
+      "id": 20,
+      "section": "interests",
+      "category": "prakticno",
+      "question": "Privlači te posao gdje čuvaš red i pomažeš u opasnosti (policija, vatrogasci, vojska)?",
+      "hint": "Sigurnost i zaštita",
+      "signalKey": "security_service"
+    },
+    {
+      "id": 21,
+      "section": "subjects",
+      "category": "matematika",
+      "question": "Matematika mi dobro ide i ne bojim je se.",
+      "hint": "Zadaci, formule, logika"
+    },
+    {
+      "id": 22,
+      "section": "subjects",
+      "category": "hrvatski",
+      "question": "Volim pisati sastavke, a lektire mi nisu problem.",
+      "hint": "Čitanje i pisanje"
+    },
+    {
+      "id": 23,
+      "section": "subjects",
+      "category": "jezici",
+      "question": "Strani jezici (engleski, njemački…) idu mi lako.",
+      "hint": "Riječi, gramatika, govor"
+    },
+    {
+      "id": 24,
+      "section": "subjects",
+      "category": "biologija",
+      "question": "Biologija me zanima i dobro je razumijem.",
+      "hint": "Živi svijet, tijelo, priroda"
+    },
+    {
+      "id": 25,
+      "section": "subjects",
+      "category": "kemija_fizika",
+      "question": "Kemija i fizika su mi zanimljive — ne samo teške.",
+      "hint": "Tvari, energija, pokusi"
+    },
+    {
+      "id": 26,
+      "section": "subjects",
+      "category": "informatika",
+      "question": "Informatika mi je među dražim predmetima.",
+      "hint": "Računala i programiranje"
+    },
+    {
+      "id": 27,
+      "section": "subjects",
+      "category": "likovni",
+      "question": "Likovni mi je gušt — volim crtati i stvarati.",
+      "hint": "Crtanje i oblikovanje"
+    },
+    {
+      "id": 28,
+      "section": "subjects",
+      "category": "glazbeni",
+      "question": "Glazbeni volim — pjevanje, ritam, sviranje.",
+      "hint": "Glazba u školi"
+    },
+    {
+      "id": 29,
+      "section": "subjects",
+      "category": "tjelesni",
+      "question": "Tjelesni mi je najdraži dio školskog tjedna.",
+      "hint": "Sport i igra"
+    },
+    {
+      "id": 30,
+      "section": "subjects",
+      "category": "drustveni",
+      "question": "Povijest i geografija su mi zanimljive — volim priče o svijetu.",
+      "hint": "Društvo, prošlost, karte"
+    },
+    {
+      "id": 31,
+      "section": "workstyle",
+      "category": "teorija",
+      "question": "Draže mi je učiti iz knjiga i razumjeti teoriju nego odmah nešto raditi rukama.",
+      "hint": "Teorija ili praksa"
+    },
+    {
+      "id": 32,
+      "section": "workstyle",
+      "category": "faks",
+      "question": "Nakon srednje škole želio/željela bih upisati fakultet.",
+      "hint": "Dugoročni plan",
+      "joke": "Heloooou, to je pre daleko :)"
+    },
+    {
+      "id": 33,
+      "section": "workstyle",
+      "category": "zanat",
+      "question": "Tri godine škole pa svoj novac — zvuči mi bolje nego četiri godine (i još faks povrh toga). 😎",
+      "hint": "3 godine → zanat i posao · 4 godine → matura i dalje"
+    },
+    {
+      "id": 34,
+      "section": "workstyle",
+      "category": "disciplina",
+      "question": "Mogu redovito učiti svaki dan — čak i kad mi se baš ne da.",
+      "hint": "Radne navike"
+    },
+    {
+      "id": 35,
+      "section": "workstyle",
+      "category": "struktura",
+      "question": "Draže mi je kad mi netko točno kaže što i kako treba napraviti.",
+      "hint": "Jasne upute"
+    },
+    {
+      "id": 36,
+      "section": "workstyle",
+      "category": "sjedenje",
+      "question": "Ne smeta mi dugo sjediti, čitati i slušati — izdržim duge lekcije.",
+      "hint": "Strpljenje za gradivo"
+    },
+    {
+      "id": 37,
+      "section": "workstyle",
+      "category": "praksa",
+      "question": "Najdraži su mi zadaci gdje odmah vidim rezultat svog rada.",
+      "hint": "Praktičan rad"
+    },
+    {
+      "id": 38,
+      "section": "workstyle",
+      "category": "upornost",
+      "question": "Kad mi nešto ne ide iz prve, ne odustajem — pokušavam dok ne uspije.",
+      "hint": "Upornost"
+    }
+  ],
+  "interestCategories": {
+    "prakticno": "Praktičan i tehnički rad",
+    "istrazivanje": "Istraživanje i znanost",
+    "kreativa": "Kreativnost i stvaranje",
+    "ljudi": "Rad s ljudima",
+    "organizacija": "Organizacija i vođenje",
+    "red": "Red i preciznost"
+  },
+  "subjectCategories": {
+    "matematika": "Matematika",
+    "hrvatski": "Hrvatski i pisanje",
+    "jezici": "Strani jezici",
+    "biologija": "Biologija",
+    "kemija_fizika": "Kemija i fizika",
+    "informatika": "Informatika",
+    "likovni": "Likovna kultura",
+    "glazbeni": "Glazbena kultura",
+    "tjelesni": "Tjelesni i zdravstveni",
+    "drustveni": "Povijest i geografija"
+  }
+}
