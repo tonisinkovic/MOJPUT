@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { lazy, Suspense, useEffect } from "react";
 import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import { warmupApiHealth } from "@/lib/api";
+import { startJuniorCloudSync } from "@/lib/juniorCloud";
 import Index from "./pages/Index";
 import KartaFakulteta from "./pages/KartaFakulteta";
 import KartaSrednjihSkola from "./pages/KartaSrednjihSkola";
@@ -66,7 +67,6 @@ const AnalyticsPageTracker = () => {
   return null;
 };
 
-/** Probudi Render API pri učitavanju auth stranica. */
 const ApiWarmup = () => {
   const location = useLocation();
 
@@ -83,6 +83,13 @@ const ApiWarmup = () => {
   return null;
 };
 
+const JuniorCloudSync = () => {
+  useEffect(() => {
+    startJuniorCloudSync();
+  }, []);
+  return null;
+};
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
@@ -93,6 +100,7 @@ const App = () => (
         <ScrollToTop />
         <AnalyticsPageTracker />
         <ApiWarmup />
+        <JuniorCloudSync />
         <Suspense
           fallback={
             <main className="flex min-h-[70vh] items-center justify-center px-4">

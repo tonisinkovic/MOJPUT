@@ -7,7 +7,7 @@ import {
   type ApiResponse,
 } from "@/lib/api";
 
-const AUTH_CHANGED = "mojput-auth-changed";
+export const AUTH_CHANGED = "mojput-auth-changed";
 
 /** Pozovi nakon prijave/odjave da Navbar i ostale komponente osvježe korisnika. */
 export function notifyAuthChanged(): void {

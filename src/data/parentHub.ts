@@ -172,6 +172,30 @@ export const guideVideos = [
   { id: "v2", title: "Podrška djetetu tijekom mature", url: "https://www.youtube.com/embed/dQw4w9WgXcQ" },
 ];
 
+export const guideCategoriesJunior: GuideCategory[] = [
+  { id: "komunikacija", title: "Komunikacija", items: ["Otvorena pitanja o smjeru", "Slušanje bez 'samo gimnazija'", "Bez usporedbe s rodbinom"] },
+  { id: "odluke", title: "Odabir srednje", items: ["Gimnazija ili strukovna", "Usporedba 3 škole", "Dan otvorenih vrata"] },
+  { id: "rutina", title: "Do upisa", items: ["Predmeti ovog mjeseca", "Rokovi u svibnju", "Bodovi i prag"] },
+];
+
+export const guideChecklistJunior = [
+  "Razgovarali smo barem jednom tjedno o srednjoj školi, ne o fakultetu.",
+  "Pregledali smo barem 3 srednje škole ili smjera.",
+  "Pogledali smo rezultat kviza djeteta (ili dogovorili da ga riješi).",
+  "Znamo sljedeći konkretan korak: posjet, ocjene ili prijava.",
+];
+
+export const guideVideosJunior = [
+  { id: "jv1", title: "Kako voditi razgovor o srednjoj bez konflikta", url: "https://www.youtube.com/embed/dQw4w9WgXcQ" },
+  { id: "jv2", title: "Podrška djetetu prije upisa u srednju", url: "https://www.youtube.com/embed/dQw4w9WgXcQ" },
+];
+
+export const mentalTopicsJunior = [
+  { id: "jm1", title: "Stres oko upisa", description: "Kako prepoznati pritisak oko odabira srednje škole.", tag: "stres" },
+  { id: "jm2", title: "Anksioznost", description: "Kad zabrinutost zbog škole prestane biti 'samo trema'.", tag: "anksioznost" },
+  { id: "jm3", title: "Ravnoteža", description: "Osnovna, odmor i obiteljska očekivanja oko srednje.", tag: "podrska" },
+];
+
 export const mentalTopics = [
   { id: "m1", title: "Stres", description: "Kako prepoznati i smanjiti svakodnevni pritisak.", tag: "stres" },
   { id: "m2", title: "Anksioznost", description: "Kada zabrinutost prelazi u ozbiljan problem.", tag: "anksioznost" },
@@ -221,6 +245,29 @@ export const assessmentQuestions = [
     id: "q3",
     question: "Koliko voli timski rad?",
     options: ["Slabije", "Ponekad", "Jako voli"],
+  },
+];
+
+export const assessmentQuestionsJunior = [
+  {
+    id: "jq1",
+    question: "Koliko je djetetu važna praksa u srednjoj školi (radionice, struka), a ne samo teorija?",
+    options: ["Nije važno", "Umjereno važno", "Vrlo važno"],
+  },
+  {
+    id: "jq2",
+    question: "Što je djetetu bliže kao sljedeći korak?",
+    options: ["Gimnazija", "Još nije jasno", "Strukovna / zanat"],
+  },
+  {
+    id: "jq3",
+    question: "Koliko je važna blizina škole (putovanje, dom)?",
+    options: ["Nije važno", "Umjereno važno", "Vrlo važno"],
+  },
+  {
+    id: "jq4",
+    question: "Treba li dijete dodatnu provjeru, prijemni ili umjetnički portfolio?",
+    options: ["Ne", "Možda", "Da, već znamo"],
   },
 ];
 
@@ -387,4 +434,24 @@ export function parentArticlesFor(mode: MojPutExperienceMode): ParentArticle[] {
 
 export function forumSeedFor(mode: MojPutExperienceMode): ForumTopic[] {
   return mode === "junior" ? forumSeedJunior : forumSeed;
+}
+
+export function guideCategoriesFor(mode: MojPutExperienceMode) {
+  return mode === "junior" ? guideCategoriesJunior : guideCategories;
+}
+
+export function guideChecklistFor(mode: MojPutExperienceMode) {
+  return mode === "junior" ? guideChecklistJunior : guideChecklist;
+}
+
+export function guideVideosFor(mode: MojPutExperienceMode) {
+  return mode === "junior" ? guideVideosJunior : guideVideos;
+}
+
+export function assessmentQuestionsFor(mode: MojPutExperienceMode) {
+  return mode === "junior" ? assessmentQuestionsJunior : assessmentQuestions;
+}
+
+export function mentalTopicsFor(mode: MojPutExperienceMode) {
+  return mode === "junior" ? mentalTopicsJunior : mentalTopics;
 }

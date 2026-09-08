@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import {
   ArrowRight,
@@ -12,6 +13,12 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatEventDate } from "@/data/calendarEvents";
 import { juniorProgramTypeLabels } from "@/lib/juniorQuizEngine";
+import JuniorSchoolCompare from "@/components/junior/JuniorSchoolCompare";
+import JuniorShareParents from "@/components/junior/JuniorShareParents";
+import JuniorNumbersNote from "@/components/junior/JuniorNumbersNote";
+import JuniorPlanCard from "@/components/junior/JuniorPlanCard";
+import { loadParentBrief } from "@/lib/juniorParentBrief";
+import { programHref } from "@/lib/juniorProgramGuide";
 import {
   computeSrednjaPoints,
   effectiveJuniorPoints,
@@ -20,12 +27,10 @@ import {
   loadJuniorSnapshot,
   loadShortlist,
   nextJuniorDeadline,
+  onJuniorPointsChange,
+  onJuniorSnapshotChange,
+  onShortlistChange,
 } from "@/lib/juniorPath";
-import JuniorSchoolCompare from "@/components/junior/JuniorSchoolCompare";
-import JuniorShareParents from "@/components/junior/JuniorShareParents";
-import JuniorNumbersNote from "@/components/junior/JuniorNumbersNote";
-import { loadParentBrief } from "@/lib/juniorParentBrief";
-import { programHref } from "@/lib/juniorProgramGuide";
 
 function formatHr(iso: string | undefined | null) {
   if (!iso) return "—";
@@ -41,6 +46,19 @@ function formatHr(iso: string | undefined | null) {
 }
 
 export default function JuniorProfilHome() {
+  const [, setTick] = useState(0);
+  useEffect(() => {
+    const bump = () => setTick((n) => n + 1);
+    const offA = onJuniorSnapshotChange(bump);
+    const offB = onShortlistChange(bump);
+    const offC = onJuniorPointsChange(bump);
+    return () => {
+      offA();
+      offB();
+      offC();
+    };
+  }, []);
+
   const snap = loadJuniorSnapshot();
   const parentBrief = loadParentBrief();
   const schools = loadShortlist();
@@ -72,6 +90,8 @@ export default function JuniorProfilHome() {
           </CardContent>
         </Card>
       ) : null}
+
+      <JuniorPlanCard />
 
       <Card className="border-border/60 shadow-md">
         <CardHeader className="pb-3">
@@ -210,6 +230,7 @@ export default function JuniorProfilHome() {
         </CardContent>
       </Card>
       <JuniorNumbersNote />
+      <JuniorNumbersNote catalog className="pt-1" />
     </div>
   );
 }

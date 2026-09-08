@@ -71,7 +71,7 @@ const secondaryNavJunior: NavEntry[] = [
   { label: "Programi", path: "/programi", icon: BookOpen },
   { label: "Kalendar", path: "/kalendar", icon: Calendar },
   { label: "Roditelji", path: "/roditelji?experience=junior", icon: Users },
-  { label: "Chatbot", path: "/chatbot?experience=junior", icon: Bot },
+  { label: "Baza škola", path: "/chatbot?experience=junior", icon: Bot },
 ];
 
 const Navbar = () => {

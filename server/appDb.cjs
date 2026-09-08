@@ -67,6 +67,7 @@ const INSERT_RETURNING_TABLES = new Set([
   "user_saved_faculties",
   "junior_classes",
   "junior_class_entries",
+  "junior_user_state",
 ]);
 
 function needsReturningId(sql) {
@@ -333,6 +334,19 @@ function migrateSqlite(db) {
     `);
   }
 
+  try {
+    db.prepare("SELECT 1 FROM junior_user_state LIMIT 1").get();
+  } catch {
+    db.exec(`
+      CREATE TABLE junior_user_state (
+        user_id INTEGER PRIMARY KEY,
+        payload TEXT NOT NULL,
+        updated_at TEXT NOT NULL DEFAULT (datetime('now')),
+        FOREIGN KEY (user_id) REFERENCES users(id)
+      )
+    `);
+  }
+
   const migrated = db.prepare("SELECT 1 FROM app_meta WHERE key = 'pending_registration_flow_v1'").get();
   if (!migrated) {
     db.prepare("INSERT INTO app_meta (key, value) VALUES ('pending_registration_flow_v1', '1')").run();
@@ -450,6 +464,11 @@ async function migratePg(pool) {
       city TEXT,
       created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
       UNIQUE(class_id, client_key)
+    )`,
+    `CREATE TABLE IF NOT EXISTS junior_user_state (
+      user_id INTEGER PRIMARY KEY REFERENCES users(id),
+      payload TEXT NOT NULL,
+      updated_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
     )`,
   ];
   for (const sql of ddl) await run(sql);

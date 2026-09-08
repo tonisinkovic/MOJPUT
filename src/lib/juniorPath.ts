@@ -1,6 +1,6 @@
 /**
  * Junior put: spaja kviz, pragove, kartu, bodove i kratku listu škola.
- * Sprema se lokalno — radi i bez prijave.
+ * Sprema se lokalno — radi i bez prijave. Prijavljeni račun sinkronizira isti JSON.
  */
 
 import { highSchools } from "@/data/highSchools";
@@ -17,6 +17,8 @@ import type {
   HighSchoolProgramType,
   JuniorQuizAnalysis,
 } from "@/lib/juniorQuizEngine";
+
+export const JUNIOR_CLOUD_PUSH_EVENT = "junior-cloud-push";
 
 export const MAX_SHORTLIST_SCHOOLS = 5;
 export const MAX_SHORTLIST_PROGRAMS = 3;
@@ -110,9 +112,31 @@ const GRADES_KEY = "junior-grades-v1";
 const QUICK_KEY = "junior-quick-points-v1";
 const SHORTLIST_KEY = "junior-shortlist-v1";
 const SNAPSHOT_KEY = "junior-quiz-snapshot-v1";
+const LOCAL_UPDATED_KEY = "junior-local-updated-at";
 const SHORTLIST_EVENT = "junior-shortlist-changed";
 const SNAPSHOT_EVENT = "junior-snapshot-changed";
 const POINTS_EVENT = "junior-points-changed";
+
+let applyingRemoteState = false;
+
+function notifyCloudPush(): void {
+  if (applyingRemoteState || typeof window === "undefined") return;
+  try {
+    window.dispatchEvent(new CustomEvent(JUNIOR_CLOUD_PUSH_EVENT));
+  } catch {
+    /* ignore */
+  }
+}
+
+export function loadJuniorLocalUpdatedAt(): string | null {
+  const raw = readJson<string>(LOCAL_UPDATED_KEY);
+  return typeof raw === "string" && raw.length > 0 ? raw : null;
+}
+
+function touchLocalUpdated(): void {
+  writeJson(LOCAL_UPDATED_KEY, new Date().toISOString());
+  notifyCloudPush();
+}
 
 export const MAX_BY_PROGRAM: Record<SrednjaProgramType, number> = {
   gimnazija4: 80,
@@ -448,6 +472,7 @@ export function loadJuniorGrades(): JuniorGradeDraft | null {
 
 export function saveJuniorGrades(draft: JuniorGradeDraft): void {
   writeJson(GRADES_KEY, draft, POINTS_EVENT);
+  touchLocalUpdated();
 }
 
 export function loadQuickPoints(): number | null {
@@ -463,9 +488,11 @@ export function saveQuickPoints(points: number | null): void {
     } catch {
       /* ignore */
     }
+    touchLocalUpdated();
     return;
   }
   writeJson(QUICK_KEY, points, POINTS_EVENT);
+  touchLocalUpdated();
 }
 
 export function effectiveJuniorPoints(): number | null {
@@ -504,6 +531,7 @@ export function addToShortlist(item: JuniorShortlistItem): AddShortlistResult {
   }
   const next = [...list, item];
   writeJson(SHORTLIST_KEY, next, SHORTLIST_EVENT);
+  touchLocalUpdated();
   return { ok: true, item };
 }
 
@@ -513,6 +541,7 @@ export function removeFromShortlist(key: string): void {
     loadShortlist().filter((item) => item.key !== key),
     SHORTLIST_EVENT,
   );
+  touchLocalUpdated();
 }
 
 export function onShortlistChange(callback: () => void): () => void {
@@ -575,7 +604,65 @@ export function saveJuniorSnapshot(analysis: JuniorQuizAnalysis, city: string | 
     })),
   };
   writeJson(SNAPSHOT_KEY, snap, SNAPSHOT_EVENT);
+  touchLocalUpdated();
   return snap;
+}
+
+export type JuniorCloudState = {
+  updatedAt: string;
+  snapshot: JuniorQuizSnapshot | null;
+  shortlist: JuniorShortlistItem[];
+  grades: JuniorGradeDraft | null;
+  quickPoints: number | null;
+};
+
+export function collectJuniorLocalState(): JuniorCloudState {
+  return {
+    updatedAt: loadJuniorLocalUpdatedAt() || "1970-01-01T00:00:00.000Z",
+    snapshot: loadJuniorSnapshot(),
+    shortlist: loadShortlist(),
+    grades: loadJuniorGrades(),
+    quickPoints: loadQuickPoints(),
+  };
+}
+
+function writeOrClear(key: string, value: unknown, eventName: string): void {
+  if (value == null) {
+    try {
+      window.localStorage.removeItem(key);
+      window.dispatchEvent(new CustomEvent(eventName));
+    } catch {
+      /* ignore */
+    }
+    return;
+  }
+  writeJson(key, value, eventName);
+}
+
+export function applyJuniorRemoteState(state: JuniorCloudState): void {
+  applyingRemoteState = true;
+  try {
+    writeOrClear(SNAPSHOT_KEY, state.snapshot, SNAPSHOT_EVENT);
+    writeJson(SHORTLIST_KEY, Array.isArray(state.shortlist) ? state.shortlist : [], SHORTLIST_EVENT);
+    writeOrClear(GRADES_KEY, state.grades, POINTS_EVENT);
+    if (state.quickPoints == null) {
+      try {
+        window.localStorage.removeItem(QUICK_KEY);
+        window.dispatchEvent(new CustomEvent(POINTS_EVENT));
+      } catch {
+        /* ignore */
+      }
+    } else {
+      writeJson(QUICK_KEY, state.quickPoints, POINTS_EVENT);
+    }
+    writeJson(LOCAL_UPDATED_KEY, state.updatedAt);
+  } finally {
+    applyingRemoteState = false;
+  }
+}
+
+export function juniorLocalHasData(state: JuniorCloudState = collectJuniorLocalState()): boolean {
+  return Boolean(state.snapshot || state.shortlist.length || state.grades || state.quickPoints != null);
 }
 
 export function onJuniorSnapshotChange(callback: () => void): () => void {

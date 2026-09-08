@@ -88,7 +88,8 @@ export default function JuniorProgramDetail() {
               Škole u bazi
             </h2>
             <p className="mt-1 text-xs text-muted-foreground">
-              {guide.totalSchools} škola u Hrvatskoj nudi sličan program.
+              {guide.totalSchools} škola u Hrvatskoj nudi sličan program — to su primjeri iz naše baze, ne
+              službeni katalog svih smjerova.
             </p>
             {guide.exampleSchools.length > 0 ? (
               <ul className="mt-3 space-y-2 text-sm">
@@ -107,7 +108,10 @@ export default function JuniorProgramDetail() {
                 ))}
               </ul>
             ) : (
-              <p className="mt-3 text-sm text-muted-foreground">U popisu škola nema pouzdanog poklapanja po imenu.</p>
+              <p className="mt-3 text-sm text-muted-foreground">
+                U popisu škola nema pouzdanog poklapanja po imenu. Ne izmišljamo školu koja nije u bazi —
+                potraži službeni naziv na stranici škole ili na karti.
+              </p>
             )}
             <div className="mt-4 flex flex-wrap gap-2">
               <Button asChild size="sm" className="rounded-xl">
@@ -120,6 +124,7 @@ export default function JuniorProgramDetail() {
           </article>
 
           <JuniorNumbersNote />
+          <JuniorNumbersNote catalog className="mt-2" />
         </div>
       </section>
     </Layout>

@@ -7,7 +7,7 @@ import { juniorEvents, nextUpcomingEvent, formatEventDate } from "@/data/calenda
 import { highSchools } from "@/data/highSchools";
 import { srednjaProgramCounties } from "@/data/srednjaPrograms";
 import { findCutoff, findKalkulatorSchool, normalizeJuniorText } from "@/lib/juniorPath";
-import { JUNIOR_NUMBERS_NOTE_SHORT } from "@/lib/juniorHonesty";
+import { JUNIOR_CALCULATOR_SCHOOL_COUNT, JUNIOR_MAP_SCHOOL_COUNT, JUNIOR_SCHOOL_COUNT_NOTE_SHORT } from "@/lib/juniorHonesty";
 import { programHref } from "@/lib/juniorProgramGuide";
 import { highSchoolPrograms } from "@/lib/juniorQuizEngine";
 
@@ -123,7 +123,7 @@ export function answerJuniorFromBase(question: string): string {
   }
 
   if (hasAny(q, ["bok", "hej", "hello", "pomoc", "što mozes", "sto mozes", "tko si"])) {
-    return "Ja sam Dražen. Gledam samo našu bazu: 443 srednje škole, smjerove, lanjski prag gdje ga imamo i upisne rokove. Ako nešto nije u bazi, reći ću da ne znam.";
+    return `Ja sam Dražen. Gledam samo našu bazu: ${JUNIOR_MAP_SCHOOL_COUNT} škola na karti, smjerove, lanjski prag gdje ga imamo i upisne rokove. ${JUNIOR_SCHOOL_COUNT_NOTE_SHORT} Ako nešto nije u bazi, reći ću da ne znam.`;
   }
 
   if (hasAny(q, ["rok", "prijava", "kalendar", "ljestvic", "upisni"])) {
@@ -237,7 +237,7 @@ export function answerJuniorFromBase(question: string): string {
   }
 
   if (hasAny(q, ["koliko skola", "koliko srednjih", "baza"])) {
-    return `U bazi karte imam ${highSchools.length} srednjih škola i ${highSchoolPrograms.length} tipova programa u kvizu. Pitaj grad ili smjer.`;
+    return `Na karti imam ${JUNIOR_MAP_SCHOOL_COUNT} srednjih škola (adrese). U kalkulatoru ${JUNIOR_CALCULATOR_SCHOOL_COUNT} škola s lanjskim pragom gdje ga imamo — nisu isti popisi. Kviz pokriva ${highSchoolPrograms.length} obitelji programa, ne cijeli službeni katalog. Pitaj grad ili smjer.`;
   }
 
   return UNKNOWN;

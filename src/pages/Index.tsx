@@ -6,6 +6,13 @@ import Layout from "@/components/Layout";
 import AnimatedStatsGrid, { type StatItem } from "@/components/AnimatedStatsGrid";
 import { scrollDocumentToTopInstant } from "@/components/ScrollToTop";
 import {
+  JUNIOR_CALCULATOR_SCHOOL_COUNT,
+  JUNIOR_MAP_SCHOOL_COUNT,
+  JUNIOR_QUIZ_QUESTION_COUNT,
+} from "@/lib/juniorHonesty";
+import JuniorNumbersNote from "@/components/junior/JuniorNumbersNote";
+import { JUNIOR_PROGRAM_FAMILY_COUNT } from "@/lib/juniorQuizEngine";
+import {
   getPreferredExperience,
   getStoredExperience,
   storeExperience,
@@ -235,12 +242,12 @@ const seniorStats: StatItem[] = [
   { value: 95, suffix: "%", label: "Zadovoljstvo", icon: <Award className="w-5 h-5" /> },
 ];
 
-/** Broj usklađen s bazom na /srednje-skole (javni popis srednjih škola RH). */
+/** Brojke iz baze karte, kalkulatora i kviza — bez izmišljenih korisnika. */
 const juniorStats: StatItem[] = [
-  { value: 443, label: "Srednjih škola", icon: <GraduationCap className="w-5 h-5" /> },
-  { value: 600, suffix: "+", label: "Korisnika", icon: <Users className="w-5 h-5" /> },
-  { value: 1, label: "Video lekcija", icon: <Video className="w-5 h-5" /> },
-  { value: 95, suffix: "%", label: "Zadovoljstvo", icon: <Award className="w-5 h-5" /> },
+  { value: JUNIOR_MAP_SCHOOL_COUNT, label: "Škola na karti", icon: <GraduationCap className="w-5 h-5" /> },
+  { value: JUNIOR_CALCULATOR_SCHOOL_COUNT, label: "Škola u kalkulatoru", icon: <Calculator className="w-5 h-5" /> },
+  { value: JUNIOR_PROGRAM_FAMILY_COUNT, label: "Obitelji programa", icon: <Target className="w-5 h-5" /> },
+  { value: JUNIOR_QUIZ_QUESTION_COUNT, label: "Pitanja u kvizu", icon: <Sparkles className="w-5 h-5" /> },
 ];
 
 type MojPutEntryIntroProps = {
@@ -1608,7 +1615,7 @@ const Index = () => {
 
   const quickActions = isJunior
     ? HERO_QUICK_ACTIONS.filter((a) => !JUNIOR_HIDDEN_QUICK.has(a.to)).map((a) => {
-          if (a.to === "/karta") return { ...a, to: "/srednje-skole", hook: "443 škole" };
+          if (a.to === "/karta") return { ...a, to: "/srednje-skole", hook: `${JUNIOR_MAP_SCHOOL_COUNT} škole` };
           if (a.to === "/forum") return { ...a, to: "/forum?experience=junior" };
           if (a.to === "/kviz") return { ...a, to: "/kviz-srednja" };
           if (a.to === "/kalkulator-fakulteti") return { ...a, to: "/kalkulator" };
@@ -1667,9 +1674,10 @@ const Index = () => {
           if (f.path === "/chatbot") {
             return {
               ...f,
+              title: "Baza škola",
               path: "/chatbot?experience=junior",
               description:
-                "Razgovaraj s umjetnom inteligencijom o odabiru srednje škole — samo baza hrvatskih srednjih škola.",
+                "Pitaj Dražena o školama, smjerovima i lanjskom pragu. Odgovara iz baze, ne izmišlja — bez prijave.",
             };
           }
           if (f.path === "/razred") {
@@ -2017,7 +2025,9 @@ const Index = () => {
               >
                 <span className="inline-flex items-center gap-1.5 rounded-full border border-border/70 bg-background/75 backdrop-blur-sm px-2.5 sm:px-3 py-1 sm:py-1.5 text-[10.5px] sm:text-[11px] font-semibold text-muted-foreground shadow-soft transition-all hover:border-primary/30 hover:text-foreground whitespace-nowrap">
                   <ShieldCheck className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-primary" />
-                  Bez registracije
+                  {isJunior
+                    ? "Bez računa: kviz, karta, kalkulator, baza škola"
+                    : "Bez računa: kviz, karta, kalkulator"}
                 </span>
                 <span className="inline-flex items-center gap-1.5 rounded-full border border-border/70 bg-background/75 backdrop-blur-sm px-2.5 sm:px-3 py-1 sm:py-1.5 text-[10.5px] sm:text-[11px] font-semibold text-muted-foreground shadow-soft transition-all hover:border-primary/30 hover:text-foreground whitespace-nowrap">
                   <Sparkles className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-primary" />
@@ -2025,7 +2035,7 @@ const Index = () => {
                 </span>
                 <span className="inline-flex items-center gap-1.5 rounded-full border border-border/70 bg-background/75 backdrop-blur-sm px-2.5 sm:px-3 py-1 sm:py-1.5 text-[10.5px] sm:text-[11px] font-semibold text-muted-foreground shadow-soft transition-all hover:border-primary/30 hover:text-foreground whitespace-nowrap">
                   <Users className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-primary" />
-                  {isJunior ? "600+ učenika" : "600+ maturanata"}
+                  {isJunior ? "Profil i spremanje kviza trebaju račun" : "Profil sprema kviz"}
                 </span>
               </motion.div>
             </motion.div>
@@ -2124,7 +2134,7 @@ const Index = () => {
                         {isJunior ? "Srednjih škola" : "Fakulteta"}
                       </div>
                       <div className="text-lg font-extrabold tracking-tight text-foreground leading-none">
-                        {isJunior ? "443" : "120+"}
+                        {isJunior ? String(JUNIOR_MAP_SCHOOL_COUNT) : "120+"}
                       </div>
                     </div>
                   </div>
@@ -2137,8 +2147,12 @@ const Index = () => {
                       <Award className="h-[1.1rem] w-[1.1rem]" />
                     </span>
                     <div>
-                      <div className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">Zadovoljstvo</div>
-                      <div className="text-lg font-extrabold tracking-tight text-foreground leading-none">95%</div>
+                      <div className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+                        {isJunior ? "Obitelji programa" : "Zadovoljstvo"}
+                      </div>
+                      <div className="text-lg font-extrabold tracking-tight text-foreground leading-none">
+                        {isJunior ? String(JUNIOR_PROGRAM_FAMILY_COUNT) : "95%"}
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -2233,6 +2247,9 @@ const Index = () => {
           transition={{ duration: 0.65, ease: [0.22, 1, 0.36, 1] }}
         >
           <AnimatedStatsGrid stats={stats} />
+          {isJunior ? (
+            <JuniorNumbersNote counts className="mx-auto mt-4 max-w-2xl justify-center" />
+          ) : null}
         </motion.div>
       </motion.section>
 

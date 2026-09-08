@@ -6,6 +6,10 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import type { HighSchoolProgram } from "@/lib/juniorQuizEngine";
 import {
+  JUNIOR_MISSING_CUTOFF_NOTE,
+  JUNIOR_MISSING_SCHOOL_NOTE,
+} from "@/lib/juniorHonesty";
+import {
   CHANCE_TONE,
   addToShortlist,
   calculatorHref,
@@ -88,6 +92,11 @@ export default function JuniorSchoolRow({
               " · prag nije u bazi"
             )}
           </p>
+          {school.cutoff?.min == null ? (
+            <p className="mt-1 text-[11px] leading-relaxed text-amber-800 dark:text-amber-200">
+              {school.mapSchoolId || school.cutoff ? JUNIOR_MISSING_CUTOFF_NOTE : JUNIOR_MISSING_SCHOOL_NOTE}
+            </p>
+          ) : null}
         </div>
         <button
           type="button"

@@ -110,7 +110,8 @@ export default function RoditeljskiRezultat() {
                   </div>
                 ) : brief.city ? (
                   <p className="mt-3 text-xs text-muted-foreground">
-                    U krugu od 30 km nije bilo škole s ovim programom u bazi.
+                    U našoj bazi nema škole s ovim programom u krugu od 30 km. To ne znači da škole
+                    nema — možda je pod drugim nazivom ili je nemamo na popisu.
                   </p>
                 ) : null}
               </article>

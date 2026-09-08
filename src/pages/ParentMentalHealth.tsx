@@ -1,27 +1,37 @@
 import Layout from "@/components/Layout";
-import { mentalResources, mentalTopics, parentArticles } from "@/data/parentHub";
+import { mentalResources, mentalTopicsFor, parentArticlesFor } from "@/data/parentHub";
+import { resolveExperienceMode } from "@/lib/experience";
 import { useMemo, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 
 const ParentMentalHealth = () => {
+  const [searchParams] = useSearchParams();
+  const audience = resolveExperienceMode(searchParams);
+  const isJunior = audience === "junior";
   const [filter, setFilter] = useState<"sve" | "stres" | "anksioznost" | "podrska">("sve");
   const [query, setQuery] = useState("");
+  const topics = mentalTopicsFor(audience);
 
   const filteredTopics = useMemo(() => {
     const term = query.toLowerCase().trim();
-    return mentalTopics.filter((topic) => {
+    return topics.filter((topic) => {
       const byFilter = filter === "sve" || topic.tag === filter;
       const byQuery = !term || topic.title.toLowerCase().includes(term) || topic.description.toLowerCase().includes(term);
       return byFilter && byQuery;
     });
-  }, [filter, query]);
+  }, [filter, query, topics]);
 
-  const articles = parentArticles.filter((item) => item.category === "mentalno");
+  const articles = parentArticlesFor(audience).filter((item) => item.category === "mentalno");
 
   return (
     <Layout>
       <section className="container py-10 md:py-14">
         <h1 className="text-3xl font-bold">Mentalno zdravlje</h1>
-        <p className="text-muted-foreground mt-2">Prepoznajte znakove stresa i podržite dijete kroz zahtjevno razdoblje.</p>
+        <p className="text-muted-foreground mt-2">
+          {isJunior
+            ? "Prepoznajte znakove stresa oko upisa u srednju i podržite dijete bez pritiska."
+            : "Prepoznajte znakove stresa i podržite dijete kroz zahtjevno razdoblje."}
+        </p>
 
         <div className="grid md:grid-cols-[2fr_1fr] gap-4 mt-6">
           <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Pretraži teme..." className="h-10 rounded-md border bg-background px-3 text-sm" />

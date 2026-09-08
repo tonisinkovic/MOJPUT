@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import {
   BookOpen,
   Building2,
+  Calculator,
   ChevronDown,
   ChevronUp,
   ExternalLink,
@@ -22,8 +23,10 @@ import {
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { lazy, Suspense, useEffect, useMemo, useState } from "react";
-import { useSearchParams } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { highSchools, type HighSchool, type HighSchoolCategory } from "@/data/highSchools";
+import JuniorNumbersNote from "@/components/junior/JuniorNumbersNote";
+import { calculatorHref, findKalkulatorSchool } from "@/lib/juniorPath";
 import {
   srednjaProgramCounties,
   type SrednjaProgramCounty,
@@ -209,6 +212,18 @@ const ProgramSchoolRow = ({
               ))}
             </div>
           )}
+          {(() => {
+            const kalk = findKalkulatorSchool(school.name, school.city);
+            return (
+              <Link
+                to={calculatorHref(kalk?.id ?? null)}
+                className="mt-2.5 inline-flex items-center gap-1 text-xs font-semibold text-primary hover:underline"
+              >
+                <Calculator className="h-3.5 w-3.5" />
+                Bodovi u MojPut kalkulatoru
+              </Link>
+            );
+          })()}
         </div>
       )}
     </div>
@@ -411,9 +426,10 @@ const KartaSrednjihSkola = () => {
                 <span className="text-gradient">Karta</span> srednjih škola
               </h1>
               <p className="mt-1.5 max-w-2xl text-pretty text-sm leading-relaxed text-muted-foreground sm:text-base">
-                Istraži sve srednje škole u Hrvatskoj — gimnazije, strukovne i umjetničke škole, s kontaktima i
-                web stranicama, sve na jednom mjestu.
+                Istraži srednje škole u Hrvatskoj — gimnazije, strukovne i umjetničke, s kontaktima i webom.
+                Za lanjski prag i bodove otvori školu pa idi u MojPut kalkulator.
               </p>
+              <JuniorNumbersNote counts className="mt-3 max-w-2xl" />
 
               <div className="mt-4 grid grid-cols-3 gap-2 sm:max-w-lg sm:gap-3">
                 <div className="rounded-xl border border-border/60 bg-background/70 px-3 py-2 backdrop-blur-sm">
@@ -1106,15 +1122,11 @@ const KartaSrednjihSkola = () => {
               )}
 
               <p className="mt-4 text-right text-[11px] text-muted-foreground">
-                Izvor podataka:{" "}
-                <a
-                  href="https://www.srednja.hr/srednja-kalkulator"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="font-medium text-primary hover:underline"
-                >
-                  srednja.hr — Kalkulator bodova
-                </a>
+                Lanjski pragovi:{" "}
+                <Link to="/kalkulator" className="font-medium text-primary hover:underline">
+                  MojPut kalkulator
+                </Link>
+                <span className="text-muted-foreground"> · izvor podataka srednja.hr</span>
               </p>
             </motion.div>
           </div>
@@ -1162,6 +1174,29 @@ const KartaSrednjihSkola = () => {
               </DialogHeader>
 
               <div className="space-y-2.5">
+                {(() => {
+                  const kalk = findKalkulatorSchool(detailSchool.name, detailSchool.city);
+                  return (
+                    <div className="flex items-start gap-3 rounded-xl border border-primary/25 bg-primary/[0.06] p-3">
+                      <Calculator className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+                      <div className="min-w-0 flex-1">
+                        <p className="text-[11px] font-semibold uppercase tracking-wide text-primary">Bodovi i prag</p>
+                        <p className="mt-0.5 text-xs text-muted-foreground">
+                          {kalk
+                            ? "Ova škola je u MojPut kalkulatoru — lanjski prag, ne pogodujemo broj."
+                            : "Ove škole nema u kalkulatoru. Možeš i dalje izračunati svoje bodove."}
+                        </p>
+                        <Link
+                          to={calculatorHref(kalk?.id ?? null)}
+                          className="mt-1.5 inline-flex items-center gap-1 text-xs font-semibold text-primary hover:underline"
+                        >
+                          Otvori MojPut kalkulator
+                        </Link>
+                      </div>
+                    </div>
+                  );
+                })()}
+
                 <div className="flex items-start gap-3 rounded-xl border border-border/70 bg-muted/30 p-3">
                   <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
                   <div className="min-w-0 flex-1">
@@ -1274,15 +1309,11 @@ const KartaSrednjihSkola = () => {
                         ))}
                       </div>
                       <p className="mt-2 text-[10px] text-muted-foreground">
-                        Izvor:{" "}
-                        <a
-                          href="https://www.srednja.hr/srednja-kalkulator"
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="font-medium text-primary hover:underline"
-                        >
-                          srednja.hr
-                        </a>
+                        Pragovi:{" "}
+                        <Link to="/kalkulator" className="font-medium text-primary hover:underline">
+                          MojPut kalkulator
+                        </Link>
+                        {" · "}izvor srednja.hr
                       </p>
                     </div>
                   </div>

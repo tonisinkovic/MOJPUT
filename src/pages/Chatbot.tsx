@@ -16,6 +16,7 @@ import {
   X,
   Image as ImageIcon,
   FileText,
+  School,
 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -254,8 +255,8 @@ function buildUserSearchQuery(text: string, attachments: ChatAttachment[] | unde
 const AI_NAME = "Dražen";
 const AI_WELCOME_SENIOR = `Bok! Ja sam ${AI_NAME} 👋
 Pomažem ti sa svim pitanjima o fakultetima u Hrvatskoj. Što te zanima?`;
-const AI_WELCOME_JUNIOR = `Bok! Ja sam ${AI_NAME} 👋
-Odgovaram samo iz naše baze: škole, smjerovi, lanjski prag gdje ga imamo i upisni rokovi. Ako nešto nije u bazi, reći ću da ne znam — ne izmišljam.`;
+const AI_WELCOME_JUNIOR = `Bok! Ja sam ${AI_NAME}.
+Nisam AI savjetnik za karijeru. Odgovaram iz baze: škole, smjerovi, lanjski prag gdje ga imamo i upisni rokovi. Ako toga nema, reći ću da ne znam. Prijava nije potrebna.`;
 
 function buildLocalChatReplySenior(question: string): string {
   const q = question.toLowerCase();
@@ -318,7 +319,7 @@ const Chatbot = () => {
   }, [aiWelcome]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [authLoading, setAuthLoading] = useState(true);
+  const [authLoading, setAuthLoading] = useState(() => audience !== "junior");
   const [user, setUser] = useState<AuthUser | null>(null);
   const [quota, setQuota] = useState<ChatQuotaState | null>(null);
   const [quotaLoading, setQuotaLoading] = useState(false);
@@ -384,6 +385,10 @@ const Chatbot = () => {
   }, []);
 
   const loadAuth = useCallback(async () => {
+    if (isJunior) {
+      setAuthLoading(false);
+      return;
+    }
     setAuthLoading(true);
     try {
       const res = await authMe();
@@ -403,7 +408,7 @@ const Chatbot = () => {
     } finally {
       setAuthLoading(false);
     }
-  }, [refreshQuota]);
+  }, [isJunior, refreshQuota]);
 
   useEffect(() => {
     void loadAuth();
@@ -415,15 +420,16 @@ const Chatbot = () => {
     return () => window.removeEventListener("mojput-auth-changed", onAuth);
   }, [loadAuth]);
 
-  /** Blokiraj samo kad znamo iz API-ja da je limit iscrpljen. null kvota = još učitavamo ili fetch pao — ne blokiraj prijavu. */
+  /** Junior ne ide na OpenAI — limit i prijava se ne primjenjuju. */
   const atDailyLimit = useMemo(
     () =>
+      !isJunior &&
       Boolean(user) &&
       !STATIC_NO_API &&
       quota != null &&
       quota.authenticated === true &&
       (quota.remaining ?? 0) <= 0,
-    [user, quota],
+    [isJunior, user, quota],
   );
 
   /** Odbrojavanje do ponoći (Europe/Zagreb) kad je limit iscrpljen — format 16h 54m 33s. */
@@ -446,7 +452,8 @@ const Chatbot = () => {
   }, [atDailyLimit, quota?.resetsAt]);
 
   const canSendChat =
-    !isLoading && (STATIC_NO_API || (Boolean(user) && !authLoading && !atDailyLimit));
+    !isLoading &&
+    (isJunior || STATIC_NO_API || (Boolean(user) && !authLoading && !atDailyLimit));
 
   /** Prilog se može odabrati i bez prijave (prikaz u traci); slanje i dalje zahtijeva prijavu. */
   const canPickAttachments = !isLoading;
@@ -471,11 +478,11 @@ const Chatbot = () => {
     const attachments = [...pendingAttachments];
     if ((!content && attachments.length === 0) || isLoading) return;
 
-    if (!user && !STATIC_NO_API) {
+    if (!isJunior && !user && !STATIC_NO_API) {
       toast.error("Za slanje poruka i priloga (slike, dokumenti) moraš biti prijavljen.", { duration: 6000 });
       return;
     }
-    if (atDailyLimit) {
+    if (!isJunior && atDailyLimit) {
       setPremiumOpen(true);
       return;
     }
@@ -710,15 +717,15 @@ const Chatbot = () => {
   const attachmentsStillLoading = pendingAttachments.some((a) => a.loading);
   const hasOutgoingContent = Boolean(input.trim() || pendingAttachments.length > 0);
 
-  /** Pošalji bez blokiranja prijavom prikaza (toast ako nije prijavljen); blok samo limit / učitavanje. */
+  /** Pošalji bez blokiranja prijavom; Junior slobodno, Senior čeka auth i limit. */
   const canClickSend =
     !isLoading &&
-    !authLoading &&
+    (isJunior || !authLoading) &&
     hasOutgoingContent &&
     !attachmentsStillLoading &&
-    !(Boolean(user) && atDailyLimit);
+    (isJunior || !(Boolean(user) && atDailyLimit));
 
-  const showLoginGate = !authLoading && !user && !STATIC_NO_API;
+  const showLoginGate = !isJunior && !authLoading && !user && !STATIC_NO_API;
 
   return (
     <Layout>
@@ -785,24 +792,30 @@ const Chatbot = () => {
             <div className="chat-container">
               <div className="chat-header">
                 <div className="chat-avatar">
-                  <Bot className="w-5 h-5 text-primary-foreground" />
+                  {isJunior ? (
+                    <School className="w-5 h-5 text-primary-foreground" />
+                  ) : (
+                    <Bot className="w-5 h-5 text-primary-foreground" />
+                  )}
                 </div>
                 <div className="chat-header-title min-w-0 flex-1">
-                  <h2 className="font-semibold text-base sm:text-[1.05rem]">{AI_NAME}</h2>
+                  <h2 className="font-semibold text-base sm:text-[1.05rem]">
+                    {isJunior ? "Baza škola" : AI_NAME}
+                  </h2>
                   <p className="chat-status">
                     <span className={cn("chat-status-dot", (atDailyLimit || showLoginGate) && "chat-status-dot--muted")} />
-                    {authLoading
+                    {authLoading && !isJunior
                       ? "Učitavanje…"
                       : STATIC_NO_API
                         ? "Lokalni način (bez API)"
                         : showLoginGate
                           ? "Samo za prijavljene korisnike"
                           : isJunior
-                            ? "Samo baza škola"
+                            ? "Samo baza škola — bez prijave"
                             : "Online · baza + OpenAI"}
                   </p>
                 </div>
-                {user && !STATIC_NO_API && !authLoading && (quotaLoading || quotaError || quota?.authenticated) && (
+                {user && !isJunior && !STATIC_NO_API && !authLoading && (quotaLoading || quotaError || quota?.authenticated) && (
                   <div
                     className={`chat-quota-pill ${atDailyLimit ? "chat-quota-pill--limit" : ""}`}
                     role="status"
@@ -886,9 +899,16 @@ const Chatbot = () => {
                     <span className="hidden sm:inline">Novi razgovor</span>
                     <span className="sm:hidden">Novi</span>
                   </Button>
-                  <div className="chat-badge" title="Podaci iz baze u promptu; tekst generira OpenAI">
+                  <div
+                    className="chat-badge"
+                    title={
+                      isJunior
+                        ? "Odgovori samo iz baze škola — bez OpenAI"
+                        : "Podaci iz baze u promptu; tekst generira OpenAI"
+                    }
+                  >
                     <Sparkles className="h-3 w-3" aria-hidden />
-                    Baza + AI
+                    {isJunior ? "Samo baza" : "Baza + AI"}
                   </div>
                 </div>
               </div>
@@ -1076,7 +1096,7 @@ const Chatbot = () => {
                       placeholder={
                         showLoginGate
                           ? "Prijavi se za slanje poruka…"
-                          : authLoading
+                          : !isJunior && authLoading
                             ? "Učitavanje…"
                             : atDailyLimit
                               ? "Dnevni limit poruka (12) iscrpljen…"
@@ -1088,7 +1108,7 @@ const Chatbot = () => {
                       }
                       rows={1}
                       className="chat-textarea"
-                      disabled={isLoading || authLoading || (Boolean(user) && atDailyLimit)}
+                      disabled={isLoading || (!isJunior && (authLoading || (Boolean(user) && atDailyLimit)))}
                     />
                     <input
                       ref={fileInputRef}
@@ -1122,8 +1142,9 @@ const Chatbot = () => {
                   </div>
                 </div>
                 <p className="chat-footer-hint">
-                  Enter za slanje · Shift+Enter novi red · + za prilog datoteka · razgovorni odgovori, podaci iz baze kad
-                  odgovaraju
+                  {isJunior
+                    ? "Enter za slanje · nije AI savjetnik · ako škole nema u bazi, kaže da ne zna"
+                    : "Enter za slanje · Shift+Enter novi red · + za prilog datoteka · razgovorni odgovori, podaci iz baze kad odgovaraju"}
                 </p>
               </div>
             </div>

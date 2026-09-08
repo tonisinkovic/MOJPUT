@@ -39,7 +39,7 @@ export const seniorEvents: CalendarEvent[] = [
   },
 ];
 
-export const juniorEvents: CalendarEvent[] = [
+const juniorEvents2026: CalendarEvent[] = [
   { year: 2026, month: 5, day: 6, title: "Počinju prijave u sustav", type: "Upisi", urgent: true },
   { year: 2026, month: 5, day: 24, title: "Prijava obrazovnih programa (24. 6. – 3. 7.)", type: "Upisi", urgent: true },
   { year: 2026, month: 5, day: 24, title: "Programi koji imaju dodatne provjere (24. 6. – 26. 6.)", type: "Upisi", urgent: false },
@@ -61,6 +61,11 @@ export const juniorEvents: CalendarEvent[] = [
   { year: 2026, month: 8, day: 3, title: "Objava slobodnih mjesta nakon jesenskog roka", type: "Rezultati", urgent: false },
   { year: 2026, month: 8, day: 3, title: "Naknadni upisni rok (3. – 30. 9., samo gdje ostane slobodnih mjesta)", type: "Upisi", urgent: true },
   { year: 2026, month: 8, day: 30, title: "Naknadni upisni rok – završetak", type: "Upisi", urgent: true },
+];
+
+export const juniorEvents: CalendarEvent[] = [
+  ...juniorEvents2026,
+  ...juniorEvents2026.map((event) => ({ ...event, year: event.year + 1 })),
 ];
 
 export function eventDate(event: CalendarEvent): Date {

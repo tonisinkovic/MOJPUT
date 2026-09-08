@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { BookOpen, GraduationCap, Hammer, Palette, Wrench } from "lucide-react";
 import Layout from "@/components/Layout";
 import { Badge } from "@/components/ui/badge";
+import JuniorNumbersNote from "@/components/junior/JuniorNumbersNote";
 import { juniorProgramTypeLabels, type HighSchoolProgramType } from "@/lib/juniorQuizEngine";
 import { programsByType } from "@/lib/juniorProgramGuide";
 
@@ -29,6 +30,7 @@ export default function JuniorProgrami() {
           Što se uči, za koga program nije, traje li 3 ili 4 godine, treba li prijemni i koje škole ga nude.
           Kviz i chatbot vode ovdje, ne samo na postotak.
         </p>
+        <JuniorNumbersNote catalog className="mt-3 max-w-2xl" />
 
         <div className="mt-8 space-y-8">
           {TYPE_ORDER.map((type) => {

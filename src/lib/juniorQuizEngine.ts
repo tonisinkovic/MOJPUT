@@ -173,6 +173,9 @@ export const juniorSubjectLabels = quizData.subjectCategories as Record<
 >;
 export const highSchoolPrograms = programsData as HighSchoolProgram[];
 
+/** Obitelji programa u kvizu — nije službeni katalog svih smjerova. */
+export const JUNIOR_PROGRAM_FAMILY_COUNT = highSchoolPrograms.length;
+
 export const JUNIOR_TOP_RECOMMENDATIONS = 8;
 
 export const juniorProgramTypeLabels: Record<HighSchoolProgramType, string> = {

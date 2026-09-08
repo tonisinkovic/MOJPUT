@@ -1,0 +1,124 @@
+{
+  "threads": [
+    {
+      "title": "Što te najviše iznenadilo u 1. razredu?",
+      "track": "upis",
+      "city": null,
+      "asker": "OsmakEna",
+      "question": "Pitam treći razred iz medicinske, tehničke i gimnazije: što vas je u 1. razredu stvarno iznenadilo, a u OŠ vam nisu rekli?",
+      "replies": [
+        {
+          "username": "Marta3Med",
+          "school": "Medicinska škola Split",
+          "text": "Marta, 3. r., Medicinska Split: tempo. Anatomija nije 'još jedan predmet' — učiš kao da ti netko sjedi na vratu. Praksa u bolnici je bila jača od očekivanja, u dobrom i lošem."
+        },
+        {
+          "username": "Filip3Teh",
+          "school": "Tehnička škola Zagreb",
+          "text": "Filip, 3. r., Tehnička Zagreb: koliko je crtanja i laboratorija. Nisam mislio da ću u 1. razredu već lemiti i kvariti ploče. Teorija ima, ali ruke rade svaki tjedan."
+        },
+        {
+          "username": "Maja3Gim",
+          "school": "XV. gimnazija Zagreb",
+          "text": "Maja, 3. r., XV. gimnazija Zagreb: količina zadaće iz matematike i fizike. Nije teže jer su profesori zli, nego jer svi pretpostavljaju da ideš na faks. Tko to ne želi, brzo se izgubi."
+        }
+      ]
+    },
+    {
+      "title": "Koliko je učenja u odnosu na osnovnu?",
+      "track": "upis",
+      "city": null,
+      "asker": "Luka8",
+      "question": "Isto pitanje za treći razred: koliko stvarno učite tjedno u odnosu na 8. razred? Bez uljepšavanja.",
+      "replies": [
+        {
+          "username": "Tomo3Med",
+          "school": "Medicinska škola Split",
+          "text": "Tomo, 3. r., Medicinska Split: u 8. sam učio pred test. Ovdje učiš stalno ili toneš. Dva slobodna vikenda mjesečno, ako nema kolokvija. Nije nemoguće, ali nije OŠ."
+        },
+        {
+          "username": "Ena3Teh",
+          "school": "Tehnička škola Zagreb",
+          "text": "Ena, 3. r., Tehnička Zagreb: srednje. Ima tjedana s projektom do 21h, ima tjedana kad samo dođeš na sat. Teže od OŠ, lakše nego što mama priča o 'paklu'."
+        },
+        {
+          "username": "Karlo3Gim",
+          "school": "XV. gimnazija Zagreb",
+          "text": "Karlo, 3. r., XV. gimnazija Zagreb: ako želiš 5, učiš svaki dan. Ako ti je dosta 3–4, da se živi. Nemoj u MIOC misleći da će biti kao u OŠ s petama bez rada."
+        }
+      ]
+    },
+    {
+      "title": "Treba li prijemni / dodatna provjera?",
+      "track": "upis",
+      "city": null,
+      "asker": "IvanaUpis",
+      "question": "Treći razred: na vašoj školi je trebao prijemni ili dodatna provjera? Što stvarno pitaju?",
+      "replies": [
+        {
+          "username": "Iva3Med",
+          "school": "Medicinska škola Split",
+          "text": "Iva, 3. r., Medicinska Split: mi nismo imali klasični prijemni, bodovi i zdravstvena. Ali praksa kasnije 'testira' tko podnosi krv i smjene. Tko ide na umjetničku — to je druga priča, tamo odlučuje mapa radova."
+        },
+        {
+          "username": "Marko3Teh",
+          "school": "Tehnička škola Zagreb",
+          "text": "Marko, 3. r., Tehnička Zagreb: za većinu tehničkih nema prijemnog, gleda se prag. Provjeri školu jer neki smjerovi imaju dodatnu. Mi smo ušli na bodove, nitko nas nije crtao na ulazu."
+        },
+        {
+          "username": "Sara3Gim",
+          "school": "XV. gimnazija Zagreb",
+          "text": "Sara, 3. r., XV. gimnazija Zagreb: gimnazija = bodovi, ne prijemni. Iznimka su umjetničke i neke sportske. Ako ti netko priča da 'MIOC ima prijemni iz IQ-a', ne slušaj."
+        }
+      ]
+    },
+    {
+      "title": "Što bi rekao/la osmašu koji razmišlja o ovom smjeru?",
+      "track": "ostalo",
+      "city": null,
+      "asker": "Petra8",
+      "question": "Jedno pitanje, tri škole. Što biste danas rekli sebi u 8. razredu?",
+      "replies": [
+        {
+          "username": "Petra3Med",
+          "school": "Medicinska škola Split",
+          "text": "Petra, 3. r., Medicinska Split: dođi na dan otvorenih vrata i pitaj treći razred, ne pedagoga iz OŠ. Ako te ljudi i praksa ne vuku, ne upisuj medicinsku jer 'lakše na faks'."
+        },
+        {
+          "username": "Luka3Teh",
+          "school": "Tehnička škola Zagreb",
+          "text": "Luka, 3. r., Tehnička Zagreb: ako voliš rapaviti stvari i nije ti muka od matematike, tehnička je fer. Ako želiš samo opću teoriju, idi u gimnaziju. Ne biraj školu po instagramu."
+        },
+        {
+          "username": "Nina3Gim",
+          "school": "Gimnazija Osijek",
+          "text": "Nina, 3. r., Gimnazija Osijek: gimnazija nije 'sigurnija'. Gubiš smjer, dobivaš širinu. Ako već znaš zanat, ne muči se ovdje da mama bude mirna."
+        }
+      ]
+    },
+    {
+      "title": "Što roditelji krivo misle?",
+      "track": "ostalo",
+      "city": null,
+      "asker": "RoditeljPita",
+      "question": "Treći razred, iskreno: koju rečenicu vaši roditelji i danas ponavljaju, a nije točna?",
+      "replies": [
+        {
+          "username": "Ana3Med",
+          "school": "Medicinska škola Split",
+          "text": "Ana, 3. r., Medicinska Split: 'Strukovna zatvara fakultet.' Ne zatvara. Zatvara ga loš trud, ne smjer. Znam ljude s mature s medicinske na zdravstvenim studijima."
+        },
+        {
+          "username": "Dino3Gim",
+          "school": "Gimnazija Osijek",
+          "text": "Dino, 3. r., Gimnazija Osijek: 'Gimnazija je uvijek bolja.' Nije ako mrziš sjedenje. Drug iz strukovne već ima posao, ja još rješavam fiziku da upišem nešto što me ne veseli."
+        },
+        {
+          "username": "Ivan3Gim",
+          "school": "XV. gimnazija Zagreb",
+          "text": "Ivan, 3. r., XV. gimnazija Zagreb: 'Ako sad pogriješiš, gotovo je.' Nije. Možeš promijeniti smjer, ponoviti razred, ići na mature kasnije. Gora je panika u 8. nego kriva prva godina."
+        }
+      ]
+    }
+  ]
+}

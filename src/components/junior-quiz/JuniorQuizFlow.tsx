@@ -32,6 +32,7 @@ import JuniorPointsBox from "@/components/junior-quiz/JuniorPointsBox";
 import JuniorSchoolRow from "@/components/junior-quiz/JuniorSchoolRow";
 import JuniorNumbersNote from "@/components/junior/JuniorNumbersNote";
 import JuniorPlanBCard from "@/components/junior/JuniorPlanBCard";
+import JuniorPlanCard from "@/components/junior/JuniorPlanCard";
 import JuniorClassJoin from "@/components/junior/JuniorClassJoin";
 import {
   analyzeNearby,
@@ -47,6 +48,7 @@ import {
 } from "@/lib/juniorPath";
 import { findPlanB } from "@/lib/juniorPlanB";
 import { programHref } from "@/lib/juniorProgramGuide";
+import { JUNIOR_MISSING_NEARBY_NOTE } from "@/lib/juniorHonesty";
 import { buildParentBrief, saveParentBrief } from "@/lib/juniorParentBrief";
 import JuniorShareParents from "@/components/junior/JuniorShareParents";
 import {
@@ -647,8 +649,7 @@ const JuniorQuizFlow = () => {
                         </div>
                       ) : (
                         <p className="mt-2 rounded-2xl bg-amber-500/10 px-3.5 py-2.5 text-xs text-muted-foreground">
-                          U krugu od {NEARBY_MAX_KM} km od mjesta {city} nema škole s ovim programom —
-                          za njega bi trebalo putovati dalje ili razmisliti o učeničkom domu.
+                          {JUNIOR_MISSING_NEARBY_NOTE} Traženo: {city}, do {NEARBY_MAX_KM} km.
                         </p>
                       );
                     })()
@@ -700,7 +701,11 @@ const JuniorQuizFlow = () => {
               />
             </div>
           ) : null}
+          <div className="mt-4">
+            <JuniorPlanCard />
+          </div>
           <JuniorNumbersNote className="mt-4" />
+          <JuniorNumbersNote catalog className="mt-2" />
           <div className="mt-4 flex flex-wrap gap-2.5">
             <Button asChild variant="default" size="sm">
               <Link to="/srednje-skole">

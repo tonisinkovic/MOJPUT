@@ -1261,6 +1261,8 @@ async function main() {
 
   const db = await createAppDb();
   await db.migrate();
+  const { seedJuniorThirdYearForum } = require("./server/juniorThirdYearSeed.cjs");
+  await seedJuniorThirdYearForum(db);
   await loadUniversitiesData(); // ensures file exists on first run
 
   /** Besplatne poruke chata po korisniku i danu (Europe/Zagreb). */
@@ -2101,6 +2103,50 @@ async function main() {
     } catch (err) {
       console.error("[junior-class:join]", err?.message || err);
       return res.status(500).json({ success: false, message: "Prijava u razred nije spremljena." });
+    }
+  });
+
+  app.get("/api/junior/me", authMiddleware(db), async (req, res) => {
+    try {
+      const row = await db.prepare("SELECT payload, updated_at FROM junior_user_state WHERE user_id = ?").get(req.user.id);
+      if (!row) return res.json({ success: true, data: null });
+      let parsed;
+      try {
+        parsed = JSON.parse(row.payload);
+      } catch {
+        return res.status(500).json({ success: false, message: "Oštećeni podaci junior profila." });
+      }
+      return res.json({ success: true, data: parsed });
+    } catch (err) {
+      console.error("[junior-me:get]", err?.message || err);
+      return res.status(500).json({ success: false, message: "Nije moguće učitati junior podatke." });
+    }
+  });
+
+  app.post("/api/junior/me", authMiddleware(db), async (req, res) => {
+    try {
+      const payload = req.body?.payload;
+      if (payload === undefined || payload === null || typeof payload !== "object") {
+        return res.status(400).json({ success: false, message: "Nedostaje payload." });
+      }
+      const str = JSON.stringify(payload);
+      if (str.length > 400000) {
+        return res.status(400).json({ success: false, message: "Podaci su predugački." });
+      }
+      const updatedAt =
+        typeof payload.updatedAt === "string" && payload.updatedAt.length > 0
+          ? payload.updatedAt
+          : new Date().toISOString();
+      await db
+        .prepare(
+          `INSERT INTO junior_user_state (user_id, payload, updated_at) VALUES (?, ?, ?)
+           ON CONFLICT(user_id) DO UPDATE SET payload = excluded.payload, updated_at = excluded.updated_at`,
+        )
+        .run(req.user.id, str, updatedAt);
+      return res.json({ success: true });
+    } catch (err) {
+      console.error("[junior-me:save]", err?.message || err);
+      return res.status(500).json({ success: false, message: "Nije moguće spremiti junior podatke." });
     }
   });
 

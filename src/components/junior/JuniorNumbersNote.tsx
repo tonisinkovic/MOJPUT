@@ -1,14 +1,37 @@
 import { Info } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { JUNIOR_NUMBERS_NOTE, JUNIOR_NUMBERS_NOTE_SHORT } from "@/lib/juniorHonesty";
+import {
+  JUNIOR_CATALOG_NOTE,
+  JUNIOR_CATALOG_NOTE_SHORT,
+  JUNIOR_NUMBERS_NOTE,
+  JUNIOR_NUMBERS_NOTE_SHORT,
+  JUNIOR_SCHOOL_COUNT_NOTE,
+  JUNIOR_SCHOOL_COUNT_NOTE_SHORT,
+} from "@/lib/juniorHonesty";
 
 export default function JuniorNumbersNote({
   compact = false,
+  catalog = false,
+  counts = false,
   className,
 }: {
   compact?: boolean;
+  catalog?: boolean;
+  counts?: boolean;
   className?: string;
 }) {
+  const text = counts
+    ? compact
+      ? JUNIOR_SCHOOL_COUNT_NOTE_SHORT
+      : JUNIOR_SCHOOL_COUNT_NOTE
+    : catalog
+      ? compact
+        ? JUNIOR_CATALOG_NOTE_SHORT
+        : JUNIOR_CATALOG_NOTE
+      : compact
+        ? JUNIOR_NUMBERS_NOTE_SHORT
+        : JUNIOR_NUMBERS_NOTE;
+
   return (
     <p
       className={cn(
@@ -17,7 +40,7 @@ export default function JuniorNumbersNote({
       )}
     >
       <Info className="mt-0.5 h-3.5 w-3.5 shrink-0 opacity-70" />
-      <span>{compact ? JUNIOR_NUMBERS_NOTE_SHORT : JUNIOR_NUMBERS_NOTE}</span>
+      <span>{text}</span>
     </p>
   );
 }

@@ -40,6 +40,12 @@ import {
   type JuniorForumMeta,
   type JuniorForumTrackId,
 } from "@/lib/juniorForum";
+import {
+  attachThirdYearBody,
+  isJuniorEditorialThread,
+  isJuniorEditorialUsername,
+  juniorThirdYearThreads,
+} from "@/lib/juniorThirdYearForum";
 
 type ForumMessage = {
   id: number;
@@ -174,118 +180,37 @@ const SENIOR_FALLBACK_CONVERSATIONS: ForumConversation[] = [
   },
 ];
 
-const JUNIOR_FALLBACK_CONVERSATIONS: ForumConversation[] = [
-  {
-    id: 2001,
-    title: "Gimnazija ili strukovna — kako ste odlučili?",
-    description: attachForumMeta(
-      "Ne znam je li bolje ići na gimnaziju ili strukovnu. Tko je u 3. razredu i što bi danas drugačije odabrao?",
-      { city: null, track: "gimnazija", askSenior: true },
-    ),
-    creator: "Petra",
+const JUNIOR_FALLBACK_CONVERSATIONS: ForumConversation[] = juniorThirdYearThreads.map((thread, index) => {
+  const askedAt = new Date(Date.UTC(2026, 2, 20 - index, 10, 0, 0));
+  const askerMsg = {
+    id: 7001 + index * 10,
+    userId: -20 - index,
+    username: thread.asker,
+    text: thread.question,
+    timestamp: askedAt,
+    likeCount: 4,
+    userLiked: false,
+  };
+  const replyMsgs = thread.replies.map((reply, ri) => ({
+    id: 7002 + index * 10 + ri,
+    userId: -40 - index * 4 - ri,
+    username: reply.username,
+    text: reply.text,
+    timestamp: new Date(askedAt.getTime() + (ri + 1) * 3600_000),
+    likeCount: 6 - ri,
+    userLiked: false,
+  }));
+  return {
+    id: 2101 + index,
+    title: thread.title,
+    description: attachThirdYearBody(thread),
+    creator: thread.asker,
     creatorId: -1,
-    createdAt: new Date("2026-03-13T12:00:00+01:00"),
-    messageCount: 1,
-    messages: [
-      {
-        id: 6001,
-        userId: -6,
-        username: "Petra",
-        text: "Ako ste bili neodlučni pri upisu u srednju, kako ste na kraju donijeli odluku?",
-        timestamp: new Date("2026-03-13T12:03:00+01:00"),
-        likeCount: 2,
-        userLiked: false,
-      },
-    ],
-  },
-  {
-    id: 2002,
-    title: "IT u Zagrebu: gimnazija ili tehnička?",
-    description: attachForumMeta(
-      "Tko je u 3. razredu na informatičkom ili elektrotehničkom? Kako izgleda tjedan, ima li prakse?",
-      { city: "Zagreb", track: "it", askSenior: true },
-    ),
-    creator: "LukaSS",
-    creatorId: -1,
-    createdAt: new Date("2026-03-11T15:20:00+01:00"),
-    messageCount: 2,
-    messages: [
-      {
-        id: 6101,
-        userId: -7,
-        username: "LukaSS",
-        text: "Ne znam je li bolje ići na gimnaziju ili neki IT smjer u strukovnoj — tko ima iskustva?",
-        timestamp: new Date("2026-03-11T15:22:00+01:00"),
-        likeCount: 3,
-        userLiked: false,
-      },
-      {
-        id: 6102,
-        userId: -8,
-        username: "MajaGim",
-        text: "Ja sam na gimnaziji i zadovoljna sam, ali kolege na strukovnoj puno više rade praktične stvari.",
-        timestamp: new Date("2026-03-11T17:45:00+01:00"),
-        likeCount: 4,
-        userLiked: false,
-      },
-    ],
-  },
-  {
-    id: 2003,
-    title: "Split, medicinska — treba li dodatna provjera?",
-    description: attachForumMeta(
-      "Zanima me medicinska u Splitu. Tko je već u školi — kakav je prijemni i kako ste se pripremali?",
-      { city: "Split", track: "medicinska", askSenior: true },
-    ),
-    creator: "IvanaUpis",
-    creatorId: -1,
-    createdAt: new Date("2026-03-09T10:00:00+01:00"),
-    messageCount: 2,
-    messages: [
-      {
-        id: 6201,
-        userId: -9,
-        username: "IvanaUpis",
-        text: "Zanima me medicina poslije srednje — koji smjer i škola vam se čine najbolji start?",
-        timestamp: new Date("2026-03-09T10:05:00+01:00"),
-        likeCount: 5,
-        userLiked: false,
-      },
-      {
-        id: 6202,
-        userId: -10,
-        username: "TomoMed",
-        text: "Prirodoslovna gimnazija je klasičan put, ali znam i ljude koji su krenuli preko medicinske sestre u strukovnoj.",
-        timestamp: new Date("2026-03-09T11:30:00+01:00"),
-        likeCount: 3,
-        userLiked: false,
-      },
-    ],
-  },
-  {
-    id: 2004,
-    title: "Dodatna provjera — što stvarno traže?",
-    description: attachForumMeta(
-      "Koji programi imaju dodatnu provjeru i kako izgleda priprema? Pitam treći razred.",
-      { city: null, track: "upis", askSenior: true },
-    ),
-    creator: "Ena8",
-    creatorId: -1,
-    createdAt: new Date("2026-03-08T09:00:00+01:00"),
-    messageCount: 1,
-    messages: [
-      {
-        id: 6301,
-        userId: -11,
-        username: "Ena8",
-        text: "Gdje ste našli točan raspored dodatnih provjera za svoju školu?",
-        timestamp: new Date("2026-03-08T09:10:00+01:00"),
-        likeCount: 2,
-        userLiked: false,
-      },
-    ],
-  },
-];
+    createdAt: askedAt,
+    messageCount: 1 + replyMsgs.length,
+    messages: [askerMsg, ...replyMsgs],
+  };
+});
 
 function fallbackConversationsFor(audience: MojPutExperienceMode): ForumConversation[] {
   return audience === "junior" ? JUNIOR_FALLBACK_CONVERSATIONS : SENIOR_FALLBACK_CONVERSATIONS;
@@ -612,7 +537,14 @@ const Forum = () => {
         }));
         const localOnly = readLocalConversations(audience);
         const merged = [...localOnly, ...mapped];
-        setConversations(merged.length > 0 ? merged : fallbackConversations);
+        const withLive =
+          audience === "junior"
+            ? [
+                ...fallbackConversations.filter((seed) => !merged.some((c) => c.title === seed.title)),
+                ...merged,
+              ]
+            : merged;
+        setConversations(withLive.length > 0 ? withLive : fallbackConversations);
       } else {
         const localOnly = readLocalConversations(audience);
         setConversations([...localOnly, ...fallbackConversations]);
@@ -1043,7 +975,7 @@ const Forum = () => {
               </h1>
               <p className="mt-1.5 max-w-2xl text-pretty text-sm leading-relaxed text-muted-foreground sm:text-base">
                 {isJunior
-                  ? "Razmijeni iskustva i postavi pitanja o odabiru srednje škole, smjerovima i upisu — sve jasno poredano, brzo za pronalazak."
+                  ? "Pitaj o smjeru i upisu. Pet razgovora s trećim razredom uredili smo kao primjer — nisu stvarni korisnički računi."
                   : "Razmijeni iskustva i postavi pitanja o maturi, fakultetima i studentskom životu — sve jasno poredano, brzo za pronalazak."}
               </p>
 
@@ -1275,6 +1207,12 @@ const Forum = () => {
               ) : null}
 
               <div className="min-h-0 flex-1 md:overflow-y-auto">
+                {isJunior ? (
+                  <p className="mx-2 mt-2 rounded-xl border border-amber-500/30 bg-amber-500/[0.08] px-3 py-2 text-[11px] leading-relaxed text-muted-foreground">
+                    Odgovori trećeg razreda s oznakom „Urednički primjer” nisu stvarni korisnici — uredili smo ih
+                    da osmaci vide kako izgleda pitanje. Svoje pitanje i dalje možeš postaviti.
+                  </p>
+                ) : null}
                 {loadingConversations ? (
                   <div className="p-8 text-center">
                     <div className="inline-block h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
@@ -1325,7 +1263,11 @@ const Forum = () => {
                             <p className="mt-0.5 line-clamp-1 text-xs text-muted-foreground">
                               {body || "Bez opisa"}
                             </p>
-                            {isJunior && (meta.city || meta.track || meta.askSenior) ? (
+                            {isJunior &&
+                            (meta.city ||
+                              meta.track ||
+                              meta.askSenior ||
+                              isJuniorEditorialThread(conv.title)) ? (
                               <div className="mt-1 flex flex-wrap gap-1">
                                 {meta.city ? (
                                   <span className="rounded-full bg-sky-500/15 px-1.5 py-0.5 text-[10px] font-bold text-sky-700 dark:text-sky-300">
@@ -1340,6 +1282,11 @@ const Forum = () => {
                                 {meta.askSenior ? (
                                   <span className="rounded-full bg-amber-500/15 px-1.5 py-0.5 text-[10px] font-bold text-amber-800 dark:text-amber-200">
                                     3. razred
+                                  </span>
+                                ) : null}
+                                {isJuniorEditorialThread(conv.title) ? (
+                                  <span className="rounded-full bg-amber-500/20 px-1.5 py-0.5 text-[10px] font-bold text-amber-900 dark:text-amber-100">
+                                    Urednički primjer
                                   </span>
                                 ) : null}
                               </div>
@@ -1362,7 +1309,12 @@ const Forum = () => {
                                   month: "short",
                                 })}
                               </span>
-                              <span className="truncate">· {conv.creator || "Anonim"}</span>
+                              <span className="truncate">
+                                · {conv.creator || "Anonim"}
+                                {isJunior && isJuniorEditorialUsername(conv.creator)
+                                  ? " · urednički primjer"
+                                  : ""}
+                              </span>
                             </div>
                           </div>
                         </button>
@@ -1406,6 +1358,11 @@ const Forum = () => {
                           <h2 className="text-pretty text-base font-bold leading-tight text-foreground sm:text-lg">
                             {selectedConversation.title}
                           </h2>
+                          {isJunior && isJuniorEditorialThread(selectedConversation.title) ? (
+                            <p className="mt-1 rounded-lg border border-amber-500/30 bg-amber-500/10 px-2 py-1 text-[11px] font-semibold text-amber-900 dark:text-amber-100">
+                              Urednički primjer 3. razreda — imena poput Marta3Med nisu stvarni učenici.
+                            </p>
+                          ) : null}
                           <p className="mt-0.5 line-clamp-2 text-xs text-muted-foreground sm:text-sm">
                             {stripForumMeta(selectedConversation.description || "").body || "Bez opisa"}
                           </p>
@@ -1417,6 +1374,9 @@ const Forum = () => {
                             </span>
                             <span className="truncate">
                               Autor: {selectedConversation.creator || "Anonim"}
+                              {isJunior && isJuniorEditorialUsername(selectedConversation.creator)
+                                ? " · urednički primjer"
+                                : ""}
                             </span>
                           </div>
                         </div>
@@ -1467,6 +1427,11 @@ const Forum = () => {
                                 className={`mb-1 flex items-center gap-2 ${msg.userId === currentUser?.id ? "flex-row-reverse" : ""}`}
                               >
                                 <span className="text-xs font-semibold text-foreground">{msg.username}</span>
+                                {isJunior && isJuniorEditorialUsername(msg.username) ? (
+                                  <span className="rounded-full bg-amber-500/20 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide text-amber-900 dark:text-amber-100">
+                                    Primjer
+                                  </span>
+                                ) : null}
                                 <span className="text-[11px] text-muted-foreground">
                                   {msg.timestamp.toLocaleTimeString("hr-HR", {
                                     hour: "2-digit",

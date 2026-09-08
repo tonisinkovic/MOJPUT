@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   ArrowRight,
   Bookmark,
+  Calculator,
   Calendar,
   CheckCircle2,
   GraduationCap,
@@ -53,10 +54,11 @@ import careersJson from "@/data/career-quiz/careers-database.json";
 import type { CareerRow } from "@/lib/careerQuizEngine";
 import { labelForUserType, USER_TYPE_OPTIONS } from "@/components/profile/userTypes";
 import { getStoredExperience, onExperienceChange } from "@/lib/experience";
-import { loadJuniorSnapshot, loadShortlist } from "@/lib/juniorPath";
 import { cn } from "@/lib/utils";
 import JuniorProfilHome from "@/components/junior/JuniorProfilHome";
+import JuniorProfilQuiz from "@/components/junior/JuniorProfilQuiz";
 import JuniorSchoolCompare from "@/components/junior/JuniorSchoolCompare";
+import JuniorNumbersNote from "@/components/junior/JuniorNumbersNote";
 
 const interests = interestsJson.interests;
 const competencies = competenciesJson.competencies;
@@ -706,7 +708,9 @@ export default function ProfilDashboard() {
                     </>
                   )}
 
-                  {tab === "kviz" && (
+                  {tab === "kviz" && isJunior && <JuniorProfilQuiz />}
+
+                  {tab === "kviz" && !isJunior && (
                     <div className="space-y-6">
                       <Card className="shadow-md">
                         <CardHeader>
@@ -791,6 +795,37 @@ export default function ProfilDashboard() {
                               ))}
                             </ul>
                           </div>
+                        </CardContent>
+                      </Card>
+                    </div>
+                  )}
+
+                  {tab === "skole" && isJunior && (
+                    <div className="space-y-6">
+                      <Card className="shadow-md">
+                        <CardHeader>
+                          <CardTitle>Moje škole</CardTitle>
+                          <CardDescription>
+                            Zadnja lista, lanjski prag i bodovi — isto na mobitelu i kod kuće.
+                          </CardDescription>
+                        </CardHeader>
+                        <CardContent className="space-y-4">
+                          <JuniorSchoolCompare />
+                          <div className="flex flex-wrap gap-2">
+                            <Button asChild size="sm" className="rounded-xl">
+                              <Link to="/usporedi-skole">Usporedi škole</Link>
+                            </Button>
+                            <Button asChild size="sm" variant="outline" className="rounded-xl">
+                              <Link to="/kalkulator">
+                                <Calculator className="mr-1.5 h-4 w-4" />
+                                Bodovi
+                              </Link>
+                            </Button>
+                            <Button asChild size="sm" variant="ghost" className="rounded-xl">
+                              <Link to="/srednje-skole">Karta</Link>
+                            </Button>
+                          </div>
+                          <JuniorNumbersNote />
                         </CardContent>
                       </Card>
                     </div>
