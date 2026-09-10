@@ -563,8 +563,8 @@ export default function SrednjaKalkulator() {
             Kalkulator bodova
           </h1>
           <p className="mt-2 max-w-2xl text-pretty text-sm leading-relaxed text-muted-foreground sm:mt-3 sm:text-base">
-            Odaberi školu i program, unesi ocjene iz osnovne škole i saznaj prošlogodišnji prag bodova te
-            svoje šanse za upis. Karta i kalkulator nisu isti popis škola.
+            Odaberi školu i program, unesi ocjene iz osnovne škole i saznaj lanjski prag te svoje šanse za
+            upis.
           </p>
           <JuniorNumbersNote counts className="mt-3 max-w-2xl" />
           <JuniorNumbersNote className="mt-2 max-w-2xl" />

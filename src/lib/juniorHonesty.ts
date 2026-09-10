@@ -9,22 +9,22 @@ export const JUNIOR_CALCULATOR_SCHOOL_COUNT = kalkulatorSchools.length;
 export const JUNIOR_QUIZ_QUESTION_COUNT = juniorQuestions.length;
 
 export const JUNIOR_SCHOOL_COUNT_NOTE =
-  `Na karti je ${JUNIOR_MAP_SCHOOL_COUNT} škola (adrese). U kalkulatoru ${JUNIOR_CALCULATOR_SCHOOL_COUNT} škola s lanjskim pragom gdje ga imamo. Nisu isti popisi — ne izjednačujemo ih.`;
+  `Karta = adrese (${JUNIOR_MAP_SCHOOL_COUNT} škola). Kalkulator = lanjski prag (${JUNIOR_CALCULATOR_SCHOOL_COUNT} škola). Nisu isti popisi.`;
 
 export const JUNIOR_SCHOOL_COUNT_NOTE_SHORT =
   `Karta ${JUNIOR_MAP_SCHOOL_COUNT} · kalkulator ${JUNIOR_CALCULATOR_SCHOOL_COUNT} škola.`;
 
 export const JUNIOR_NUMBERS_NOTE =
-  "Udaljenost je zračna linija, ne put autobusom. Prag je lanjski minimum — sljedeće godine može biti drugačiji. Prije odluke potvrdi na školi.";
+  "Udaljenost je zračna linija, ne put autobusom. Ovo je prag od prošle godine — iduće može biti drugačije. Pitaj školu.";
 
 export const JUNIOR_NUMBERS_NOTE_SHORT =
-  "Zračna linija i lanjski min. Potvrdi na školi.";
+  "Zračna linija. Lanjski prag. Pitaj školu.";
 
 export const JUNIOR_CATALOG_NOTE =
-  `Kviz i vodič pokrivaju ${JUNIOR_PROGRAM_FAMILY_COUNT} obitelji programa (gimnazija, tehnička, umjetnička, obrt). To nije cijeli službeni katalog — škole imaju i uske smjerove. Ako točnog programa nema, gledaj najbližu obitelj.`;
+  `Kviz i vodič pokrivaju ${JUNIOR_PROGRAM_FAMILY_COUNT} vrsta smjerova (gimnazija, tehnička, umjetnička, obrt). To nije cijeli službeni popis — škole imaju i uske smjerove. Ako točnog nema, gledaj najbliži.`;
 
 export const JUNIOR_CATALOG_NOTE_SHORT =
-  `${JUNIOR_PROGRAM_FAMILY_COUNT} obitelji programa, ne cijeli katalog smjerova.`;
+  `${JUNIOR_PROGRAM_FAMILY_COUNT} vrsta smjerova, ne cijeli službeni popis.`;
 
 export const JUNIOR_MISSING_SCHOOL_NOTE =
   "Ove škole nema u našoj bazi kalkulatora — prag ne izmišljamo. Potvrdi na stranici škole ili potraži sličan program.";

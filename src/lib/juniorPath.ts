@@ -15,6 +15,7 @@ import type { NearbySchool } from "@/lib/juniorGeo";
 import type {
   HighSchoolProgram,
   HighSchoolProgramType,
+  JuniorProgramMatch,
   JuniorQuizAnalysis,
 } from "@/lib/juniorQuizEngine";
 
@@ -446,6 +447,80 @@ export function enrichNearbySchool(
     mapSchoolId: findMapSchoolId(school.name, school.city),
     cutoff: findCutoff(school.name, school.city, program),
   };
+}
+
+export type OfficialProgramExample = {
+  name: string;
+  schoolId: number;
+  programId: number;
+};
+
+const officialExampleCache = new Map<number, OfficialProgramExample | null>();
+
+export function officialProgramExample(program: HighSchoolProgram): OfficialProgramExample | null {
+  if (officialExampleCache.has(program.id)) return officialExampleCache.get(program.id) ?? null;
+
+  let best: { hit: OfficialProgramExample; score: number } | null = null;
+  for (const school of kalkulatorSchools) {
+    const prog = findKalkulatorProgram(school, program);
+    if (!prog) continue;
+    const pn = normalizeJuniorText(prog.name);
+    let score = 0;
+    for (const kw of program.matchKeywords.map(normalizeJuniorText).filter(Boolean)) {
+      if (pn === kw) score += kw.length + 12;
+      else if (pn.includes(kw)) score += kw.length + 4;
+    }
+    if (score > 0 && (!best || score > best.score)) {
+      best = { hit: { name: prog.name, schoolId: school.id, programId: prog.id }, score };
+    }
+  }
+  const value = best?.hit ?? null;
+  officialExampleCache.set(program.id, value);
+  return value;
+}
+
+export type QuizResultSchool = {
+  school: EnrichedNearbySchool;
+  program: HighSchoolProgram;
+  matchPercentage: number;
+};
+
+export function pickQuizResultSchools(
+  recs: JuniorProgramMatch[],
+  nearbyByProgram: Map<number, NearbySchool[]> | null,
+  limit = 3,
+): QuizResultSchool[] {
+  const out: QuizResultSchool[] = [];
+  const seen = new Set<string>();
+
+  const push = (raw: NearbySchool, rec: JuniorProgramMatch) => {
+    const key = nameCityKey(raw.name, raw.city);
+    if (seen.has(key)) return;
+    seen.add(key);
+    out.push({
+      school: enrichNearbySchool(raw, rec.program),
+      program: rec.program,
+      matchPercentage: rec.matchPercentage,
+    });
+  };
+
+  if (nearbyByProgram) {
+    for (const rec of recs) {
+      for (const s of nearbyByProgram.get(rec.program.id) ?? []) {
+        push(s, rec);
+        if (out.length >= limit) return out;
+      }
+    }
+  }
+
+  for (const rec of recs) {
+    for (const s of rec.availability.exampleSchools) {
+      push({ name: s.name, city: s.city, distanceKm: 0 }, rec);
+      if (out.length >= limit) return out;
+    }
+  }
+
+  return out;
 }
 
 export function mapSchoolHref(mapSchoolId?: string | null, name?: string, city?: string): string {

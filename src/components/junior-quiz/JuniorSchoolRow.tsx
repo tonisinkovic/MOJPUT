@@ -81,17 +81,22 @@ export default function JuniorSchoolRow({
             <span className="font-normal text-muted-foreground">({school.city})</span>
           </p>
           <p className="mt-0.5 text-xs text-muted-foreground">
-            ~{school.distanceKm} km
-            {school.cutoff?.min != null ? (
-              <>
-                {" "}
-                · prag {school.cutoff.min.toLocaleString("hr-HR")}
-                {school.cutoff.year ? ` (${school.cutoff.year})` : ""}
-              </>
-            ) : (
-              " · prag nije u bazi"
-            )}
+            {[
+              school.distanceKm > 0 ? `~${school.distanceKm} km` : null,
+              school.cutoff?.min != null
+                ? `lanjski prag ${school.cutoff.min.toLocaleString("hr-HR")}${
+                    school.cutoff.year ? ` (${school.cutoff.year})` : ""
+                  }`
+                : "prag nije u bazi",
+            ]
+              .filter(Boolean)
+              .join(" · ")}
           </p>
+          {school.cutoff?.programName ? (
+            <p className="mt-0.5 text-[11px] text-muted-foreground">
+              Službeni smjer: <span className="font-semibold text-foreground">{school.cutoff.programName}</span>
+            </p>
+          ) : null}
           {school.cutoff?.min == null ? (
             <p className="mt-1 text-[11px] leading-relaxed text-amber-800 dark:text-amber-200">
               {school.mapSchoolId || school.cutoff ? JUNIOR_MISSING_CUTOFF_NOTE : JUNIOR_MISSING_SCHOOL_NOTE}

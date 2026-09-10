@@ -16,7 +16,6 @@ import {
   X,
   Image as ImageIcon,
   FileText,
-  School,
 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -28,7 +27,6 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { facultyInstitutions } from "@/data/faculties";
-import { highSchools } from "@/data/highSchools";
 import { resolveExperienceMode } from "@/lib/experience";
 import { answerJuniorFromBase } from "@/lib/juniorChat";
 import { API_BASE_URL } from "@/config/apiBase";
@@ -255,8 +253,8 @@ function buildUserSearchQuery(text: string, attachments: ChatAttachment[] | unde
 const AI_NAME = "Dražen";
 const AI_WELCOME_SENIOR = `Bok! Ja sam ${AI_NAME} 👋
 Pomažem ti sa svim pitanjima o fakultetima u Hrvatskoj. Što te zanima?`;
-const AI_WELCOME_JUNIOR = `Bok! Ja sam ${AI_NAME}.
-Nisam AI savjetnik za karijeru. Odgovaram iz baze: škole, smjerovi, lanjski prag gdje ga imamo i upisni rokovi. Ako toga nema, reći ću da ne znam. Prijava nije potrebna.`;
+const AI_WELCOME_JUNIOR = `Bok! Ja sam ${AI_NAME} 👋
+Pomažem ti s pitanjima o srednjim školama u Hrvatskoj. Što te zanima?`;
 
 function buildLocalChatReplySenior(question: string): string {
   const q = question.toLowerCase();
@@ -319,7 +317,7 @@ const Chatbot = () => {
   }, [aiWelcome]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [authLoading, setAuthLoading] = useState(() => audience !== "junior");
+  const [authLoading, setAuthLoading] = useState(true);
   const [user, setUser] = useState<AuthUser | null>(null);
   const [quota, setQuota] = useState<ChatQuotaState | null>(null);
   const [quotaLoading, setQuotaLoading] = useState(false);
@@ -385,10 +383,6 @@ const Chatbot = () => {
   }, []);
 
   const loadAuth = useCallback(async () => {
-    if (isJunior) {
-      setAuthLoading(false);
-      return;
-    }
     setAuthLoading(true);
     try {
       const res = await authMe();
@@ -408,7 +402,7 @@ const Chatbot = () => {
     } finally {
       setAuthLoading(false);
     }
-  }, [isJunior, refreshQuota]);
+  }, [refreshQuota]);
 
   useEffect(() => {
     void loadAuth();
@@ -420,16 +414,14 @@ const Chatbot = () => {
     return () => window.removeEventListener("mojput-auth-changed", onAuth);
   }, [loadAuth]);
 
-  /** Junior ne ide na OpenAI — limit i prijava se ne primjenjuju. */
   const atDailyLimit = useMemo(
     () =>
-      !isJunior &&
       Boolean(user) &&
       !STATIC_NO_API &&
       quota != null &&
       quota.authenticated === true &&
       (quota.remaining ?? 0) <= 0,
-    [isJunior, user, quota],
+    [user, quota],
   );
 
   /** Odbrojavanje do ponoći (Europe/Zagreb) kad je limit iscrpljen — format 16h 54m 33s. */
@@ -452,8 +444,7 @@ const Chatbot = () => {
   }, [atDailyLimit, quota?.resetsAt]);
 
   const canSendChat =
-    !isLoading &&
-    (isJunior || STATIC_NO_API || (Boolean(user) && !authLoading && !atDailyLimit));
+    !isLoading && (STATIC_NO_API || (Boolean(user) && !authLoading && !atDailyLimit));
 
   /** Prilog se može odabrati i bez prijave (prikaz u traci); slanje i dalje zahtijeva prijavu. */
   const canPickAttachments = !isLoading;
@@ -478,11 +469,11 @@ const Chatbot = () => {
     const attachments = [...pendingAttachments];
     if ((!content && attachments.length === 0) || isLoading) return;
 
-    if (!isJunior && !user && !STATIC_NO_API) {
+    if (!user && !STATIC_NO_API) {
       toast.error("Za slanje poruka i priloga (slike, dokumenti) moraš biti prijavljen.", { duration: 6000 });
       return;
     }
-    if (!isJunior && atDailyLimit) {
+    if (atDailyLimit) {
       setPremiumOpen(true);
       return;
     }
@@ -511,18 +502,6 @@ const Chatbot = () => {
 
     setMessages((m) => [...m, { role: "assistant", content: "" }]);
     const assistantIdx = conversationHistory.length;
-
-    // Junior: uvijek samo lokalna baza — bez OpenAI eseja.
-    if (isJunior) {
-      const localReply = answerJuniorFromBase(buildUserSearchQuery(content, userMsg.attachments));
-      setMessages((m) => {
-        const next = [...m];
-        next[assistantIdx] = { role: "assistant", content: localReply };
-        return next;
-      });
-      setIsLoading(false);
-      return;
-    }
 
     // Static hosting fallback: when backend is unavailable, answer from local dataset.
     const shouldUseLocalFallback = !API_BASE && !import.meta.env.DEV;
@@ -717,15 +696,14 @@ const Chatbot = () => {
   const attachmentsStillLoading = pendingAttachments.some((a) => a.loading);
   const hasOutgoingContent = Boolean(input.trim() || pendingAttachments.length > 0);
 
-  /** Pošalji bez blokiranja prijavom; Junior slobodno, Senior čeka auth i limit. */
   const canClickSend =
     !isLoading &&
-    (isJunior || !authLoading) &&
+    !authLoading &&
     hasOutgoingContent &&
     !attachmentsStillLoading &&
-    (isJunior || !(Boolean(user) && atDailyLimit));
+    !(Boolean(user) && atDailyLimit);
 
-  const showLoginGate = !isJunior && !authLoading && !user && !STATIC_NO_API;
+  const showLoginGate = !authLoading && !user && !STATIC_NO_API;
 
   return (
     <Layout>
@@ -792,30 +770,26 @@ const Chatbot = () => {
             <div className="chat-container">
               <div className="chat-header">
                 <div className="chat-avatar">
-                  {isJunior ? (
-                    <School className="w-5 h-5 text-primary-foreground" />
-                  ) : (
-                    <Bot className="w-5 h-5 text-primary-foreground" />
-                  )}
+                  <Bot className="w-5 h-5 text-primary-foreground" />
                 </div>
                 <div className="chat-header-title min-w-0 flex-1">
                   <h2 className="font-semibold text-base sm:text-[1.05rem]">
-                    {isJunior ? "Baza škola" : AI_NAME}
+                    {AI_NAME}
                   </h2>
                   <p className="chat-status">
                     <span className={cn("chat-status-dot", (atDailyLimit || showLoginGate) && "chat-status-dot--muted")} />
-                    {authLoading && !isJunior
+                    {authLoading
                       ? "Učitavanje…"
                       : STATIC_NO_API
                         ? "Lokalni način (bez API)"
                         : showLoginGate
                           ? "Samo za prijavljene korisnike"
                           : isJunior
-                            ? "Samo baza škola — bez prijave"
+                            ? "Online · srednje škole + OpenAI"
                             : "Online · baza + OpenAI"}
                   </p>
                 </div>
-                {user && !isJunior && !STATIC_NO_API && !authLoading && (quotaLoading || quotaError || quota?.authenticated) && (
+                {user && !STATIC_NO_API && !authLoading && (quotaLoading || quotaError || quota?.authenticated) && (
                   <div
                     className={`chat-quota-pill ${atDailyLimit ? "chat-quota-pill--limit" : ""}`}
                     role="status"
@@ -903,12 +877,12 @@ const Chatbot = () => {
                     className="chat-badge"
                     title={
                       isJunior
-                        ? "Odgovori samo iz baze škola — bez OpenAI"
+                        ? "Podaci o srednjim školama u promptu; tekst generira OpenAI"
                         : "Podaci iz baze u promptu; tekst generira OpenAI"
                     }
                   >
                     <Sparkles className="h-3 w-3" aria-hidden />
-                    {isJunior ? "Samo baza" : "Baza + AI"}
+                    {isJunior ? "Škole + AI" : "Baza + AI"}
                   </div>
                 </div>
               </div>
@@ -979,7 +953,7 @@ const Chatbot = () => {
                             !msg.content.includes("Greška pri") && (
                             <div className="chat-source-tag">
                               {isJunior
-                                ? "📚 Samo naša baza: škole, smjerovi, pragovi, rokovi — bez izmišljanja"
+                                ? "📚 Podaci o školama u kontekstu · ✨ tekst (OpenAI) — prag pitaj školu"
                                 : "📚 Podaci iz baze u kontekstu · ✨ tekst (OpenAI) — provjeri službene uvjete na fakultetu"}
                             </div>
                           )}
@@ -1096,7 +1070,7 @@ const Chatbot = () => {
                       placeholder={
                         showLoginGate
                           ? "Prijavi se za slanje poruka…"
-                          : !isJunior && authLoading
+                          : authLoading
                             ? "Učitavanje…"
                             : atDailyLimit
                               ? "Dnevni limit poruka (12) iscrpljen…"
@@ -1108,7 +1082,7 @@ const Chatbot = () => {
                       }
                       rows={1}
                       className="chat-textarea"
-                      disabled={isLoading || (!isJunior && (authLoading || (Boolean(user) && atDailyLimit)))}
+                      disabled={isLoading || authLoading || (Boolean(user) && atDailyLimit)}
                     />
                     <input
                       ref={fileInputRef}
@@ -1143,7 +1117,7 @@ const Chatbot = () => {
                 </div>
                 <p className="chat-footer-hint">
                   {isJunior
-                    ? "Enter za slanje · nije AI savjetnik · ako škole nema u bazi, kaže da ne zna"
+                    ? "Enter za slanje · OpenAI + baza škola · ako škole nema u bazi, kaže da ne zna"
                     : "Enter za slanje · Shift+Enter novi red · + za prilog datoteka · razgovorni odgovori, podaci iz baze kad odgovaraju"}
                 </p>
               </div>

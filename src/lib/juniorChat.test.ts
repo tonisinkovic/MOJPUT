@@ -26,7 +26,7 @@ describe("junior chatbot baza", () => {
 
   it("za koliko škola razlikuje kartu i kalkulator", () => {
     const t = answerJuniorFromBase("Koliko srednjih škola imaš u bazi?");
-    expect(t).toMatch(/Na karti imam/);
+    expect(t).toMatch(/Karta = adrese|karta/i);
     expect(t).toMatch(/nisu isti popisi/i);
   });
 

@@ -72,8 +72,8 @@
     "description": "Više stranih jezika i književnosti. Za one koji vole riječi, kulture i komunikaciju.",
     "afterSchool": "Matura i fakulteti — jezici, pravo, novinarstvo, turizam, diplomacija…",
     "interestWeights": {
-      "ljudi": 2,
-      "kreativa": 1
+      "jezici": 3,
+      "ljudi": 1
     },
     "subjectWeights": {
       "jezici": 3,
@@ -366,7 +366,7 @@
     "description": "Petogodišnji program njege i brige za pacijente s puno prakse u bolnici. Human i tražen posao.",
     "afterSchool": "Odmah posao u zdravstvu ili matura i studij sestrinstva/medicine.",
     "interestWeights": {
-      "ljudi": 3,
+      "ljudi": 2,
       "prakticno": 1
     },
     "subjectWeights": {
@@ -376,7 +376,7 @@
     "academicLoad": 2,
     "boostSignals": {
       "health_medicine": 3,
-      "helping_people": 1
+      "helping_people": 2
     },
     "requiresSignals": {
       "health_medicine": 2
@@ -444,7 +444,9 @@
       "health_medicine": 2,
       "sport_active": 1
     },
-    "requiresSignals": {},
+    "requiresSignals": {
+      "health_medicine": 3
+    },
     "matchKeywords": [
       "fizioterapeutsk"
     ],
@@ -627,7 +629,8 @@
     "afterSchool": "Posao u turizmu ili matura i studij turizma/ekonomije.",
     "interestWeights": {
       "ljudi": 2,
-      "organizacija": 2
+      "jezici": 2,
+      "organizacija": 1
     },
     "subjectWeights": {
       "jezici": 3,
@@ -919,6 +922,7 @@
     "afterSchool": "Posao u ugostiteljstvu i turizmu, sezone i napredovanje.",
     "interestWeights": {
       "ljudi": 3,
+      "jezici": 1,
       "organizacija": 1
     },
     "subjectWeights": {

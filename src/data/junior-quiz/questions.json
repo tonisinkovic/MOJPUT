@@ -28,7 +28,7 @@
     {
       "id": 2,
       "section": "interests",
-      "category": "istrazivanje",
+      "category": "prakticno",
       "question": "Zanima te kako iznutra rade računala, aplikacije ili videoigre?",
       "hint": "Tehnologija i programiranje",
       "signalKey": "tech_computers"
@@ -129,7 +129,7 @@
     {
       "id": 15,
       "section": "interests",
-      "category": "kreativa",
+      "category": "prakticno",
       "question": "Voliš li kuhati ili raditi kolače?",
       "hint": "Kuhinja i gastronomija",
       "signalKey": "cooking_food"
@@ -160,7 +160,7 @@
     {
       "id": 19,
       "section": "interests",
-      "category": "ljudi",
+      "category": "jezici",
       "question": "Privlače te strani jezici, druge kulture i putovanja?",
       "hint": "Jezici i svijet",
       "signalKey": "languages_travel"
@@ -307,7 +307,8 @@
     "kreativa": "Kreativnost i stvaranje",
     "ljudi": "Rad s ljudima",
     "organizacija": "Organizacija i vođenje",
-    "red": "Red i preciznost"
+    "red": "Red i preciznost",
+    "jezici": "Jezici i svijet"
   },
   "subjectCategories": {
     "matematika": "Matematika",

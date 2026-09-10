@@ -2,7 +2,7 @@
  * Junior kviz engine — usmjeravanje učenika 8. razreda prema srednjim školama.
  *
  * Mjeri tri dimenzije:
- *  1. Interesi (6 kategorija, prilagođeni RIASEC za osnovnoškolce)
+ *  1. Interesi (RIASEC + jezici, prilagođeni osnovnoškolcima)
  *  2. Školski predmeti (samoprocjena: "ide mi i volim")
  *  3. Stil učenja i rada (akademski vs. praktični put)
  *
@@ -27,7 +27,8 @@ export type JuniorInterestCategory =
   | "kreativa"
   | "ljudi"
   | "organizacija"
-  | "red";
+  | "red"
+  | "jezici";
 
 export type JuniorSubjectCategory =
   | "matematika"
@@ -173,7 +174,7 @@ export const juniorSubjectLabels = quizData.subjectCategories as Record<
 >;
 export const highSchoolPrograms = programsData as HighSchoolProgram[];
 
-/** Obitelji programa u kvizu — nije službeni katalog svih smjerova. */
+/** Broj vrsta smjerova u kvizu — nije cijeli službeni popis. */
 export const JUNIOR_PROGRAM_FAMILY_COUNT = highSchoolPrograms.length;
 
 export const JUNIOR_TOP_RECOMMENDATIONS = 8;
@@ -240,6 +241,7 @@ const INTEREST_KEYS: readonly JuniorInterestCategory[] = [
   "ljudi",
   "organizacija",
   "red",
+  "jezici",
 ];
 
 const SUBJECT_KEYS: readonly JuniorSubjectCategory[] = [
@@ -382,8 +384,8 @@ const workstyleScore = (
 
 export const computeJuniorPathway = (answers: JuniorAnswers): JuniorPathway => {
   const grouped = collectByCategory(answers, "workstyle");
-  const workstyleAcademic = workstyleScore(grouped, ["teorija", "faks", "disciplina", "sjedenje"]);
-  const workstylePractical = workstyleScore(grouped, ["zanat", "praksa"]);
+  const workstyleAcademic = workstyleScore(grouped, ["teorija", "faks", "disciplina", "sjedenje", "upornost"]);
+  const workstylePractical = workstyleScore(grouped, ["zanat", "praksa", "struktura"]);
 
   // Istraživanja (npr. švicarska kohorta, Vocations and Learning 2020) pokazuju da
   // istraživački interesi predviđaju izbor općeg obrazovanja, a praktični izbor

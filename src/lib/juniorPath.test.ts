@@ -9,6 +9,7 @@ import {
   findMapSchoolId,
   gradeDraftIsUsable,
   nextJuniorDeadline,
+  officialProgramExample,
   shortlistItemKey,
 } from "@/lib/juniorPath";
 
@@ -27,6 +28,15 @@ describe("juniorPath matching", () => {
   it("povezuje školu s kartom po imenu i gradu", () => {
     const id = findMapSchoolId("Gimnazija Bjelovar", "Bjelovar");
     expect(id).toMatch(/^ss-/);
+  });
+
+  it("za glazbenu pokazuje službeni naziv iz kalkulatora", () => {
+    const program = highSchoolPrograms.find((p) => /glazben/i.test(p.name));
+    expect(program).toBeTruthy();
+    const official = officialProgramExample(program!);
+    expect(official?.name.toLowerCase()).toMatch(/glazbenik/);
+    expect(official?.schoolId).toEqual(expect.any(Number));
+    expect(official?.programId).toEqual(expect.any(Number));
   });
 
   it("shortlist ključ je stabilan bez obzira na veličina slova", () => {

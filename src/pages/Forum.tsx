@@ -975,7 +975,7 @@ const Forum = () => {
               </h1>
               <p className="mt-1.5 max-w-2xl text-pretty text-sm leading-relaxed text-muted-foreground sm:text-base">
                 {isJunior
-                  ? "Pitaj o smjeru i upisu. Pet razgovora s trećim razredom uredili smo kao primjer — nisu stvarni korisnički računi."
+                  ? "Pitaj o smjeru i upisu. Filter „3. razred srednje” su primjeri koje smo napisali — nisu stvarni učenici."
                   : "Razmijeni iskustva i postavi pitanja o maturi, fakultetima i studentskom životu — sve jasno poredano, brzo za pronalazak."}
               </p>
 
@@ -1176,7 +1176,7 @@ const Forum = () => {
                           : "border-border bg-background",
                       )}
                     >
-                      Pitaj 3. razred
+                      Pitaj 3. razred srednje
                     </button>
                     <select
                       value={forumCity}
@@ -1209,8 +1209,8 @@ const Forum = () => {
               <div className="min-h-0 flex-1 md:overflow-y-auto">
                 {isJunior ? (
                   <p className="mx-2 mt-2 rounded-xl border border-amber-500/30 bg-amber-500/[0.08] px-3 py-2 text-[11px] leading-relaxed text-muted-foreground">
-                    Odgovori trećeg razreda s oznakom „Urednički primjer” nisu stvarni korisnici — uredili smo ih
-                    da osmaci vide kako izgleda pitanje. Svoje pitanje i dalje možeš postaviti.
+                    Odgovori označenih „Urednički primjer” nisu stvarni učenici 3. razreda srednje — napisali smo ih
+                    da vidiš kako izgleda pitanje. Svoje pitanje i dalje možeš postaviti.
                   </p>
                 ) : null}
                 {loadingConversations ? (
@@ -1281,7 +1281,7 @@ const Forum = () => {
                                 ) : null}
                                 {meta.askSenior ? (
                                   <span className="rounded-full bg-amber-500/15 px-1.5 py-0.5 text-[10px] font-bold text-amber-800 dark:text-amber-200">
-                                    3. razred
+                                    3. razred srednje
                                   </span>
                                 ) : null}
                                 {isJuniorEditorialThread(conv.title) ? (
@@ -1360,7 +1360,7 @@ const Forum = () => {
                           </h2>
                           {isJunior && isJuniorEditorialThread(selectedConversation.title) ? (
                             <p className="mt-1 rounded-lg border border-amber-500/30 bg-amber-500/10 px-2 py-1 text-[11px] font-semibold text-amber-900 dark:text-amber-100">
-                              Urednički primjer 3. razreda — imena poput Marta3Med nisu stvarni učenici.
+                              Urednički primjer — 3. razred srednje. Imena poput Marta3Med nisu stvarni učenici; napisali smo ih mi.
                             </p>
                           ) : null}
                           <p className="mt-0.5 line-clamp-2 text-xs text-muted-foreground sm:text-sm">
@@ -1704,7 +1704,7 @@ const Forum = () => {
                           onChange={(e) => setNewConvAsk(e.target.checked)}
                           className="h-4 w-4 accent-primary"
                         />
-                        Pitaj treći razred
+                        Pitaj 3. razred srednje
                       </label>
                     </div>
                   ) : null}

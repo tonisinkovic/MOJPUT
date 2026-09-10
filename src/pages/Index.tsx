@@ -6,12 +6,10 @@ import Layout from "@/components/Layout";
 import AnimatedStatsGrid, { type StatItem } from "@/components/AnimatedStatsGrid";
 import { scrollDocumentToTopInstant } from "@/components/ScrollToTop";
 import {
-  JUNIOR_CALCULATOR_SCHOOL_COUNT,
   JUNIOR_MAP_SCHOOL_COUNT,
   JUNIOR_QUIZ_QUESTION_COUNT,
 } from "@/lib/juniorHonesty";
 import JuniorNumbersNote from "@/components/junior/JuniorNumbersNote";
-import { JUNIOR_PROGRAM_FAMILY_COUNT } from "@/lib/juniorQuizEngine";
 import {
   getPreferredExperience,
   getStoredExperience,
@@ -240,14 +238,6 @@ const seniorStats: StatItem[] = [
   { value: 600, suffix: "+", label: "Korisnika", icon: <Users className="w-5 h-5" /> },
   { value: 1, label: "Video lekcija", icon: <Video className="w-5 h-5" /> },
   { value: 95, suffix: "%", label: "Zadovoljstvo", icon: <Award className="w-5 h-5" /> },
-];
-
-/** Brojke iz baze karte, kalkulatora i kviza — bez izmišljenih korisnika. */
-const juniorStats: StatItem[] = [
-  { value: JUNIOR_MAP_SCHOOL_COUNT, label: "Škola na karti", icon: <GraduationCap className="w-5 h-5" /> },
-  { value: JUNIOR_CALCULATOR_SCHOOL_COUNT, label: "Škola u kalkulatoru", icon: <Calculator className="w-5 h-5" /> },
-  { value: JUNIOR_PROGRAM_FAMILY_COUNT, label: "Obitelji programa", icon: <Target className="w-5 h-5" /> },
-  { value: JUNIOR_QUIZ_QUESTION_COUNT, label: "Pitanja u kvizu", icon: <Sparkles className="w-5 h-5" /> },
 ];
 
 type MojPutEntryIntroProps = {
@@ -1610,7 +1600,6 @@ const Index = () => {
   }, [showEntryIntro]);
 
   const isJunior = selectedExperience === "junior";
-  const stats = isJunior ? juniorStats : seniorStats;
   const mapPath = isJunior ? "/srednje-skole" : "/karta";
 
   const quickActions = isJunior
@@ -1674,10 +1663,10 @@ const Index = () => {
           if (f.path === "/chatbot") {
             return {
               ...f,
-              title: "Baza škola",
+              title: "Chatbot Dražen",
               path: "/chatbot?experience=junior",
               description:
-                "Pitaj Dražena o školama, smjerovima i lanjskom pragu. Odgovara iz baze, ne izmišlja — bez prijave.",
+                "Pitaj o školama i smjerovima. Odgovara kao AI, s podacima iz naše baze. Treba prijavu.",
             };
           }
           if (f.path === "/razred") {
@@ -1866,10 +1855,9 @@ const Index = () => {
                 {isJunior ? (
                   <>
                     <span className="hidden sm:inline">
-                      MojPut ti pomaže istražiti srednje škole, otkriti svoje interese i donijeti informiranu odluku o
-                      sljedećem koraku — sve na jednom mjestu.
+                      Kviz kaže što ti leži. Karta pokaže škole. Kalkulator kaže lanjski prag.
                     </span>
-                    <span className="sm:hidden">Istraži srednje škole, otkrij interese i donesi pravu odluku.</span>
+                    <span className="sm:hidden">Kviz, karta i kalkulator — sve za srednju.</span>
                   </>
                 ) : (
                   <>
@@ -2026,7 +2014,7 @@ const Index = () => {
                 <span className="inline-flex items-center gap-1.5 rounded-full border border-border/70 bg-background/75 backdrop-blur-sm px-2.5 sm:px-3 py-1 sm:py-1.5 text-[10.5px] sm:text-[11px] font-semibold text-muted-foreground shadow-soft transition-all hover:border-primary/30 hover:text-foreground whitespace-nowrap">
                   <ShieldCheck className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-primary" />
                   {isJunior
-                    ? "Bez računa: kviz, karta, kalkulator, baza škola"
+                    ? "Bez računa: kviz, karta, kalkulator"
                     : "Bez računa: kviz, karta, kalkulator"}
                 </span>
                 <span className="inline-flex items-center gap-1.5 rounded-full border border-border/70 bg-background/75 backdrop-blur-sm px-2.5 sm:px-3 py-1 sm:py-1.5 text-[10.5px] sm:text-[11px] font-semibold text-muted-foreground shadow-soft transition-all hover:border-primary/30 hover:text-foreground whitespace-nowrap">
@@ -2148,10 +2136,10 @@ const Index = () => {
                     </span>
                     <div>
                       <div className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
-                        {isJunior ? "Obitelji programa" : "Zadovoljstvo"}
+                        {isJunior ? "Kviz" : "Zadovoljstvo"}
                       </div>
                       <div className="text-lg font-extrabold tracking-tight text-foreground leading-none">
-                        {isJunior ? String(JUNIOR_PROGRAM_FAMILY_COUNT) : "95%"}
+                        {isJunior ? `${JUNIOR_QUIZ_QUESTION_COUNT} pitanja` : "95%"}
                       </div>
                     </div>
                   </div>
@@ -2246,10 +2234,13 @@ const Index = () => {
           viewport={{ once: false, amount: 0.35 }}
           transition={{ duration: 0.65, ease: [0.22, 1, 0.36, 1] }}
         >
-          <AnimatedStatsGrid stats={stats} />
           {isJunior ? (
-            <JuniorNumbersNote counts className="mx-auto mt-4 max-w-2xl justify-center" />
-          ) : null}
+            <div className="mx-auto max-w-2xl text-center">
+              <JuniorNumbersNote counts className="justify-center" />
+            </div>
+          ) : (
+            <AnimatedStatsGrid stats={seniorStats} />
+          )}
         </motion.div>
       </motion.section>
 

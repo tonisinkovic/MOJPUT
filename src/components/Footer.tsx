@@ -52,7 +52,7 @@ const Footer = () => {
     if (link.path === "/karta") return { label: "Karta srednjih škola", path: "/srednje-skole" };
     if (link.path === "/forum") return { label: "Forum", path: "/forum?experience=junior" };
     if (link.path === "/roditelji") return { label: "Roditeljski kutak", path: "/roditelji?experience=junior" };
-    if (link.path === "/chatbot") return { label: "Baza škola", path: "/chatbot?experience=junior" };
+    if (link.path === "/chatbot") return { label: "Chatbot", path: "/chatbot?experience=junior" };
     if (link.path === "/samoprocjena") return { label: "Programi", path: "/programi" };
     if (link.path === "/kalkulator-fakulteti") return { label: "Kalkulator bodova", path: "/kalkulator" };
     return link;

@@ -17,15 +17,18 @@ import {
 } from "@/lib/juniorThirdYearForum";
 
 describe("junior honesty copy", () => {
-  it("kaže da 33 obitelji nisu cijeli katalog", () => {
+  it("kaže da 33 vrste smjerova nisu cijeli popis", () => {
     expect(JUNIOR_PROGRAM_FAMILY_COUNT).toBe(33);
     expect(JUNIOR_CATALOG_NOTE).toMatch(/33/);
-    expect(JUNIOR_CATALOG_NOTE).toMatch(/nije cijeli službeni katalog/i);
+    expect(JUNIOR_CATALOG_NOTE).toMatch(/nije cijeli službeni popis/i);
+    expect(JUNIOR_CATALOG_NOTE).not.toMatch(/obitelj/i);
   });
 
   it("razlikuje broj škola na karti i u kalkulatoru", () => {
     expect(JUNIOR_MAP_SCHOOL_COUNT).toBe(highSchools.length);
     expect(JUNIOR_CALCULATOR_SCHOOL_COUNT).toBeGreaterThan(JUNIOR_MAP_SCHOOL_COUNT);
+    expect(JUNIOR_SCHOOL_COUNT_NOTE).toMatch(/karta/i);
+    expect(JUNIOR_SCHOOL_COUNT_NOTE).toMatch(/kalkulator/i);
     expect(JUNIOR_SCHOOL_COUNT_NOTE).toMatch(String(JUNIOR_MAP_SCHOOL_COUNT));
     expect(JUNIOR_SCHOOL_COUNT_NOTE).toMatch(String(JUNIOR_CALCULATOR_SCHOOL_COUNT));
     expect(JUNIOR_SCHOOL_COUNT_NOTE).toMatch(/nisu isti popisi/i);

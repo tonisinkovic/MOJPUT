@@ -41,9 +41,12 @@ import {
   type NearbyAnalysis,
 } from "@/lib/juniorGeo";
 import {
+  calculatorHref,
   effectiveJuniorPoints,
   enrichNearbySchool,
+  officialProgramExample,
   onJuniorPointsChange,
+  pickQuizResultSchools,
   saveJuniorSnapshot,
 } from "@/lib/juniorPath";
 import { findPlanB } from "@/lib/juniorPlanB";
@@ -147,6 +150,14 @@ const JuniorQuizFlow = () => {
   const nearby: NearbyAnalysis | null = useMemo(
     () => (analysis && city ? analyzeNearby(analysis.recommendations, city) : null),
     [analysis, city]
+  );
+
+  const resultSchools = useMemo(
+    () =>
+      analysis
+        ? pickQuizResultSchools(analysis.recommendations, nearby?.byProgram ?? null, 3)
+        : [],
+    [analysis, nearby],
   );
 
   useEffect(() => {
@@ -520,6 +531,34 @@ const JuniorQuizFlow = () => {
 
         <JuniorPointsBox />
 
+        {resultSchools.length > 0 ? (
+          <div className="rounded-3xl border border-primary/25 bg-primary/5 p-5 shadow-lg sm:p-6">
+            <div className="flex items-center gap-2">
+              <School className="h-5 w-5 text-primary" />
+              <h3 className="text-lg font-bold">Tvoje 3 škole</h3>
+            </div>
+            <p className="mt-1.5 text-sm text-muted-foreground">
+              {city
+                ? `Blizu ${city} — odmah izračunaj šansu za tu školu.`
+                : "Primjeri iz baze. Upiši grad gore da vidiš škole u tvojoj blizini."}
+            </p>
+            <ul className="mt-3 space-y-2">
+              {resultSchools.map((item) => (
+                <JuniorSchoolRow
+                  key={`${item.school.name}-${item.school.city}-${item.program.id}`}
+                  school={item.school}
+                  program={item.program}
+                  matchPercentage={item.matchPercentage}
+                />
+              ))}
+            </ul>
+            <p className="mt-3 text-xs leading-relaxed text-muted-foreground">
+              Ovo je prag od prošle godine. Iduće može biti drugačije. Pitaj školu.
+            </p>
+            <JuniorNumbersNote compact className="mt-2" />
+          </div>
+        ) : null}
+
         {/* Recommendations */}
         <div>
           <div className="mb-3 flex items-center gap-2">
@@ -579,6 +618,23 @@ const JuniorQuizFlow = () => {
                             {rec.availability.totalSchools === 1 ? "škola" : "škola"} u HR
                           </span>
                         </div>
+                        {(() => {
+                          const official = officialProgramExample(rec.program);
+                          if (!official) return null;
+                          return (
+                            <p className="mt-1.5 text-xs leading-relaxed text-muted-foreground">
+                              U upisu npr.{" "}
+                              <span className="font-semibold text-foreground">{official.name}</span>
+                              {" · "}
+                              <Link
+                                to={calculatorHref(official.schoolId, official.programId)}
+                                className="font-semibold text-primary underline-offset-2 hover:underline"
+                              >
+                                kalkulator
+                              </Link>
+                            </p>
+                          );
+                        })()}
                       </div>
                     </div>
                     <div className="text-right">
