@@ -141,8 +141,8 @@ const Privatnost = () => {
               <li>poboljšao korisničko iskustvo</li>
             </ul>
             <p>
-              Analitiku obrađuje Google Ireland Limited / Google LLC. Korištenjem stranice pristajete na upotrebu
-              kolačića.
+              Analitiku obrađuje Google Ireland Limited / Google LLC. Na dnu stranice pita te banner: možeš
+              prihvatiti analitiku ili ostaviti samo nužne kolačiće (prijava, postavke). Oglase ne koristimo.
             </p>
           </SectionBlock>
 

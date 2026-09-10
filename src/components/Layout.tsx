@@ -4,6 +4,7 @@ import Navbar from "./Navbar";
 import Footer from "./Footer";
 import SiteFeedback from "./SiteFeedback";
 import MojPutPremiumTeaser from "./MojPutPremiumTeaser";
+import CookieConsent from "./CookieConsent";
 import { Bot, School } from "lucide-react";
 import { getStoredExperience, onExperienceChange } from "@/lib/experience";
 
@@ -35,6 +36,7 @@ const Layout = ({ children, hideFooter }: LayoutProps) => {
       )}
 
       {isJunior ? null : <MojPutPremiumTeaser />}
+      <CookieConsent />
 
       <div
         className="fixed z-50 right-4 sm:right-6"

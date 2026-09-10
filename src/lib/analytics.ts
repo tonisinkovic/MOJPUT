@@ -30,8 +30,9 @@ declare global {
 /** Isti ID kao u index.html — javni GA4 ključ, nije tajna. */
 const DEFAULT_MEASUREMENT_ID = "G-9N7061Q2JN";
 const measurementId = import.meta.env.VITE_GA_MEASUREMENT_ID || DEFAULT_MEASUREMENT_ID;
-const requireConsent = import.meta.env.VITE_ANALYTICS_REQUIRE_CONSENT === "true";
 const CONSENT_KEY = "analytics_consent";
+
+export type AnalyticsConsent = "granted" | "denied";
 
 let gaInitialized = false;
 
@@ -40,13 +41,40 @@ function isLocalHost(): boolean {
   return host === "localhost" || host === "127.0.0.1";
 }
 
-function hasConsent(): boolean {
-  if (!requireConsent) return true;
+function readConsent(): AnalyticsConsent | null {
   try {
-    return localStorage.getItem(CONSENT_KEY) === "granted";
+    const v = localStorage.getItem(CONSENT_KEY);
+    return v === "granted" || v === "denied" ? v : null;
   } catch {
-    return false;
+    return null;
   }
+}
+
+export function getAnalyticsConsent(): AnalyticsConsent | null {
+  return readConsent();
+}
+
+function hasConsent(): boolean {
+  return readConsent() === "granted";
+}
+
+const DENIED_CONSENT = {
+  analytics_storage: "denied",
+  ad_storage: "denied",
+  ad_user_data: "denied",
+  ad_personalization: "denied",
+} as const;
+
+const GRANTED_CONSENT = {
+  analytics_storage: "granted",
+  ad_storage: "denied",
+  ad_user_data: "denied",
+  ad_personalization: "denied",
+} as const;
+
+function pushConsentUpdate(granted: boolean): void {
+  if (typeof window.gtag !== "function") return;
+  window.gtag("consent", "update", granted ? GRANTED_CONSENT : DENIED_CONSENT);
 }
 
 function normalizeParams(params: AnalyticsParams = {}): Record<string, string | number | boolean> {
@@ -59,7 +87,7 @@ function normalizeParams(params: AnalyticsParams = {}): Record<string, string | 
 }
 
 export function initAnalytics(): void {
-  if (gaInitialized || !measurementId || !hasConsent() || isLocalHost()) return;
+  if (gaInitialized || !measurementId || isLocalHost()) return;
 
   window.dataLayer = window.dataLayer || [];
   if (typeof window.gtag !== "function") {
@@ -98,6 +126,12 @@ export function setAnalyticsConsent(granted: boolean): void {
   } catch {
     /* ignore storage issues */
   }
-  if (granted) initAnalytics();
+  if (!isLocalHost()) {
+    if (!gaInitialized) initAnalytics();
+    pushConsentUpdate(granted);
+  }
+  if (granted) {
+    trackPageView(`${window.location.pathname}${window.location.search}${window.location.hash}`);
+  }
 }
 
