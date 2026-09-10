@@ -60,8 +60,19 @@ export function initAnalytics(): void {
     gtagScript.src = `https://www.googletagmanager.com/gtag/js?id=${measurementId}`;
     document.head.appendChild(gtagScript);
     window.gtag("js", new Date());
-    window.gtag("config", measurementId, { send_page_view: false });
   }
+
+  window.gtag("consent", "update", {
+    analytics_storage: "granted",
+    ad_storage: "denied",
+    ad_user_data: "denied",
+    ad_personalization: "denied",
+  });
+  window.gtag("config", measurementId, {
+    send_page_view: true,
+    page_path: `${window.location.pathname}${window.location.search}${window.location.hash}`,
+    page_location: window.location.href,
+  });
 
   gaInitialized = true;
 }

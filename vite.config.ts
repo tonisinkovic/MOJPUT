@@ -172,6 +172,10 @@ export default defineConfig(({ mode }) => {
           ],
         },
         workbox: {
+          cacheId: `mojput-${shortGitSha()}`,
+          skipWaiting: true,
+          clientsClaim: true,
+          cleanupOutdatedCaches: true,
           globPatterns: ["**/*.{js,css,html,ico,png,svg,woff2,woff,ttf,webp}"],
           globIgnores: ["**/*.pdf"],
           maximumFileSizeToCacheInBytes: 4 * 1024 * 1024,
