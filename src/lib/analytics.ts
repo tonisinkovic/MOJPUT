@@ -27,11 +27,18 @@ declare global {
   }
 }
 
-const measurementId = import.meta.env.VITE_GA_MEASUREMENT_ID;
+/** Isti ID kao u index.html — javni GA4 ključ, nije tajna. */
+const DEFAULT_MEASUREMENT_ID = "G-9N7061Q2JN";
+const measurementId = import.meta.env.VITE_GA_MEASUREMENT_ID || DEFAULT_MEASUREMENT_ID;
 const requireConsent = import.meta.env.VITE_ANALYTICS_REQUIRE_CONSENT === "true";
 const CONSENT_KEY = "analytics_consent";
 
 let gaInitialized = false;
+
+function isLocalHost(): boolean {
+  const host = window.location.hostname;
+  return host === "localhost" || host === "127.0.0.1";
+}
 
 function hasConsent(): boolean {
   if (!requireConsent) return true;
@@ -52,25 +59,26 @@ function normalizeParams(params: AnalyticsParams = {}): Record<string, string | 
 }
 
 export function initAnalytics(): void {
-  if (gaInitialized || !measurementId || !hasConsent()) return;
-
-  const gtagScript = document.createElement("script");
-  gtagScript.async = true;
-  gtagScript.src = `https://www.googletagmanager.com/gtag/js?id=${measurementId}`;
-  document.head.appendChild(gtagScript);
+  if (gaInitialized || !measurementId || !hasConsent() || isLocalHost()) return;
 
   window.dataLayer = window.dataLayer || [];
-  window.gtag = (...args: unknown[]) => {
-    window.dataLayer?.push(args);
-  };
-  window.gtag("js", new Date());
-  window.gtag("config", measurementId, { send_page_view: false });
+  if (typeof window.gtag !== "function") {
+    window.gtag = function gtag() {
+      window.dataLayer?.push(arguments);
+    };
+    const gtagScript = document.createElement("script");
+    gtagScript.async = true;
+    gtagScript.src = `https://www.googletagmanager.com/gtag/js?id=${measurementId}`;
+    document.head.appendChild(gtagScript);
+    window.gtag("js", new Date());
+    window.gtag("config", measurementId, { send_page_view: false });
+  }
 
   gaInitialized = true;
 }
 
 export function trackEvent(eventName: AnalyticsEventName, params: AnalyticsParams = {}): void {
-  if (!measurementId || !hasConsent()) return;
+  if (!measurementId || !hasConsent() || isLocalHost()) return;
   if (!gaInitialized) initAnalytics();
   if (typeof window.gtag !== "function") return;
 

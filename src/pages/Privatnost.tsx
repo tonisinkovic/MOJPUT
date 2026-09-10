@@ -137,10 +137,13 @@ const Privatnost = () => {
             <p>MojPut koristi kolačiće kako bi:</p>
             <ul className="list-disc space-y-1 pl-5">
               <li>omogućio rad stranice</li>
-              <li>analizirao korištenje</li>
+              <li>analizirao korištenje (Google Analytics 4, mjerenje G-9N7061Q2JN)</li>
               <li>poboljšao korisničko iskustvo</li>
             </ul>
-            <p>Korištenjem stranice pristajete na upotrebu kolačića.</p>
+            <p>
+              Analitiku obrađuje Google Ireland Limited / Google LLC. Korištenjem stranice pristajete na upotrebu
+              kolačića.
+            </p>
           </SectionBlock>
 
           <SectionBlock number={7} title="Čuvanje podataka">
