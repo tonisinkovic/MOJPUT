@@ -1,34 +1,13 @@
 <!doctype html>
 <html lang="hr">
   <head>
-    <!-- Google tag (gtag.js) — Consent Mode v2 pa GA4 G-9N7061Q2JN -->
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-9N7061Q2JN"></script>
     <script>
       window.dataLayer = window.dataLayer || [];
       function gtag(){dataLayer.push(arguments);}
-      gtag('consent', 'default', {
-        ad_storage: 'denied',
-        ad_user_data: 'denied',
-        ad_personalization: 'denied',
-        analytics_storage: 'denied',
-        functionality_storage: 'granted',
-        security_storage: 'granted',
-        wait_for_update: 500
-      });
-      try {
-        if (localStorage.getItem('analytics_consent') === 'granted') {
-          gtag('consent', 'update', {
-            analytics_storage: 'granted',
-            ad_storage: 'denied',
-            ad_user_data: 'denied',
-            ad_personalization: 'denied'
-          });
-        }
-      } catch (e) {}
-    </script>
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-9N7061Q2JN"></script>
-    <script>
       gtag('js', new Date());
-      gtag('config', 'G-9N7061Q2JN', { send_page_view: false });
+      gtag('config', 'G-9N7061Q2JN');
     </script>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/png" sizes="32x32" href="%BASE_URL%favicon.png?v=3" />
