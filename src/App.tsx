@@ -2,7 +2,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { lazy, Suspense, useEffect, useRef } from "react";
+import { lazy, Suspense, useEffect } from "react";
 import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import { warmupApiHealth } from "@/lib/api";
 import { startJuniorCloudSync } from "@/lib/juniorCloud";
@@ -58,13 +58,8 @@ const routerBasename =
 
 const AnalyticsPageTracker = () => {
   const location = useLocation();
-  const isFirst = useRef(true);
 
   useEffect(() => {
-    if (isFirst.current) {
-      isFirst.current = false;
-      return;
-    }
     const fullPath = `${location.pathname}${location.search}${location.hash}`;
     trackPageView(fullPath);
   }, [location.pathname, location.search, location.hash]);
