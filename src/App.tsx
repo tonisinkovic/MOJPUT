@@ -41,6 +41,7 @@ import TimDashboard from "./pages/TimDashboard";
 import ProfilDashboard from "./pages/ProfilDashboard";
 import ScrollToTop from "./components/ScrollToTop";
 import PwaInstallPrompt from "./components/PwaInstallPrompt";
+import CookieConsent from "./components/CookieConsent";
 import { trackPageView } from "./lib/analytics";
 
 const queryClient = new QueryClient();
@@ -101,6 +102,7 @@ const App = () => (
         <AnalyticsPageTracker />
         <ApiWarmup />
         <JuniorCloudSync />
+        <CookieConsent />
         <Suspense
           fallback={
             <main className="flex min-h-[70vh] items-center justify-center px-4">
