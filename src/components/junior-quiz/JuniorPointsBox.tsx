@@ -61,9 +61,8 @@ export default function JuniorPointsBox() {
         <div className="min-w-0 flex-1">
           <h3 className="text-sm font-bold">Tvoji bodovi — da vidiš šansu</h3>
           <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
-            Unesi okvirni zbroj (do 80 iz ocjena za 4-godišnji smjer; sport i umjetnost mogu ići
-            iznad toga) ili točnije izračunaj u kalkulatoru. Škole ispod odmah uspoređuju s lanjskim
-            pragom.
+            Unesi okvirni zbroj iz ocjena (do 80 za gimnaziju). Veći broj samo ako baš taj smjer ima
+            sport ili prijemni — obična gimnazija ostaje na 80.
           </p>
           {points != null ? (
             <p className="mt-2 text-sm font-semibold text-foreground">

@@ -530,13 +530,13 @@ export default function SrednjaKalkulator() {
       razred8,
       dodatniBodovi,
     });
-    const scaleMax = comparisonMaxFor(program, selPrag, scored.ukupno);
+    const scaleMax = comparisonMaxFor(program, selPrag, selProgram?.name ?? "", selSchool?.name ?? "");
     return {
       ...scored,
       scaleMax,
       postotak: clamp((scored.ukupno / scaleMax) * 100, 0, 100),
     };
-  }, [dodatniBodovi, program, prosjek5, prosjek6, razred7, razred8, selPrag]);
+  }, [dodatniBodovi, program, prosjek5, prosjek6, razred7, razred8, selPrag, selProgram?.name, selSchool?.name]);
 
   const scaleKind = useMemo(
     () => (selProgram ? extendedScaleKind(selProgram.name, selPrag, program, selSchool?.name ?? "") : null),
@@ -574,9 +574,8 @@ export default function SrednjaKalkulator() {
             Kalkulator bodova
           </h1>
           <p className="mt-2 max-w-2xl text-pretty text-sm leading-relaxed text-muted-foreground sm:mt-3 sm:text-base">
-            Odaberi školu i program, unesi ocjene iz osnovne škole i saznaj lanjski prag te svoje šanse za
-            upis. Ocjene nose do 80 bodova (4-godišnji smjer); sport, umjetnost i natjecanja mogu ići iznad
-            toga — skala prati odabrani smjer.
+            Odaberi školu i program. Max je uvijek od tog smjera: obična gimnazija (npr. Omiš) ima do 80 iz
+            ocjena. 160 ili više vidiš samo ako je baš taj smjer sportski odjel ili ima prijemni — ne za sve.
           </p>
           <JuniorNumbersNote counts className="mt-3 max-w-2xl" />
           <JuniorNumbersNote className="mt-2 max-w-2xl" />
@@ -705,7 +704,7 @@ export default function SrednjaKalkulator() {
                 <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-5 sm:gap-3">
                   <PragStat label="Prag (min.)" value={fmt(selPrag.min)} highlight />
                   <PragStat label="Prosječni" value={fmt(selPrag.avg)} />
-                  <PragStat label="Maksimalni" value={fmt(selPrag.max)} />
+                  <PragStat label="Najviši lanjski" value={fmt(selPrag.max)} />
                   <PragStat label="Kvota" value={fmt(selPrag.kvota)} />
                   <PragStat label="Upisani" value={fmt(selPrag.upisani)} />
                 </div>
@@ -713,6 +712,12 @@ export default function SrednjaKalkulator() {
                   <p className="mt-3 flex items-start gap-2 rounded-xl border border-amber-500/30 bg-amber-500/10 p-3 text-sm leading-relaxed text-amber-950 dark:text-amber-100">
                     <Info className="mt-0.5 h-4 w-4 shrink-0" />
                     {extendedScaleNote(scaleKind, selPrag, rezultat.max)}
+                  </p>
+                )}
+                {!scaleKind && (
+                  <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
+                    Bodovna skala ovog smjera je {rezultat.max} (ocjene). Brojka „najviši lanjski” je rezultat
+                    najbolje upisanog učenika, ne drugi maksimum za sve smjerove.
                   </p>
                 )}
               </>
@@ -747,9 +752,11 @@ export default function SrednjaKalkulator() {
             <p className="mt-1 text-xs text-muted-foreground">
               Ocjene: {rezultat.zajednicki.toFixed(2)} / {rezultat.max}
               {rezultat.dodatni > 0 ? ` · dodatni: ${rezultat.dodatni.toFixed(2)}` : ""}
-              {selPrag?.max != null && selPrag.max > rezultat.max
-                ? ` · lanjski max smjera: ${fmt(selPrag.max)}`
-                : ""}
+              {selProgram
+                ? rezultat.scaleMax > rezultat.max
+                  ? ` · max ovog smjera: ${fmt(rezultat.scaleMax)}`
+                  : ` · max ovog smjera: ${rezultat.max} iz ocjena`
+                : " · odaberi smjer za točan max"}
             </p>
           </div>
           <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10 text-primary">
@@ -967,8 +974,8 @@ export default function SrednjaKalkulator() {
             <div className="mt-1.5 flex justify-between text-[11px] text-muted-foreground">
               <span>0</span>
               <span>
-                Prag: {fmt(selPrag.min)} · Max: {fmt(rezultat.scaleMax)}
-                {rezultat.scaleMax > rezultat.max ? " (lanjski raspon smjera)" : " (ocjene)"}
+                Prag: {fmt(selPrag.min)} · Max ovog smjera: {fmt(rezultat.scaleMax)}
+                {rezultat.scaleMax > rezultat.max ? " (sport / prijemni)" : " (ocjene)"}
               </span>
             </div>
           </div>

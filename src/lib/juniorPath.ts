@@ -253,16 +253,34 @@ export function gradeScaleHintFromPrag(prag: KalkulatorPrag | null): number | nu
 
 export function observedPragMax(prag: KalkulatorPrag | null | undefined): number {
   if (!prag) return 0;
-  return Math.max(prag.max ?? 0, prag.min ?? 0, prag.avg ?? 0);
+  return Math.max(prag.max ?? 0, prag.min ?? 0);
 }
 
-/** Nazivnik trake i „/ max”: ocjene ili lanjski raspon smjera, što je veće. */
+/**
+ * Max na traci = samo ovaj smjer.
+ * Obična gimnazija (npr. Omiš, lanjski 81,71 zbog natjecanja) ostaje 80.
+ * 160/250 samo ako ovaj smjer stvarno ima drugu skalu (sport, prijemni).
+ * Ukupni unos se namjerno ne gleda — inače bi 160 sa sporta ostalo i na Omišu.
+ */
 export function comparisonMaxFor(
   program: SrednjaProgramType,
   prag?: KalkulatorPrag | null,
-  ukupno = 0,
+  programName = "",
+  schoolName = "",
 ): number {
-  return Math.max(MAX_BY_PROGRAM[program], observedPragMax(prag), ukupno);
+  const gradeMax = MAX_BY_PROGRAM[program];
+  if (!programHasExtendedScale(program, prag, programName, schoolName)) return gradeMax;
+  return Math.max(gradeMax, prag?.max ?? 0, prag?.min ?? 0);
+}
+
+/** Druga bodovna skala: prag ili max jasno iznad ocjena, ne sitni dodatak 81 umjesto 80. */
+export function programHasExtendedScale(
+  program: SrednjaProgramType,
+  prag: KalkulatorPrag | null | undefined,
+  programName = "",
+  schoolName = "",
+): boolean {
+  return extendedScaleKind(programName, prag, program, schoolName) != null;
 }
 
 export function extendedScaleKind(
@@ -272,13 +290,18 @@ export function extendedScaleKind(
   schoolName = "",
 ): ExtendedScaleKind | null {
   const gradeMax = MAX_BY_PROGRAM[program];
-  const observed = observedPragMax(prag);
-  if (observed <= gradeMax + 0.05) return null;
+  const pmax = prag?.max ?? 0;
+  const pmin = prag?.min ?? 0;
   const text = normalizeJuniorText(`${programName} ${schoolName}`);
-  if (/\bsport|\bsportal|sportase|sportska/.test(text)) return "sport";
-  if (/glazb|ples|balet|likovn|dizajn|umjetn|slikar|kipar|scenski/.test(text)) return "umjetnost";
-  if (observed > gradeMax + 15) return "umjetnost";
-  return "natjecanja";
+  const isSport = /\bsport|\bsportal|sportase|sportska/.test(text);
+  const isArt = /glazb|ples|balet|likovn|dizajn|umjetn|slikar|kipar|scenski/.test(text);
+
+  if (isSport && (pmin > gradeMax || pmax >= 100)) return "sport";
+  if (isArt && (pmin > gradeMax || pmax >= 100)) return "umjetnost";
+  // Bez sport/umjetnost u nazivu: samo ako prag sam prelazi ocjene ili je max druga skala.
+  if (pmin > gradeMax + 1) return pmax >= 180 ? "umjetnost" : pmax >= 100 ? "sport" : "natjecanja";
+  if (pmax >= 100) return pmax >= 180 ? "umjetnost" : "sport";
+  return null;
 }
 
 export function extendedScaleNote(
