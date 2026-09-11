@@ -2,11 +2,11 @@
 
 import { highSchools } from "@/data/highSchools";
 import { kalkulatorSchools } from "@/data/srednjaKalkulator";
-import { JUNIOR_PROGRAM_FAMILY_COUNT, juniorQuestions } from "@/lib/juniorQuizEngine";
+import { JUNIOR_PROGRAM_FAMILY_COUNT, JUNIOR_QUIZ_QUESTION_COUNT } from "@/lib/juniorQuizEngine";
 
 export const JUNIOR_MAP_SCHOOL_COUNT = highSchools.length;
 export const JUNIOR_CALCULATOR_SCHOOL_COUNT = kalkulatorSchools.length;
-export const JUNIOR_QUIZ_QUESTION_COUNT = juniorQuestions.length;
+export { JUNIOR_QUIZ_QUESTION_COUNT };
 
 export const JUNIOR_SCHOOL_COUNT_NOTE =
   `Karta = adrese (${JUNIOR_MAP_SCHOOL_COUNT} škola). Kalkulator = lanjski prag (${JUNIOR_CALCULATOR_SCHOOL_COUNT} škola). Nisu isti popisi.`;
@@ -21,7 +21,7 @@ export const JUNIOR_NUMBERS_NOTE_SHORT =
   "Zračna linija. Lanjski prag. Pitaj školu.";
 
 export const JUNIOR_CATALOG_NOTE =
-  `Kviz i vodič pokrivaju ${JUNIOR_PROGRAM_FAMILY_COUNT} vrsta smjerova (gimnazija, tehnička, umjetnička, obrt). To nije cijeli službeni popis — škole imaju i uske smjerove. Ako točnog nema, gledaj najbliži.`;
+  `Kviz pokazuje ${JUNIOR_PROGRAM_FAMILY_COUNT} vrsta smjerova (gimnazija, tehnička, umjetnička, obrt). To nije cijeli službeni popis — škole imaju i uske smjerove. Ako točnog nema, gledaj najbliži.`;
 
 export const JUNIOR_CATALOG_NOTE_SHORT =
   `${JUNIOR_PROGRAM_FAMILY_COUNT} vrsta smjerova, ne cijeli službeni popis.`;

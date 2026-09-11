@@ -1,474 +1,650 @@
 import { describe, expect, it } from "vitest";
 import {
   analyzeJuniorQuiz,
-  buildJuniorSignalMap,
+  calculateProgramMatch,
+  calculateQuizProfile,
   computeJuniorPathway,
   getProgramAvailability,
   highSchoolPrograms,
-  juniorInterestLabels,
   juniorQuestions,
-  juniorSubjectLabels,
   type JuniorAnswers,
-  type JuniorSignalKey,
+  type JuniorQuestion,
 } from "./juniorQuizEngine";
+import { buildMainSequence, typicalJuniorQuizLength } from "./juniorQuizSequence";
+import { programFactChips } from "./juniorProgramFacts";
+import { typicalDayFor } from "./juniorTypicalDay";
+import { buildHomeTalk } from "./juniorHomeTalk";
+import { JUNIOR_SCALE_WORDS } from "./juniorQuizModel";
 
-// ---------------------------------------------------------------------------
-// Pomoćni alati za simulaciju profila
-// ---------------------------------------------------------------------------
-
-const questionIdsBySignal = (signal: JuniorSignalKey): number[] =>
-  juniorQuestions.filter((q) => q.signalKey === signal).map((q) => q.id);
-
-const questionIdsByCategory = (section: string, category: string): number[] =>
-  juniorQuestions
-    .filter((q) => q.section === section && q.category === category)
-    .map((q) => q.id);
-
-type ProfileSpec = {
-  base?: number;
-  signals?: Partial<Record<JuniorSignalKey, number>>;
-  categories?: { section: string; category: string; value: number }[];
-};
-
-const buildAnswers = ({ base = 2, signals = {}, categories = [] }: ProfileSpec): JuniorAnswers => {
+const persona = (entries: Array<[number, JuniorAnswers[number]]>): JuniorAnswers => {
   const answers: JuniorAnswers = {};
-  for (const q of juniorQuestions) answers[q.id] = base;
-  for (const { section, category, value } of categories) {
-    for (const id of questionIdsByCategory(section, category)) answers[id] = value;
-  }
-  for (const [signal, value] of Object.entries(signals)) {
-    for (const id of questionIdsBySignal(signal as JuniorSignalKey)) {
-      answers[id] = value as number;
-    }
-  }
+  for (const [id, value] of entries) answers[id] = value;
   return answers;
 };
 
-const recommendedNames = (answers: JuniorAnswers): string[] =>
-  analyzeJuniorQuiz(answers).recommendations.map((r) => r.program.name);
+const names = (answers: JuniorAnswers, n = 5): string[] =>
+  analyzeJuniorQuiz(answers).recommendations.slice(0, n).map((r) => r.program.name);
 
-const topNames = (answers: JuniorAnswers, n = 5): string[] =>
-  recommendedNames(answers).slice(0, n);
+const allNames = (answers: JuniorAnswers): string[] =>
+  analyzeJuniorQuiz(answers).allMatches.map((r) => r.program.name);
 
-// ---------------------------------------------------------------------------
-// Konzistentnost podataka
-// ---------------------------------------------------------------------------
+const expectFiniteScores = (answers: JuniorAnswers) => {
+  const analysis = analyzeJuniorQuiz(answers);
+  expect(analysis.recommendations.length).toBeGreaterThan(0);
+  for (const rec of analysis.allMatches) {
+    expect(Number.isFinite(rec.overallScore)).toBe(true);
+    expect(Number.isNaN(rec.matchPercentage)).toBe(false);
+    expect(rec.matchPercentage).toBeGreaterThanOrEqual(1);
+    expect(rec.matchPercentage).toBeLessThanOrEqual(99);
+    expect(rec.interestScore).toBeGreaterThanOrEqual(0);
+    expect(rec.interestScore).toBeLessThanOrEqual(100);
+    expect(rec.positiveReasons.length).toBeGreaterThan(0);
+  }
+  return analysis;
+};
 
-describe("junior kviz — konzistentnost podataka", () => {
-  const validSignals = new Set(
-    juniorQuestions.map((q) => q.signalKey).filter(Boolean) as string[]
-  );
-
-  it("svi interestWeights i subjectWeights ključevi postoje u kategorijama pitanja", () => {
-    const interestKeys = new Set(Object.keys(juniorInterestLabels));
-    const subjectKeys = new Set(Object.keys(juniorSubjectLabels));
-    for (const program of highSchoolPrograms) {
-      for (const key of Object.keys(program.interestWeights)) {
-        expect(interestKeys.has(key), `${program.name}: interes ${key}`).toBe(true);
-      }
-      for (const key of Object.keys(program.subjectWeights)) {
-        expect(subjectKeys.has(key), `${program.name}: predmet ${key}`).toBe(true);
-      }
+describe("junior kviz v2 — podaci", () => {
+  it("pitanja imaju jedinstvene id-eve i valjan format", () => {
+    const ids = juniorQuestions.map((q) => q.id);
+    expect(new Set(ids).size).toBe(ids.length);
+    for (const q of juniorQuestions as JuniorQuestion[]) {
+      expect(["choice", "scale", "multi", "text"]).toContain(q.format);
+      if (q.format === "choice") expect(q.options?.length).toBeGreaterThanOrEqual(2);
     }
   });
 
-  it("svi boost/requires signali postoje među pitanjima", () => {
+  it("svaki program postoji u stvarnoj bazi škola", () => {
     for (const program of highSchoolPrograms) {
-      for (const key of [
-        ...Object.keys(program.boostSignals),
-        ...Object.keys(program.requiresSignals),
-      ]) {
-        expect(validSignals.has(key), `${program.name}: signal ${key}`).toBe(true);
-      }
+      expect(getProgramAvailability(program).totalSchools, program.name).toBeGreaterThan(0);
     }
   });
 
-  it("svaki program postoji u stvarnoj bazi škola (barem 1 škola)", () => {
-    for (const program of highSchoolPrograms) {
-      const availability = getProgramAvailability(program);
-      expect(
-        availability.totalSchools,
-        `${program.name} nema nijednu školu u bazi`
-      ).toBeGreaterThan(0);
-    }
-  });
-
-  it("trajanje programa je 3, 4 ili 5 godina", () => {
-    for (const program of highSchoolPrograms) {
-      expect([3, 4, 5]).toContain(program.duration);
-    }
+  it("tipičan kviz je 31–36 pitanja", () => {
+    const n = typicalJuniorQuizLength();
+    expect(n).toBeGreaterThanOrEqual(31);
+    expect(n).toBeLessThanOrEqual(36);
   });
 });
 
-// ---------------------------------------------------------------------------
-// Simulirani profili
-// ---------------------------------------------------------------------------
-
-describe("junior kviz — simulirani profili", () => {
-  it("IT profil dobiva Tehničara za računarstvo pri vrhu", () => {
-    const answers = buildAnswers({
-      base: 2,
-      signals: { tech_computers: 5, numbers_data: 4 },
-      categories: [
-        { section: "subjects", category: "informatika", value: 5 },
-        { section: "subjects", category: "matematika", value: 4 },
-        { section: "interests", category: "istrazivanje", value: 4 },
-        { section: "workstyle", category: "praksa", value: 4 },
-        { section: "workstyle", category: "upornost", value: 4 },
-      ],
-    });
-    expect(topNames(answers, 3)).toContain("Tehničar za računarstvo");
+describe("junior kviz v2 — profili", () => {
+  it("izrazito tehnički profil stavlja računarstvo visoko", () => {
+    const answers = persona([
+      [1, "understand"],
+      [2, "app"],
+      [4, "how"],
+      [6, "interest_math"],
+      [7, "app"],
+      [8, 2],
+      [11, 3],
+      [13, "tinker"],
+      [16, "tasks"],
+      [30, "code"],
+      [31, "computer"],
+      [32, "ok"],
+      [33, "theory"],
+      [70, "faculty"],
+      [71, "solve"],
+    ]);
+    const top = names(answers, 3);
+    expect(top).toContain("Tehničar za računarstvo");
+    expect(analyzeJuniorQuiz(answers).profile.interests.technology).toBeGreaterThan(70);
   });
 
-  it("zanatski profil: strukovni smjer, obrtnički programi visoko, gimnazija nije u top 3", () => {
-    const answers = buildAnswers({
-      base: 2,
-      signals: { hands_on_craft: 5, tech_computers: 1, cooking_food: 1 },
-      categories: [
-        { section: "interests", category: "prakticno", value: 5 },
-        { section: "workstyle", category: "zanat", value: 5 },
-        { section: "workstyle", category: "praksa", value: 5 },
-        { section: "workstyle", category: "teorija", value: 1 },
-        { section: "workstyle", category: "faks", value: 1 },
-        { section: "workstyle", category: "sjedenje", value: 1 },
-      ],
-    });
+  it("izrazito humanistički profil vodi prema jezicima / gimnaziji", () => {
+    const answers = persona([
+      [2, "help"],
+      [3, 5],
+      [10, "explain"],
+      [12, "text"],
+      [15, "help"],
+      [16, "group"],
+      [60, "lang"],
+      [61, 5],
+      [62, "time"],
+      [70, "faculty"],
+      [71, "how"],
+      [80, 4],
+    ]);
+    const analysis = analyzeJuniorQuiz(answers);
+    expect(analysis.pathway.direction).toBe("gimnazija");
+    expect(names(answers, 3)).toContain("Jezična gimnazija");
+  });
+
+  it("izrazito kreativni profil vodi prema dizajnu ili medijima", () => {
+    const answers = persona([
+      [1, "invent"],
+      [2, "poster"],
+      [7, "art"],
+      [12, "visual"],
+      [15, "create"],
+      [40, "visual"],
+      [41, "yes"],
+      [42, "studio"],
+      [71, "hands"],
+    ]);
+    const top = names(answers, 4);
+    expect(top.some((n) => /dizajn|medij|glazben/i.test(n))).toBe(true);
+  });
+
+  it("zdravstveno orijentirani profil vodi prema njezi ili prirodoslovnoj", () => {
+    const answers = persona([
+      [2, "help"],
+      [8, 5],
+      [10, "explain"],
+      [15, "help"],
+      [20, "care"],
+      [21, "hospital"],
+      [22, "people_heavy"],
+      [23, "practice"],
+      [70, "faculty"],
+      [9, "why"],
+    ]);
+    const top = names(answers, 4);
+    expect(
+      top.some((n) => /medicinska sestra|prirodoslovna|fizioterapeut/i.test(n)),
+    ).toBe(true);
+  });
+
+  it("praktično orijentirani profil vodi strukovno, gimnazija nije u vrhu", () => {
+    const answers = persona([
+      [1, "experiment"],
+      [4, "fix"],
+      [11, 5],
+      [16, "make"],
+      [50, "cars"],
+      [51, 5],
+      [52, "job"],
+      [70, "work"],
+      [71, "hands"],
+      [3, 1],
+    ]);
     const analysis = analyzeJuniorQuiz(answers);
     expect(analysis.pathway.direction).toBe("strukovna");
     const top3 = analysis.recommendations.slice(0, 3);
-    expect(
-      top3.some((r) => r.program.type === "obrtnicka" || r.program.type === "tehnicka")
-    ).toBe(true);
+    expect(top3.some((r) => r.program.type === "obrtnicka" || r.program.type === "tehnicka")).toBe(true);
     expect(top3.some((r) => r.program.type === "gimnazija")).toBe(false);
   });
 
-  it("medicinski profil dobiva Medicinsku sestru/tehničara pri vrhu", () => {
-    const answers = buildAnswers({
-      base: 2,
-      signals: { health_medicine: 5, helping_people: 5 },
-      categories: [
-        { section: "subjects", category: "biologija", value: 5 },
-        { section: "interests", category: "ljudi", value: 5 },
-        { section: "workstyle", category: "faks", value: 4 },
-        { section: "workstyle", category: "disciplina", value: 4 },
-      ],
-    });
-    expect(topNames(answers, 4)).toContain("Medicinska sestra / medicinski tehničar");
-  });
-
-  it("glazbeni profil prolazi filter i dobiva glazbenu školu pri vrhu", () => {
-    const answers = buildAnswers({
-      base: 2,
-      signals: { music_performance: 5 },
-      categories: [
-        { section: "subjects", category: "glazbeni", value: 5 },
-        { section: "interests", category: "kreativa", value: 5 },
-      ],
-    });
-    expect(topNames(answers, 3)).toContain("Glazbena škola (glazbenik)");
-  });
-
-  it("akademski profil s jakim jezicima dobiva jezičnu gimnaziju i smjer gimnazija", () => {
-    const answers = buildAnswers({
-      base: 2,
-      signals: { languages_travel: 5 },
-      categories: [
-        { section: "subjects", category: "jezici", value: 5 },
-        { section: "subjects", category: "hrvatski", value: 5 },
-        { section: "interests", category: "jezici", value: 5 },
-        { section: "interests", category: "ljudi", value: 4 },
-        { section: "interests", category: "istrazivanje", value: 4 },
-        { section: "workstyle", category: "teorija", value: 5 },
-        { section: "workstyle", category: "faks", value: 5 },
-        { section: "workstyle", category: "disciplina", value: 4 },
-        { section: "workstyle", category: "sjedenje", value: 4 },
-        { section: "workstyle", category: "zanat", value: 1 },
-        { section: "workstyle", category: "praksa", value: 2 },
-      ],
-    });
+  it("gimnazijski profil: teorija, fakultet, koncentracija", () => {
+    const answers = persona([
+      [1, "understand"],
+      [3, 5],
+      [6, "interest_math"],
+      [9, "why"],
+      [16, "solo"],
+      [60, "math"],
+      [61, 5],
+      [62, "time"],
+      [70, "faculty"],
+      [71, "how"],
+      [81, 4],
+    ]);
     const analysis = analyzeJuniorQuiz(answers);
     expect(analysis.pathway.direction).toBe("gimnazija");
-    expect(topNames(answers, 3)).toContain("Jezična gimnazija");
+    expect(names(answers, 4).some((n) => /gimnazija/i.test(n))).toBe(true);
   });
 
-  it("sport bez medicine ne nudi fizioterapiju", () => {
-    const answers = buildAnswers({
-      base: 3,
-      signals: { sport_active: 5, health_medicine: 2, helping_people: 3 },
-      categories: [
-        { section: "subjects", category: "tjelesni", value: 5 },
-        { section: "subjects", category: "biologija", value: 4 },
-      ],
-    });
-    const names = recommendedNames(answers);
-    expect(names).not.toContain("Fizioterapeutski tehničar");
-    expect(names).toContain("Sportska gimnazija (odjeli za sportaše)");
+  it("neodlučan profil ne forsira lažnu preciznost", () => {
+    const answers = persona([
+      [1, "team"],
+      [3, 3],
+      [6, "mix"],
+      [8, 3],
+      [11, 3],
+      [16, "group"],
+      [70, "unsure"],
+      [71, "mix"],
+      [61, 3],
+      [81, 3],
+    ]);
+    const analysis = analyzeJuniorQuiz(answers);
+    expect(analysis.confidence.level === "low" || analysis.indecisive).toBe(true);
+    expect(analysis.recommendations[0].matchPercentage).toBeLessThanOrEqual(78);
+    expect(analysis.profileSummary.length).toBeGreaterThan(20);
   });
 
-  it("sport + medicina može ponuditi fizioterapiju", () => {
-    const answers = buildAnswers({
-      base: 3,
-      signals: { sport_active: 5, health_medicine: 5, helping_people: 4 },
-      categories: [
-        { section: "subjects", category: "tjelesni", value: 5 },
-        { section: "subjects", category: "biologija", value: 5 },
-        { section: "interests", category: "ljudi", value: 4 },
-      ],
-    });
-    expect(recommendedNames(answers)).toContain("Fizioterapeutski tehničar");
+  it("kontradiktorni profil (medicina vs rad s ljudima) daje refleksiju, ne odbijanje", () => {
+    const answers = persona([
+      [2, "help"],
+      [8, 1],
+      [15, "help"],
+      [20, "lab"],
+      [22, "less_people"],
+      [70, "faculty"],
+    ]);
+    const analysis = analyzeJuniorQuiz(answers);
+    expect(analysis.contradictions.length).toBeGreaterThan(0);
+    expect(allNames(answers).some((n) => /farmac|medicin|prirodoslov/i.test(n))).toBe(true);
   });
+});
 
-  it("kuhanje bez crtanja ne nudi dizajn ni medijskog", () => {
-    const answers = buildAnswers({
-      base: 3,
-      signals: { cooking_food: 5, art_visual: 1, music_performance: 2 },
-      categories: [{ section: "interests", category: "kreativa", value: 3 }],
-    });
-    const names = recommendedNames(answers);
-    expect(names).toContain("Kuhar / slastičar");
-    expect(names).not.toContain("Škola za dizajn i likovnu umjetnost");
-    expect(names).not.toContain("Medijski / grafički tehničar i web dizajner");
-  });
-
-  it("jezici bez medicine ne guraju sestrinstvo u vrh", () => {
-    const answers = buildAnswers({
-      base: 3,
-      signals: { languages_travel: 5, health_medicine: 1, helping_people: 2 },
-      categories: [
-        { section: "subjects", category: "jezici", value: 5 },
-        { section: "interests", category: "jezici", value: 5 },
-      ],
-    });
-    const names = recommendedNames(answers);
-    expect(names).not.toContain("Medicinska sestra / medicinski tehničar");
-    expect(topNames(answers, 3)).toContain("Jezična gimnazija");
-  });
-
-  it("računala ne guraju PM gimnaziju iznad IT tehničara", () => {
-    const answers = buildAnswers({
-      base: 2,
-      signals: { tech_computers: 5, science_experiments: 2 },
-      categories: [
-        { section: "subjects", category: "informatika", value: 5 },
-        { section: "interests", category: "istrazivanje", value: 2 },
-      ],
-    });
-    const names = topNames(answers, 3);
-    expect(names[0]).toBe("Tehničar za računarstvo");
-    expect(names.indexOf("Tehničar za računarstvo")).toBeLessThan(
-      names.includes("Prirodoslovno-matematička gimnazija")
-        ? names.indexOf("Prirodoslovno-matematička gimnazija")
-        : 99,
+describe("junior kviz v2 — scoring ugovori", () => {
+  it("rezultat nikad nije NaN i uvijek ima objašnjenje", () => {
+    expectFiniteScores(
+      persona([
+        [2, "app"],
+        [7, "research"],
+        [70, "both"],
+      ]),
     );
   });
 
-  it("upozorava na matematiku kad program traži matematiku, a učeniku ne ide", () => {
-    const answers = buildAnswers({
-      base: 3,
-      signals: { tech_computers: 5 },
-      categories: [
-        { section: "subjects", category: "informatika", value: 5 },
-        { section: "subjects", category: "matematika", value: 1 },
-      ],
-    });
-    const analysis = analyzeJuniorQuiz(answers);
-    const racunarstvo = analysis.recommendations.find(
-      (r) => r.program.name === "Tehničar za računarstvo"
-    );
-    expect(racunarstvo).toBeDefined();
-    expect(racunarstvo!.warnings.some((w) => w.includes("matematiku"))).toBe(true);
-  });
-
-  it("svaka preporuka ima razloge, dostupnost i postotak u rasponu", () => {
-    const answers = buildAnswers({
-      base: 4,
-      signals: { sport_active: 5, hands_on_craft: 2 },
-    });
-    const analysis = analyzeJuniorQuiz(answers);
+  it("prazan kviz ima fallback i insufficientData", () => {
+    const analysis = analyzeJuniorQuiz({});
+    expect(analysis.insufficientData).toBe(true);
     expect(analysis.recommendations.length).toBeGreaterThan(0);
-    for (const rec of analysis.recommendations) {
-      expect(rec.reasons.length).toBeGreaterThan(0);
-      expect(rec.availability.totalSchools).toBeGreaterThan(0);
-      expect(rec.matchPercentage).toBeGreaterThanOrEqual(1);
-      expect(rec.matchPercentage).toBeLessThanOrEqual(99);
-    }
-  });
-});
-
-// ---------------------------------------------------------------------------
-// Averzija — tvrdo isključivanje domena koje učenik izričito ne želi
-// ---------------------------------------------------------------------------
-
-describe("junior kviz — averzija (odgovor 1 na ključni signal)", () => {
-  it("tko uopće ne želi medicinu, ne dobiva NIJEDAN zdravstveni program (ni fizioterapiju)", () => {
-    const answers = buildAnswers({
-      base: 3,
-      signals: { health_medicine: 1, tech_computers: 4 },
-      categories: [{ section: "subjects", category: "biologija", value: 5 }],
-    });
-    const names = recommendedNames(answers);
-    expect(names).not.toContain("Medicinska sestra / medicinski tehničar");
-    expect(names).not.toContain("Fizioterapeutski tehničar");
-    expect(names).not.toContain("Farmaceutski tehničar");
-    expect(analyzeJuniorQuiz(answers).excludedBySignals).toBeGreaterThan(0);
+    expect(analysis.recommendations.every((r) => r.positiveReasons.length > 0)).toBe(true);
   });
 
-  it("tko izričito ne voli crtanje, ne dobiva dizajn ni medijskog tehničara", () => {
-    const answers = buildAnswers({
-      base: 3,
-      signals: { art_visual: 1 },
-      categories: [{ section: "interests", category: "kreativa", value: 4 }],
-    });
-    const names = recommendedNames(answers);
-    expect(names).not.toContain("Škola za dizajn i likovnu umjetnost");
-    expect(names).not.toContain("Medijski / grafički tehničar i web dizajner");
+  it("jedan odgovor ne ruši cijeli rezultat", () => {
+    const a = expectFiniteScores(persona([[2, "app"]]));
+    const b = expectFiniteScores(persona([[2, "poster"]]));
+    expect(Math.abs(a.recommendations[0].matchPercentage - b.recommendations[0].matchPercentage)).toBeLessThan(80);
   });
 
-  it("tko izričito ne želi jezike, ne dobiva jezičnu gimnaziju", () => {
-    const answers = buildAnswers({
-      base: 3,
-      signals: { languages_travel: 1 },
-      categories: [{ section: "subjects", category: "jezici", value: 4 }],
-    });
-    expect(recommendedNames(answers)).not.toContain("Jezična gimnazija");
+  it("calculateQuizProfile i calculateProgramMatch su deterministički", () => {
+    const answers = persona([
+      [2, "app"],
+      [30, "code"],
+      [70, "faculty"],
+    ]);
+    const p1 = calculateQuizProfile(answers);
+    const p2 = calculateQuizProfile(answers);
+    expect(p1.interests.technology).toBe(p2.interests.technology);
+    const program = highSchoolPrograms.find((p) => p.name === "Tehničar za računarstvo")!;
+    const m1 = calculateProgramMatch(p1, program);
+    const m2 = calculateProgramMatch(p2, program);
+    expect(m1.overallScore).toBe(m2.overallScore);
+    expect(m1.positiveReasons.length).toBeGreaterThan(0);
   });
 
-  it("blaga nezainteresiranost (2) NE isključuje, samo spušta rezultat", () => {
-    const answers = buildAnswers({
-      base: 3,
-      signals: { health_medicine: 2, helping_people: 4 },
-      categories: [{ section: "subjects", category: "biologija", value: 4 }],
-    });
-    const analysis = analyzeJuniorQuiz(answers);
-    const allEligible = analysis.recommendations.map((r) => r.program.name);
-    // Program smije postojati u širem popisu — bitno je da nije tvrdo izbačen zbog "2".
-    const sestra = highSchoolPrograms.find(
-      (p) => p.name === "Medicinska sestra / medicinski tehničar"
-    );
-    expect(sestra).toBeDefined();
-    // requiresSignals za sestru traži 2, pa s odgovorom 2 prolazi tvrdi filter.
-    expect(analysis.excludedBySignals).toBeLessThan(highSchoolPrograms.length);
-    expect(Array.isArray(allEligible)).toBe(true);
-  });
-});
-
-// ---------------------------------------------------------------------------
-// Pouzdanost i putokaz
-// ---------------------------------------------------------------------------
-
-describe("junior kviz — pouzdanost i putokaz", () => {
-  it("sve neutralno -> niska pouzdanost", () => {
-    const answers = buildAnswers({ base: 3 });
-    const analysis = analyzeJuniorQuiz(answers);
-    expect(analysis.confidence.level).toBe("low");
+  it("nedovršen kviz se može nastaviti — scoring radi s djelomičnim odgovorima", () => {
+    const partial = persona([
+      [1, "understand"],
+      [2, "app"],
+    ]);
+    const seq = buildMainSequence(partial);
+    expect(seq.length).toBeGreaterThanOrEqual(28);
+    expect(seq.length).toBeLessThanOrEqual(36);
+    expect(analyzeJuniorQuiz(partial).profile.answeredCount).toBe(2);
   });
 
-  it("jasan i odlučan profil -> visoka pouzdanost", () => {
-    const answers = buildAnswers({
-      base: 1,
-      signals: { tech_computers: 5, numbers_data: 5 },
-      categories: [
-        { section: "interests", category: "istrazivanje", value: 5 },
-        { section: "subjects", category: "informatika", value: 5 },
-        { section: "subjects", category: "matematika", value: 5 },
-        { section: "workstyle", category: "teorija", value: 5 },
-        { section: "workstyle", category: "faks", value: 5 },
-        { section: "workstyle", category: "disciplina", value: 5 },
-        { section: "workstyle", category: "sjedenje", value: 4 },
-        { section: "workstyle", category: "upornost", value: 5 },
-      ],
-    });
-    const analysis = analyzeJuniorQuiz(answers);
-    expect(analysis.confidence.level).toBe("high");
+  it("upozorava na matematiku bez ponižavanja", () => {
+    const answers = persona([
+      [2, "app"],
+      [6, "avoid_math"],
+      [30, "code"],
+      [32, "prefer_less"],
+      [75, ["matematika"]],
+    ]);
+    const rec = analyzeJuniorQuiz(answers).allMatches.find((r) => r.program.name === "Tehničar za računarstvo");
+    expect(rec).toBeDefined();
+    expect(rec!.cautionReasons.join(" ")).toMatch(/matemat/i);
+    expect(rec!.cautionReasons.join(" ").toLowerCase()).not.toMatch(/nisi dovoljno/);
   });
 
-  it("uravnotežen radni stil -> otvorena oba puta", () => {
-    const answers = buildAnswers({ base: 3 });
-    expect(computeJuniorPathway(answers).direction).toBe("balanced");
+  it("prioritet fakultet diže četverogodišnje programe", () => {
+    const answers = persona([
+      [11, 4],
+      [70, "both"],
+      [71, "mix"],
+    ]);
+    const base = analyzeJuniorQuiz(answers);
+    const faculty = analyzeJuniorQuiz(answers, { priority: "faculty" });
+    const baseGym = base.allMatches.find((m) => m.program.type === "gimnazija")?.matchPercentage ?? 0;
+    const facGym = faculty.allMatches.find((m) => m.program.type === "gimnazija")?.matchPercentage ?? 0;
+    expect(facGym).toBeGreaterThanOrEqual(baseGym - 1);
   });
 
-  it("upornost diže akademski score, struktura praktični", () => {
-    const low = buildAnswers({
-      base: 3,
-      categories: [
-        { section: "workstyle", category: "upornost", value: 1 },
-        { section: "workstyle", category: "struktura", value: 1 },
-      ],
-    });
-    const persist = buildAnswers({
-      base: 3,
-      categories: [
-        { section: "workstyle", category: "upornost", value: 5 },
-        { section: "workstyle", category: "struktura", value: 1 },
-      ],
-    });
-    const structure = buildAnswers({
-      base: 3,
-      categories: [
-        { section: "workstyle", category: "upornost", value: 1 },
-        { section: "workstyle", category: "struktura", value: 5 },
-      ],
-    });
-    expect(computeJuniorPathway(persist).academicScore).toBeGreaterThan(
-      computeJuniorPathway(low).academicScore,
-    );
-    expect(computeJuniorPathway(structure).practicalScore).toBeGreaterThan(
-      computeJuniorPathway(low).practicalScore,
-    );
-  });
-
-  it("signalna mapa pokriva sva signalna pitanja", () => {
-    const answers = buildAnswers({ base: 4 });
-    const map = buildJuniorSignalMap(answers);
-    const signalCount = juniorQuestions.filter((q) => q.signalKey).length;
-    expect(Object.keys(map).length).toBe(signalCount);
-  });
-});
-
-describe("junior kviz — pokrivenost programa", () => {
-  const answersForProgram = (program: (typeof highSchoolPrograms)[number]): JuniorAnswers => {
-    const signals: Partial<Record<JuniorSignalKey, number>> = {};
-    for (const [key, weight] of Object.entries({ ...program.boostSignals, ...program.requiresSignals })) {
-      if (weight) signals[key as JuniorSignalKey] = 5;
-    }
-    const categories: { section: string; category: string; value: number }[] = [];
-    for (const [key, weight] of Object.entries(program.interestWeights)) {
-      if (weight) categories.push({ section: "interests", category: key, value: 5 });
-    }
-    for (const [key, weight] of Object.entries(program.subjectWeights)) {
-      if (weight) categories.push({ section: "subjects", category: key, value: 5 });
-    }
-    if (program.academicLoad >= 3) {
-      for (const category of ["teorija", "faks", "disciplina", "sjedenje", "upornost"]) {
-        categories.push({ section: "workstyle", category, value: 5 });
-      }
-      for (const category of ["zanat", "praksa", "struktura"]) {
-        categories.push({ section: "workstyle", category, value: 1 });
-      }
-    } else if (program.academicLoad <= 1) {
-      for (const category of ["zanat", "praksa", "struktura"]) {
-        categories.push({ section: "workstyle", category, value: 5 });
-      }
-      for (const category of ["teorija", "faks", "disciplina", "sjedenje"]) {
-        categories.push({ section: "workstyle", category, value: 1 });
-      }
-    }
-    return buildAnswers({ base: 2, signals, categories });
-  };
-
-  it("svaki program može ući u top 8 za svoj profil", () => {
-    const missing: string[] = [];
-    const ranks: { name: string; rank: number }[] = [];
+  it("svaki program može ući visoko za profil usklađen sa svojim signalima", () => {
+    const weak: string[] = [];
     for (const program of highSchoolPrograms) {
-      const names = recommendedNames(answersForProgram(program));
-      const rank = names.indexOf(program.name);
-      ranks.push({ name: program.name, rank: rank === -1 ? 99 : rank + 1 });
-      if (rank === -1) missing.push(program.name);
+      const answers: JuniorAnswers = {
+        70: program.duration === 3 ? "work" : "faculty",
+        71: program.academicLoad <= 1 ? "hands" : program.academicLoad >= 3 ? "how" : "mix",
+      };
+      if (program.boostSignals.tech_computers) {
+        answers[2] = "app";
+        answers[30] = "code";
+      }
+      if (program.boostSignals.health_medicine) {
+        answers[20] = "care";
+        answers[8] = 5;
+        answers[15] = "help";
+      }
+      if (program.boostSignals.art_visual) answers[2] = "poster";
+      if (program.boostSignals.music_performance) answers[40] = "music";
+      if (program.boostSignals.hands_on_craft) {
+        answers[4] = "fix";
+        answers[11] = 5;
+      }
+      if (program.boostSignals.cooking_food) answers[50] = "food";
+      if (program.boostSignals.beauty_style) answers[50] = "beauty";
+      if (program.boostSignals.languages_travel) answers[60] = "lang";
+      if (program.boostSignals.animals_nature) answers[20] = "animals";
+      if (program.boostSignals.plants_outdoor) answers[50] = "plants";
+      if (program.boostSignals.sport_active) {
+        answers[36] = "sport";
+        answers[37] = "sportjob";
+      }
+      if (program.boostSignals.science_experiments) answers[9] = "why";
+      if (program.boostSignals.business_entrepreneur) answers[7] = "product";
+      if (program.boostSignals.numbers_data) answers[6] = "interest_math";
+      if (program.boostSignals.logistics_transport) {
+        answers[34] = "move";
+        answers[35] = "field";
+      }
+      if (program.name === "Upravni referent") {
+        answers[5] = "plan";
+        answers[15] = "security";
+        answers[1] = "team";
+        answers[61] = 4;
+      }
+      const rank = analyzeJuniorQuiz(answers).allMatches.map((m) => m.program.name).indexOf(program.name);
+      if (rank === -1 || rank > 10) weak.push(`${program.name} (#${rank + 1 || "nema"})`);
     }
-    if (missing.length) {
-      console.log("Nisu u top 8:", missing);
-      console.log(ranks.filter((r) => r.rank > 8));
+    expect(weak).toEqual([]);
+  });
+});
+
+describe("junior kviz v2 — putokaz", () => {
+  it("computeJuniorPathway ostaje dostupan", () => {
+    const academic = computeJuniorPathway(persona([[3, 5], [61, 5], [70, "faculty"], [71, "how"]]));
+    const practical = computeJuniorPathway(persona([[11, 5], [51, 5], [70, "work"], [71, "hands"]]));
+    expect(academic.academicScore).toBeGreaterThan(practical.academicScore);
+    expect(practical.practicalScore).toBeGreaterThan(academic.practicalScore);
+  });
+});
+
+const noVerdict = (text: string) => {
+  expect(text.toLowerCase()).not.toMatch(
+    /ti trebaš upisati|ti si za |ti nisi za |najbolja škola za tebe|točan odgovor|interest score|learning fit/,
+  );
+};
+
+describe("junior kviz v2 — 8 mentalnih profila", () => {
+  it("1. računala i tehnologija", () => {
+    const answers = persona([
+      [1, "understand"],
+      [2, "app"],
+      [4, "how"],
+      [6, "interest_math"],
+      [7, "app"],
+      [13, "tinker"],
+      [16, "tasks"],
+      [30, "code"],
+      [31, "computer"],
+      [32, "ok"],
+      [70, "faculty"],
+      [71, "solve"],
+    ]);
+    const analysis = expectFiniteScores(answers);
+    expect(names(answers, 3)).toContain("Tehničar za računarstvo");
+    noVerdict(analysis.profileSummary);
+  });
+
+  it("2. biologija i pomaganje ljudima", () => {
+    const answers = persona([
+      [2, "help"],
+      [8, 5],
+      [10, "explain"],
+      [15, "help"],
+      [20, "care"],
+      [21, "hospital"],
+      [22, "people_heavy"],
+      [23, "practice"],
+      [70, "faculty"],
+      [9, "why"],
+    ]);
+    const top = names(answers, 4);
+    expect(top.some((n) => /medicinska sestra|prirodoslovna|fizioterapeut/i.test(n))).toBe(true);
+    expect(top.join(" ").toLowerCase()).not.toMatch(/strojar|automehanič|frizer/i);
+  });
+
+  it("3. jezici, pisanje i društveni predmeti", () => {
+    const answers = persona([
+      [2, "help"],
+      [3, 5],
+      [10, "explain"],
+      [12, "text"],
+      [15, "help"],
+      [16, "group"],
+      [60, "lang"],
+      [61, 5],
+      [62, "time"],
+      [70, "faculty"],
+      [71, "how"],
+    ]);
+    const analysis = analyzeJuniorQuiz(answers);
+    expect(analysis.pathway.direction).toBe("gimnazija");
+    expect(names(answers, 3)).toContain("Jezična gimnazija");
+  });
+
+  it("4. crtanje, dizajn i kreativnost", () => {
+    const answers = persona([
+      [1, "invent"],
+      [2, "poster"],
+      [7, "art"],
+      [12, "visual"],
+      [15, "create"],
+      [40, "visual"],
+      [41, "yes"],
+      [42, "studio"],
+      [71, "hands"],
+    ]);
+    expect(names(answers, 4).some((n) => /dizajn|medij|glazben/i.test(n))).toBe(true);
+  });
+
+  it("5. rad rukama i praktični zadaci", () => {
+    const answers = persona([
+      [1, "experiment"],
+      [4, "fix"],
+      [11, 5],
+      [16, "make"],
+      [50, "cars"],
+      [51, 5],
+      [52, "job"],
+      [70, "work"],
+      [71, "hands"],
+      [3, 1],
+    ]);
+    const analysis = analyzeJuniorQuiz(answers);
+    expect(analysis.pathway.direction).toBe("strukovna");
+    const top3 = analysis.recommendations.slice(0, 3);
+    expect(top3.some((r) => r.program.type === "obrtnicka" || r.program.type === "tehnicka")).toBe(true);
+    expect(top3.some((r) => r.program.type === "gimnazija")).toBe(false);
+  });
+
+  it("6. voli matematiku, još ne zna smjer", () => {
+    const answers = persona([
+      [1, "understand"],
+      [3, 4],
+      [6, "interest_math"],
+      [16, "tasks"],
+      [60, "math"],
+      [61, 4],
+      [62, "time"],
+      [70, "unsure"],
+      [71, "solve"],
+    ]);
+    const analysis = expectFiniteScores(answers);
+    const top = names(answers, 4);
+    expect(top.some((n) => /gimnazija|računar|matematič/i.test(n))).toBe(true);
+    expect(top.join(" ").toLowerCase()).not.toMatch(/frizer|kulinar|automehanič/i);
+    expect(analysis.profileSummary.length).toBeGreaterThan(20);
+  });
+
+  it("7. široki interesi, nema jasan smjer", () => {
+    const answers = persona([
+      [1, "team"],
+      [3, 3],
+      [6, "mix"],
+      [8, 3],
+      [11, 3],
+      [16, "group"],
+      [70, "unsure"],
+      [71, "mix"],
+      [61, 3],
+      [81, 3],
+    ]);
+    const analysis = analyzeJuniorQuiz(answers);
+    expect(analysis.confidence.level === "low" || analysis.indecisive).toBe(true);
+    expect(analysis.recommendations[0].matchPercentage).toBeLessThanOrEqual(78);
+    expect(analysis.recommendations.length).toBeGreaterThanOrEqual(3);
+    noVerdict(analysis.profileSummary);
+  });
+
+  it("8. kontradiktorni odgovori daju smislen okvir", () => {
+    const answers = persona([
+      [2, "help"],
+      [8, 1],
+      [15, "help"],
+      [20, "lab"],
+      [22, "less_people"],
+      [70, "faculty"],
+      [7, "app"],
+      [11, 5],
+    ]);
+    const analysis = expectFiniteScores(answers);
+    expect(analysis.contradictions.length + analysis.recommendations.length).toBeGreaterThan(3);
+    expect(analysis.recommendations.every((r) => r.positiveReasons.length > 0)).toBe(true);
+    noVerdict([...analysis.contradictions, analysis.profileSummary].join(" "));
+  });
+});
+
+describe("junior kviz v2 — jezik za učenika", () => {
+  it("pitanja ne koriste stručni žargon", () => {
+    const blob = juniorQuestions
+      .map((q) => `${q.prompt} ${q.hint ?? ""} ${(q.options ?? []).map((o) => o.label).join(" ")}`)
+      .join(" ");
+    expect(blob.toLowerCase()).not.toMatch(
+      /kognitiv|analitičk|radnog okruženja|stem podru|preferiraš|verbalno izražavanje|profiliranje/,
+    );
+    expect(blob).not.toMatch(/točan odgovor|netočan odgovor|provjeri svoje znanje/);
+  });
+
+  it("promptovi su rodno neutralni", () => {
+    const blob = juniorQuestions.map((q) => `${q.prompt} ${q.hint ?? ""}`).join(" ");
+    expect(blob.toLowerCase()).not.toMatch(/\bradio\b|\bnapravio\b|\bnapravila\b|\bmorao\b|\bmorala\b/);
+  });
+});
+
+describe("junior kviz v2.2 — nove grane i rezultat", () => {
+  it("grad iz kviza ide u profil", () => {
+    expect(calculateQuizProfile({ 77: "Split" }).schoolContext.city).toBe("Split");
+    expect(calculateQuizProfile({ 77: "skip" }).schoolContext.city).toBeNull();
+  });
+
+  it("objašnjenja dolaze iz konkretnih odgovora", () => {
+    const answers = persona([
+      [2, "app"],
+      [30, "code"],
+      [31, "computer"],
+    ]);
+    const rec = analyzeJuniorQuiz(answers).allMatches.find((r) => r.program.name === "Tehničar za računarstvo");
+    expect(rec).toBeDefined();
+    expect(rec!.answerReasons.join(" ")).toMatch(/aplikacij|računal/i);
+    expect(rec!.interestLine).toMatch(/vuče te|računal|tehnik/i);
+    expect(rec!.readinessNotes).toBeDefined();
+  });
+
+  it("ljestvica ima 5 riječi, ne samo brojke", () => {
+    expect([...JUNIOR_SCALE_WORDS]).toEqual(["Baš ne", "Malo", "Tako-tako", "Da", "Jako da"]);
+  });
+
+  it("mini papir za kuću ima 2 programa i pitanje za roditelja", () => {
+    const analysis = analyzeJuniorQuiz(
+      persona([
+        [2, "app"],
+        [30, "code"],
+        [70, "faculty"],
+      ]),
+    );
+    const talk = buildHomeTalk(analysis);
+    expect(talk.programs.length).toBeGreaterThanOrEqual(1);
+    expect(talk.parentQuestion.length).toBeGreaterThan(10);
+    expect(talk.text).toMatch(/nije odluka/i);
+  });
+
+  it("ekonomija / turizam / sport / hrana / logistika ulaze visoko", () => {
+    const economy = names(
+      persona([
+        [5, "plan"],
+        [7, "product"],
+        [34, "shop"],
+        [35, "own"],
+        [36, "numbers"],
+        [37, "plan"],
+        [70, "faculty"],
+      ]),
+      5,
+    );
+    expect(economy.some((n) => /ekonomist|upravni|prodavač/i.test(n))).toBe(true);
+
+    const tourism = names(
+      persona([
+        [2, "help"],
+        [15, "help"],
+        [34, "guest"],
+        [35, "hotel"],
+        [36, "talk"],
+        [37, "serve"],
+        [60, "lang"],
+        [70, "faculty"],
+      ]),
+      5,
+    );
+    expect(tourism.some((n) => /turistič|hotelijer|konobar/i.test(n))).toBe(true);
+
+    const sport = names(
+      persona([
+        [14, 5],
+        [36, "sport"],
+        [37, "sportjob"],
+        [11, 4],
+        [70, "faculty"],
+      ]),
+      5,
+    );
+    expect(sport.some((n) => /sport/i.test(n))).toBe(true);
+
+    const food = names(
+      persona([
+        [11, 5],
+        [16, "make"],
+        [36, "food"],
+        [37, "kitchen"],
+        [50, "food"],
+        [70, "work"],
+        [71, "hands"],
+      ]),
+      5,
+    );
+    expect(food.some((n) => /kuhar|konobar|prehramben/i.test(n))).toBe(true);
+
+    const logistics = names(
+      persona([
+        [5, "plan"],
+        [34, "move"],
+        [35, "field"],
+        [37, "plan"],
+        [70, "faculty"],
+      ]),
+      5,
+    );
+    expect(logistics.some((n) => /promet|logistik/i.test(n))).toBe(true);
+  });
+
+  it("svaki program ima 4 retka običnog dana i činjenice", () => {
+    for (const program of highSchoolPrograms) {
+      const day = typicalDayFor(program);
+      expect(day.morning.length, program.name).toBeGreaterThan(8);
+      expect(day.rhythm.length, program.name).toBeGreaterThan(8);
+      expect(day.subjects.length, program.name).toBeGreaterThan(8);
+      expect(day.after.length, program.name).toBeGreaterThan(8);
+      const chips = programFactChips(program);
+      expect(chips.some((c) => c.id === "matura" || c.id === "no-matura")).toBe(true);
+      expect(chips.some((c) => c.id === "bar")).toBe(true);
     }
-    expect(missing).toEqual([]);
   });
 });

@@ -18,12 +18,45 @@ export type JuniorClassTrack = {
 };
 
 export type JuniorClassEntry = {
+  id?: number;
   alias: string | null;
   programId: number;
   programName: string;
   pathway: string | null;
   city: string | null;
+  createdAt?: string | null;
 };
+
+export type TeacherClassMem = {
+  code: string;
+  label: string | null;
+  expected?: number;
+};
+
+export const studentQuizPath = (code: string) => `/kviz-srednja?razred=${code}`;
+export const classBoardPath = (code: string) => `/razred?kod=${code}`;
+
+export const studentQuizHref = (code: string): string => {
+  if (typeof window === "undefined") return studentQuizPath(code);
+  return `${window.location.origin}${studentQuizPath(code)}`;
+};
+
+export const arrivalLabel = (createdAt: string | null | undefined, now = Date.now()): string => {
+  if (!createdAt) return "";
+  const raw = createdAt.includes("T") ? createdAt : createdAt.replace(" ", "T");
+  const withZone = /Z$|[+-]\d{2}:?\d{2}$/.test(raw) ? raw : `${raw}Z`;
+  const t = new Date(withZone).getTime();
+  if (!Number.isFinite(t)) return "";
+  const sec = Math.max(0, Math.round((now - t) / 1000));
+  if (sec < 8) return "upravo";
+  if (sec < 60) return `prije ${sec} s`;
+  const min = Math.round(sec / 60);
+  if (min < 60) return `prije ${min} min`;
+  return `prije ${Math.round(min / 60)} h`;
+};
+
+export const qrImageSrc = (url: string, size = 180) =>
+  `https://api.qrserver.com/v1/create-qr-code/?size=${size}x${size}&data=${encodeURIComponent(url)}`;
 
 export type JuniorClassBoard = {
   code: string;
@@ -91,24 +124,44 @@ export function saveLastClassCode(code: string): void {
   }
 }
 
-export function rememberTeacherCode(code: string, label: string | null): void {
+export function rememberTeacherCode(code: string, label: string | null, expected?: number): void {
   try {
     const raw = window.localStorage.getItem(TEACHER_CODES_KEY);
-    const list = raw ? (JSON.parse(raw) as Array<{ code: string; label: string | null }>) : [];
-    const next = [{ code, label }, ...list.filter((x) => x.code !== code)].slice(0, 8);
+    const list = raw ? (JSON.parse(raw) as TeacherClassMem[]) : [];
+    const prev = list.find((x) => x.code === code);
+    const next: TeacherClassMem[] = [
+      { code, label, expected: expected ?? prev?.expected },
+      ...list.filter((x) => x.code !== code),
+    ].slice(0, 8);
     window.localStorage.setItem(TEACHER_CODES_KEY, JSON.stringify(next));
   } catch {
     /* ignore */
   }
 }
 
-export function loadTeacherCodes(): Array<{ code: string; label: string | null }> {
+export function loadTeacherCodes(): TeacherClassMem[] {
   try {
     const raw = window.localStorage.getItem(TEACHER_CODES_KEY);
-    const list = raw ? (JSON.parse(raw) as Array<{ code: string; label: string | null }>) : [];
+    const list = raw ? (JSON.parse(raw) as TeacherClassMem[]) : [];
     return Array.isArray(list) ? list : [];
   } catch {
     return [];
+  }
+}
+
+export function wasClassConfirmed(code: string): boolean {
+  try {
+    return window.localStorage.getItem(`junior-class-sent-${code}`) === "1";
+  } catch {
+    return false;
+  }
+}
+
+export function markClassConfirmed(code: string): void {
+  try {
+    window.localStorage.setItem(`junior-class-sent-${code}`, "1");
+  } catch {
+    /* ignore */
   }
 }
 
@@ -164,5 +217,6 @@ export async function joinJuniorClass(input: {
     return { ok: false, message: res.message };
   }
   saveLastClassCode(normalized);
+  markClassConfirmed(normalized);
   return { ok: true, already: Boolean(res.data?.already) };
 }

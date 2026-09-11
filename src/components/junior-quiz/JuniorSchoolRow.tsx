@@ -28,10 +28,12 @@ export default function JuniorSchoolRow({
   school,
   program,
   matchPercentage,
+  onSchoolOpen,
 }: {
   school: EnrichedNearbySchool;
   program: HighSchoolProgram;
   matchPercentage: number | null;
+  onSchoolOpen?: () => void;
 }) {
   const [saved, setSaved] = useState(() =>
     isOnShortlist(shortlistFromNearby(school, program, matchPercentage).key),
@@ -133,7 +135,10 @@ export default function JuniorSchoolRow({
 
       <div className="mt-2 flex flex-wrap gap-1.5">
         <Button asChild size="sm" variant="outline" className="h-8 rounded-lg px-2.5 text-xs">
-          <Link to={mapSchoolHref(school.mapSchoolId, school.name, school.city)}>
+          <Link
+            to={mapSchoolHref(school.mapSchoolId, school.name, school.city)}
+            onClick={() => onSchoolOpen?.()}
+          >
             <MapPin className="mr-1 h-3 w-3" />
             Na karti
           </Link>

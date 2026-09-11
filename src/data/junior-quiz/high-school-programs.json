@@ -4,7 +4,7 @@
     "name": "Opća gimnazija",
     "type": "gimnazija",
     "duration": 4,
-    "description": "Najšira opcija — svi predmeti podjednako. Idealna ako još ne znaš točno što želiš, a dobar/ra si u školi.",
+    "description": "Najšira opcija — svi predmeti podjednako. Korisna ako još ne znaš točno što želiš.",
     "afterSchool": "Državna matura i upis na bilo koji fakultet.",
     "interestWeights": {
       "istrazivanje": 2,
@@ -671,7 +671,9 @@
       "drustveni": 1
     },
     "academicLoad": 2,
-    "boostSignals": {},
+    "boostSignals": {
+      "logistics_transport": 3
+    },
     "requiresSignals": {},
     "matchKeywords": [
       "promet",

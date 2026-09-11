@@ -2033,11 +2033,13 @@ async function main() {
     return code;
   };
   const mapJuniorClassEntry = (row) => ({
+    id: Number(row.id) || undefined,
     alias: row.alias || null,
     programId: Number(row.program_id ?? row.programId),
     programName: String(row.program_name ?? row.programName ?? ""),
     pathway: row.pathway || null,
     city: row.city || null,
+    createdAt: row.created_at || row.createdAt || null,
   });
   const buildJuniorClassBoard = (klass, rows) => {
     const entries = (rows || []).map(mapJuniorClassEntry);
@@ -2084,7 +2086,7 @@ async function main() {
       if (!klass) return res.status(404).json({ success: false, message: "Taj kod ne postoji." });
       const rows = await db
         .prepare(
-          "SELECT alias, program_id, program_name, pathway, city FROM junior_class_entries WHERE class_id = ? ORDER BY created_at ASC",
+          "SELECT id, alias, program_id, program_name, pathway, city, created_at FROM junior_class_entries WHERE class_id = ? ORDER BY created_at ASC",
         )
         .all(klass.id);
       return res.json({ success: true, data: buildJuniorClassBoard(klass, rows) });

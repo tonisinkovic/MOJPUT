@@ -66,7 +66,7 @@ export function buildJuniorPlan(input: JuniorPlanInput): JuniorPlanStep[] {
     steps.push({
       id: "quiz",
       title: "Riješi kviz za srednju",
-      detail: "Bez kviza nema osobnog plana. Traje oko 10 minuta i predlaže programe, ne fakultet.",
+      detail: "Bez kviza nema osobnog plana. Traje oko 8 minuta i predlaže programe, ne fakultet.",
       href: "/kviz-srednja",
       when: "danas",
     });
@@ -90,7 +90,7 @@ export function buildJuniorPlan(input: JuniorPlanInput): JuniorPlanStep[] {
     steps.push({
       id: "exam",
       title: "Pripremi dodatnu provjeru",
-      detail: "Na vrhu liste imaš program s prijemnim, portfoliom ili audicijom. To se ne rješava tjedan prije roka.",
+      detail: "Na vrhu liste imaš program s prijemnim, mapom radova ili audicijom. To se ne rješava tjedan prije roka.",
       href: "/programi",
       when: month,
     });

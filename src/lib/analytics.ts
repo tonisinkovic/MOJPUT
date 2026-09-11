@@ -5,7 +5,13 @@ type QuizEventName =
   | "quiz_completed"
   | "quiz_passed"
   | "quiz_failed"
-  | "quiz_abandoned";
+  | "quiz_abandoned"
+  | "quiz_result_viewed"
+  | "recommendation_clicked"
+  | "program_opened"
+  | "school_opened"
+  | "result_shared"
+  | "quiz_restarted";
 
 type AuthEventName =
   | "sign_up_started"

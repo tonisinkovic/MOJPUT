@@ -1648,7 +1648,7 @@ const Index = () => {
               ...f,
               title: "Koja je srednja škola za mene?",
               description:
-                "Kviz za 8. razred: interesi, školski predmeti i stil učenja — s preporukama programa i stvarnih škola.",
+                "Kratak kviz: što te zanima i kako voliš učiti. Na kraju vidiš programe koji ti se slažu — to nije odluka.",
               path: "/kviz-srednja",
             };
           }
@@ -1712,7 +1712,7 @@ const Index = () => {
   };
 
   if (showEntryIntro) {
-    return (
+  return (
       <MojPutEntryIntro
         onEnterJunior={() => openExperience("junior")}
         onEnterSenior={() => openExperience("senior")}
@@ -1724,7 +1724,7 @@ const Index = () => {
 
   return (
     <div data-mojput-experience={selectedExperience}>
-      <Layout>
+    <Layout>
       <motion.div
         className="fixed left-0 top-0 z-[80] h-[3px] w-full origin-left bg-gradient-to-r from-primary via-sky-400 to-amber-400 shadow-[0_0_18px_hsl(174_62%_42%/0.45)]"
         style={{ scaleX: pageProgressScale }}
@@ -1818,8 +1818,8 @@ const Index = () => {
                   </>
                 ) : (
                   <>
-                    <span className="hidden sm:inline">Za srednjoškolce · maturante · studente · roditelje</span>
-                    <span className="sm:hidden">Za srednjoškolce, maturante i roditelje</span>
+                <span className="hidden sm:inline">Za srednjoškolce · maturante · studente · roditelje</span>
+                <span className="sm:hidden">Za srednjoškolce, maturante i roditelje</span>
                   </>
                 )}
               </motion.div>
@@ -1875,7 +1875,7 @@ const Index = () => {
                       MojPut ti pomaže istražiti fakultete, otkriti svoje talente i donijeti informiranu odluku o
                       budućoj karijeri — sve na jednom mjestu.
                     </span>
-                    <span className="sm:hidden">Istraži fakultete, otkrij talente i donesi pravu odluku.</span>
+                <span className="sm:hidden">Istraži fakultete, otkrij talente i donesi pravu odluku.</span>
                   </>
                 )}
               </motion.p>
@@ -1906,17 +1906,17 @@ const Index = () => {
                   whileHover={{ y: -2 }}
                   whileTap={{ scale: 0.97 }}
                   className="w-full sm:w-auto"
-                >
-                  <Button
-                    size="lg"
+              >
+                <Button
+                  size="lg"
                     className="group btn-primary-premium btn-primary-premium--live touch-tap border-0 rounded-xl px-5 sm:px-8 h-[3rem] sm:h-[3.25rem] text-[15px] sm:text-base font-semibold w-full sm:w-auto"
-                    asChild
-                  >
+                  asChild
+                >
                     <Link to={isJunior ? "/kviz-srednja" : "/kviz"} className="relative inline-flex items-center justify-center overflow-hidden">
                       <span className="relative z-[1]">Započni kviz</span>
                       <ArrowRight className="relative z-[1] w-4 h-4 ml-2 transition-transform duration-300 group-hover:translate-x-1.5" />
-                    </Link>
-                  </Button>
+                  </Link>
+                </Button>
                 </motion.div>
                 <motion.div
                   variants={{
@@ -1932,17 +1932,17 @@ const Index = () => {
                   whileTap={{ scale: 0.97 }}
                   className="w-full sm:w-auto"
                 >
-                  <Button
-                    size="lg"
-                    variant="outline"
+                <Button
+                  size="lg"
+                  variant="outline"
                     className="group btn-secondary-premium btn-secondary-premium--live touch-tap rounded-xl px-5 sm:px-8 h-[3rem] sm:h-[3.25rem] text-[15px] sm:text-base font-semibold w-full sm:w-auto"
-                    asChild
-                  >
+                  asChild
+                >
                     <Link to={mapPath} className="relative inline-flex items-center justify-center overflow-hidden">
                       <Map className="relative z-[1] mr-2 h-4 w-4 transition-transform duration-300 group-hover:scale-110" />
                       <span className="relative z-[1]">{isJunior ? "Istraži srednje škole" : "Istraži fakultete"}</span>
                     </Link>
-                  </Button>
+                </Button>
                 </motion.div>
               </motion.div>
 
@@ -1977,8 +1977,8 @@ const Index = () => {
                 >
                   {quickActions.map(({ to, label, hook, Icon, shell, iconWrap, featured }) => (
                     <motion.div key={to} variants={heroQuickItem} className="min-w-0">
-                      <Link
-                        to={to}
+                    <Link
+                      to={to}
                         className={cn(
                           "hero-quick-tile group relative flex min-h-[5.5rem] touch-tap flex-col items-center justify-center overflow-hidden rounded-2xl border bg-gradient-to-br px-2 py-3 text-center transition-all duration-300 active:scale-[0.96] sm:min-h-[5.75rem] sm:rounded-[1.125rem] sm:py-3.5",
                           shell,
@@ -1992,7 +1992,7 @@ const Index = () => {
                         {featured && (
                           <span className="absolute right-1.5 top-1.5 rounded-full bg-violet-500/90 px-1.5 py-0.5 text-[8px] font-extrabold uppercase tracking-wider text-white shadow-sm">
                             Start
-                          </span>
+                      </span>
                         )}
                         <span
                           className={cn(
@@ -2008,7 +2008,7 @@ const Index = () => {
                         <span className="relative mt-0.5 text-[10px] font-medium leading-none text-muted-foreground/90">
                           {hook}
                         </span>
-                      </Link>
+                    </Link>
                     </motion.div>
                   ))}
                 </motion.div>
@@ -2176,37 +2176,37 @@ const Index = () => {
           <Link
             to="/fakulteti"
             className="group relative flex overflow-hidden rounded-2xl border border-primary/25 bg-gradient-to-br from-primary/8 via-background to-muted/30 px-4 py-4 md:px-6 md:py-[1.125rem] shadow-soft transition-all duration-300 hover:border-primary/45 hover:shadow-elevated"
-          >
-            <div
-              className="pointer-events-none absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-transparent via-primary/40 to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100"
-              aria-hidden
-            />
-            <div className="absolute -right-8 -top-8 h-32 w-32 rounded-full bg-primary/8 blur-2xl pointer-events-none" aria-hidden />
+        >
+          <div
+            className="pointer-events-none absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-transparent via-primary/40 to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100"
+            aria-hidden
+          />
+          <div className="absolute -right-8 -top-8 h-32 w-32 rounded-full bg-primary/8 blur-2xl pointer-events-none" aria-hidden />
             <div className="relative flex w-full flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
-              <div
+            <div
                 className="relative flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border border-primary/25 bg-background shadow-inner ring-1 ring-background"
-                aria-hidden
-              >
+              aria-hidden
+            >
                 <GraduationCap className="h-5 w-5 text-primary transition-transform duration-500 group-hover:scale-110" strokeWidth={2} />
-              </div>
-              <div className="min-w-0 flex-1">
-                <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
-                  <h2 className="text-[15px] md:text-lg font-semibold leading-tight tracking-[-0.01em]">
+            </div>
+            <div className="min-w-0 flex-1">
+              <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+                <h2 className="text-[15px] md:text-lg font-semibold leading-tight tracking-[-0.01em]">
                     Profili fakulteta
-                  </h2>
+                </h2>
                   <span className="inline-flex items-center gap-1 rounded-full border border-primary/25 bg-primary/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-primary">
                     Nova sekcija
-                  </span>
-                </div>
-                <p className="text-[13px] md:text-sm text-muted-foreground leading-snug mt-1">
-                  Odaberi fakultet i otvori profil s objavama. Fakulteti se prijavljuju sa strane.
-                </p>
+                </span>
               </div>
+              <p className="text-[13px] md:text-sm text-muted-foreground leading-snug mt-1">
+                  Odaberi fakultet i otvori profil s objavama. Fakulteti se prijavljuju sa strane.
+              </p>
+            </div>
               <div className="flex shrink-0 items-center gap-1.5 self-start rounded-full border border-primary/20 bg-background/80 px-3 py-1.5 text-[11px] font-medium text-primary sm:self-center">
                 Otvori profile
                 <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" aria-hidden />
-              </div>
             </div>
+          </div>
           </Link>
         </motion.div>
       </section>
@@ -2233,7 +2233,7 @@ const Index = () => {
           style={{ y: statsGlowY }}
           aria-hidden
         />
-        <motion.div
+              <motion.div
           className="container py-8 sm:py-12 md:py-14"
           initial={{ opacity: 0, y: 28, scale: 0.98 }}
           whileInView={{ opacity: 1, y: 0, scale: 1 }}
@@ -2243,7 +2243,7 @@ const Index = () => {
           {isJunior ? (
             <div className="mx-auto max-w-2xl text-center">
               <JuniorNumbersNote counts className="justify-center" />
-            </div>
+          </div>
           ) : (
             <AnimatedStatsGrid stats={seniorStats} />
           )}
@@ -2343,34 +2343,34 @@ const Index = () => {
               <motion.div key={feature.path} variants={scrollRevealItem} className="h-full">
                 {feature.locked ? (
                   <div
-                    className="block h-full min-h-[11rem] select-none sm:min-h-[12.5rem]"
-                    aria-disabled
-                    title="Još nije aktivno — uskoro dostupno."
-                  >
-                    <FeatureCard
-                      icon={feature.icon}
-                      title={feature.title}
-                      description={feature.description}
-                      locked
-                    />
-                  </div>
-                ) : (
-                  <Link
-                    to={feature.path}
-                    className="block h-full min-h-[11rem] rounded-2xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 focus-visible:ring-offset-2 focus-visible:ring-offset-background sm:min-h-[12.5rem]"
-                  >
-                    <FeatureCard
-                      icon={feature.icon}
-                      title={feature.title}
-                      description={feature.description}
-                      highlighted={feature.highlighted}
-                    />
-                  </Link>
-                )}
+                  className="block h-full min-h-[11rem] select-none sm:min-h-[12.5rem]"
+                  aria-disabled
+                  title="Još nije aktivno — uskoro dostupno."
+                >
+                  <FeatureCard
+                    icon={feature.icon}
+                    title={feature.title}
+                    description={feature.description}
+                    locked
+                  />
+                </div>
+              ) : (
+                <Link
+                  to={feature.path}
+                  className="block h-full min-h-[11rem] rounded-2xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 focus-visible:ring-offset-2 focus-visible:ring-offset-background sm:min-h-[12.5rem]"
+                >
+                  <FeatureCard
+                    icon={feature.icon}
+                    title={feature.title}
+                    description={feature.description}
+                    highlighted={feature.highlighted}
+                  />
+                </Link>
+            )}
               </motion.div>
             ))}
           </motion.div>
-        </div>
+          </div>
       </motion.section>
 
       {/* CTA */}
@@ -2479,7 +2479,7 @@ const Index = () => {
                       <span className="hidden sm:inline">
                         Pridruži se tisućama maturanata koji su pronašli svoj put uz MojPut platformu.
                       </span>
-                      <span className="sm:hidden">Pridruži se maturantima koji su pronašli svoj put.</span>
+                  <span className="sm:hidden">Pridruži se maturantima koji su pronašli svoj put.</span>
                     </>
                   )}
                 </p>
@@ -2499,7 +2499,7 @@ const Index = () => {
         </motion.div>
       </section>
 
-      </Layout>
+    </Layout>
     </div>
   );
 };

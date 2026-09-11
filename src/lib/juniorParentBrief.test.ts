@@ -1,13 +1,20 @@
 import { describe, expect, it } from "vitest";
-import { analyzeJuniorQuiz } from "@/lib/juniorQuizEngine";
+import { analyzeJuniorQuiz, juniorQuestions, type JuniorAnswers } from "@/lib/juniorQuizEngine";
 import { decodeParentBrief, encodeParentBrief, buildParentBrief } from "@/lib/juniorParentBrief";
-import { juniorQuestions } from "@/lib/juniorQuizEngine";
+
+const filledAnswers = (value: 3 | 5): JuniorAnswers => {
+  const answers: JuniorAnswers = {};
+  for (const q of juniorQuestions) {
+    if (q.format === "scale") answers[q.id] = value;
+    else if (q.format === "choice") answers[q.id] = q.options?.[0]?.id ?? "skip";
+    else answers[q.id] = "skip";
+  }
+  return answers;
+};
 
 describe("parent brief", () => {
   it("kodira i dekodira bez gubitka programa", () => {
-    const answers: Record<number, number> = {};
-    for (const q of juniorQuestions) answers[q.id] = 4;
-    const analysis = analyzeJuniorQuiz(answers);
+    const analysis = analyzeJuniorQuiz(filledAnswers(5));
     const brief = buildParentBrief(analysis, "Bjelovar", null);
     expect(brief.questions).toHaveLength(4);
     expect(brief.programs.length).toBeGreaterThan(0);
@@ -18,9 +25,7 @@ describe("parent brief", () => {
   });
 
   it("razloge piše jezikom za roditelja", () => {
-    const answers: Record<number, number> = {};
-    for (const q of juniorQuestions) answers[q.id] = 5;
-    const brief = buildParentBrief(analyzeJuniorQuiz(answers), null, null);
+    const brief = buildParentBrief(analyzeJuniorQuiz(filledAnswers(5)), null, null);
     const blob = brief.programs.flatMap((p) => p.why).join(" ");
     expect(blob.toLowerCase()).not.toMatch(/rekao\/la si da/);
   });

@@ -13,9 +13,11 @@ import {
 export default function JuniorShareParents({
   brief,
   variant = "default",
+  onShared,
 }: {
   brief: ParentBrief;
   variant?: "default" | "outline";
+  onShared?: () => void;
 }) {
   const [copied, setCopied] = useState(false);
 
@@ -29,6 +31,7 @@ export default function JuniorShareParents({
           text: `${brief.pathwayTitle}\n\nOvo je orijentacija iz kviza, ne odluka.`,
           url,
         });
+        onShared?.();
         return;
       }
     } catch (err) {
@@ -37,6 +40,7 @@ export default function JuniorShareParents({
     try {
       await navigator.clipboard.writeText(`${text}\n\n${url}`);
       setCopied(true);
+      onShared?.();
       toast.success("Tekst i poveznica su u međuspremniku.");
       window.setTimeout(() => setCopied(false), 2000);
     } catch {

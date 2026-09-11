@@ -60,8 +60,8 @@ export default function JuniorPointsBox() {
         <div className="min-w-0 flex-1">
           <h3 className="text-sm font-bold">Tvoji bodovi — da vidiš šansu</h3>
           <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
-            Unesi okvirni zbroj (do 80 za gimnaziju) ili točnije izračunaj u kalkulatoru. Škole
-            ispod odmah uspoređuju s lanjskim pragom.
+            Upiši okvirni zbroj (do 80) ili točnije izračunaj u kalkulatoru. Škole ispod uspoređuju
+            s lanjskim pragom.
           </p>
           {points != null ? (
             <p className="mt-2 text-sm font-semibold text-foreground">
@@ -79,7 +79,7 @@ export default function JuniorPointsBox() {
               aria-label="Ukupni bodovi"
             />
             <Button type="button" size="sm" className="rounded-xl" onClick={applyQuick}>
-              Primijeni
+              Spremi
             </Button>
             {source === "quick" ? (
               <Button

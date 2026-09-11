@@ -42,9 +42,18 @@ const BRIEF_KEY = "junior-parent-brief-v1";
 function toParentReason(reason: string): string {
   return reason
     .replace(/^Rekao\/la si da/i, "Dijete je reklo da")
+    .replace(/^U kvizu stoji da/i, "Dijete je reklo da")
+    .replace(/^Prema tvojim odgovorima,\s*/i, "Prema odgovorima, ")
+    .replace(/^Pokazuješ /i, "Pokazuje ")
+    .replace(/^Odgovara ti /i, "Odgovara djetetu ")
+    .replace(/^Zanimaju te /i, "Zanimaju dijete ")
+    .replace(/^Zanima te /i, "Zanima dijete ")
+    .replace(/^Voliš /i, "Voli ")
+    .replace(/^Želiš /i, "Dijete želi ")
     .replace(/^Jak ti je interes:\s*/i, "Istaknut interes: ")
     .replace(/^U školi ti dobro ide:\s*/i, "U školi dobro ide: ")
-    .replace(/^Ukupni profil interesa i predmeta dobro se poklapa s ovim programom\./i, "Profil interesa i predmeta dobro se poklapa s ovim programom.");
+    .replace(/^Ukupni profil interesa i predmeta dobro se poklapa s ovim programom\./i, "Profil interesa i predmeta dobro se poklapa s ovim programom.")
+    .replace(/^Ukupni profil interesa i načina učenja se djelomično preklapa s ovim programom\./i, "Profil interesa i načina učenja se djelomično preklapa s ovim programom.");
 }
 
 function parentPathwayWhy(analysis: JuniorQuizAnalysis): string {

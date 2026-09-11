@@ -45,8 +45,8 @@ export default function JuniorPlanCard() {
             <ListChecks className="h-5 w-5" />
           </span>
           <div>
-            <CardTitle className="text-lg">Osobni plan do upisa</CardTitle>
-            <CardDescription>3–5 koraka iz kviza i kalendara — vrati se i u svibnju, ne samo sad.</CardDescription>
+            <CardTitle className="text-lg">Što dalje do upisa</CardTitle>
+            <CardDescription>3–5 koraka iz kviza i kalendara. Vrati se i u svibnju, ne samo sad.</CardDescription>
           </div>
         </div>
       </CardHeader>
