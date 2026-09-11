@@ -69,7 +69,7 @@ export default function Razred() {
     if (mem?.expected) setExpected(String(mem.expected));
     setBoard(res.board);
     setCodeInput(res.board.code);
-    rememberTeacherCode(res.board.code, res.board.label, mem?.expected ?? goal || undefined);
+    rememberTeacherCode(res.board.code, res.board.label, mem?.expected ?? (goal || undefined));
   };
 
   useEffect(() => {
