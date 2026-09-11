@@ -2,14 +2,17 @@ import { describe, expect, it } from "vitest";
 import { highSchoolPrograms } from "@/lib/juniorQuizEngine";
 import {
   chanceFor,
+  comparisonMaxFor,
   computeSrednjaPoints,
   emptyGradeDraft,
+  extendedScaleKind,
   findCutoff,
   findKalkulatorSchool,
   findMapSchoolId,
   gradeDraftIsUsable,
   nextJuniorDeadline,
   officialProgramExample,
+  programTypeFromPrag,
   shortlistItemKey,
 } from "@/lib/juniorPath";
 
@@ -72,6 +75,47 @@ describe("juniorPath bodovi i šansa", () => {
     expect(chanceFor(61, 60).tone).toBe("lime");
     expect(chanceFor(58, 60).tone).toBe("amber");
     expect(chanceFor(50, 60).tone).toBe("rose");
+  });
+
+  it("sportski odjel ima lanjski max iznad 80 pa skala nije 80", () => {
+    const school = findKalkulatorSchool("Gimnazija Bjelovar", "Bjelovar");
+    const prog = school?.programs.find((p) => /sport/i.test(p.name));
+    expect(prog?.prag?.max).toBeGreaterThan(80);
+    expect(prog?.prag?.min).toBeGreaterThan(80);
+    expect(comparisonMaxFor("gimnazija4", prog?.prag ?? null)).toBe(prog?.prag?.max);
+    expect(extendedScaleKind(prog!.name, prog!.prag, "gimnazija4", school!.name)).toBe("sport");
+    expect(programTypeFromPrag(prog!.prag)).toBe("gimnazija4");
+  });
+
+  it("obična gimnazija ostaje na 80 ako lanjski max nije veći", () => {
+    const school = findKalkulatorSchool("Gimnazija Bjelovar", "Bjelovar");
+    const prog = school?.programs.find((p) => p.name === "Opća gimnazija");
+    expect(prog?.prag?.max).toBe(80);
+    expect(comparisonMaxFor("gimnazija4", prog?.prag ?? null)).toBe(80);
+    expect(extendedScaleKind(prog!.name, prog!.prag)).toBeNull();
+  });
+
+  it("glazbeni smjer koristi lanjski max (prijemni), a tip ostaje 4-godišnji", () => {
+    const school = findKalkulatorSchool("Glazbena škola Vatroslava Lisinskog Bjelovar", "Bjelovar");
+    const prog = school?.programs.find((p) => /kornist/i.test(p.name));
+    expect(prog?.prag?.max).toBeGreaterThan(200);
+    expect(comparisonMaxFor("gimnazija4", prog?.prag ?? null)).toBe(prog?.prag?.max);
+    expect(extendedScaleKind(prog!.name, prog!.prag, "gimnazija4", school!.name)).toBe("umjetnost");
+    expect(programTypeFromPrag(prog!.prag)).toBe("gimnazija4");
+  });
+
+  it("natjecanja malo iznad 80 (npr. 91) nisu prijemni, ali skala prati prag", () => {
+    const prag = {
+      year: "2025/2026",
+      kvota: 50,
+      upisani: 50,
+      min: 86.92,
+      avg: 79.71,
+      max: 91.75,
+    };
+    expect(comparisonMaxFor("gimnazija4", prag)).toBe(91.75);
+    expect(extendedScaleKind("Prirodoslovno-matematička gimnazija", prag)).toBe("natjecanja");
+    expect(programTypeFromPrag(prag)).toBe("gimnazija4");
   });
 });
 

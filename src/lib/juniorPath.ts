@@ -139,11 +139,17 @@ function touchLocalUpdated(): void {
   notifyCloudPush();
 }
 
+/** Strop zajedničkih elemenata (ocjene) prema trajanju programa — Pravilnik MZO. */
 export const MAX_BY_PROGRAM: Record<SrednjaProgramType, number> = {
   gimnazija4: 80,
   trogodisnji: 50,
   kraci: 20,
 };
+
+/** Okvirni unos u kvizu / profilu: ocjene + prijemni / sport / natjecanja. */
+export const QUICK_POINTS_MAX = 300;
+
+export type ExtendedScaleKind = "sport" | "umjetnost" | "natjecanja";
 
 export function emptySevenEight(): SevenEightGrades {
   return {
@@ -225,11 +231,70 @@ function clamp(value: number, min: number, max: number): number {
 }
 
 export function programTypeFromPrag(prag: KalkulatorPrag | null): SrednjaProgramType | null {
-  const reference = prag?.max ?? prag?.min ?? null;
+  const reference = gradeScaleHintFromPrag(prag);
   if (reference == null) return null;
   if (reference > 50) return "gimnazija4";
   if (reference > 20) return "trogodisnji";
   return "kraci";
+}
+
+/**
+ * Lanjski min/max često uključuju prijemni ili sportske bodove (160, 250…),
+ * dok je prosjek obično još na skali ocjena. Za tip programa koristimo tu
+ * „ocjensku” skalu, ne napuhani maksimum.
+ */
+export function gradeScaleHintFromPrag(prag: KalkulatorPrag | null): number | null {
+  if (!prag) return null;
+  const max = prag.max;
+  const avg = prag.avg;
+  if (max != null && avg != null && max > 90 && avg > 0 && avg <= 90) return avg;
+  return max ?? prag.min ?? null;
+}
+
+export function observedPragMax(prag: KalkulatorPrag | null | undefined): number {
+  if (!prag) return 0;
+  return Math.max(prag.max ?? 0, prag.min ?? 0, prag.avg ?? 0);
+}
+
+/** Nazivnik trake i „/ max”: ocjene ili lanjski raspon smjera, što je veće. */
+export function comparisonMaxFor(
+  program: SrednjaProgramType,
+  prag?: KalkulatorPrag | null,
+  ukupno = 0,
+): number {
+  return Math.max(MAX_BY_PROGRAM[program], observedPragMax(prag), ukupno);
+}
+
+export function extendedScaleKind(
+  programName: string,
+  prag: KalkulatorPrag | null | undefined,
+  program: SrednjaProgramType = "gimnazija4",
+  schoolName = "",
+): ExtendedScaleKind | null {
+  const gradeMax = MAX_BY_PROGRAM[program];
+  const observed = observedPragMax(prag);
+  if (observed <= gradeMax + 0.05) return null;
+  const text = normalizeJuniorText(`${programName} ${schoolName}`);
+  if (/\bsport|\bsportal|sportase|sportska/.test(text)) return "sport";
+  if (/glazb|ples|balet|likovn|dizajn|umjetn|slikar|kipar|scenski/.test(text)) return "umjetnost";
+  if (observed > gradeMax + 15) return "umjetnost";
+  return "natjecanja";
+}
+
+export function extendedScaleNote(
+  kind: ExtendedScaleKind,
+  prag: KalkulatorPrag,
+  gradeMax: number,
+): string {
+  const min = prag.min != null ? prag.min.toLocaleString("hr-HR", { maximumFractionDigits: 2 }) : "—";
+  const max = prag.max != null ? prag.max.toLocaleString("hr-HR", { maximumFractionDigits: 2 }) : "—";
+  if (kind === "sport") {
+    return `Odjeli za sportaše zbrajaju školske bodove (do ${gradeMax}) i sportske rezultate. Lanjski prag je ${min}, najviši rezultat ${max} — unesi sportske bodove kao dodatne.`;
+  }
+  if (kind === "umjetnost") {
+    return `Umjetnički i slični programi uz ocjene broje i prijemni / audiciju. Lanjski prag je ${min} bodova (najviši rezultat ${max}). Unesi bodove s prijemnog kao dodatne.`;
+  }
+  return `Lanjski najviši rezultat je ${max} jer se uz ${gradeMax} iz ocjena broje i dodatni bodovi (npr. natjecanja). Unesi ih ispod.`;
 }
 
 export function computeSrednjaPoints(draft: JuniorGradeDraft): {

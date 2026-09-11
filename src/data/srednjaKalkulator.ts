@@ -9,6 +9,8 @@ export type KalkulatorPrag = {
   min: number | null;
   avg: number | null;
   max: number | null;
+  /** Prosjek s prijemnim, ako ga izvor objavi (stupac 7). */
+  avgWithExam?: number | null;
 };
 
 export type KalkulatorProgram = {

@@ -67,6 +67,7 @@ function toNum(v) {
 /**
  * Parsiraj HTML tablicu pragova: vrati sektor i redak najnovije školske godine.
  * Stupci: Školska godina | Redovna kvota | Upisani | minimalni | prosječan | maksimalni | Prosjek s prijemnim
+ * Min/max već uključuju prijemni/sportske bodove kad ih smjer ima; 7. stupac je poseban prosjek.
  */
 function parsePragHtml(htmlStr) {
   const sectorMatch = htmlStr.match(/<tr class="sector-row">\s*<th[^>]*>([^<]+)<\/th>/);
@@ -85,6 +86,7 @@ function parsePragHtml(htmlStr) {
         min: toNum(cells[3]),
         avg: toNum(cells[4]),
         max: toNum(cells[5]),
+        avgWithExam: cells.length >= 7 ? toNum(cells[6]) : null,
       });
     }
   }
@@ -204,6 +206,7 @@ export type KalkulatorPrag = {
   min: number | null;
   avg: number | null;
   max: number | null;
+  avgWithExam?: number | null;
 };
 
 export type KalkulatorProgram = {
