@@ -34,8 +34,8 @@ import {
   Award,
   ShieldCheck,
   Home,
-  Lock,
   User,
+  School,
 } from "lucide-react";
 import type { LucideIcon, ReactNode } from "react";
 import { cn } from "@/lib/utils";
@@ -154,6 +154,13 @@ const features: HomeFeature[] = [
   },
   {
     icon: <GraduationCap className="h-6 w-6 text-primary" />,
+    title: "Profili fakulteta",
+    description: "Odaberi fakultet i otvori profil s opisom, kontaktima i novostima.",
+    path: "/fakulteti",
+    highlighted: true,
+  },
+  {
+    icon: <GraduationCap className="h-6 w-6 text-primary" />,
     title: "Koji je fakultet za mene?",
     description: "Karijerni upitnik (50+50): interesi i kompetencije, profil osobina i preporuke smjerova upisa.",
     path: "/kviz",
@@ -229,6 +236,7 @@ const JUNIOR_EXCLUDED_FEATURE_PATHS = new Set([
   "/mature",
   "/samoprocjena",
   "/video",
+  "/fakulteti",
 ]);
 
 const JUNIOR_HIDDEN_QUICK = new Set(["/samoprocjena", "/video"]);
@@ -306,6 +314,7 @@ const MojPutEntryIntro = ({
       tools: [
         { label: "Kviz za srednju", detail: "Interesi, smjerovi i prvi izbor", to: "/kviz-srednja", Icon: Target },
         { label: "Karta srednjih škola", detail: "Škole i programi u Hrvatskoj", to: "/srednje-skole", Icon: Map },
+        { label: "Profili škola", detail: "Odaberi školu i otvori njezin profil", to: "/srednje-skole/profili", Icon: School },
         { label: "Kalkulator za srednju", detail: "Bodovi i upisne šanse", to: "/kalkulator", Icon: Calculator },
       ],
     },
@@ -316,6 +325,7 @@ const MojPutEntryIntro = ({
       tools: [
         { label: "Kviz za fakultet", detail: "Studiji, karijere i odluka nakon mature", to: "/kviz", Icon: Target },
         { label: "Karta fakulteta", detail: "Fakulteti, studiji i lokacije", to: "/karta", Icon: Map },
+        { label: "Profili fakulteta", detail: "Odaberi fakultet i otvori profil", to: "/fakulteti", Icon: GraduationCap },
         { label: "Kalkulator za fakultete", detail: "Bodovi i upisne šanse za studije", to: "/kalkulator-fakulteti", Icon: Calculator },
       ],
     },
@@ -2155,53 +2165,49 @@ const Index = () => {
         />
       </section>
 
-      {/* Faculty Hub — kompaktno, zaključano (u izradi) */}
+      {/* Faculty Hub */}
       {!isJunior && (
       <section className="container py-6 md:py-8">
         <motion.div
           initial={{ opacity: 0, y: 12 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          className="group relative overflow-hidden rounded-2xl border border-dashed border-muted-foreground/35 bg-gradient-to-br from-muted/45 via-background to-muted/30 px-4 py-4 md:px-6 md:py-[1.125rem] shadow-soft hover:shadow-elevated hover:border-primary/30 transition-all duration-300"
-          role="status"
-          aria-live="polite"
         >
-          <div
-            className="pointer-events-none absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-transparent via-primary/40 to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100"
-            aria-hidden
-          />
-          <div className="absolute -right-8 -top-8 h-32 w-32 rounded-full bg-primary/8 blur-2xl pointer-events-none" aria-hidden />
-          <div className="absolute -left-12 -bottom-12 h-32 w-32 rounded-full bg-accent/8 blur-2xl pointer-events-none" aria-hidden />
-          <div className="relative flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
+          <Link
+            to="/fakulteti"
+            className="group relative flex overflow-hidden rounded-2xl border border-primary/25 bg-gradient-to-br from-primary/8 via-background to-muted/30 px-4 py-4 md:px-6 md:py-[1.125rem] shadow-soft transition-all duration-300 hover:border-primary/45 hover:shadow-elevated"
+          >
             <div
-              className="relative flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border border-muted-foreground/25 bg-background shadow-inner ring-1 ring-background"
+              className="pointer-events-none absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-transparent via-primary/40 to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100"
               aria-hidden
-            >
-              <Lock className="h-5 w-5 text-muted-foreground transition-transform duration-500 group-hover:scale-110" strokeWidth={2} />
-              <span className="absolute inset-0 rounded-2xl ring-2 ring-muted-foreground/10 opacity-0 group-hover:opacity-100 group-hover:animate-pulse transition-opacity" />
-            </div>
-            <div className="min-w-0 flex-1">
-              <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
-                <h2 className="text-[15px] md:text-lg font-semibold leading-tight tracking-[-0.01em]">
-                  Profili fakulteta na zasebnom mjestu
-                </h2>
-                <span className="inline-flex items-center gap-1 rounded-full border border-muted-foreground/30 bg-background/90 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
-                  <span className="relative flex h-1.5 w-1.5">
-                    <span className="absolute inline-flex h-full w-full rounded-full bg-muted-foreground/50 opacity-75 animate-ping" />
-                    <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-muted-foreground/70" />
-                  </span>
-                  U izradi
-                </span>
+            />
+            <div className="absolute -right-8 -top-8 h-32 w-32 rounded-full bg-primary/8 blur-2xl pointer-events-none" aria-hidden />
+            <div className="relative flex w-full flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
+              <div
+                className="relative flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border border-primary/25 bg-background shadow-inner ring-1 ring-background"
+                aria-hidden
+              >
+                <GraduationCap className="h-5 w-5 text-primary transition-transform duration-500 group-hover:scale-110" strokeWidth={2} />
               </div>
-              <p className="text-[13px] md:text-sm text-muted-foreground leading-snug mt-1">
-                Sekcija još nije dostupna — radimo na profilima s objavama i obavijestima. Uskoro ovdje.
-              </p>
+              <div className="min-w-0 flex-1">
+                <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+                  <h2 className="text-[15px] md:text-lg font-semibold leading-tight tracking-[-0.01em]">
+                    Profili fakulteta
+                  </h2>
+                  <span className="inline-flex items-center gap-1 rounded-full border border-primary/25 bg-primary/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-primary">
+                    Nova sekcija
+                  </span>
+                </div>
+                <p className="text-[13px] md:text-sm text-muted-foreground leading-snug mt-1">
+                  Odaberi fakultet i otvori profil s objavama. Fakulteti se prijavljuju sa strane.
+                </p>
+              </div>
+              <div className="flex shrink-0 items-center gap-1.5 self-start rounded-full border border-primary/20 bg-background/80 px-3 py-1.5 text-[11px] font-medium text-primary sm:self-center">
+                Otvori profile
+                <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" aria-hidden />
+              </div>
             </div>
-            <div className="hidden sm:flex shrink-0 items-center gap-1.5 rounded-full border border-border/60 bg-background/80 px-3 py-1.5 text-[11px] font-medium text-muted-foreground/90 backdrop-blur-sm">
-              <ShieldCheck className="h-3.5 w-3.5 text-primary/80" aria-hidden />
-              <span className="max-w-[150px] leading-tight">Verificirani profili · siguran pristup</span>
-            </div>
-          </div>
+          </Link>
         </motion.div>
       </section>
       )}

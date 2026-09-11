@@ -1,6 +1,7 @@
 import { useEffect, useState, type ReactNode } from "react";
 import { Link } from "react-router-dom";
 import Layout from "@/components/Layout";
+import SchoolAdminPanel from "@/components/school/SchoolAdminPanel";
 import { fetchAdminStats, type AdminStats } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
 import {
@@ -108,7 +109,7 @@ const TimDashboard = () => {
               </Link>
             </Button>
             <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Tim — statistika</h1>
-            <p className="text-muted-foreground text-sm mt-2 max-w-xl">
+            <p className="mt-1 text-muted-foreground text-sm">
               Sažetak iz baze (samo za račune navedene u{" "}
               <code className="text-xs bg-muted px-1 py-0.5 rounded">ADMIN_EMAILS</code> na serveru). Podaci se ne dijele
               s ostalim korisnicima.
@@ -156,6 +157,8 @@ const TimDashboard = () => {
             ))}
           </div>
         )}
+
+        {!loading && !error && <SchoolAdminPanel />}
       </section>
     </Layout>
   );

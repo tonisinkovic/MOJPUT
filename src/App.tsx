@@ -51,6 +51,11 @@ const RoditeljskiRezultat = lazy(() => import("./pages/RoditeljskiRezultat"));
 const JuniorProgrami = lazy(() => import("./pages/JuniorProgrami"));
 const JuniorProgramDetail = lazy(() => import("./pages/JuniorProgramDetail"));
 const Razred = lazy(() => import("./pages/Razred"));
+const HighSchoolProfile = lazy(() => import("./pages/HighSchoolProfile"));
+const HighSchoolProfiles = lazy(() => import("./pages/HighSchoolProfiles"));
+const JuniorSchoolFeed = lazy(() => import("./pages/JuniorSchoolFeed"));
+const SchoolLogin = lazy(() => import("./pages/SchoolLogin"));
+const SchoolDashboard = lazy(() => import("./pages/SchoolDashboard"));
 
 /** Usklađeno s `base` u vite.config (`import.meta.env.BASE_URL`). */
 const routerBasename =
@@ -114,6 +119,12 @@ const App = () => (
             <Route path="/" element={<Index />} />
             <Route path="/karta" element={<KartaFakulteta />} />
             <Route path="/srednje-skole" element={<KartaSrednjihSkola />} />
+            <Route path="/srednje-skole/prijava" element={<SchoolLogin />} />
+            <Route path="/srednje-skole/objave" element={<JuniorSchoolFeed />} />
+            <Route path="/srednje-skole/profili" element={<HighSchoolProfiles />} />
+            <Route path="/srednje-skole/:slug" element={<HighSchoolProfile />} />
+            <Route path="/skola" element={<SchoolDashboard />} />
+            <Route path="/skola/dashboard" element={<SchoolDashboard />} />
             <Route path="/kviz" element={<Kviz />} />
             <Route path="/kviz-srednja" element={<KvizSrednja />} />
             <Route path="/usporedi-skole" element={<UsporediSkole />} />
@@ -147,9 +158,9 @@ const App = () => (
             <Route path="/verify" element={<Verify />} />
             <Route path="/registracija" element={<Registracija />} />
             <Route path="/fakulteti" element={<FacultyProfiles />} />
-            <Route path="/fakulteti/:facultyId" element={<FacultyProfile />} />
             <Route path="/fakulteti/prijava" element={<FacultyLogin />} />
             <Route path="/fakulteti/dashboard" element={<FacultyDashboard />} />
+            <Route path="/fakulteti/:facultyId" element={<FacultyProfile />} />
             <Route path="/tim" element={<TimDashboard />} />
             <Route path="*" element={<NotFound />} />
           </Routes>

@@ -28,11 +28,13 @@ export default function ZaboravljenaLozinka() {
     setInfo("");
     const clean = email.trim().toLowerCase();
     if (!clean) {
-      setError("Upiši email adresu.");
+      setError("Upiši email adresu ili korisničko ime škole.");
       return;
     }
     setLoading(true);
-    const res = await authForgotPassword(clean);
+    const res = clean.includes("@")
+      ? await authForgotPassword(clean)
+      : await authForgotPassword("", { username: clean });
     setLoading(false);
     if (!res.success) {
       setError(res.message || "Zahtjev nije uspio.");
@@ -66,7 +68,7 @@ export default function ZaboravljenaLozinka() {
     }
     setPassword("");
     setPassword2("");
-    navigate("/prijava?reset=ok");
+    navigate(searchParams.get("from") === "skola" ? "/srednje-skole/prijava?reset=ok" : "/prijava?reset=ok");
   };
 
   const resetMode = Boolean(tokenFromUrl);

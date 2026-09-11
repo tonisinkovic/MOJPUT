@@ -24,6 +24,7 @@ const bcrypt = require("bcryptjs");
 const crypto = require("crypto");
 const nodemailer = require("nodemailer");
 const { createAppDb, finalizePendingRegistration, seedForum } = require(path.join(__dirname, "server", "appDb.cjs"));
+const { registerSchoolCms, enrichUserWithSchool } = require(path.join(__dirname, "server", "schoolCms.cjs"));
 const { fromZonedTime, toZonedTime } = require("date-fns-tz");
 const { addDays, startOfDay } = require("date-fns");
 
@@ -1334,6 +1335,16 @@ async function main() {
   app.use(express.json({ limit: "2mb" }));
   app.use(cookieParser());
 
+  registerSchoolCms(app, {
+    db,
+    authMiddleware: authMiddleware(db),
+    adminMiddleware: adminMiddleware(db),
+    signToken,
+    setAuthCookie,
+    bcrypt,
+    express,
+  });
+
   // Auth
   app.post("/api/auth/register", async (req, res) => {
     try {
@@ -1525,21 +1536,39 @@ async function main() {
     }
   });
 
-  const GENERIC_FORGOT_PASSWORD_MSG =
-    "Ako ta email adresa ima potvrđen račun na MojPutu, poslali smo poveznicu za novu lozinku. Provjeri pristiglu poštu (i spam).";
+      const GENERIC_FORGOT_PASSWORD_MSG =
+    "Ako taj račun postoji na MojPutu, poslali smo poveznicu za novu lozinku. Provjeri pristiglu poštu (i spam).";
 
   app.post("/api/auth/forgot-password", async (req, res) => {
     try {
-      const { email } = req.body || {};
-      const cleanEmail = String(email || "").trim().toLowerCase();
+      const { email, username } = req.body || {};
+      let cleanEmail = String(email || "").trim().toLowerCase();
+      const cleanUsername = String(username || "").trim().toLowerCase();
+      if (!cleanEmail && cleanUsername) {
+        const named = await db
+          .prepare(
+            `SELECT u.email FROM users u
+             JOIN school_accounts sa ON sa.user_id = u.id
+             WHERE lower(u.username) = ?`,
+          )
+          .get(cleanUsername);
+        cleanEmail = named?.email ? String(named.email).toLowerCase() : "";
+        if (!cleanEmail) {
+          return res.json({ success: true, message: GENERIC_FORGOT_PASSWORD_MSG });
+        }
+      }
       if (!isValidEmail(cleanEmail)) {
-        return res.status(400).json({ success: false, message: "Unesi valjanu email adresu." });
+        return res.status(400).json({ success: false, message: "Unesi valjanu email adresu ili korisničko ime škole." });
       }
       if (!forgotPasswordRateLimitOk(cleanEmail)) {
         return res.status(429).json({
           success: false,
           message: "Previše zahtjeva. Pričekaj nekoliko minuta pa pokušaj ponovno.",
         });
+      }
+
+      if (cleanEmail.endsWith("@skole.mojput.internal")) {
+        return res.json({ success: true, message: GENERIC_FORGOT_PASSWORD_MSG });
       }
 
       const userRow = await db
@@ -1686,7 +1715,10 @@ async function main() {
           "SELECT id, username, email, created_at, email_verified, user_type, last_login_at FROM users WHERE id = ?",
         )
         .get(row.id);
-      const user = userPayloadWithAdminFlag(fresh);
+      const user = await enrichUserWithSchool(db, userPayloadWithAdminFlag(fresh));
+      if (user.school && !user.school.is_active) {
+        return res.status(403).json({ success: false, message: "Račun trenutno nije aktivan." });
+      }
       const token = signToken({ sub: user.id });
       setAuthCookie(res, token, req);
       /** Isti JWT i u JSON-u — cross-site kolačić često nije moguć; klijent šalje Authorization. */
@@ -1702,8 +1734,9 @@ async function main() {
     return res.json({ success: true });
   });
 
-  app.get("/api/auth/me", authMiddleware(db), (req, res) => {
-    return res.json({ success: true, user: userPayloadWithAdminFlag(req.user) });
+  app.get("/api/auth/me", authMiddleware(db), async (req, res) => {
+    const user = await enrichUserWithSchool(db, userPayloadWithAdminFlag(req.user));
+    return res.json({ success: true, user });
   });
 
   /** Rezultat karijernog kviza (2×50) — samo vlasnik računa. */

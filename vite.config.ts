@@ -108,6 +108,9 @@ export default defineConfig(({ mode }) => {
 
   return {
     base,
+    optimizeDeps: {
+      entries: ["index.html"],
+    },
     server: {
       host: "::",
       port: 8080,
@@ -119,6 +122,10 @@ export default defineConfig(({ mode }) => {
           target: "http://127.0.0.1:3000",
           changeOrigin: true,
         },
+        "/uploads": {
+          target: "http://127.0.0.1:3000",
+          changeOrigin: true,
+        },
       },
     },
     /** Isto kao dev — `vite preview` inače vraća HTML 404 za /api/* umjesto JSON-a s node servera. */
@@ -126,6 +133,10 @@ export default defineConfig(({ mode }) => {
       port: 4173,
       proxy: {
         "/api": {
+          target: "http://127.0.0.1:3000",
+          changeOrigin: true,
+        },
+        "/uploads": {
           target: "http://127.0.0.1:3000",
           changeOrigin: true,
         },
@@ -180,7 +191,7 @@ export default defineConfig(({ mode }) => {
           globIgnores: ["**/*.pdf"],
           maximumFileSizeToCacheInBytes: 4 * 1024 * 1024,
           navigateFallback: spaNavigateFallback(base),
-          navigateFallbackDenylist: [/^\/api\//],
+          navigateFallbackDenylist: [/^\/api\//, /^\/uploads\//],
           runtimeCaching: [
             {
               urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,

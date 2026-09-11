@@ -28,6 +28,13 @@ export type AuthUser = {
   is_admin?: boolean;
   user_type?: UserTypeId | string;
   last_login_at?: string | null;
+  school?: {
+    id?: number;
+    slug: string;
+    high_school_id: string;
+    must_change_password: boolean;
+    is_active: boolean;
+  };
 };
 
 export type AdminStats = {
@@ -113,8 +120,12 @@ export async function authResendVerification(email: string): Promise<ApiResponse
 
 export async function authForgotPassword(
   email: string,
+  extra?: { username?: string },
 ): Promise<ApiResponse<{ message?: string; email_preview_url?: string }>> {
-  return apiPost<{ message?: string; email_preview_url?: string }>("/api/auth/forgot-password", { email });
+  return apiPost<{ message?: string; email_preview_url?: string }>("/api/auth/forgot-password", {
+    email,
+    username: extra?.username,
+  });
 }
 
 export async function authResetPassword(params: {

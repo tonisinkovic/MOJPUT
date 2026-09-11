@@ -19,6 +19,7 @@ import {
   Sparkles,
   User,
   X,
+  Newspaper,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -33,6 +34,7 @@ import {
   type SrednjaProgramSchool,
 } from "@/data/srednjaPrograms";
 import { getSchoolPrograms } from "@/lib/schoolPrograms";
+import { slugForSchool } from "@/lib/schoolSlug";
 import {
   Accordion,
   AccordionContent,
@@ -430,6 +432,22 @@ const KartaSrednjihSkola = () => {
                 Za lanjski prag i bodove otvori školu pa idi u MojPut kalkulator.
               </p>
               <JuniorNumbersNote counts className="mt-3 max-w-2xl" />
+              <div className="mt-4 flex flex-wrap gap-2">
+                <Link
+                  to="/srednje-skole/profili"
+                  className="inline-flex items-center gap-1.5 rounded-full border border-primary/25 bg-background/80 px-3 py-1.5 text-xs font-semibold text-primary hover:bg-primary/10"
+                >
+                  <School className="h-3.5 w-3.5" />
+                  Profili škola
+                </Link>
+                <Link
+                  to="/srednje-skole/objave"
+                  className="inline-flex items-center gap-1.5 rounded-full border border-primary/25 bg-background/80 px-3 py-1.5 text-xs font-semibold text-primary hover:bg-primary/10"
+                >
+                  <Newspaper className="h-3.5 w-3.5" />
+                  Novosti škola
+                </Link>
+              </div>
 
               <div className="mt-4 grid grid-cols-3 gap-2 sm:max-w-lg sm:gap-3">
                 <div className="rounded-xl border border-border/60 bg-background/70 px-3 py-2 backdrop-blur-sm">
@@ -968,19 +986,14 @@ const KartaSrednjihSkola = () => {
 
                           {/* Footer */}
                           <div className="mt-3 flex items-center justify-between border-t border-border/40 pt-3">
-                            <span className="text-xs font-medium text-muted-foreground group-hover:text-foreground">
-                              Pogledaj detalje
-                            </span>
-                            <span className={cn(
-                              "flex h-6 w-6 items-center justify-center rounded-full text-white transition-transform duration-200 group-hover:translate-x-0.5",
-                              school.category === "Gimnazija" && "bg-primary",
-                              school.category === "Strukovna škola" && "bg-sky-500",
-                              school.category === "Umjetnička škola" && "bg-violet-500",
-                              school.category === "Srednja škola" && "bg-emerald-500",
-                              school.category === "Posebni programi" && "bg-amber-500",
-                            )}>
-                              →
-                            </span>
+                            <Link
+                              to={`/srednje-skole/${slugForSchool(school, highSchools)}`}
+                              onClick={(e) => e.stopPropagation()}
+                              className="text-xs font-semibold text-primary hover:underline"
+                            >
+                              Pogledaj školu
+                            </Link>
+                            <span className="text-[11px] text-muted-foreground">Kratki pregled</span>
                           </div>
                         </div>
                       </motion.div>
@@ -1169,6 +1182,12 @@ const KartaSrednjihSkola = () => {
                         </Badge>
                       )}
                     </div>
+                    <Link
+                      to={`/srednje-skole/${slugForSchool(detailSchool, highSchools)}`}
+                      className="mt-3 inline-flex text-sm font-semibold text-primary hover:underline"
+                    >
+                      Pogledaj školu
+                    </Link>
                   </div>
                 </div>
               </DialogHeader>

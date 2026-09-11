@@ -23,6 +23,9 @@ import {
   BookOpen,
   MoreHorizontal,
   ChevronDown,
+  Newspaper,
+  School,
+  GraduationCap,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -43,6 +46,7 @@ const navPath = (path: string) => path.split("?")[0];
 // Primarne - najčešće korištene stavke.
 const primaryNavSenior: NavEntry[] = [
   { label: "Karta fakulteta", path: "/karta", icon: Map },
+  { label: "Profili", path: "/fakulteti", icon: GraduationCap },
   { label: "Kviz", path: "/kviz", icon: HelpCircle },
   { label: "Kalkulator", path: "/kalkulator-fakulteti", icon: Calculator },
   { label: "Forum", path: "/forum", icon: MessageSquare },
@@ -51,6 +55,7 @@ const primaryNavSenior: NavEntry[] = [
 // U Junior modu karta vodi na srednje škole, kviz na 8. razred, kalkulator na srednju.
 const primaryNavJunior: NavEntry[] = [
   { label: "Srednje škole", path: "/srednje-skole", icon: Map },
+  { label: "Profili", path: "/srednje-skole/profili", icon: School },
   { label: "Kviz", path: "/kviz-srednja", icon: HelpCircle },
   { label: "Pedagog", path: "/razred", icon: Users },
   { label: "Kalkulator", path: "/kalkulator", icon: Calculator },
@@ -69,6 +74,7 @@ const secondaryNavSenior: NavEntry[] = [
 
 const secondaryNavJunior: NavEntry[] = [
   { label: "Programi", path: "/programi", icon: BookOpen },
+  { label: "Novosti škola", path: "/srednje-skole/objave", icon: Newspaper },
   { label: "Kalendar", path: "/kalendar", icon: Calendar },
   { label: "Roditelji", path: "/roditelji?experience=junior", icon: Users },
   { label: "Chatbot", path: "/chatbot?experience=junior", icon: Bot },
@@ -90,6 +96,7 @@ const Navbar = () => {
   const secondaryNav = isJunior ? secondaryNavJunior : secondaryNavSenior;
   // Cijela lista za mobitel (redoslijed važnosti).
   const navItems: NavEntry[] = [...primaryNav, ...secondaryNav];
+  const accountHome = user?.user_type === "skola" ? "/skola/dashboard" : "/profil";
 
   useEffect(() => {
     let alive = true;
@@ -252,7 +259,7 @@ const Navbar = () => {
                   </Button>
                 )}
                 <Link
-                  to="/profil"
+                  to={accountHome}
                   className={cn(
                     "flex max-w-[160px] items-center gap-2 rounded-full border border-border/70 bg-card/60 py-1 pl-1 pr-3 shadow-sm",
                     "transition-all hover:border-primary/35 hover:bg-card hover:shadow-md",
@@ -390,7 +397,7 @@ const Navbar = () => {
                 <div className="mt-2 border-t border-border/60 pt-4">
                   <div className="flex flex-col gap-3">
                     <Link
-                      to="/profil"
+                      to={accountHome}
                       onClick={() => setOpen(false)}
                       className={cn(
                         "flex items-center gap-3 rounded-xl border border-border/60 bg-card/80 p-3 shadow-sm",
@@ -406,9 +413,9 @@ const Navbar = () => {
                       </div>
                     </Link>
                     <Button variant="outline" className="h-11 w-full gap-2 rounded-xl font-semibold shadow-sm" asChild>
-                      <Link to="/profil" onClick={() => setOpen(false)}>
+                      <Link to={accountHome} onClick={() => setOpen(false)}>
                         <User className="h-4 w-4" />
-                        Moj profil
+                        {user.user_type === "skola" ? "Škola" : "Moj profil"}
                       </Link>
                     </Button>
                     {user.is_admin && (

@@ -8,6 +8,8 @@ const footerLinks = [
     title: "Platforma",
     links: [
       { label: "Karta fakulteta", path: "/karta" },
+      { label: "Profili srednjih škola", path: "/srednje-skole/profili" },
+      { label: "Profili fakulteta", path: "/fakulteti" },
       { label: "Kviz", path: "/kviz" },
       { label: "Kalkulator bodova", path: "/kalkulator-fakulteti" },
       { label: "Samoprocjena", path: "/samoprocjena" },
@@ -29,6 +31,8 @@ const footerLinks = [
     links: [
       { label: "O nama", path: "/o-nama" },
       { label: "Kontakt (pomoć)", path: "/kontakt" },
+      { label: "Prijava za škole", path: "/srednje-skole/prijava" },
+      { label: "Prijava za fakultete", path: "/fakulteti/prijava" },
       { label: "Privatnost", path: "/privatnost" },
       { label: "Uvjeti korištenja", path: "/uvjeti" },
     ],
@@ -43,7 +47,8 @@ const Footer = () => {
     return onExperienceChange(sync);
   }, []);
 
-  const juniorHidden = new Set(["/video", "/kalkulator-doma"]);
+  const juniorHidden = new Set(["/video", "/kalkulator-doma", "/fakulteti", "/fakulteti/prijava"]);
+  const seniorHidden = new Set(["/srednje-skole/profili", "/srednje-skole/prijava"]);
 
   /** U Junior modu kviz i karta vode na verzije za srednju školu. */
   const resolveLink = (link: { label: string; path: string }) => {
@@ -99,7 +104,7 @@ const Footer = () => {
               </h4>
               <ul className="space-y-2.5">
                 {group.links
-                  .filter((link) => !isJunior || !juniorHidden.has(link.path))
+                  .filter((link) => (isJunior ? !juniorHidden.has(link.path) : !seniorHidden.has(link.path)))
                   .map(resolveLink)
                   .map((link) => (
                   <li key={link.path}>

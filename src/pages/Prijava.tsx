@@ -198,7 +198,9 @@ const Prijava = () => {
     setLoggedUser(user);
     setLoginData({ email: "", password: "" });
     const nextPath = searchParams.get("next");
-    if (nextPath && nextPath.startsWith("/") && !nextPath.startsWith("//")) {
+    if (user.user_type === "skola" || user.school) {
+      navigate("/skola/dashboard");
+    } else if (nextPath && nextPath.startsWith("/") && !nextPath.startsWith("//")) {
       navigate(nextPath);
     } else {
       navigate("/");
@@ -228,10 +230,6 @@ const Prijava = () => {
     setLoggedUser(null);
     setLoginData({ email: getStoredLastLoginEmail() || em || "", password: "" });
     setLoginError("");
-  };
-
-  const handleFacultyLoginClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
-    e.preventDefault();
   };
 
   const displayName = loggedUser?.username || "";
@@ -382,12 +380,9 @@ const Prijava = () => {
                     računi koriste{" "}
                     <Link
                       to="/fakulteti/prijava"
-                      onClick={handleFacultyLoginClick}
                       className="inline-flex items-center gap-1 font-semibold text-primary underline-offset-2 hover:underline"
-                      title="U izradi"
                     >
                       posebnu prijavu za fakultete
-                      <Lock className="h-3 w-3" aria-hidden />
                     </Link>
                     .
                   </span>

@@ -311,6 +311,9 @@ export default function ProfilDashboard() {
   if (!authUser) {
     return <Navigate to="/prijava?next=/profil" replace />;
   }
+  if (authUser.user_type === "skola") {
+    return <Navigate to="/skola/dashboard" replace />;
+  }
 
   const navItems: { id: TabId; label: string; icon: React.ElementType }[] = isJunior
     ? [
