@@ -2,14 +2,17 @@ import { describe, expect, it } from "vitest";
 import { highSchoolPrograms } from "@/lib/juniorQuizEngine";
 import {
   chanceFor,
+  comparisonMaxFor,
   computeSrednjaPoints,
   emptyGradeDraft,
+  extendedScaleKind,
   findCutoff,
   findKalkulatorSchool,
   findMapSchoolId,
   gradeDraftIsUsable,
   nextJuniorDeadline,
   officialProgramExample,
+  programTypeFromPrag,
   shortlistItemKey,
 } from "@/lib/juniorPath";
 
@@ -72,6 +75,59 @@ describe("juniorPath bodovi i šansa", () => {
     expect(chanceFor(61, 60).tone).toBe("lime");
     expect(chanceFor(58, 60).tone).toBe("amber");
     expect(chanceFor(50, 60).tone).toBe("rose");
+  });
+
+  it("obična gimnazija ostaje na 80 ako lanjski max nije veći", () => {
+    const school = findKalkulatorSchool("Gimnazija Bjelovar", "Bjelovar");
+    const prog = school?.programs.find((p) => p.name === "Opća gimnazija");
+    expect(prog?.prag?.max).toBe(80);
+    expect(comparisonMaxFor("gimnazija4", prog?.prag ?? null, prog?.name, school?.name)).toBe(80);
+    expect(extendedScaleKind(prog!.name, prog!.prag)).toBeNull();
+  });
+
+  it("gimnazija u Omišu ostaje 80, ne 160, iako je lanjski max 81,71", () => {
+    const school = findKalkulatorSchool("Srednja škola Jure Kaštelan", "Omiš");
+    const prog = school?.programs.find((p) => p.name === "Opća gimnazija");
+    expect(school?.city).toMatch(/Omiš/i);
+    expect(prog?.prag?.max).toBeGreaterThan(80);
+    expect(prog?.prag?.max).toBeLessThan(90);
+    expect(extendedScaleKind(prog!.name, prog!.prag, "gimnazija4", school!.name)).toBeNull();
+    expect(comparisonMaxFor("gimnazija4", prog?.prag ?? null, prog?.name, school?.name)).toBe(80);
+    // Unos 160 (npr. ostalo sa sportskog smjera) ne smije podići max Omiša
+    expect(comparisonMaxFor("gimnazija4", prog!.prag, prog!.name, school!.name)).toBe(80);
+  });
+
+  it("sportski odjel ima lanjski max iznad 80 pa skala nije 80", () => {
+    const school = findKalkulatorSchool("Gimnazija Bjelovar", "Bjelovar");
+    const prog = school?.programs.find((p) => /sport/i.test(p.name));
+    expect(prog?.prag?.max).toBeGreaterThan(80);
+    expect(prog?.prag?.min).toBeGreaterThan(80);
+    expect(comparisonMaxFor("gimnazija4", prog?.prag ?? null, prog?.name, school?.name)).toBe(prog?.prag?.max);
+    expect(extendedScaleKind(prog!.name, prog!.prag, "gimnazija4", school!.name)).toBe("sport");
+    expect(programTypeFromPrag(prog!.prag)).toBe("gimnazija4");
+  });
+
+  it("glazbeni smjer koristi lanjski max (prijemni), a tip ostaje 4-godišnji", () => {
+    const school = findKalkulatorSchool("Glazbena škola Vatroslava Lisinskog Bjelovar", "Bjelovar");
+    const prog = school?.programs.find((p) => /kornist/i.test(p.name));
+    expect(prog?.prag?.max).toBeGreaterThan(200);
+    expect(comparisonMaxFor("gimnazija4", prog?.prag ?? null, prog?.name, school?.name)).toBe(prog?.prag?.max);
+    expect(extendedScaleKind(prog!.name, prog!.prag, "gimnazija4", school!.name)).toBe("umjetnost");
+    expect(programTypeFromPrag(prog!.prag)).toBe("gimnazija4");
+  });
+
+  it("prag iznad 80 (npr. 87) diže skalu tog smjera, ali ne na 160", () => {
+    const prag = {
+      year: "2025/2026",
+      kvota: 50,
+      upisani: 50,
+      min: 86.92,
+      avg: 79.71,
+      max: 91.75,
+    };
+    expect(comparisonMaxFor("gimnazija4", prag, "Prirodoslovno-matematička gimnazija")).toBe(91.75);
+    expect(extendedScaleKind("Prirodoslovno-matematička gimnazija", prag)).toBe("natjecanja");
+    expect(programTypeFromPrag(prag)).toBe("gimnazija4");
   });
 });
 

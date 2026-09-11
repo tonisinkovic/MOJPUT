@@ -4,6 +4,7 @@ import { Calculator } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
+  QUICK_POINTS_MAX,
   computeSrednjaPoints,
   effectiveJuniorPoints,
   gradeDraftIsUsable,
@@ -46,7 +47,7 @@ export default function JuniorPointsBox() {
 
   const applyQuick = () => {
     const n = Number.parseFloat(draft.replace(",", "."));
-    if (!Number.isFinite(n) || n < 0 || n > 80) return;
+    if (!Number.isFinite(n) || n < 0 || n > QUICK_POINTS_MAX) return;
     saveQuickPoints(Math.round(n * 10) / 10);
     refresh();
   };
@@ -60,8 +61,8 @@ export default function JuniorPointsBox() {
         <div className="min-w-0 flex-1">
           <h3 className="text-sm font-bold">Tvoji bodovi — da vidiš šansu</h3>
           <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
-            Unesi okvirni zbroj (do 80 za gimnaziju) ili točnije izračunaj u kalkulatoru. Škole
-            ispod odmah uspoređuju s lanjskim pragom.
+            Unesi okvirni zbroj iz ocjena (do 80 za gimnaziju). Veći broj samo ako baš taj smjer ima
+            sport ili prijemni — obična gimnazija ostaje na 80.
           </p>
           {points != null ? (
             <p className="mt-2 text-sm font-semibold text-foreground">

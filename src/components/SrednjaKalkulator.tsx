@@ -6,6 +6,7 @@ import {
   CheckCircle2,
   ChevronsUpDown,
   GraduationCap,
+  Info,
   Landmark,
   MapPin,
   School,
@@ -26,8 +27,11 @@ import HeaderDecor, { HeaderHero } from "@/components/header-animations/HeaderDe
 import JuniorNumbersNote from "@/components/junior/JuniorNumbersNote";
 import {
   chanceFor,
+  comparisonMaxFor,
   computeSrednjaPoints,
   emptySevenEight,
+  extendedScaleKind,
+  extendedScaleNote,
   loadJuniorGrades,
   programTypeFromPrag,
   saveJuniorGrades,
@@ -526,11 +530,18 @@ export default function SrednjaKalkulator() {
       razred8,
       dodatniBodovi,
     });
+    const scaleMax = comparisonMaxFor(program, selPrag, selProgram?.name ?? "", selSchool?.name ?? "");
     return {
       ...scored,
-      postotak: clamp((scored.zajednicki / scored.max) * 100, 0, 100),
+      scaleMax,
+      postotak: clamp((scored.ukupno / scaleMax) * 100, 0, 100),
     };
-  }, [dodatniBodovi, program, prosjek5, prosjek6, razred7, razred8]);
+  }, [dodatniBodovi, program, prosjek5, prosjek6, razred7, razred8, selPrag, selProgram?.name, selSchool?.name]);
+
+  const scaleKind = useMemo(
+    () => (selProgram ? extendedScaleKind(selProgram.name, selPrag, program, selSchool?.name ?? "") : null),
+    [program, selPrag, selProgram, selSchool],
+  );
 
   const chance = useMemo(() => {
     if (!rezultatIzracunat || selPrag?.min == null) return null;
@@ -563,8 +574,8 @@ export default function SrednjaKalkulator() {
             Kalkulator bodova
           </h1>
           <p className="mt-2 max-w-2xl text-pretty text-sm leading-relaxed text-muted-foreground sm:mt-3 sm:text-base">
-            Odaberi školu i program, unesi ocjene iz osnovne škole i saznaj lanjski prag te svoje šanse za
-            upis.
+            Odaberi školu i program. Max je uvijek od tog smjera: obična gimnazija (npr. Omiš) ima do 80 iz
+            ocjena. 160 ili više vidiš samo ako je baš taj smjer sportski odjel ili ima prijemni — ne za sve.
           </p>
           <JuniorNumbersNote counts className="mt-3 max-w-2xl" />
           <JuniorNumbersNote className="mt-2 max-w-2xl" />
@@ -689,13 +700,27 @@ export default function SrednjaKalkulator() {
             </div>
 
             {selPrag && selPrag.min != null ? (
-              <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-5 sm:gap-3">
-                <PragStat label="Prag (min.)" value={fmt(selPrag.min)} highlight />
-                <PragStat label="Prosječni" value={fmt(selPrag.avg)} />
-                <PragStat label="Maksimalni" value={fmt(selPrag.max)} />
-                <PragStat label="Kvota" value={fmt(selPrag.kvota)} />
-                <PragStat label="Upisani" value={fmt(selPrag.upisani)} />
-              </div>
+              <>
+                <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-5 sm:gap-3">
+                  <PragStat label="Prag (min.)" value={fmt(selPrag.min)} highlight />
+                  <PragStat label="Prosječni" value={fmt(selPrag.avg)} />
+                  <PragStat label="Najviši lanjski" value={fmt(selPrag.max)} />
+                  <PragStat label="Kvota" value={fmt(selPrag.kvota)} />
+                  <PragStat label="Upisani" value={fmt(selPrag.upisani)} />
+                </div>
+                {scaleKind && (
+                  <p className="mt-3 flex items-start gap-2 rounded-xl border border-amber-500/30 bg-amber-500/10 p-3 text-sm leading-relaxed text-amber-950 dark:text-amber-100">
+                    <Info className="mt-0.5 h-4 w-4 shrink-0" />
+                    {extendedScaleNote(scaleKind, selPrag, rezultat.max)}
+                  </p>
+                )}
+                {!scaleKind && (
+                  <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
+                    Bodovna skala ovog smjera je {rezultat.max} (ocjene). Brojka „najviši lanjski” je rezultat
+                    najbolje upisanog učenika, ne drugi maksimum za sve smjerove.
+                  </p>
+                )}
+              </>
             ) : (
               <p className="mt-4 rounded-xl bg-muted/50 p-3 text-sm text-muted-foreground">
                 Za ovaj program nema objavljenih pragova za prošlu školsku godinu.
@@ -721,8 +746,17 @@ export default function SrednjaKalkulator() {
           <div>
             <p className="text-xs font-bold uppercase tracking-wide text-muted-foreground">Trenutni rezultat</p>
             <p className="mt-1 text-3xl font-extrabold tabular-nums text-primary">
-              {rezultat.zajednicki.toFixed(2)}
-              <span className="ml-1 text-base font-semibold text-muted-foreground">/ {rezultat.max}</span>
+              {rezultat.ukupno.toFixed(2)}
+              <span className="ml-1 text-base font-semibold text-muted-foreground">/ {fmt(rezultat.scaleMax)}</span>
+            </p>
+            <p className="mt-1 text-xs text-muted-foreground">
+              Ocjene: {rezultat.zajednicki.toFixed(2)} / {rezultat.max}
+              {rezultat.dodatni > 0 ? ` · dodatni: ${rezultat.dodatni.toFixed(2)}` : ""}
+              {selProgram
+                ? rezultat.scaleMax > rezultat.max
+                  ? ` · max ovog smjera: ${fmt(rezultat.scaleMax)}`
+                  : ` · max ovog smjera: ${rezultat.max} iz ocjena`
+                : " · odaberi smjer za točan max"}
             </p>
           </div>
           <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10 text-primary">
@@ -737,14 +771,15 @@ export default function SrednjaKalkulator() {
           {selPrag?.min != null && (
             <div
               className="absolute top-0 h-full w-0.5 bg-foreground/70"
-              style={{ left: `${clamp((selPrag.min / rezultat.max) * 100, 0, 100)}%` }}
+              style={{ left: `${clamp((selPrag.min / rezultat.scaleMax) * 100, 0, 100)}%` }}
               title={`Prošlogodišnji prag: ${fmt(selPrag.min)}`}
             />
           )}
         </div>
         {selPrag?.min != null && (
           <p className="mt-2 text-xs text-muted-foreground">
-            Crna crtica označava prošlogodišnji prag ({fmt(selPrag.min)} bodova) za odabrani program.
+            Crna crtica označava prošlogodišnji prag ({fmt(selPrag.min)} bodova) za odabrani program
+            {rezultat.scaleMax > rezultat.max ? ` na skali do ${fmt(rezultat.scaleMax)}` : ""}.
           </p>
         )}
       </section>
@@ -797,12 +832,38 @@ export default function SrednjaKalkulator() {
         pokaziPosebne={program === "gimnazija4"}
       />
 
-      <section className="mb-5 rounded-2xl border bg-card p-4 shadow-card sm:p-5">
-        <h2 className="mb-2 text-lg font-bold">Dodatni bodovi</h2>
+      <section
+        className={`mb-5 rounded-2xl border p-4 shadow-card sm:p-5 ${
+          scaleKind ? "border-amber-500/40 bg-amber-500/5" : "bg-card"
+        }`}
+      >
+        <h2 className="mb-2 text-lg font-bold">
+          {scaleKind === "sport"
+            ? "Sportske i dodatni bodovi"
+            : scaleKind === "umjetnost"
+              ? "Prijemni i dodatni bodovi"
+              : "Dodatni bodovi"}
+        </h2>
         <p className="mb-3 text-sm leading-relaxed text-muted-foreground">
-          Natjecanja, sportski rezultati i druga posebna postignuća unose se ručno kao ukupni dodatni bodovi.
+          {scaleKind === "sport"
+            ? "Unesi bodove sa sportske provjere, plus natjecanja ako ih imaš. Bez toga usporedba s pragom iznad 80 nema smisla."
+            : scaleKind === "umjetnost"
+              ? "Unesi bodove s prijemnog / audicije / mape radova. Školske ocjene same (do 80) nisu cijela skala ovog smjera."
+              : "Natjecanja, sportski rezultati i druga posebna postignuća unose se ručno kao ukupni dodatni bodovi."}
         </p>
-        <NumberField label="Dodatni bodovi" value={dodatniBodovi} onChange={setDodatniBodovi} placeholder="0" />
+        <NumberField
+          label={
+            scaleKind === "sport"
+              ? "Sportske + ostali dodatni bodovi"
+              : scaleKind === "umjetnost"
+                ? "Prijemni + ostali dodatni bodovi"
+                : "Dodatni bodovi"
+          }
+          value={dodatniBodovi}
+          onChange={setDodatniBodovi}
+          placeholder="0"
+          max={300}
+        />
       </section>
 
       <button
@@ -824,15 +885,31 @@ export default function SrednjaKalkulator() {
           {program === "gimnazija4" && (
             <ResultRow label="Predmeti značajni za upis (7.-8.)" value={`${rezultat.posebniPredmeti.toFixed(2)} / 30`} />
           )}
-          <ResultRow label="Dodatni bodovi" value={rezultat.dodatni.toFixed(2)} />
+          <ResultRow
+            label={
+              scaleKind === "sport"
+                ? "Sportske / dodatni bodovi"
+                : scaleKind === "umjetnost"
+                  ? "Prijemni / dodatni bodovi"
+                  : "Dodatni bodovi"
+            }
+            value={rezultat.dodatni.toFixed(2)}
+          />
           <div className="mt-4 rounded-2xl bg-background p-4">
             <div className="flex items-center justify-between gap-4 text-sm text-muted-foreground">
-              <span>Zajednički element</span>
-              <strong className="text-foreground">{rezultat.zajednicki.toFixed(2)}</strong>
+              <span>Zajednički element (ocjene)</span>
+              <strong className="text-foreground">
+                {rezultat.zajednicki.toFixed(2)} / {rezultat.max}
+              </strong>
             </div>
             <div className="mt-2 flex items-center justify-between gap-4 text-lg font-bold">
               <span>Ukupno bodova</span>
-              <strong className="text-2xl text-primary">{rezultat.ukupno.toFixed(2)}</strong>
+              <strong className="text-2xl text-primary">
+                {rezultat.ukupno.toFixed(2)}
+                <span className="ml-1 text-base font-semibold text-muted-foreground">
+                  / {fmt(rezultat.scaleMax)}
+                </span>
+              </strong>
             </div>
           </div>
         </section>
@@ -887,17 +964,18 @@ export default function SrednjaKalkulator() {
             <div className="relative h-5 overflow-hidden rounded-full bg-muted">
               <div
                 className={`h-full rounded-full bg-gradient-to-r transition-all duration-700 ${CHANCE_TONE[chance.tone].bar}`}
-                style={{ width: `${clamp((rezultat.ukupno / rezultat.max) * 100, 0, 100)}%` }}
+                style={{ width: `${clamp((rezultat.ukupno / rezultat.scaleMax) * 100, 0, 100)}%` }}
               />
               <div
                 className="absolute top-0 h-full w-1 rounded-full bg-foreground/80"
-                style={{ left: `${clamp((selPrag.min / rezultat.max) * 100, 0, 100)}%` }}
+                style={{ left: `${clamp((selPrag.min / rezultat.scaleMax) * 100, 0, 100)}%` }}
               />
             </div>
             <div className="mt-1.5 flex justify-between text-[11px] text-muted-foreground">
               <span>0</span>
               <span>
-                Prag: {fmt(selPrag.min)} · Max: {rezultat.max}
+                Prag: {fmt(selPrag.min)} · Max ovog smjera: {fmt(rezultat.scaleMax)}
+                {rezultat.scaleMax > rezultat.max ? " (sport / prijemni)" : " (ocjene)"}
               </span>
             </div>
           </div>
@@ -908,7 +986,15 @@ export default function SrednjaKalkulator() {
             ) : (
               <TrendingUp className="mt-0.5 h-4 w-4 shrink-0 text-amber-600" />
             )}
-            {chance.desc}
+            <span>
+              {chance.desc}
+              {scaleKind && rezultat.dodatni === 0 && selPrag.min > rezultat.max ? (
+                <>
+                  {" "}
+                  Uspoređuješ samo ocjene s pragom koji uključuje prijemni ili sportske bodove — unesi ih gore.
+                </>
+              ) : null}
+            </span>
           </p>
 
           {(selPrag.kvota != null || selPrag.upisani != null) && (
@@ -991,11 +1077,13 @@ function NumberField({
   value,
   onChange,
   placeholder,
+  max = 5,
 }: {
   label: string;
   value: string;
   onChange: (value: string) => void;
   placeholder?: string;
+  max?: number;
 }) {
   return (
     <label className="block text-sm font-semibold text-foreground">
@@ -1003,7 +1091,7 @@ function NumberField({
       <input
         type="number"
         min={0}
-        max={5}
+        max={max}
         step={0.01}
         inputMode="decimal"
         value={value}
