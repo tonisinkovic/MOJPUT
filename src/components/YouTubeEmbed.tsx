@@ -6,13 +6,14 @@ type Props = {
   className?: string;
   /** Ispuni roditelja s fiksnim aspect-video (npr. kartica) umjesto vlastitog omotača */
   fillParent?: boolean;
+  autoPlay?: boolean;
 };
 
 /**
  * Responsive 16:9 YouTube embed (iframe). Ne otvara vanjski tab.
  */
-const YouTubeEmbed = ({ videoId, title = "YouTube video", className = "", fillParent }: Props) => {
-  const src = getYouTubeEmbedSrc(videoId);
+const YouTubeEmbed = ({ videoId, title = "YouTube video", className = "", fillParent, autoPlay }: Props) => {
+  const src = getYouTubeEmbedSrc(videoId, autoPlay);
 
   const iframe = (
     <iframe

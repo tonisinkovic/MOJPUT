@@ -1,8 +1,9 @@
 import Layout from "@/components/Layout";
 import VideoCard from "@/components/VideoCard";
-import { VIDEOS, CATEGORIES, featuredYouTubeVideoId, secondFeaturedYouTubeVideoId } from "@/data/videos";
+import { VIDEOS, CATEGORIES } from "@/data/videos";
 import { motion, AnimatePresence } from "framer-motion";
 import {
+  ArrowLeft,
   Clock,
   Film,
   PlayCircle,
@@ -126,7 +127,7 @@ const getCountdownLabel = (event: EventItem, now: Date) => {
 const VideoPage = () => {
   const [activeCategory, setActiveCategory] = useState<string>("Sve");
   const [searchQuery, setSearchQuery] = useState("");
-  const [sortBy, setSortBy] = useState<SortOption>("popularnost");
+  const [sortBy, setSortBy] = useState<SortOption>("najnovije");
   const [contentView, setContentView] = useState<ContentView>("videozapisi");
   const [eventFilter, setEventFilter] = useState<EventFilter>("sva");
   const [selectedEvent, setSelectedEvent] = useState<EventItem | null>(null);
@@ -150,11 +151,16 @@ const VideoPage = () => {
     });
 
     if (sortBy === "popularnost") {
-      list = [...list].sort((a, b) => b.views - a.views);
+      list = [...list].sort((a, b) => {
+        if (Boolean(a.pinned) !== Boolean(b.pinned)) return a.pinned ? -1 : 1;
+        return b.views - a.views;
+      });
     } else {
       list = [...list].sort((a, b) => {
-        if (b.isNew !== a.isNew) return (b.isNew ? 1 : 0) - (a.isNew ? 1 : 0);
-        return parseInt(b.id, 10) - parseInt(a.id, 10);
+        if (Boolean(a.pinned) !== Boolean(b.pinned)) return a.pinned ? -1 : 1;
+        const ai = Number.parseInt(a.id, 10);
+        const bi = Number.parseInt(b.id, 10);
+        return ai - bi;
       });
     }
     return list;
@@ -181,6 +187,16 @@ const VideoPage = () => {
   return (
     <Layout>
       <section className="container max-w-7xl mx-auto px-3 sm:px-4 py-4 sm:py-8 md:py-12 pb-[max(1.5rem,env(safe-area-inset-bottom))]">
+        {/* Back button */}
+        <button
+          type="button"
+          onClick={() => window.history.back()}
+          className="mb-4 inline-flex items-center gap-1.5 text-sm font-medium text-slate-500 transition-colors hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          <span>Natrag</span>
+        </button>
+
         {/* Hero */}
         <motion.div
           initial={{ opacity: 0, y: 12 }}
@@ -218,7 +234,7 @@ const VideoPage = () => {
               <p className="mt-1.5 max-w-2xl text-pretty text-sm leading-relaxed text-slate-600 sm:text-base dark:text-slate-400">
                 {contentView === "predavanja"
                   ? "Uživo predavanja, Q&A i paneli — jasan raspored i jedan klik do Zoom sobe."
-                  : "Predavanja, iskustva studenata i edukativni materijali — brzo se filtrira, lako pronalazi."}
+                  : "Svi videi s YouTube kanala @MojPut_hr i @KojiFaksUpisati — predavanja, iskustva i razgovori o fakultetima."}
               </p>
             </div>
           </div>
@@ -737,19 +753,34 @@ const VideoPage = () => {
                       views={video.views}
                       isNew={video.isNew}
                       watchedProgress={video.watchedProgress}
-                      youtubeVideoId={
-                        video.id === "1"
-                          ? featuredYouTubeVideoId
-                          : video.id === "2"
-                            ? secondFeaturedYouTubeVideoId
-                            : undefined
-                      }
+                      youtubeVideoId={video.youtubeVideoId}
+                      autoPlayEmbed={Boolean(video.pinned)}
                     />
                   </motion.div>
                 ))}
               </motion.div>
             )}
           </AnimatePresence>
+          <p className="mt-6 text-center text-xs text-slate-500 dark:text-slate-400">
+            Izvor:{" "}
+            <a
+              href="https://www.youtube.com/@MojPut_hr"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-semibold text-violet-600 hover:underline dark:text-violet-400"
+            >
+              @MojPut_hr
+            </a>
+            {" · "}
+            <a
+              href="https://www.youtube.com/@KojiFaksUpisati"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-semibold text-violet-600 hover:underline dark:text-violet-400"
+            >
+              @KojiFaksUpisati
+            </a>
+          </p>
         </motion.div>
           </>
         )}

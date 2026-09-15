@@ -31,18 +31,19 @@ import {
 } from "@/components/ui/accordion";
 import { toast } from "sonner";
 import {
-  Home,
-  Calculator,
-  Info,
-  Sparkles,
-  TrendingUp,
   AlertCircle,
+  ArrowLeft,
   Bookmark,
-  Scale,
+  Calculator,
+  CheckCircle2,
   ChevronLeft,
   ChevronRight,
+  Home,
+  Info,
   Loader2,
-  CheckCircle2,
+  Scale,
+  Sparkles,
+  TrendingUp,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
@@ -255,6 +256,16 @@ export default function KalkulatorDoma() {
   return (
     <Layout>
       <div className="mx-auto max-w-lg px-4 pb-10 pt-6 md:max-w-3xl md:pt-10 [padding-bottom:max(2.5rem,env(safe-area-inset-bottom))]">
+        {/* Back button */}
+        <button
+          type="button"
+          onClick={() => window.history.back()}
+          className="mb-4 inline-flex items-center gap-1.5 text-sm font-medium text-slate-500 transition-colors hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          <span>Natrag</span>
+        </button>
+
         {/* Hero header */}
         <motion.header
           initial={{ opacity: 0, y: 14 }}

@@ -3,19 +3,20 @@ import { Link, useSearchParams } from "react-router-dom";
 import Layout from "@/components/Layout";
 import { motion } from "framer-motion";
 import {
+  ArrowLeft,
   Bot,
+  ChevronRight,
+  Crown,
+  FileText,
+  Image as ImageIcon,
+  Loader2,
+  LogIn,
+  Plus,
+  RotateCcw,
   Send,
   Sparkles,
-  ChevronRight,
-  RotateCcw,
-  LogIn,
-  Crown,
   Timer,
-  Loader2,
-  Plus,
   X,
-  Image as ImageIcon,
-  FileText,
 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -806,6 +807,16 @@ const Chatbot = () => {
       </Dialog>
 
       <section className="mx-auto max-w-6xl px-3 pb-10 pt-6 sm:px-4 sm:pb-12 sm:pt-8 md:py-14 md:pb-16 [padding-bottom:max(2.5rem,env(safe-area-inset-bottom))]">
+        {/* Back button */}
+        <button
+          type="button"
+          onClick={() => window.history.back()}
+          className="mb-4 inline-flex items-center gap-1.5 text-sm font-medium text-slate-500 transition-colors hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          <span>Natrag</span>
+        </button>
+
         <div className="flex flex-col lg:flex-row gap-6">
           {/* Chat */}
           <motion.div

@@ -7,28 +7,29 @@ import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
-  Calculator as CalcIcon,
-  GraduationCap,
-  BookOpen,
+  ArrowLeft,
   Award,
-  Plus,
-  ChevronsUpDown,
-  HelpCircle,
-  Sparkles,
-  TrendingUp,
-  AlertCircle,
-  Info,
+  BookOpen,
+  Building2,
+  Calculator as CalcIcon,
+  Check,
   ChevronDown,
   ChevronUp,
-  MapPin,
-  X,
-  Search,
-  Building2,
-  Check,
-  ShieldAlert,
-  Medal,
+  ChevronsUpDown,
   FileWarning,
+  GraduationCap,
+  HelpCircle,
+  Info,
+  MapPin,
+  Medal,
+  Plus,
+  Search,
+  ShieldAlert,
+  Sparkles,
+  TrendingUp,
   Trophy,
+  X,
+  AlertCircle,
 } from "lucide-react";
 import {
   Card,
@@ -465,6 +466,16 @@ const Kalkulator = () => {
             wizardStep >= 4 && "pb-10 sm:pb-14",
           )}
         >
+          {/* Back button */}
+          <button
+            type="button"
+            onClick={() => window.history.back()}
+            className="relative z-10 mb-4 inline-flex items-center gap-1.5 text-sm font-medium text-slate-500 transition-colors hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            <span>Natrag</span>
+          </button>
+
           {/* Subtle dot-grid texture */}
           <div className="pointer-events-none absolute inset-0 bg-grid-pattern opacity-[0.018]" aria-hidden />
           {/* Ambient glow orbs */}

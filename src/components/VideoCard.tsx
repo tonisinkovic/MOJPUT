@@ -1,6 +1,8 @@
 import YouTubeEmbed from "@/components/YouTubeEmbed";
+import { getYouTubeThumbnailUrl } from "@/lib/youtube";
 import { motion } from "framer-motion";
 import { Play } from "lucide-react";
+import { useState } from "react";
 
 export type VideoCardProps = {
   id: string;
@@ -12,8 +14,10 @@ export type VideoCardProps = {
   views?: number;
   isNew?: boolean;
   watchedProgress?: number;
-  /** Ako je postavljen, u gornjem 16:9 području prikazuje se ugrađeni YouTube umjesto sličice */
+  /** Ako je postavljen, u gornjem 16:9 području prikazuje se YouTube */
   youtubeVideoId?: string | null;
+  /** Ugradi iframe odmah (istaknuti početni videi). Ostali se otvaraju klikom. */
+  autoPlayEmbed?: boolean;
   onClick?: () => void;
 };
 
@@ -27,9 +31,12 @@ const VideoCard = ({
   isNew,
   watchedProgress,
   youtubeVideoId,
+  autoPlayEmbed = false,
   onClick,
 }: VideoCardProps) => {
-  const showEmbed = Boolean(youtubeVideoId);
+  const [playing, setPlaying] = useState(Boolean(autoPlayEmbed && youtubeVideoId));
+  const showEmbed = Boolean(youtubeVideoId) && playing;
+  const showThumb = Boolean(youtubeVideoId) && !playing;
 
   return (
     <motion.article
@@ -42,7 +49,27 @@ const VideoCard = ({
     >
       <div className="relative aspect-video overflow-hidden bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-800 dark:to-slate-900">
         {showEmbed ? (
-          <YouTubeEmbed videoId={youtubeVideoId!} title={title} fillParent />
+          <YouTubeEmbed videoId={youtubeVideoId!} title={title} fillParent autoPlay={!autoPlayEmbed} />
+        ) : showThumb ? (
+          <button
+            type="button"
+            className="absolute inset-0"
+            onClick={() => setPlaying(true)}
+            aria-label={`Pokreni: ${title}`}
+          >
+            <img
+              src={getYouTubeThumbnailUrl(youtubeVideoId!)}
+              alt=""
+              className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.04]"
+              loading="lazy"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-transparent to-black/10" />
+            <div className="absolute inset-0 flex items-center justify-center">
+              <span className="flex h-14 w-14 items-center justify-center rounded-full bg-white/95 shadow-xl transition-transform duration-300 group-hover:scale-110">
+                <Play className="ml-1 h-6 w-6 fill-current text-violet-600" />
+              </span>
+            </div>
+          </button>
         ) : (
           <>
             <div className="absolute inset-0 flex items-center justify-center text-6xl opacity-60 group-hover:scale-110 transition-transform duration-500">

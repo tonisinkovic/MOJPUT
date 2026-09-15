@@ -72,8 +72,8 @@ const Navbar = () => {
   }, []);
 
   const primaryNav = isJunior ? primaryNavJunior : primaryNavSenior;
-  // Cijela lista za mobitel (redoslijed važnosti).
-  const navItems: NavEntry[] = [...primaryNav, ...secondaryNav];
+  const extraNav = isJunior ? secondaryNav.filter((i) => i.path !== "/video") : secondaryNav;
+  const navItems: NavEntry[] = [...primaryNav, ...extraNav];
 
   useEffect(() => {
     let alive = true;
@@ -176,7 +176,7 @@ const Navbar = () => {
                   type="button"
                   className={cn(
                     "flex shrink-0 items-center gap-1 rounded-full px-2.5 py-1.5 text-[11px] font-semibold tracking-tight transition-all duration-200 xl:px-3 xl:text-[13px]",
-                    secondaryNav.some((i) => i.path === location.pathname)
+                    extraNav.some((i) => i.path === location.pathname)
                       ? "bg-primary text-primary-foreground shadow-md shadow-primary/25 dark:shadow-primary/20"
                       : "text-muted-foreground hover:bg-background/90 hover:text-foreground hover:shadow-sm dark:hover:bg-background/60",
                   )}
@@ -188,7 +188,7 @@ const Navbar = () => {
                 </button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-56 rounded-xl p-1">
-                {secondaryNav.map((item) => {
+                {extraNav.map((item) => {
                   const Icon = item.icon;
                   const active = location.pathname === item.path;
                   return (

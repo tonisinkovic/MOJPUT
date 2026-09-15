@@ -1,5 +1,7 @@
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Compass, ArrowUpRight } from "lucide-react";
+import { getStoredExperience, onExperienceChange } from "@/lib/experience";
 
 const footerLinks = [
   {
@@ -33,6 +35,14 @@ const footerLinks = [
 ];
 
 const Footer = () => {
+  const [isJunior, setIsJunior] = useState(() => getStoredExperience() === "junior");
+
+  useEffect(() => {
+    const sync = () => setIsJunior(getStoredExperience() === "junior");
+    sync();
+    return onExperienceChange(sync);
+  }, []);
+
   return (
     <footer className="relative overflow-hidden border-t bg-gradient-to-b from-card to-card/60">
       <div
@@ -71,7 +81,9 @@ const Footer = () => {
                 {group.title}
               </h4>
               <ul className="space-y-2.5">
-                {group.links.map((link) => (
+                {group.links
+                  .filter((link) => !(isJunior && link.path === "/video"))
+                  .map((link) => (
                   <li key={link.path}>
                     <Link
                       to={link.path}

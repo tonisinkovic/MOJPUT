@@ -34,6 +34,7 @@ import {
 } from "lucide-react";
 import type { LucideIcon, ReactNode } from "react";
 import { cn } from "@/lib/utils";
+import { VIDEOS } from "@/data/videos";
 
 type HeroQuickAction = {
   to: string;
@@ -180,6 +181,12 @@ const features: HomeFeature[] = [
     path: "/video",
   },
   {
+    icon: <Video className="h-6 w-6 text-primary" />,
+    title: "Video sadržaji",
+    description: "Videi o srednjim školama, iskustva učenika i savjeti za odabir.",
+    path: "/video-srednje",
+  },
+  {
     icon: <MessageSquare className="h-6 w-6 text-primary" />,
     title: "Forum",
     description: "Razmijeni iskustva s drugim učenicima i studentima.",
@@ -215,12 +222,18 @@ const features: HomeFeature[] = [
 const JUNIOR_EXCLUDED_FEATURE_PATHS = new Set([
   "/kalkulator-doma",
   "/mature",
+  "/video",
+]);
+
+/** Alati relevantni samo za Junior (srednje škole). */
+const SENIOR_EXCLUDED_FEATURE_PATHS = new Set([
+  "/video-srednje",
 ]);
 
 const seniorStats: StatItem[] = [
   { value: 120, suffix: "+", label: "Fakulteta", icon: <GraduationCap className="w-5 h-5" /> },
   { value: 600, suffix: "+", label: "Korisnika", icon: <Users className="w-5 h-5" /> },
-  { value: 1, label: "Video lekcija", icon: <Video className="w-5 h-5" /> },
+  { value: VIDEOS.length, label: "Video lekcija", icon: <Video className="w-5 h-5" /> },
   { value: 95, suffix: "%", label: "Zadovoljstvo", icon: <Award className="w-5 h-5" /> },
 ];
 
@@ -1596,7 +1609,7 @@ const Index = () => {
   const mapPath = isJunior ? "/srednje-skole" : "/karta";
 
   const quickActions = isJunior
-    ? HERO_QUICK_ACTIONS.map((a) => {
+    ? HERO_QUICK_ACTIONS.filter((a) => a.to !== "/video").map((a) => {
           if (a.to === "/karta") return { ...a, to: "/srednje-skole", hook: "443 škole" };
           if (a.to === "/forum") return { ...a, to: "/forum?experience=junior" };
           return a;
@@ -1658,7 +1671,7 @@ const Index = () => {
           }
           return f;
         })
-    : features;
+    : features.filter((f) => !SENIOR_EXCLUDED_FEATURE_PATHS.has(f.path));
   const scrollRevealGroup = {
     hidden: {},
     show: {

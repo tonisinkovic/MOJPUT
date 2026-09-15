@@ -1,7 +1,7 @@
 import Layout from "@/components/Layout";
 import { getStoredExperience, onExperienceChange, type MojPutExperienceMode } from "@/lib/experience";
 import { motion } from "framer-motion";
-import { Bell, CalendarDays, ChevronLeft, ChevronRight, ListChecks, Sparkles } from "lucide-react";
+import { ArrowLeft, Bell, CalendarDays, ChevronLeft, ChevronRight, ListChecks, Sparkles } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 
@@ -257,6 +257,16 @@ const Kalendar = () => {
   return (
     <Layout>
       <section className="container py-12 max-w-6xl">
+        {/* Back button */}
+        <button
+          type="button"
+          onClick={() => window.history.back()}
+          className="mb-4 inline-flex items-center gap-1.5 text-sm font-medium text-slate-500 transition-colors hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          <span>Natrag</span>
+        </button>
+
         <motion.div
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
