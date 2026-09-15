@@ -54,11 +54,6 @@ function normalizeVideoId(id: string | undefined): string | null {
 }
 
 /** URL za <iframe> (bez otvaranja youtube.com u istom tabu) */
-export function getYouTubeEmbedSrc(videoId: string, autoplay = false): string {
-  const extra = autoplay ? "&autoplay=1" : "";
-  return `https://www.youtube-nocookie.com/embed/${encodeURIComponent(videoId)}?rel=0${extra}`;
-}
-
-export function getYouTubeThumbnailUrl(videoId: string): string {
-  return `https://i.ytimg.com/vi/${encodeURIComponent(videoId)}/hqdefault.jpg`;
+export function getYouTubeEmbedSrc(videoId: string): string {
+  return `https://www.youtube-nocookie.com/embed/${encodeURIComponent(videoId)}?rel=0`;
 }

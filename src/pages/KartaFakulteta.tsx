@@ -2,7 +2,6 @@ import Layout from "@/components/Layout";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
-  ArrowLeft,
   BookOpen,
   Building2,
   ChevronDown,
@@ -204,16 +203,6 @@ const KartaFakulteta = () => {
   return (
     <Layout>
       <section className="container max-w-7xl mx-auto px-3 sm:px-4 py-4 sm:py-8 md:py-12 pb-[max(1.5rem,env(safe-area-inset-bottom))]">
-        {/* Back button */}
-        <button
-          type="button"
-          onClick={() => window.history.back()}
-          className="mb-4 inline-flex items-center gap-1.5 text-sm font-medium text-slate-500 transition-colors hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100"
-        >
-          <ArrowLeft className="h-4 w-4" />
-          <span>Natrag</span>
-        </button>
-
         {/* Hero */}
         <motion.div
           initial={{ opacity: 0, y: 12 }}

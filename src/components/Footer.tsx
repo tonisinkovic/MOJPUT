@@ -8,8 +8,10 @@ const footerLinks = [
     title: "Platforma",
     links: [
       { label: "Karta fakulteta", path: "/karta" },
+      { label: "Profili srednjih škola", path: "/srednje-skole/profili" },
+      { label: "Profili fakulteta", path: "/fakulteti" },
       { label: "Kviz", path: "/kviz" },
-      { label: "Kalkulator bodova", path: "/kalkulator" },
+      { label: "Kalkulator bodova", path: "/kalkulator-fakulteti" },
       { label: "Samoprocjena", path: "/samoprocjena" },
     ],
   },
@@ -19,6 +21,7 @@ const footerLinks = [
       { label: "Forum", path: "/forum" },
       { label: "Video predavanja", path: "/video" },
       { label: "Roditeljski kutak", path: "/roditelji" },
+      { label: "Pedagog / razred", path: "/razred" },
       { label: "Kalendar", path: "/kalendar" },
       { label: "Chatbot pomoćnik", path: "/chatbot" },
     ],
@@ -28,6 +31,8 @@ const footerLinks = [
     links: [
       { label: "O nama", path: "/o-nama" },
       { label: "Kontakt (pomoć)", path: "/kontakt" },
+      { label: "Prijava za škole", path: "/srednje-skole/prijava" },
+      { label: "Prijava za fakultete", path: "/fakulteti/prijava" },
       { label: "Privatnost", path: "/privatnost" },
       { label: "Uvjeti korištenja", path: "/uvjeti" },
     ],
@@ -35,13 +40,28 @@ const footerLinks = [
 ];
 
 const Footer = () => {
-  const [isJunior, setIsJunior] = useState(() => getStoredExperience() === "junior");
-
+  const [isJunior, setIsJunior] = useState(false);
   useEffect(() => {
     const sync = () => setIsJunior(getStoredExperience() === "junior");
     sync();
     return onExperienceChange(sync);
   }, []);
+
+  const juniorHidden = new Set(["/video", "/kalkulator-doma", "/fakulteti", "/fakulteti/prijava"]);
+  const seniorHidden = new Set(["/srednje-skole/profili", "/srednje-skole/prijava"]);
+
+  /** U Junior modu kviz i karta vode na verzije za srednju školu. */
+  const resolveLink = (link: { label: string; path: string }) => {
+    if (!isJunior) return link;
+    if (link.path === "/kviz") return { label: "Kviz za srednju", path: "/kviz-srednja" };
+    if (link.path === "/karta") return { label: "Karta srednjih škola", path: "/srednje-skole" };
+    if (link.path === "/forum") return { label: "Forum", path: "/forum?experience=junior" };
+    if (link.path === "/roditelji") return { label: "Roditeljski kutak", path: "/roditelji?experience=junior" };
+    if (link.path === "/chatbot") return { label: "Chatbot", path: "/chatbot?experience=junior" };
+    if (link.path === "/samoprocjena") return { label: "Programi", path: "/programi" };
+    if (link.path === "/kalkulator-fakulteti") return { label: "Kalkulator bodova", path: "/kalkulator" };
+    return link;
+  };
 
   return (
     <footer className="relative overflow-hidden border-t bg-gradient-to-b from-card to-card/60">
@@ -71,7 +91,9 @@ const Footer = () => {
               <span className="text-gradient">MojPut</span>
             </Link>
             <p className="text-sm text-muted-foreground leading-relaxed">
-              Centralno digitalno mjesto za maturante koji donose odluku o budućem studiju i karijeri.
+              {isJunior
+                ? "Putokaz za 8. razred — srednje škole, smjerovi i upis, bez Senior alata koji zbunjuju."
+                : "Centralno digitalno mjesto za maturante koji donose odluku o budućem studiju i karijeri."}
             </p>
           </div>
 
@@ -82,7 +104,8 @@ const Footer = () => {
               </h4>
               <ul className="space-y-2.5">
                 {group.links
-                  .filter((link) => !(isJunior && link.path === "/video"))
+                  .filter((link) => (isJunior ? !juniorHidden.has(link.path) : !seniorHidden.has(link.path)))
+                  .map(resolveLink)
                   .map((link) => (
                   <li key={link.path}>
                     <Link
@@ -118,7 +141,7 @@ const Footer = () => {
               © {new Date().getFullYear()} MojPut. Sva prava pridržana.
             </p>
             <p className="inline-flex items-center gap-1.5 rounded-full border border-border/60 bg-background/60 px-3 py-1 text-xs text-muted-foreground shadow-sm backdrop-blur">
-              Izrađeno sa ❤️ za maturante Hrvatske!
+              {isJunior ? "Izrađeno sa ❤️ za osmaše Hrvatske!" : "Izrađeno sa ❤️ za maturante Hrvatske!"}
             </p>
           </div>
         </div>

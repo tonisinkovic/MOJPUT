@@ -19,8 +19,13 @@ import {
   MessageSquare,
   Calendar,
   Users,
+  Bot,
+  BookOpen,
   MoreHorizontal,
   ChevronDown,
+  Newspaper,
+  School,
+  GraduationCap,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -36,27 +41,43 @@ import { cn } from "@/lib/utils";
 
 type NavEntry = { label: string; path: string; icon: LucideIcon };
 
+const navPath = (path: string) => path.split("?")[0];
+
 // Primarne - najčešće korištene stavke.
 const primaryNavSenior: NavEntry[] = [
   { label: "Karta fakulteta", path: "/karta", icon: Map },
+  { label: "Profili", path: "/fakulteti", icon: GraduationCap },
   { label: "Kviz", path: "/kviz", icon: HelpCircle },
+  { label: "Kalkulator", path: "/kalkulator-fakulteti", icon: Calculator },
+  { label: "Forum", path: "/forum", icon: MessageSquare },
+];
+
+// U Junior modu karta vodi na srednje škole, kviz na 8. razred, kalkulator na srednju.
+const primaryNavJunior: NavEntry[] = [
+  { label: "Srednje škole", path: "/srednje-skole", icon: Map },
+  { label: "Profili", path: "/srednje-skole/profili", icon: School },
+  { label: "Kviz", path: "/kviz-srednja", icon: HelpCircle },
+  { label: "Pedagog", path: "/razred", icon: Users },
   { label: "Kalkulator", path: "/kalkulator", icon: Calculator },
   { label: "Forum", path: "/forum", icon: MessageSquare },
 ];
 
-// U Junior modu karta vodi na srednje škole umjesto na fakultete.
-const primaryNavJunior: NavEntry[] = [
-  { label: "Srednje škole", path: "/srednje-skole", icon: Map },
-  ...primaryNavSenior.slice(1),
-];
-
 // Sekundarne - u "Više" padajućem na desktopu, lista na mobitelu.
-const secondaryNav: NavEntry[] = [
+const secondaryNavSenior: NavEntry[] = [
+  { label: "Pedagog / razred", path: "/razred", icon: Users },
   { label: "Samoprocjena", path: "/samoprocjena", icon: Target },
   { label: "Domovi", path: "/kalkulator-doma", icon: Home },
   { label: "Video", path: "/video", icon: Video },
   { label: "Kalendar", path: "/kalendar", icon: Calendar },
   { label: "Roditelji", path: "/roditelji", icon: Users },
+];
+
+const secondaryNavJunior: NavEntry[] = [
+  { label: "Programi", path: "/programi", icon: BookOpen },
+  { label: "Novosti škola", path: "/srednje-skole/objave", icon: Newspaper },
+  { label: "Kalendar", path: "/kalendar", icon: Calendar },
+  { label: "Roditelji", path: "/roditelji?experience=junior", icon: Users },
+  { label: "Chatbot", path: "/chatbot?experience=junior", icon: Bot },
 ];
 
 const Navbar = () => {
@@ -72,8 +93,10 @@ const Navbar = () => {
   }, []);
 
   const primaryNav = isJunior ? primaryNavJunior : primaryNavSenior;
-  const extraNav = isJunior ? secondaryNav.filter((i) => i.path !== "/video") : secondaryNav;
-  const navItems: NavEntry[] = [...primaryNav, ...extraNav];
+  const secondaryNav = isJunior ? secondaryNavJunior : secondaryNavSenior;
+  // Cijela lista za mobitel (redoslijed važnosti).
+  const navItems: NavEntry[] = [...primaryNav, ...secondaryNav];
+  const accountHome = user?.user_type === "skola" ? "/skola/dashboard" : "/profil";
 
   useEffect(() => {
     let alive = true;
@@ -148,7 +171,7 @@ const Navbar = () => {
           >
             {primaryNav.map((item) => {
               const Icon = item.icon;
-              const active = location.pathname === item.path;
+              const active = location.pathname === navPath(item.path);
               return (
                 <Link
                   key={item.path}
@@ -176,7 +199,7 @@ const Navbar = () => {
                   type="button"
                   className={cn(
                     "flex shrink-0 items-center gap-1 rounded-full px-2.5 py-1.5 text-[11px] font-semibold tracking-tight transition-all duration-200 xl:px-3 xl:text-[13px]",
-                    extraNav.some((i) => i.path === location.pathname)
+                    secondaryNav.some((i) => navPath(i.path) === location.pathname)
                       ? "bg-primary text-primary-foreground shadow-md shadow-primary/25 dark:shadow-primary/20"
                       : "text-muted-foreground hover:bg-background/90 hover:text-foreground hover:shadow-sm dark:hover:bg-background/60",
                   )}
@@ -188,9 +211,9 @@ const Navbar = () => {
                 </button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-56 rounded-xl p-1">
-                {extraNav.map((item) => {
+                {secondaryNav.map((item) => {
                   const Icon = item.icon;
-                  const active = location.pathname === item.path;
+                  const active = location.pathname === navPath(item.path);
                   return (
                     <DropdownMenuItem key={item.path} asChild>
                       <Link
@@ -236,7 +259,7 @@ const Navbar = () => {
                   </Button>
                 )}
                 <Link
-                  to="/profil"
+                  to={accountHome}
                   className={cn(
                     "flex max-w-[160px] items-center gap-2 rounded-full border border-border/70 bg-card/60 py-1 pl-1 pr-3 shadow-sm",
                     "transition-all hover:border-primary/35 hover:bg-card hover:shadow-md",
@@ -338,7 +361,7 @@ const Navbar = () => {
               <div className="grid gap-1.5">
                 {navItems.map((item) => {
                   const Icon = item.icon;
-                  const active = location.pathname === item.path;
+                  const active = location.pathname === navPath(item.path);
                   return (
                     <Link
                       key={item.path}
@@ -374,7 +397,7 @@ const Navbar = () => {
                 <div className="mt-2 border-t border-border/60 pt-4">
                   <div className="flex flex-col gap-3">
                     <Link
-                      to="/profil"
+                      to={accountHome}
                       onClick={() => setOpen(false)}
                       className={cn(
                         "flex items-center gap-3 rounded-xl border border-border/60 bg-card/80 p-3 shadow-sm",
@@ -390,9 +413,9 @@ const Navbar = () => {
                       </div>
                     </Link>
                     <Button variant="outline" className="h-11 w-full gap-2 rounded-xl font-semibold shadow-sm" asChild>
-                      <Link to="/profil" onClick={() => setOpen(false)}>
+                      <Link to={accountHome} onClick={() => setOpen(false)}>
                         <User className="h-4 w-4" />
-                        Moj profil
+                        {user.user_type === "skola" ? "Škola" : "Moj profil"}
                       </Link>
                     </Button>
                     {user.is_admin && (
