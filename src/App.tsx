@@ -14,6 +14,7 @@ import Samoprocjena from "./pages/Samoprocjena";
 import Kalkulator from "./pages/Kalkulator";
 import KalkulatorDoma from "./pages/KalkulatorDoma";
 import VideoPage from "./pages/VideoPage";
+import VideoSrednje from "./pages/VideoSrednje";
 import Forum from "./pages/Forum";
 import Kalendar from "./pages/Kalendar";
 import Mature from "./pages/Mature";
@@ -136,6 +137,7 @@ const App = () => (
             <Route path="/kalkulator-fakulteti" element={<KalkulatorFakulteti />} />
             <Route path="/kalkulator-doma" element={<KalkulatorDoma />} />
             <Route path="/video" element={<VideoPage />} />
+            <Route path="/video-srednje" element={<VideoSrednje />} />
             <Route path="/forum" element={<Forum />} />
             <Route path="/kalendar" element={<Kalendar />} />
             <Route path="/mature" element={<Mature />} />

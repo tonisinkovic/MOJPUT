@@ -192,6 +192,12 @@ const features: HomeFeature[] = [
     path: "/video",
   },
   {
+    icon: <Video className="h-6 w-6 text-primary" />,
+    title: "Video sadržaji",
+    description: "Videi o srednjim školama, iskustva učenika i savjeti za odabir.",
+    path: "/video-srednje",
+  },
+  {
     icon: <MessageSquare className="h-6 w-6 text-primary" />,
     title: "Forum",
     description: "Razmijeni iskustva s drugim učenicima i studentima.",
@@ -237,6 +243,11 @@ const JUNIOR_EXCLUDED_FEATURE_PATHS = new Set([
   "/samoprocjena",
   "/video",
   "/fakulteti",
+]);
+
+/** Alati relevantni samo za Junior (srednje škole). */
+const SENIOR_EXCLUDED_FEATURE_PATHS = new Set([
+  "/video-srednje",
 ]);
 
 const JUNIOR_HIDDEN_QUICK = new Set(["/samoprocjena", "/video"]);
@@ -1690,7 +1701,7 @@ const Index = () => {
           }
           return f;
         })
-    : features;
+    : features.filter((f) => !SENIOR_EXCLUDED_FEATURE_PATHS.has(f.path));
   const scrollRevealGroup = {
     hidden: {},
     show: {
