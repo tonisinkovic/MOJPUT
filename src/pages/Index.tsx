@@ -250,7 +250,7 @@ const SENIOR_EXCLUDED_FEATURE_PATHS = new Set([
   "/video-srednje",
 ]);
 
-const JUNIOR_HIDDEN_QUICK = new Set(["/samoprocjena", "/video"]);
+const JUNIOR_HIDDEN_QUICK = new Set(["/samoprocjena"]);
 
 const seniorStats: StatItem[] = [
   { value: 120, suffix: "+", label: "Fakulteta", icon: <GraduationCap className="w-5 h-5" /> },
@@ -1629,6 +1629,7 @@ const Index = () => {
           if (a.to === "/forum") return { ...a, to: "/forum?experience=junior" };
           if (a.to === "/kviz") return { ...a, to: "/kviz-srednja" };
           if (a.to === "/kalkulator-fakulteti") return { ...a, to: "/kalkulator" };
+          if (a.to === "/video") return { ...a, to: "/video-srednje", hook: "Srednje škole" };
           return a;
         })
     : HERO_QUICK_ACTIONS;
