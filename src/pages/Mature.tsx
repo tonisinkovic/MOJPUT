@@ -1,5 +1,4 @@
 import Layout from "@/components/Layout";
-import JuniorLaterNotice from "@/components/junior/JuniorLaterNotice";
 import MaturaHrvatskiCitankaKviz from "@/components/matura/MaturaHrvatskiCitankaKviz";
 import MaturaHrvatskiPismenoReadOnly from "@/components/matura/MaturaHrvatskiPismenoReadOnly";
 import MaturaMatematikaKviz from "@/components/matura/MaturaMatematikaKviz";
@@ -9,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { motion } from "framer-motion";
 import {
+  ArrowLeft,
   BookOpen,
   Calculator,
   CalendarRange,
@@ -71,9 +71,18 @@ function MatureInner() {
   return (
     <Layout>
       <div className="relative min-h-[calc(100vh-4rem)] overflow-hidden pt-20 pb-20 sm:pt-24 sm:pb-24">
-        <div className="container relative z-10 mb-4 max-w-6xl px-3 sm:px-4">
-          <JuniorLaterNotice tool="Matura" />
+        {/* Back button */}
+        <div className="container max-w-6xl mx-auto px-3 sm:px-4 mb-4">
+          <button
+            type="button"
+            onClick={() => window.history.back()}
+            className="inline-flex items-center gap-1.5 text-sm font-medium text-slate-500 transition-colors hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            <span>Natrag</span>
+          </button>
         </div>
+
         <div
           className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(ellipse_80%_50%_at_50%_-20%,hsl(var(--primary)/0.12),transparent)]"
           aria-hidden

@@ -7,28 +7,29 @@ import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
-  Calculator as CalcIcon,
-  GraduationCap,
-  BookOpen,
+  ArrowLeft,
   Award,
-  Plus,
-  ChevronsUpDown,
-  HelpCircle,
-  Sparkles,
-  TrendingUp,
-  AlertCircle,
-  Info,
+  BookOpen,
+  Building2,
+  Calculator as CalcIcon,
+  Check,
   ChevronDown,
   ChevronUp,
-  MapPin,
-  X,
-  Search,
-  Building2,
-  Check,
-  ShieldAlert,
-  Medal,
+  ChevronsUpDown,
   FileWarning,
+  GraduationCap,
+  HelpCircle,
+  Info,
+  MapPin,
+  Medal,
+  Plus,
+  Search,
+  ShieldAlert,
+  Sparkles,
+  TrendingUp,
   Trophy,
+  X,
+  AlertCircle,
 } from "lucide-react";
 import {
   Card,
@@ -58,8 +59,6 @@ import {
 } from "@/components/ui/command";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
-import CalculatorAnimation from "@/components/header-animations/CalculatorAnimation";
-import HeaderDecor, { HeaderHero } from "@/components/header-animations/HeaderDecor";
 import {
   scoringFormulas,
   calculateTotal,
@@ -70,7 +69,7 @@ import {
 import { componentInputKey } from "@/lib/admissionCalculator";
 import { cutoffFromUniversitiesDataset } from "@/lib/upisPragFromDataset";
 
-// ─── Types ───
+// ÔöÇÔöÇÔöÇ Types ÔöÇÔöÇÔöÇ
 
 type ProgramOption = {
   formula: ProgramScoring;
@@ -83,7 +82,7 @@ type ChanceLevel = "high" | "medium" | "low";
 
 type InstitutionType = "all" | "sveuciliste" | "veleuciliste";
 
-// ─── Build flat program list directly from scoring formulas (710 programa) ───
+// ÔöÇÔöÇÔöÇ Build flat program list directly from scoring formulas (710 programa) ÔöÇÔöÇÔöÇ
 
 function buildProgramOptions(): ProgramOption[] {
   return scoringFormulas.map((f) => {
@@ -100,7 +99,7 @@ function buildProgramOptions(): ProgramOption[] {
 
 const PROGRAM_OPTIONS = buildProgramOptions();
 
-// ─── Extract cities sorted by program count ───
+// ÔöÇÔöÇÔöÇ Extract cities sorted by program count ÔöÇÔöÇÔöÇ
 const ALL_CITIES = (() => {
   const counts = new Map<string, number>();
   for (const o of PROGRAM_OPTIONS) {
@@ -115,26 +114,26 @@ const TOP_CITIES = ALL_CITIES.slice(0, 7); // Zagreb, Split, Rijeka, Osijek, Zad
 
 function getInstitutionType(name: string): InstitutionType {
   const lower = name.toLowerCase();
-  if (lower.includes("veleučilišt") || lower.includes("visok")) return "veleuciliste";
+  if (lower.includes("veleu─Źili┼ít") || lower.includes("visok")) return "veleuciliste";
   return "sveuciliste";
 }
 
-// ─── Additional points options ───
+// ÔöÇÔöÇÔöÇ Additional points options ÔöÇÔöÇÔöÇ
 
 const ADDITIONAL_OPTIONS = [
   { key: "natjecanje_znanost", label: "Natjecanje iz znanosti", maxPoints: 10 },
   { key: "natjecanje_sport", label: "Natjecanje iz sporta", maxPoints: 5 },
-  { key: "volonterstvo", label: "Volonterstvo (potvrđeno)", maxPoints: 5 },
-  { key: "ostalo", label: "Ostala postignuća", maxPoints: 10 },
+  { key: "volonterstvo", label: "Volonterstvo (potvr─Ĺeno)", maxPoints: 5 },
+  { key: "ostalo", label: "Ostala postignu─ça", maxPoints: 10 },
 ] as const;
 
 const MAX_POINTS = 1000;
 
 const WIZARD_STEPS = [
   { step: 0, label: "Program", sub: "Smjer i formula" },
-  { step: 1, label: "Ocjene", sub: "Srednja škola" },
+  { step: 1, label: "Ocjene", sub: "Srednja ┼íkola" },
   { step: 2, label: "Matura", sub: "Obavezno + provjere" },
-  { step: 3, label: "Još toga", sub: "Izborni & dodatno" },
+  { step: 3, label: "Jo┼í to─Źno", sub: "Izborni & dodatno" },
   { step: 4, label: "Rezultat", sub: "Tvoji bodovi" },
 ] as const;
 
@@ -144,7 +143,7 @@ const cardShell =
 const softField =
   "space-y-3 rounded-xl border border-border/45 bg-muted/15 p-3 shadow-sm sm:p-4";
 
-/** Parsira unos ocjene (1–5), podržava „3,45” i „3.45”. */
+/** Parsira unos ocjene (1ÔÇô5), podr┼żava ÔÇ×3,45ÔÇŁ i ÔÇ×3.45ÔÇŁ. */
 function parseGradeString(raw: string): number | null {
   const t = raw.trim().replace(/\s/g, "").replace(",", ".");
   if (t === "" || t === "." || t === "-") return null;
@@ -161,35 +160,35 @@ function getChanceLevel(totalPoints: number, cutoff: number | null): ChanceLevel
   return "low";
 }
 
-// ═══════════════════════════════════════════════════════════════
+// ÔĽÉÔĽÉÔĽÉÔĽÉÔĽÉÔĽÉÔĽÉÔĽÉÔĽÉÔĽÉÔĽÉÔĽÉÔĽÉÔĽÉÔĽÉÔĽÉÔĽÉÔĽÉÔĽÉÔĽÉÔĽÉÔĽÉÔĽÉÔĽÉÔĽÉÔĽÉÔĽÉÔĽÉÔĽÉÔĽÉÔĽÉÔĽÉÔĽÉÔĽÉÔĽÉÔĽÉÔĽÉÔĽÉÔĽÉÔĽÉÔĽÉÔĽÉÔĽÉÔĽÉÔĽÉÔĽÉÔĽÉÔĽÉÔĽÉÔĽÉÔĽÉÔĽÉÔĽÉÔĽÉÔĽÉÔĽÉÔĽÉÔĽÉÔĽÉÔĽÉÔĽÉÔĽÉÔĽÉ
 //  COMPONENT
-// ═══════════════════════════════════════════════════════════════
+// ÔĽÉÔĽÉÔĽÉÔĽÉÔĽÉÔĽÉÔĽÉÔĽÉÔĽÉÔĽÉÔĽÉÔĽÉÔĽÉÔĽÉÔĽÉÔĽÉÔĽÉÔĽÉÔĽÉÔĽÉÔĽÉÔĽÉÔĽÉÔĽÉÔĽÉÔĽÉÔĽÉÔĽÉÔĽÉÔĽÉÔĽÉÔĽÉÔĽÉÔĽÉÔĽÉÔĽÉÔĽÉÔĽÉÔĽÉÔĽÉÔĽÉÔĽÉÔĽÉÔĽÉÔĽÉÔĽÉÔĽÉÔĽÉÔĽÉÔĽÉÔĽÉÔĽÉÔĽÉÔĽÉÔĽÉÔĽÉÔĽÉÔĽÉÔĽÉÔĽÉÔĽÉÔĽÉÔĽÉ
 
 const Kalkulator = () => {
-  // ─── State: program selection ───
+  // ÔöÇÔöÇÔöÇ State: program selection ÔöÇÔöÇÔöÇ
   const [selectedProgram, setSelectedProgram] = useState<ProgramOption | null>(null);
   const [facultyOpen, setFacultyOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
 
-  // ─── State: filters ───
+  // ÔöÇÔöÇÔöÇ State: filters ÔöÇÔöÇÔöÇ
   const [selectedCity, setSelectedCity] = useState<string | null>(null);
   const [institutionType, setInstitutionType] = useState<InstitutionType>("all");
   const [showAllCities, setShowAllCities] = useState(false);
 
-  // ─── State: formula-based inputs ───
+  // ÔöÇÔöÇÔöÇ State: formula-based inputs ÔöÇÔöÇÔöÇ
   const [formulaInputs, setFormulaInputs] = useState<Record<string, number>>({});
 
-  /** Postotak ili bodovi prijemnog kad program ima weightMatura/weightPrijemni; null = još nije uneseno */
+  /** Postotak ili bodovi prijemnog kad program ima weightMatura/weightPrijemni; null = jo┼í nije uneseno */
   const [prijemniInput, setPrijemniInput] = useState<number | null>(0);
 
-  // ─── State: additional points ───
+  // ÔöÇÔöÇÔöÇ State: additional points ÔöÇÔöÇÔöÇ
   const [additionalPoints, setAdditionalPoints] = useState<Record<string, number>>({});
 
-  // ─── State: UI ───
+  // ÔöÇÔöÇÔöÇ State: UI ÔöÇÔöÇÔöÇ
   const [showBreakdown, setShowBreakdown] = useState(true);
   /** 0 = fakultet, 1 = ocjene, 2 = matura obavezni (+ dodatne provjere), 3 = izborni + ostalo, 4 = rezultat */
   const [wizardStep, setWizardStep] = useState(0);
-  /** Za jedan „Prosjek svih ocjena” unos: tekstualno polje da se mogu unijeti decimale tijekom tipkanja */
+  /** Za jedan ÔÇ×Prosjek svih ocjenaÔÇŁ unos: tekstualno polje da se mogu unijeti decimale tijekom tipkanja */
   const [gradeYearStr, setGradeYearStr] = useState<[string, string, string, string]>([
     "4",
     "4",
@@ -197,10 +196,10 @@ const Kalkulator = () => {
     "4",
   ]);
 
-  // ─── Current formula (always available when program selected) ───
+  // ÔöÇÔöÇÔöÇ Current formula (always available when program selected) ÔöÇÔöÇÔöÇ
   const selectedFormula = selectedProgram?.formula ?? null;
 
-  // ─── Handle program selection ───
+  // ÔöÇÔöÇÔöÇ Handle program selection ÔöÇÔöÇÔöÇ
   const handleSelectProgram = (opt: ProgramOption) => {
     setSelectedProgram(opt);
     setFacultyOpen(false);
@@ -227,7 +226,7 @@ const Kalkulator = () => {
     setFormulaInputs(defaults);
   };
 
-  // ─── Calculation ───
+  // ÔöÇÔöÇÔöÇ Calculation ÔöÇÔöÇÔöÇ
   const totalAdditional = useMemo(() => {
     return Object.values(additionalPoints).reduce((a, b) => a + b, 0);
   }, [additionalPoints]);
@@ -250,7 +249,7 @@ const Kalkulator = () => {
   const cutoffSource = selectedProgram?.cutoffSource ?? "scoring_json";
   const chanceLevel = getChanceLevel(totalPoints ?? 0, cutoff);
 
-  // ─── Pre-filter by city and institution type ───
+  // ÔöÇÔöÇÔöÇ Pre-filter by city and institution type ÔöÇÔöÇÔöÇ
   const preFilteredPrograms = useMemo(() => {
     let list = PROGRAM_OPTIONS;
     if (selectedCity) {
@@ -274,35 +273,35 @@ const Kalkulator = () => {
 
     // Aliasi za popularne kratice
     const aliases: Record<string, string> = {
-      fer: "elektrotehnike i računarstva zagreb",
+      fer: "elektrotehnike i ra─Źunarstva zagreb",
       fsb: "strojarstva i brodogradnje zagreb",
       efzg: "ekonomski fakultet zagreb",
-      pmf: "prirodoslovno-matematički zagreb",
+      pmf: "prirodoslovno-matemati─Źki zagreb",
       ffzg: "filozofski fakultet zagreb",
       fesb: "elektrotehnike strojarstva brodogradnje split",
-      ferit: "računarstva informacijskih tehnologija osijek",
-      tvz: "tehničko veleučilište zagreb",
+      ferit: "ra─Źunarstva informacijskih tehnologija osijek",
+      tvz: "tehni─Źko veleu─Źili┼íte zagreb",
       foi: "organizacije i informatike",
-      fpzg: "političkih znanosti zagreb",
-      fkit: "kemijskog inženjerstva zagreb",
-      pbf: "prehrambeno-biotehnološki zagreb",
-      rgn: "rudarsko-geološko-naftni",
+      fpzg: "politi─Źkih znanosti zagreb",
+      fkit: "kemijskog in┼żenjerstva zagreb",
+      pbf: "prehrambeno-biotehnolo┼íki zagreb",
+      rgn: "rudarsko-geolo┼íko-naftni",
       alu: "akademija likovnih umjetnosti",
       adu: "akademija dramske umjetnosti",
-      kif: "kineziološki fakultet zagreb",
+      kif: "kineziolo┼íki fakultet zagreb",
       fidit: "informatike i digitalnih tehnologija rijeka",
-      riteh: "tehnički fakultet rijeka",
+      riteh: "tehni─Źki fakultet rijeka",
       mef: "medicinski fakultet",
       pravo: "pravni fakultet",
       medicina: "medicinski fakultet",
       ekonomija: "ekonomski fakultet",
-      stomatologija: "stomatološki",
+      stomatologija: "stomatolo┼íki",
       farmacija: "farmaceutsko",
       veterina: "veterinarski",
       agronomija: "agronomski",
       arhitektura: "arhitektonski",
       geodezija: "geodetski",
-      grafika: "grafički",
+      grafika: "grafi─Źki",
       promet: "prometnih znanosti",
       algebra: "algebra",
       vern: "vern",
@@ -334,7 +333,7 @@ const Kalkulator = () => {
     return results.slice(0, 50);
   }, [searchQuery, preFilteredPrograms]);
 
-  // ─── Group filtered results by institution for dropdown ───
+  // ÔöÇÔöÇÔöÇ Group filtered results by institution for dropdown ÔöÇÔöÇÔöÇ
   const groupedFilteredPrograms = useMemo(() => {
     const groups = new Map<string, ProgramOption[]>();
     for (const opt of filteredPrograms) {
@@ -355,21 +354,21 @@ const Kalkulator = () => {
 
   const chanceConfig = {
     high: {
-      label: "Velika šansa za upis",
+      label: "Velika ┼íansa za upis",
       color: "text-emerald-600",
       bg: "bg-emerald-500",
       border: "border-emerald-200",
       icon: Sparkles,
     },
     medium: {
-      label: "Moguće – na granici",
+      label: "Mogu─çe ÔÇô na granici",
       color: "text-amber-600",
       bg: "bg-amber-500",
       border: "border-amber-200",
       icon: TrendingUp,
     },
     low: {
-      label: "Teško – potrebno više bodova",
+      label: "Te┼íko ÔÇô potrebno vi┼íe bodova",
       color: "text-rose-600",
       bg: "bg-rose-500",
       border: "border-rose-200",
@@ -380,7 +379,7 @@ const Kalkulator = () => {
   const config = chanceConfig[chanceLevel];
   const ChanceIcon = config.icon;
 
-  // ─── Group formula components by type for rendering ───
+  // ÔöÇÔöÇÔöÇ Group formula components by type for rendering ÔöÇÔöÇÔöÇ
   const groupedComponents = useMemo(() => {
     if (!selectedFormula) return null;
     const ocjene: ScoringComponent[] = [];
@@ -427,7 +426,7 @@ const Kalkulator = () => {
     return out;
   }, [selectedFormula]);
 
-  /** Jedan red „Prosjek svih ocjena“ u formuli – 4 razreda računaju jedan prosjek */
+  /** Jedan red ÔÇ×Prosjek svih ocjenaÔÇť u formuli ÔÇô 4 razreda ra─Źunaju jedan prosjek */
   const singleOcjenaProsjekIndex = useMemo(
     () => (ocjenaKomponenteIndices.length === 1 ? ocjenaKomponenteIndices[0] : null),
     [ocjenaKomponenteIndices],
@@ -452,9 +451,9 @@ const Kalkulator = () => {
   const canWizardNext =
     wizardStep === 0 ? selectedProgram != null : wizardStep < 4;
 
-  // ═══════════════════════════════════════════════════════════════
+  // ÔĽÉÔĽÉÔĽÉÔĽÉÔĽÉÔĽÉÔĽÉÔĽÉÔĽÉÔĽÉÔĽÉÔĽÉÔĽÉÔĽÉÔĽÉÔĽÉÔĽÉÔĽÉÔĽÉÔĽÉÔĽÉÔĽÉÔĽÉÔĽÉÔĽÉÔĽÉÔĽÉÔĽÉÔĽÉÔĽÉÔĽÉÔĽÉÔĽÉÔĽÉÔĽÉÔĽÉÔĽÉÔĽÉÔĽÉÔĽÉÔĽÉÔĽÉÔĽÉÔĽÉÔĽÉÔĽÉÔĽÉÔĽÉÔĽÉÔĽÉÔĽÉÔĽÉÔĽÉÔĽÉÔĽÉÔĽÉÔĽÉÔĽÉÔĽÉÔĽÉÔĽÉÔĽÉÔĽÉ
   //  RENDER
-  // ═══════════════════════════════════════════════════════════════
+  // ÔĽÉÔĽÉÔĽÉÔĽÉÔĽÉÔĽÉÔĽÉÔĽÉÔĽÉÔĽÉÔĽÉÔĽÉÔĽÉÔĽÉÔĽÉÔĽÉÔĽÉÔĽÉÔĽÉÔĽÉÔĽÉÔĽÉÔĽÉÔĽÉÔĽÉÔĽÉÔĽÉÔĽÉÔĽÉÔĽÉÔĽÉÔĽÉÔĽÉÔĽÉÔĽÉÔĽÉÔĽÉÔĽÉÔĽÉÔĽÉÔĽÉÔĽÉÔĽÉÔĽÉÔĽÉÔĽÉÔĽÉÔĽÉÔĽÉÔĽÉÔĽÉÔĽÉÔĽÉÔĽÉÔĽÉÔĽÉÔĽÉÔĽÉÔĽÉÔĽÉÔĽÉÔĽÉÔĽÉ
 
   return (
     <Layout>
@@ -467,6 +466,16 @@ const Kalkulator = () => {
             wizardStep >= 4 && "pb-10 sm:pb-14",
           )}
         >
+          {/* Back button */}
+          <button
+            type="button"
+            onClick={() => window.history.back()}
+            className="relative z-10 mb-4 inline-flex items-center gap-1.5 text-sm font-medium text-slate-500 transition-colors hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            <span>Natrag</span>
+          </button>
+
           {/* Subtle dot-grid texture */}
           <div className="pointer-events-none absolute inset-0 bg-grid-pattern opacity-[0.018]" aria-hidden />
           {/* Ambient glow orbs */}
@@ -489,32 +498,26 @@ const Kalkulator = () => {
                 className="pointer-events-none absolute -bottom-14 -left-10 h-32 w-32 rounded-full bg-primary/10 blur-3xl sm:h-48 sm:w-48"
               />
 
-              <HeaderHero
-                icon={
-                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl gradient-hero text-primary-foreground shadow-md sm:h-14 sm:w-14">
-                    <CalcIcon className="h-6 w-6 sm:h-7 sm:w-7" />
-                  </div>
-                }
-                decor={
-                  <HeaderDecor className="opacity-[0.42] sm:opacity-[0.16]">
-                    <CalculatorAnimation />
-                  </HeaderDecor>
-                }
-              >
-                <span className="inline-flex items-center gap-1 rounded-full border border-primary/25 bg-primary/10 px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-primary">
-                  <Sparkles className="h-3 w-3" />
-                  <span className="tabular-nums">{PROGRAM_OPTIONS.length} programa · bodovne formule 2025.</span>
-                </span>
-                <h1 className="mt-2 text-balance text-2xl font-bold leading-tight tracking-tight sm:text-3xl md:text-4xl">
-                  Kalkulator <span className="text-gradient">bodova</span>
-                </h1>
-                <p className="mt-1.5 max-w-2xl text-pretty text-sm leading-relaxed text-muted-foreground sm:text-base">
-                  Unesi ocjene i rezultate mature — formula se prilagođava odabranom smjeru, korak po korak.
-                </p>
-              </HeaderHero>
+              <div className="relative flex flex-col gap-4 sm:flex-row sm:items-start sm:gap-5">
+                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl gradient-hero text-primary-foreground shadow-md sm:h-14 sm:w-14">
+                  <CalcIcon className="h-6 w-6 sm:h-7 sm:w-7" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <span className="inline-flex items-center gap-1 rounded-full border border-primary/25 bg-primary/10 px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-primary">
+                    <Sparkles className="h-3 w-3" />
+                    <span className="tabular-nums">{PROGRAM_OPTIONS.length} programa ┬Ě bodovne formule 2025.</span>
+                  </span>
+                  <h1 className="mt-2 text-balance text-2xl font-bold leading-tight tracking-tight sm:text-3xl md:text-4xl">
+                    Kalkulator <span className="text-gradient">bodova</span>
+                  </h1>
+                  <p className="mt-1.5 max-w-2xl text-pretty text-sm leading-relaxed text-muted-foreground sm:text-base">
+                    Unesi ocjene i rezultate mature ÔÇö formula se prilago─Ĺava odabranom smjeru, korak po korak.
+                  </p>
+                </div>
+              </div>
             </div>
 
-            {/* Stepper — wizard progress */}
+            {/* Stepper ÔÇö wizard progress */}
             <div className="rounded-2xl border-2 border-border bg-card p-4 shadow-card sm:p-5 md:p-6">
               {/* Meta row */}
               <div className="mb-5 flex flex-col gap-3 sm:mb-6 sm:flex-row sm:items-start sm:justify-between sm:gap-3">
@@ -527,12 +530,12 @@ const Kalkulator = () => {
                       {WIZARD_STEPS[wizardStep]?.label}
                       <span className="font-normal text-muted-foreground">
                         {" "}
-                        — {WIZARD_STEPS[wizardStep]?.sub}
+                        ÔÇö {WIZARD_STEPS[wizardStep]?.sub}
                       </span>
                     </p>
                   </div>
                   <p className="mt-1 text-xs text-muted-foreground sm:ml-10">
-                    Možeš se uvijek vratiti i prilagoditi unos.
+                    Mo┼że┼í se uvijek vratiti i prilagoditi unos.
                   </p>
                 </div>
                 <span className="shrink-0 rounded-full border border-primary/25 bg-primary/10 px-2.5 py-1 text-[11px] font-bold uppercase tracking-wide text-primary sm:text-xs">
@@ -542,7 +545,7 @@ const Kalkulator = () => {
 
               {/* Stepper: vertikalno na mobitelu, horizontalno od sm */}
               <div className="relative">
-                {/* Mobitel — puna širina, vertikalni popis */}
+                {/* Mobitel ÔÇö puna ┼íirina, vertikalni popis */}
                 <ol className="flex flex-col gap-0 sm:hidden">
                   {WIZARD_STEPS.map((s) => {
                     const active = wizardStep === s.step;
@@ -579,7 +582,7 @@ const Kalkulator = () => {
                   })}
                 </ol>
 
-                {/* Tablet+ — povezani točkasti koraci */}
+                {/* Tablet+ ÔÇö povezani to─Źkasti koraci */}
                 <div className="hidden sm:block">
                   <div
                     className="pointer-events-none absolute left-[10%] right-[10%] top-[18px] h-[3px] -translate-y-1/2 overflow-hidden rounded-full bg-border/60"
@@ -631,7 +634,7 @@ const Kalkulator = () => {
 
             {/* Main grid: inputs left, result right */}
             <div className="grid lg:grid-cols-5 gap-6 lg:gap-8">
-              {/* ═══ Inputs column ═══ */}
+              {/* ÔĽÉÔĽÉÔĽÉ Inputs column ÔĽÉÔĽÉÔĽÉ */}
               <div
                 className={cn(
                   "space-y-6",
@@ -664,11 +667,11 @@ const Kalkulator = () => {
                       </Badge>
                     </div>
                     <CardDescription>
-                      Filtriraj po gradu ili vrsti, pa pretraži
+                      Filtriraj po gradu ili vrsti, pa pretra┼żi
                     </CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-4">
-                    {/* ── City filter chips ── */}
+                    {/* ÔöÇÔöÇ City filter chips ÔöÇÔöÇ */}
                     <div className="space-y-2">
                       <div className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
                         <MapPin className="w-3.5 h-3.5" />
@@ -714,7 +717,7 @@ const Kalkulator = () => {
                       </div>
                     </div>
 
-                    {/* ── Institution type toggle ── */}
+                    {/* ÔöÇÔöÇ Institution type toggle ÔöÇÔöÇ */}
                     <div className="space-y-2">
                       <div className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
                         <Building2 className="w-3.5 h-3.5" />
@@ -723,8 +726,8 @@ const Kalkulator = () => {
                       <div className="flex gap-1.5">
                         {([
                           { value: "all", label: "Sve" },
-                          { value: "sveuciliste", label: "Sveučilišta i fakulteti" },
-                          { value: "veleuciliste", label: "Veleučilišta i visoke škole" },
+                          { value: "sveuciliste", label: "Sveu─Źili┼íta i fakulteti" },
+                          { value: "veleuciliste", label: "Veleu─Źili┼íta i visoke ┼íkole" },
                         ] as const).map((opt) => (
                           <button
                             key={opt.value}
@@ -742,26 +745,26 @@ const Kalkulator = () => {
                       </div>
                     </div>
 
-                    {/* ── Active filters summary ── */}
+                    {/* ÔöÇÔöÇ Active filters summary ÔöÇÔöÇ */}
                     {activeFilterCount > 0 && (
                       <div className="flex items-center justify-between px-3 py-2 rounded-lg bg-primary/5 border border-primary/10">
                         <span className="text-xs text-muted-foreground">
                           {preFilteredPrograms.length} programa
                           {selectedCity && <> u <strong>{selectedCity}</strong></>}
-                          {institutionType === "sveuciliste" && <> · sveučilišta</>}
-                          {institutionType === "veleuciliste" && <> · veleučilišta</>}
+                          {institutionType === "sveuciliste" && <> ┬Ě sveu─Źili┼íta</>}
+                          {institutionType === "veleuciliste" && <> ┬Ě veleu─Źili┼íta</>}
                         </span>
                         <button
                           onClick={clearFilters}
                           className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
                         >
                           <X className="w-3 h-3" />
-                          Očisti
+                          O─Źisti
                         </button>
                       </div>
                     )}
 
-                    {/* ── Program selector dropdown ── */}
+                    {/* ÔöÇÔöÇ Program selector dropdown ÔöÇÔöÇ */}
                     <Popover open={facultyOpen} onOpenChange={setFacultyOpen}>
                       <PopoverTrigger asChild>
                         <Button
@@ -774,13 +777,13 @@ const Kalkulator = () => {
                             <span className="min-w-0 flex-1 truncate text-left">
                               {selectedProgram.formula.program}{" "}
                               <span className="text-muted-foreground">
-                                – {selectedProgram.formula.fakultet} ({selectedProgram.formula.grad})
+                                ÔÇô {selectedProgram.formula.fakultet} ({selectedProgram.formula.grad})
                               </span>
                             </span>
                           ) : (
                             <span className="min-w-0 flex items-center gap-2 text-muted-foreground">
                               <Search className="w-4 h-4" />
-                              Pretraži ili odaberi program...
+                              Pretra┼żi ili odaberi program...
                             </span>
                           )}
                           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
@@ -792,7 +795,7 @@ const Kalkulator = () => {
                       >
                         <Command shouldFilter={false}>
                           <CommandInput
-                            placeholder="Pretraži fakultet, smjer ili kraticu (FER, FSB, PMF...)"
+                            placeholder="Pretra┼żi fakultet, smjer ili kraticu (FER, FSB, PMF...)"
                             value={searchQuery}
                             onValueChange={setSearchQuery}
                           />
@@ -805,7 +808,7 @@ const Kalkulator = () => {
                                     onClick={clearFilters}
                                     className="mt-1 text-primary hover:underline"
                                   >
-                                    Očisti filtere i pokušaj ponovo
+                                    O─Źisti filtere i poku┼íaj ponovo
                                   </button>
                                 )}
                               </div>
@@ -861,7 +864,7 @@ const Kalkulator = () => {
                           <p className={cn("font-medium", selectedFormula.izvor === "tocna_formula" ? "text-emerald-700 dark:text-emerald-400" : "text-blue-700 dark:text-blue-400")}>
                             {selectedFormula.izvor === "tocna_formula"
                               ? "Verificirana formula bodovanja"
-                              : `Formula za tip: ${selectedFormula.kategorija ?? "opći"}`}
+                              : `Formula za tip: ${selectedFormula.kategorija ?? "op─çi"}`}
                           </p>
                           {selectedFormula.napomena && (
                             <p className="text-muted-foreground mt-1 italic">
@@ -876,17 +879,17 @@ const Kalkulator = () => {
                 </>
                 )}
 
-                {/* ═══ FORMULA-BASED INPUTS (koraci 1–3) ═══ */}
+                {/* ÔĽÉÔĽÉÔĽÉ FORMULA-BASED INPUTS (koraci 1ÔÇô3) ÔĽÉÔĽÉÔĽÉ */}
                 {selectedFormula && groupedComponents && (
                   <>
-                    {/* Ocjene — korak 1 */}
+                    {/* Ocjene ÔÇö korak 1 */}
                     {wizardStep === 1 && groupedComponents.ocjene.length > 0 && (
                     <Card className={cardShell}>
                       <CardHeader className="pb-3">
                         <div className="flex items-center gap-2">
                           <BookOpen className="w-5 h-5 text-primary" />
                           <CardTitle className="text-lg">
-                            Ocjene iz srednje škole
+                            Ocjene iz srednje ┼íkole
                           </CardTitle>
                           <Tooltip>
                             <TooltipTrigger asChild>
@@ -894,8 +897,8 @@ const Kalkulator = () => {
                             </TooltipTrigger>
                             <TooltipContent className="max-w-xs">
                               {singleOcjenaProsjekIndex != null
-                                ? "Unesi prosjek ocjena za svaki od četiri razreda (1–5). Prikazani prosjek automatski se koristi u formuli."
-                                : "Za svaku stavku formule unesi prosjek ocjena (1–5). Formula: (prosjek / 5) × max bodovi."}
+                                ? "Unesi prosjek ocjena za svaki od ─Źetiri razreda (1ÔÇô5). Prikazani prosjek automatski se koristi u formuli."
+                                : "Za svaku stavku formule unesi prosjek ocjena (1ÔÇô5). Formula: (prosjek / 5) ├Ś max bodovi."}
                             </TooltipContent>
                           </Tooltip>
                         </div>
@@ -907,8 +910,8 @@ const Kalkulator = () => {
                         {singleOcjenaProsjekIndex != null ? (
                           <>
                             <p className="text-sm text-muted-foreground leading-relaxed">
-                              Unesi prosjek ocjena po razredu (od 1 do 5, možeš unijeti decimale npr. 4,35). Možeš
-                              koristiti zarez ili točku. Ukupni prosjek četiriju godina automatski ulazi u formulu.
+                              Unesi prosjek ocjena po razredu (od 1 do 5, mo┼że┼í unijeti decimale npr. 4,35). Mo┼że┼í
+                              koristiti zarez ili to─Źku. Ukupni prosjek ─Źetiriju godina automatski ulazi u formulu.
                             </p>
                             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
                               {([0, 1, 2, 3] as const).map((i) => (
@@ -957,7 +960,7 @@ const Kalkulator = () => {
                             <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border bg-muted/40 px-4 py-4 sm:py-3 text-sm">
                               <span className="font-medium">Prosjek svih razreda</span>
                               <span className="text-xl sm:text-lg font-semibold tabular-nums min-h-[1.75rem] flex items-center">
-                                {prosjekGodina != null ? prosjekGodina.toFixed(2).replace(".", ",") : "—"}
+                                {prosjekGodina != null ? prosjekGodina.toFixed(2).replace(".", ",") : "ÔÇö"}
                               </span>
                             </div>
                           </>
@@ -998,26 +1001,26 @@ const Kalkulator = () => {
                     {wizardStep === 1 && groupedComponents.ocjene.length === 0 && (
                       <Card className={cn(cardShell, "border-dashed bg-muted/10")}>
                         <CardContent className="py-8 text-center text-sm text-muted-foreground">
-                          Ova formula nema zasebnog unosa ocjena iz srednje škole. Nastavi gumbom „Dalje”.
+                          Ova formula nema zasebnog unosa ocjena iz srednje ┼íkole. Nastavi gumbom ÔÇ×DaljeÔÇŁ.
                         </CardContent>
                       </Card>
                     )}
 
-                    {/* Matura – obavezni predmeti — korak 2 */}
+                    {/* Matura ÔÇô obavezni predmeti ÔÇö korak 2 */}
                     {wizardStep === 2 && groupedComponents.maturaObv.length > 0 && (
                       <Card className={cardShell}>
                         <CardHeader className="pb-3">
                           <div className="flex items-center gap-2">
                             <Award className="w-5 h-5 text-primary" />
                             <CardTitle className="text-lg">
-                              Državna matura – obavezni predmeti
+                              Dr┼żavna matura ÔÇô obavezni predmeti
                             </CardTitle>
                             <Tooltip>
                               <TooltipTrigger asChild>
                                 <HelpCircle className="w-4 h-4 text-muted-foreground cursor-help" />
                               </TooltipTrigger>
                               <TooltipContent className="max-w-xs">
-                                Unesi postotak (0–100). Oznaka razine pokazuje što studij traži na natječaju.
+                                Unesi postotak (0ÔÇô100). Oznaka razine pokazuje ┼íto studij tra┼żi na natje─Źaju.
                               </TooltipContent>
                             </Tooltip>
                           </div>
@@ -1051,7 +1054,7 @@ const Kalkulator = () => {
                                   )}
                                 </Label>
                                 <span className="text-muted-foreground text-right">
-                                  {pct}% → {displayPts.toFixed(1)} / {comp.max} bod.
+                                  {pct}% Ôćĺ {displayPts.toFixed(1)} / {comp.max} bod.
                                 </span>
                               </div>
                               <Slider
@@ -1073,24 +1076,24 @@ const Kalkulator = () => {
                       groupedComponents.dodatneProvjere.length === 0 && (
                         <Card className={cn(cardShell, "border-dashed bg-muted/10")}>
                           <CardContent className="py-8 text-center text-sm text-muted-foreground">
-                            Nema obaveznih predmeta državne mature ni dodatnih provjera u ovoj formuli. Nastavi
-                            gumbom „Dalje”.
+                            Nema obaveznih predmeta dr┼żavne mature ni dodatnih provjera u ovoj formuli. Nastavi
+                            gumbom ÔÇ×DaljeÔÇŁ.
                           </CardContent>
                         </Card>
                       )}
 
-                    {/* Dodatne provjere (fakultetski testovi) – id komponente u podacima počinje s dod_ */}
+                    {/* Dodatne provjere (fakultetski testovi) ÔÇô id komponente u podacima po─Źinje s dod_ */}
                     {wizardStep === 2 && groupedComponents.dodatneProvjere.length > 0 && (
                       <Card className={cardShell}>
                         <CardHeader className="pb-3">
                           <div className="flex items-center gap-2">
                             <Award className="w-5 h-5 text-primary" />
                             <CardTitle className="text-lg">
-                              Dodatne provjere specifičnih znanja, vještina i sposobnosti
+                              Dodatne provjere specifi─Źnih znanja, vje┼ítina i sposobnosti
                             </CardTitle>
                           </div>
                           <CardDescription>
-                            Unesi postotak ostvaren na provjeri (0–100). Ukupno do{" "}
+                            Unesi postotak ostvaren na provjeri (0ÔÇô100). Ukupno do{" "}
                             {groupedComponents.dodatneProvjere.reduce((s, c) => s + c.max, 0)} bodova.
                           </CardDescription>
                         </CardHeader>
@@ -1118,7 +1121,7 @@ const Kalkulator = () => {
                                     )}
                                   </Label>
                                   <span className="text-muted-foreground text-right">
-                                    {pct}% → {displayPts.toFixed(1)} / {comp.max}{" "}
+                                    {pct}% Ôćĺ {displayPts.toFixed(1)} / {comp.max}{" "}
                                     bod.
                                   </span>
                                 </div>
@@ -1137,7 +1140,7 @@ const Kalkulator = () => {
                       </Card>
                     )}
 
-                    {/* Preduvjeti za upis (info iz postani-student.hr) — korak 2 */}
+                    {/* Preduvjeti za upis (info iz postani-student.hr) ÔÇö korak 2 */}
                     {wizardStep === 2 && selectedFormula?.preduvjeti && selectedFormula.preduvjeti.length > 0 && (
                       <Card className={cn(cardShell, "border-amber-200 dark:border-amber-800")}>
                         <CardHeader className="pb-3">
@@ -1165,14 +1168,14 @@ const Kalkulator = () => {
                       </Card>
                     )}
 
-                    {/* Natjecanja (info iz postani-student.hr) — korak 2 */}
+                    {/* Natjecanja (info iz postani-student.hr) ÔÇö korak 2 */}
                     {wizardStep === 2 && selectedFormula?.natjecanja && selectedFormula.natjecanja.length > 0 && (
                       <Card className={cn(cardShell, "border-amber-200 dark:border-amber-800")}>
                         <CardHeader className="pb-3">
                           <div className="flex items-center gap-2">
                             <Medal className="w-5 h-5 text-amber-600" />
                             <CardTitle className="text-lg">
-                              Natjecanja i posebna postignuća
+                              Natjecanja i posebna postignu─ça
                             </CardTitle>
                           </div>
                           <CardDescription>
@@ -1211,7 +1214,7 @@ const Kalkulator = () => {
                       </Card>
                     )}
 
-                    {/* Napomene — korak 2 */}
+                    {/* Napomene ÔÇö korak 2 */}
                     {wizardStep === 2 && selectedFormula?.napomene && selectedFormula.napomene.length > 0 && (
                       <div className="px-1">
                         {selectedFormula.napomene.map((nap, i) => (
@@ -1220,7 +1223,7 @@ const Kalkulator = () => {
                       </div>
                     )}
 
-                    {/* Matura – izborni predmeti — korak 3 */}
+                    {/* Matura ÔÇô izborni predmeti ÔÇö korak 3 */}
                     {wizardStep === 3 && groupedComponents.maturaIzb.length > 0 && (
                       <Card className={cardShell}>
                         <CardHeader className="pb-3">
@@ -1231,7 +1234,7 @@ const Kalkulator = () => {
                             </CardTitle>
                           </div>
                           <CardDescription>
-                            Opcionalno – donose dodatne bodove (do {groupedComponents.maturaIzb.reduce((s, c) => s + c.max, 0)} bod.)
+                            Opcionalno ÔÇô donose dodatne bodove (do {groupedComponents.maturaIzb.reduce((s, c) => s + c.max, 0)} bod.)
                           </CardDescription>
                         </CardHeader>
                         <CardContent className="space-y-4">
@@ -1263,7 +1266,7 @@ const Kalkulator = () => {
                                   )}
                                 </Label>
                                 <span className="text-muted-foreground text-right">
-                                  {pct}% → {displayPts.toFixed(1)} / {comp.max} bod.
+                                  {pct}% Ôćĺ {displayPts.toFixed(1)} / {comp.max} bod.
                                 </span>
                               </div>
                               <Slider
@@ -1280,7 +1283,7 @@ const Kalkulator = () => {
                       </Card>
                     )}
 
-                    {/* Prijemni ispit (ponder) – samo ako su u podacima programa zadane težine */}
+                    {/* Prijemni ispit (ponder) ÔÇô samo ako su u podacima programa zadane te┼żine */}
                     {wizardStep === 3 && selectedFormula && usesWeightedPrijemni(selectedFormula) && (
                       <Card className={cardShell}>
                         <CardHeader className="pb-3">
@@ -1298,7 +1301,7 @@ const Kalkulator = () => {
                           {selectedFormula.prijemniInputMode === "points" ? (
                             <div className="space-y-2">
                               <Label className="text-sm">
-                                Bodovi na prijemnom (0–
+                                Bodovi na prijemnom (0ÔÇô
                                 {Math.round(
                                   selectedFormula.maxBodovi * (selectedFormula.weightPrijemni ?? 0),
                                 )}
@@ -1329,9 +1332,9 @@ const Kalkulator = () => {
                           ) : (
                             <>
                               <div className="flex justify-between text-sm">
-                                <Label>Rezultat prijemnog (0–100 %)</Label>
+                                <Label>Rezultat prijemnog (0ÔÇô100 %)</Label>
                                 <span className="text-muted-foreground">
-                                  {prijemniInput ?? "—"} %
+                                  {prijemniInput ?? "ÔÇö"} %
                                 </span>
                               </div>
                               <Slider
@@ -1362,7 +1365,7 @@ const Kalkulator = () => {
                             </>
                           )}
                           <p className="text-xs text-muted-foreground">
-                            Za izračun unesi rezultat (postotak ili bodove). Prazno polje blokira ukupni
+                            Za izra─Źun unesi rezultat (postotak ili bodove). Prazno polje blokira ukupni
                             zbroj.
                           </p>
                         </CardContent>
@@ -1429,7 +1432,7 @@ const Kalkulator = () => {
                     <CardContent className="py-12 text-center">
                       <GraduationCap className="w-10 h-10 text-muted-foreground/40 mx-auto mb-3" />
                       <p className="text-muted-foreground">
-                        Odaberi fakultet i smjer iznad da vidiš formulu bodovanja
+                        Odaberi fakultet i smjer iznad da vidi┼í formulu bodovanja
                       </p>
                       <p className="text-sm text-muted-foreground/60 mt-1">
                         {PROGRAM_OPTIONS.length} programa dostupno
@@ -1438,7 +1441,7 @@ const Kalkulator = () => {
                   </Card>
                 )}
 
-                {/* Dodatni bodovi — korak 3 */}
+                {/* Dodatni bodovi ÔÇö korak 3 */}
                 {wizardStep === 3 && (
                 <Card className={cardShell}>
                   <CardHeader className="pb-3">
@@ -1449,7 +1452,7 @@ const Kalkulator = () => {
                       </CardTitle>
                     </div>
                     <CardDescription>
-                      Označi i unesi bodove ako imaš
+                      Ozna─Źi i unesi bodove ako ima┼í
                     </CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-3">
@@ -1507,7 +1510,7 @@ const Kalkulator = () => {
                       <Sparkles className="w-10 h-10 text-primary mx-auto" />
                       <p className="font-semibold text-lg">Unos je gotov</p>
                       <p className="text-sm text-muted-foreground max-w-md mx-auto">
-                        Pregledaj ukupne bodove i raspodjelu desno. Možeš se vratiti natrag gumbom „Natrag” ili
+                        Pregledaj ukupne bodove i raspodjelu desno. Mo┼że┼í se vratiti natrag gumbom ÔÇ×NatragÔÇŁ ili
                         promijeniti program u prvom koraku.
                       </p>
                     </CardContent>
@@ -1530,8 +1533,8 @@ const Kalkulator = () => {
                           <p className="text-[11px] text-muted-foreground">
                             {(() => {
                               const r = 4 - wizardStep;
-                              if (r === 1) return "Još 1 korak do rezultata";
-                              if (r >= 2) return `Još ${r} koraka do rezultata`;
+                              if (r === 1) return "Jo┼í 1 korak do rezultata";
+                              if (r >= 2) return `Jo┼í ${r} koraka do rezultata`;
                               return "";
                             })()}
                           </p>
@@ -1573,8 +1576,8 @@ const Kalkulator = () => {
                           <p className="truncate text-[11px] text-muted-foreground sm:text-xs">
                             {(() => {
                               const r = 4 - wizardStep;
-                              if (r === 1) return "Još 1 korak do rezultata";
-                              if (r >= 2) return `Još ${r} koraka do rezultata`;
+                              if (r === 1) return "Jo┼í 1 korak do rezultata";
+                              if (r >= 2) return `Jo┼í ${r} koraka do rezultata`;
                               return "";
                             })()}
                           </p>
@@ -1605,7 +1608,7 @@ const Kalkulator = () => {
                 )}
               </div>
 
-              {/* ═══ Result column – samo završni korak ═══ */}
+              {/* ÔĽÉÔĽÉÔĽÉ Result column ÔÇô samo zavr┼íni korak ÔĽÉÔĽÉÔĽÉ */}
               {wizardStep === 4 && (
               <div className="lg:col-span-2">
                 <div className="lg:sticky lg:top-24 space-y-4">
@@ -1622,7 +1625,7 @@ const Kalkulator = () => {
                         <Sparkles className="w-5 h-5 text-primary" />
                         Tvoj rezultat
                       </CardTitle>
-                      <CardDescription>Izračun u realnom vremenu</CardDescription>
+                      <CardDescription>Izra─Źun u realnom vremenu</CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-6">
                       {admissionResult && admissionResult.warnings.length > 0 && (
@@ -1667,7 +1670,7 @@ const Kalkulator = () => {
                             transition={{ type: "spring", stiffness: 300 }}
                             className="text-5xl md:text-6xl font-extrabold text-gradient"
                           >
-                            {totalPoints ?? "—"}
+                            {totalPoints ?? "ÔÇö"}
                           </motion.p>
                         </AnimatePresence>
                         <p className="text-sm text-muted-foreground mt-1">
@@ -1705,14 +1708,14 @@ const Kalkulator = () => {
                             {cutoffSource === "universities_dataset" ? (
                               <>
                                 {" "}
-                                — objavljeni prag za 2025. iz iste baze kao i lista studija na karti fakulteta
-                                (službena tablica MZO-a).
+                                ÔÇö objavljeni prag za 2025. iz iste baze kao i lista studija na karti fakulteta
+                                (slu┼żbena tablica MZO-a).
                               </>
                             ) : (
                               <>
                                 {" "}
-                                prema podacima u formuli (nema pouzdanog uparivanja s bazom kartice) — provjeri i na
-                                stranici učilišta.
+                                prema podacima u formuli (nema pouzdanog uparivanja s bazom kartice) ÔÇö provjeri i na
+                                stranici u─Źili┼íta.
                               </>
                             )}
                           </p>
@@ -1756,13 +1759,13 @@ const Kalkulator = () => {
                       {selectedProgram && cutoff != null && totalPoints != null && (
                         <div className="text-sm text-muted-foreground space-y-1">
                           {chanceLevel === "high" && (
-                            <p>Tvoj rezultat je znatno iznad bodovnog praga. Dobra šansa za upis!</p>
+                            <p>Tvoj rezultat je znatno iznad bodovnog praga. Dobra ┼íansa za upis!</p>
                           )}
                           {chanceLevel === "medium" && (
-                            <p>Blizu si praga. Bodovni pragovi se mijenjaju svake godine – pripremi se dobro.</p>
+                            <p>Blizu si praga. Bodovni pragovi se mijenjaju svake godine ÔÇô pripremi se dobro.</p>
                           )}
                           {chanceLevel === "low" && (
-                            <p>Potrebno je više bodova. Razmisli o dodatnoj pripremi ili drugim opcijama.</p>
+                            <p>Potrebno je vi┼íe bodova. Razmisli o dodatnoj pripremi ili drugim opcijama.</p>
                           )}
                         </div>
                       )}
@@ -1782,7 +1785,7 @@ const Kalkulator = () => {
                                     key={year}
                                     className="text-xs px-2 py-1 rounded-lg bg-secondary"
                                   >
-                                    {year}: {display != null ? `${display}` : "–"} bod.
+                                    {year}: {display != null ? `${display}` : "ÔÇô"} bod.
                                   </span>
                                 );
                               })}
@@ -1792,7 +1795,7 @@ const Kalkulator = () => {
                     </CardContent>
                   </Card>
 
-                  {/* ═══ Breakdown card ═══ */}
+                  {/* ÔĽÉÔĽÉÔĽÉ Breakdown card ÔĽÉÔĽÉÔĽÉ */}
                   {admissionResult && !admissionResult.blocked && (
                     <Card className={cardShell}>
                       <CardHeader className="pb-2">
@@ -1870,7 +1873,7 @@ const Kalkulator = () => {
                               )}
                               <div className="pt-2 border-t flex justify-between text-sm font-semibold">
                                 <span>Ukupno</span>
-                                <span>{totalPoints ?? "—"} / {MAX_POINTS}</span>
+                                <span>{totalPoints ?? "ÔÇö"} / {MAX_POINTS}</span>
                               </div>
                             </CardContent>
                           </motion.div>
