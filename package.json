@@ -28,7 +28,8 @@
     "sync:github": "python scripts/sync_github_commit.py",
     "clear:auth": "node scripts/clear-auth-users.cjs",
     "clear:forum": "node scripts/clear-forum.cjs",
-    "setup:moderator": "node scripts/ensure-moderator-user.cjs"
+    "setup:moderator": "node scripts/ensure-moderator-user.cjs",
+    "seed:schools": "node scripts/seed-school-accounts.cjs"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",
@@ -80,6 +81,7 @@
     "leaflet": "^1.9.4",
     "lucide-react": "^0.462.0",
     "mammoth": "^1.12.0",
+    "multer": "^1.4.5-lts.2",
     "next-themes": "^0.3.0",
     "nodemailer": "^7.0.3",
     "pg": "^8.20.0",

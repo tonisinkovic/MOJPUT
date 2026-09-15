@@ -24,6 +24,7 @@ const bcrypt = require("bcryptjs");
 const crypto = require("crypto");
 const nodemailer = require("nodemailer");
 const { createAppDb, finalizePendingRegistration, seedForum } = require(path.join(__dirname, "server", "appDb.cjs"));
+const { registerSchoolCms, enrichUserWithSchool } = require(path.join(__dirname, "server", "schoolCms.cjs"));
 const { fromZonedTime, toZonedTime } = require("date-fns-tz");
 const { addDays, startOfDay } = require("date-fns");
 
@@ -1261,6 +1262,8 @@ async function main() {
 
   const db = await createAppDb();
   await db.migrate();
+  const { seedJuniorThirdYearForum } = require("./server/juniorThirdYearSeed.cjs");
+  await seedJuniorThirdYearForum(db);
   await loadUniversitiesData(); // ensures file exists on first run
 
   /** Besplatne poruke chata po korisniku i danu (Europe/Zagreb). */
@@ -1331,6 +1334,16 @@ async function main() {
   );
   app.use(express.json({ limit: "2mb" }));
   app.use(cookieParser());
+
+  registerSchoolCms(app, {
+    db,
+    authMiddleware: authMiddleware(db),
+    adminMiddleware: adminMiddleware(db),
+    signToken,
+    setAuthCookie,
+    bcrypt,
+    express,
+  });
 
   // Auth
   app.post("/api/auth/register", async (req, res) => {
@@ -1523,21 +1536,39 @@ async function main() {
     }
   });
 
-  const GENERIC_FORGOT_PASSWORD_MSG =
-    "Ako ta email adresa ima potvrđen račun na MojPutu, poslali smo poveznicu za novu lozinku. Provjeri pristiglu poštu (i spam).";
+      const GENERIC_FORGOT_PASSWORD_MSG =
+    "Ako taj račun postoji na MojPutu, poslali smo poveznicu za novu lozinku. Provjeri pristiglu poštu (i spam).";
 
   app.post("/api/auth/forgot-password", async (req, res) => {
     try {
-      const { email } = req.body || {};
-      const cleanEmail = String(email || "").trim().toLowerCase();
+      const { email, username } = req.body || {};
+      let cleanEmail = String(email || "").trim().toLowerCase();
+      const cleanUsername = String(username || "").trim().toLowerCase();
+      if (!cleanEmail && cleanUsername) {
+        const named = await db
+          .prepare(
+            `SELECT u.email FROM users u
+             JOIN school_accounts sa ON sa.user_id = u.id
+             WHERE lower(u.username) = ?`,
+          )
+          .get(cleanUsername);
+        cleanEmail = named?.email ? String(named.email).toLowerCase() : "";
+        if (!cleanEmail) {
+          return res.json({ success: true, message: GENERIC_FORGOT_PASSWORD_MSG });
+        }
+      }
       if (!isValidEmail(cleanEmail)) {
-        return res.status(400).json({ success: false, message: "Unesi valjanu email adresu." });
+        return res.status(400).json({ success: false, message: "Unesi valjanu email adresu ili korisničko ime škole." });
       }
       if (!forgotPasswordRateLimitOk(cleanEmail)) {
         return res.status(429).json({
           success: false,
           message: "Previše zahtjeva. Pričekaj nekoliko minuta pa pokušaj ponovno.",
         });
+      }
+
+      if (cleanEmail.endsWith("@skole.mojput.internal")) {
+        return res.json({ success: true, message: GENERIC_FORGOT_PASSWORD_MSG });
       }
 
       const userRow = await db
@@ -1684,7 +1715,10 @@ async function main() {
           "SELECT id, username, email, created_at, email_verified, user_type, last_login_at FROM users WHERE id = ?",
         )
         .get(row.id);
-      const user = userPayloadWithAdminFlag(fresh);
+      const user = await enrichUserWithSchool(db, userPayloadWithAdminFlag(fresh));
+      if (user.school && !user.school.is_active) {
+        return res.status(403).json({ success: false, message: "Račun trenutno nije aktivan." });
+      }
       const token = signToken({ sub: user.id });
       setAuthCookie(res, token, req);
       /** Isti JWT i u JSON-u — cross-site kolačić često nije moguć; klijent šalje Authorization. */
@@ -1700,8 +1734,9 @@ async function main() {
     return res.json({ success: true });
   });
 
-  app.get("/api/auth/me", authMiddleware(db), (req, res) => {
-    return res.json({ success: true, user: userPayloadWithAdminFlag(req.user) });
+  app.get("/api/auth/me", authMiddleware(db), async (req, res) => {
+    const user = await enrichUserWithSchool(db, userPayloadWithAdminFlag(req.user));
+    return res.json({ success: true, user });
   });
 
   /** Rezultat karijernog kviza (2×50) — samo vlasnik računa. */
@@ -1982,6 +2017,171 @@ async function main() {
     } catch (err) {
       console.error("[feedback]", err?.message || err);
       return res.status(500).json({ success: false, message: "Nije moguće spremiti poruku. Pokušaj kasnije." });
+    }
+  });
+
+  const JUNIOR_CLASS_ALPHABET = "23456789ABCDEFGHJKMNPQRSTUVWXYZ";
+  const makeJuniorClassCode = () => {
+    let out = "";
+    for (let i = 0; i < 6; i += 1) out += JUNIOR_CLASS_ALPHABET[crypto.randomInt(JUNIOR_CLASS_ALPHABET.length)];
+    return out;
+  };
+  const normalizeJuniorClassCode = (raw) => {
+    const code = String(raw || "").toUpperCase().replace(/[^A-Z0-9]/g, "");
+    if (code.length !== 6) return null;
+    if (![...code].every((ch) => JUNIOR_CLASS_ALPHABET.includes(ch))) return null;
+    return code;
+  };
+  const mapJuniorClassEntry = (row) => ({
+    id: Number(row.id) || undefined,
+    alias: row.alias || null,
+    programId: Number(row.program_id ?? row.programId),
+    programName: String(row.program_name ?? row.programName ?? ""),
+    pathway: row.pathway || null,
+    city: row.city || null,
+    createdAt: row.created_at || row.createdAt || null,
+  });
+  const buildJuniorClassBoard = (klass, rows) => {
+    const entries = (rows || []).map(mapJuniorClassEntry);
+    const counts = new Map();
+    for (const entry of entries) {
+      const prev = counts.get(entry.programId);
+      if (prev) prev.count += 1;
+      else counts.set(entry.programId, { programId: entry.programId, name: entry.programName, count: 1 });
+    }
+    const tracks = [...counts.values()].sort((a, b) => b.count - a.count || a.name.localeCompare(b.name, "hr"));
+    return {
+      code: klass.code,
+      label: klass.label || null,
+      doneCount: entries.length,
+      tracks,
+      entries,
+    };
+  };
+
+  app.post("/api/junior/classes", async (req, res) => {
+    const label = String(req.body?.label || "").trim().slice(0, 40) || null;
+    try {
+      for (let attempt = 0; attempt < 8; attempt += 1) {
+        const code = makeJuniorClassCode();
+        try {
+          await db.prepare("INSERT INTO junior_classes (code, label) VALUES (?, ?)").run(code, label);
+          return res.json({ success: true, data: { code, label } });
+        } catch (err) {
+          if (attempt === 7) throw err;
+        }
+      }
+      return res.status(500).json({ success: false, message: "Nije uspjelo stvoriti kod." });
+    } catch (err) {
+      console.error("[junior-class:create]", err?.message || err);
+      return res.status(500).json({ success: false, message: "Kod razreda nije spremljen." });
+    }
+  });
+
+  app.get("/api/junior/classes/:code", async (req, res) => {
+    const code = normalizeJuniorClassCode(req.params.code);
+    if (!code) return res.status(400).json({ success: false, message: "Kod mora imati 6 znakova." });
+    try {
+      const klass = await db.prepare("SELECT id, code, label FROM junior_classes WHERE code = ?").get(code);
+      if (!klass) return res.status(404).json({ success: false, message: "Taj kod ne postoji." });
+      const rows = await db
+        .prepare(
+          "SELECT id, alias, program_id, program_name, pathway, city, created_at FROM junior_class_entries WHERE class_id = ? ORDER BY created_at ASC",
+        )
+        .all(klass.id);
+      return res.json({ success: true, data: buildJuniorClassBoard(klass, rows) });
+    } catch (err) {
+      console.error("[junior-class:get]", err?.message || err);
+      return res.status(500).json({ success: false, message: "Ploča razreda nije dostupna." });
+    }
+  });
+
+  app.post("/api/junior/classes/:code/join", async (req, res) => {
+    const code = normalizeJuniorClassCode(req.params.code);
+    if (!code) return res.status(400).json({ success: false, message: "Kod mora imati 6 znakova." });
+    const clientKey = String(req.body?.clientKey || "").trim().slice(0, 80);
+    const programId = Number(req.body?.programId);
+    const programName = String(req.body?.programName || "").trim().slice(0, 80);
+    const pathway = String(req.body?.pathway || "").trim().slice(0, 80) || null;
+    const city = String(req.body?.city || "").trim().slice(0, 40) || null;
+    const alias = String(req.body?.alias || "").trim().slice(0, 24) || null;
+    if (clientKey.length < 8) return res.status(400).json({ success: false, message: "Nedostaje ključ uređaja." });
+    if (!Number.isFinite(programId) || !programName) {
+      return res.status(400).json({ success: false, message: "Pošalji program iz kviza." });
+    }
+    try {
+      const klass = await db.prepare("SELECT id, code FROM junior_classes WHERE code = ?").get(code);
+      if (!klass) return res.status(404).json({ success: false, message: "Taj kod ne postoji." });
+      const existing = await db
+        .prepare("SELECT id FROM junior_class_entries WHERE class_id = ? AND client_key = ?")
+        .get(klass.id, clientKey);
+      if (existing) {
+        await db
+          .prepare(
+            "UPDATE junior_class_entries SET alias = ?, program_id = ?, program_name = ?, pathway = ?, city = ? WHERE id = ?",
+          )
+          .run(alias, programId, programName, pathway, city, existing.id);
+        return res.json({ success: true, data: { already: true } });
+      }
+      const counted = await db
+        .prepare("SELECT COUNT(*) AS n FROM junior_class_entries WHERE class_id = ?")
+        .get(klass.id);
+      if (Number(counted?.n ?? counted?.count ?? 0) >= 45) {
+        return res.status(400).json({ success: false, message: "Razred je pun (45 učenika)." });
+      }
+      await db
+        .prepare(
+          "INSERT INTO junior_class_entries (class_id, client_key, alias, program_id, program_name, pathway, city) VALUES (?, ?, ?, ?, ?, ?, ?)",
+        )
+        .run(klass.id, clientKey, alias, programId, programName, pathway, city);
+      return res.json({ success: true, data: { already: false } });
+    } catch (err) {
+      console.error("[junior-class:join]", err?.message || err);
+      return res.status(500).json({ success: false, message: "Prijava u razred nije spremljena." });
+    }
+  });
+
+  app.get("/api/junior/me", authMiddleware(db), async (req, res) => {
+    try {
+      const row = await db.prepare("SELECT payload, updated_at FROM junior_user_state WHERE user_id = ?").get(req.user.id);
+      if (!row) return res.json({ success: true, data: null });
+      let parsed;
+      try {
+        parsed = JSON.parse(row.payload);
+      } catch {
+        return res.status(500).json({ success: false, message: "Oštećeni podaci junior profila." });
+      }
+      return res.json({ success: true, data: parsed });
+    } catch (err) {
+      console.error("[junior-me:get]", err?.message || err);
+      return res.status(500).json({ success: false, message: "Nije moguće učitati junior podatke." });
+    }
+  });
+
+  app.post("/api/junior/me", authMiddleware(db), async (req, res) => {
+    try {
+      const payload = req.body?.payload;
+      if (payload === undefined || payload === null || typeof payload !== "object") {
+        return res.status(400).json({ success: false, message: "Nedostaje payload." });
+      }
+      const str = JSON.stringify(payload);
+      if (str.length > 400000) {
+        return res.status(400).json({ success: false, message: "Podaci su predugački." });
+      }
+      const updatedAt =
+        typeof payload.updatedAt === "string" && payload.updatedAt.length > 0
+          ? payload.updatedAt
+          : new Date().toISOString();
+      await db
+        .prepare(
+          `INSERT INTO junior_user_state (user_id, payload, updated_at) VALUES (?, ?, ?)
+           ON CONFLICT(user_id) DO UPDATE SET payload = excluded.payload, updated_at = excluded.updated_at`,
+        )
+        .run(req.user.id, str, updatedAt);
+      return res.json({ success: true });
+    } catch (err) {
+      console.error("[junior-me:save]", err?.message || err);
+      return res.status(500).json({ success: false, message: "Nije moguće spremiti junior podatke." });
     }
   });
 

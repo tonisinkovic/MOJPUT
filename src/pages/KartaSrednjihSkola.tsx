@@ -4,6 +4,7 @@ import {
   ArrowLeft,
   BookOpen,
   Building2,
+  Calculator,
   ChevronDown,
   ChevronUp,
   ExternalLink,
@@ -19,17 +20,22 @@ import {
   Sparkles,
   User,
   X,
+  Newspaper,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { lazy, Suspense, useMemo, useState } from "react";
+import { lazy, Suspense, useEffect, useMemo, useState } from "react";
+import { Link, useSearchParams } from "react-router-dom";
 import { highSchools, type HighSchool, type HighSchoolCategory } from "@/data/highSchools";
+import JuniorNumbersNote from "@/components/junior/JuniorNumbersNote";
+import { calculatorHref, findKalkulatorSchool } from "@/lib/juniorPath";
 import {
   srednjaProgramCounties,
   type SrednjaProgramCounty,
   type SrednjaProgramSchool,
 } from "@/data/srednjaPrograms";
 import { getSchoolPrograms } from "@/lib/schoolPrograms";
+import { slugForSchool } from "@/lib/schoolSlug";
 import {
   Accordion,
   AccordionContent,
@@ -209,6 +215,18 @@ const ProgramSchoolRow = ({
               ))}
             </div>
           )}
+          {(() => {
+            const kalk = findKalkulatorSchool(school.name, school.city);
+            return (
+              <Link
+                to={calculatorHref(kalk?.id ?? null)}
+                className="mt-2.5 inline-flex items-center gap-1 text-xs font-semibold text-primary hover:underline"
+              >
+                <Calculator className="h-3.5 w-3.5" />
+                Bodovi u MojPut kalkulatoru
+              </Link>
+            );
+          })()}
         </div>
       )}
     </div>
@@ -216,6 +234,7 @@ const ProgramSchoolRow = ({
 };
 
 const KartaSrednjihSkola = () => {
+  const [searchParams] = useSearchParams();
   const [search, setSearch] = useState("");
   const [filterCategory, setFilterCategory] = useState<HighSchoolCategory | null>(null);
   const [filterCounty, setFilterCounty] = useState<string | null>(null);
@@ -223,6 +242,37 @@ const KartaSrednjihSkola = () => {
   const [focusedSchoolId, setFocusedSchoolId] = useState<string | null>(null);
   const [detailSchoolId, setDetailSchoolId] = useState<string | null>(null);
   const [sortBy, setSortBy] = useState<"az" | "za" | "city">("az");
+
+  useEffect(() => {
+    const id = searchParams.get("skola");
+    const q = searchParams.get("q");
+    const name = searchParams.get("name");
+    const city = searchParams.get("city");
+    if (id && highSchools.some((s) => s.id === id)) {
+      const school = highSchools.find((s) => s.id === id);
+      setFocusedSchoolId(id);
+      setDetailSchoolId(id);
+      if (school) {
+        setSearch(school.name);
+        setFilterCity(school.city);
+      }
+      return;
+    }
+    if (name) {
+      const found = highSchools.find((s) => {
+        const sameName = s.name.toLowerCase() === name.toLowerCase();
+        return sameName && (!city || s.city.toLowerCase() === city.toLowerCase());
+      });
+      if (found) {
+        setFocusedSchoolId(found.id);
+        setDetailSchoolId(found.id);
+        setSearch(found.name);
+        setFilterCity(found.city);
+        return;
+      }
+    }
+    if (q) setSearch(q);
+  }, [searchParams]);
 
   const counties = useMemo(
     () => [...new Set(highSchools.map((s) => s.county))].sort((a, b) => a.localeCompare(b, "hr")),
@@ -389,9 +439,26 @@ const KartaSrednjihSkola = () => {
                 <span className="text-gradient">Karta</span> srednjih škola
               </h1>
               <p className="mt-1.5 max-w-2xl text-pretty text-sm leading-relaxed text-muted-foreground sm:text-base">
-                Istraži sve srednje škole u Hrvatskoj — gimnazije, strukovne i umjetničke škole, s kontaktima i
-                web stranicama, sve na jednom mjestu.
+                Istraži srednje škole u Hrvatskoj — gimnazije, strukovne i umjetničke, s kontaktima i webom.
+                Za lanjski prag i bodove otvori školu pa idi u MojPut kalkulator.
               </p>
+              <JuniorNumbersNote counts className="mt-3 max-w-2xl" />
+              <div className="mt-4 flex flex-wrap gap-2">
+                <Link
+                  to="/srednje-skole/profili"
+                  className="inline-flex items-center gap-1.5 rounded-full border border-primary/25 bg-background/80 px-3 py-1.5 text-xs font-semibold text-primary hover:bg-primary/10"
+                >
+                  <School className="h-3.5 w-3.5" />
+                  Profili škola
+                </Link>
+                <Link
+                  to="/srednje-skole/objave"
+                  className="inline-flex items-center gap-1.5 rounded-full border border-primary/25 bg-background/80 px-3 py-1.5 text-xs font-semibold text-primary hover:bg-primary/10"
+                >
+                  <Newspaper className="h-3.5 w-3.5" />
+                  Novosti škola
+                </Link>
+              </div>
 
               <div className="mt-4 grid grid-cols-3 gap-2 sm:max-w-lg sm:gap-3">
                 <div className="rounded-xl border border-border/60 bg-background/70 px-3 py-2 backdrop-blur-sm">
@@ -930,19 +997,14 @@ const KartaSrednjihSkola = () => {
 
                           {/* Footer */}
                           <div className="mt-3 flex items-center justify-between border-t border-border/40 pt-3">
-                            <span className="text-xs font-medium text-muted-foreground group-hover:text-foreground">
-                              Pogledaj detalje
-                            </span>
-                            <span className={cn(
-                              "flex h-6 w-6 items-center justify-center rounded-full text-white transition-transform duration-200 group-hover:translate-x-0.5",
-                              school.category === "Gimnazija" && "bg-primary",
-                              school.category === "Strukovna škola" && "bg-sky-500",
-                              school.category === "Umjetnička škola" && "bg-violet-500",
-                              school.category === "Srednja škola" && "bg-emerald-500",
-                              school.category === "Posebni programi" && "bg-amber-500",
-                            )}>
-                              →
-                            </span>
+                            <Link
+                              to={`/srednje-skole/${slugForSchool(school, highSchools)}`}
+                              onClick={(e) => e.stopPropagation()}
+                              className="text-xs font-semibold text-primary hover:underline"
+                            >
+                              Pogledaj školu
+                            </Link>
+                            <span className="text-[11px] text-muted-foreground">Kratki pregled</span>
                           </div>
                         </div>
                       </motion.div>
@@ -1084,15 +1146,11 @@ const KartaSrednjihSkola = () => {
               )}
 
               <p className="mt-4 text-right text-[11px] text-muted-foreground">
-                Izvor podataka:{" "}
-                <a
-                  href="https://www.srednja.hr/srednja-kalkulator"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="font-medium text-primary hover:underline"
-                >
-                  srednja.hr — Kalkulator bodova
-                </a>
+                Lanjski pragovi:{" "}
+                <Link to="/kalkulator" className="font-medium text-primary hover:underline">
+                  MojPut kalkulator
+                </Link>
+                <span className="text-muted-foreground"> · izvor podataka srednja.hr</span>
               </p>
             </motion.div>
           </div>
@@ -1135,11 +1193,40 @@ const KartaSrednjihSkola = () => {
                         </Badge>
                       )}
                     </div>
+                    <Link
+                      to={`/srednje-skole/${slugForSchool(detailSchool, highSchools)}`}
+                      className="mt-3 inline-flex text-sm font-semibold text-primary hover:underline"
+                    >
+                      Pogledaj školu
+                    </Link>
                   </div>
                 </div>
               </DialogHeader>
 
               <div className="space-y-2.5">
+                {(() => {
+                  const kalk = findKalkulatorSchool(detailSchool.name, detailSchool.city);
+                  return (
+                    <div className="flex items-start gap-3 rounded-xl border border-primary/25 bg-primary/[0.06] p-3">
+                      <Calculator className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+                      <div className="min-w-0 flex-1">
+                        <p className="text-[11px] font-semibold uppercase tracking-wide text-primary">Bodovi i prag</p>
+                        <p className="mt-0.5 text-xs text-muted-foreground">
+                          {kalk
+                            ? "Ova škola je u MojPut kalkulatoru — lanjski prag, ne pogodujemo broj."
+                            : "Ove škole nema u kalkulatoru. Možeš i dalje izračunati svoje bodove."}
+                        </p>
+                        <Link
+                          to={calculatorHref(kalk?.id ?? null)}
+                          className="mt-1.5 inline-flex items-center gap-1 text-xs font-semibold text-primary hover:underline"
+                        >
+                          Otvori MojPut kalkulator
+                        </Link>
+                      </div>
+                    </div>
+                  );
+                })()}
+
                 <div className="flex items-start gap-3 rounded-xl border border-border/70 bg-muted/30 p-3">
                   <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
                   <div className="min-w-0 flex-1">
@@ -1252,15 +1339,11 @@ const KartaSrednjihSkola = () => {
                         ))}
                       </div>
                       <p className="mt-2 text-[10px] text-muted-foreground">
-                        Izvor:{" "}
-                        <a
-                          href="https://www.srednja.hr/srednja-kalkulator"
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="font-medium text-primary hover:underline"
-                        >
-                          srednja.hr
-                        </a>
+                        Pragovi:{" "}
+                        <Link to="/kalkulator" className="font-medium text-primary hover:underline">
+                          MojPut kalkulator
+                        </Link>
+                        {" · "}izvor srednja.hr
                       </p>
                     </div>
                   </div>

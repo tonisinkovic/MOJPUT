@@ -5,7 +5,15 @@ import App from "./App.tsx";
 import { initAnalytics } from "./lib/analytics";
 import "./index.css";
 
-registerSW({ immediate: true });
+const updateSW = registerSW({
+  immediate: true,
+  onNeedRefresh() {
+    void updateSW(true);
+  },
+  onRegisteredSW(_url, registration) {
+    void registration?.update();
+  },
+});
 initAnalytics();
 
 createRoot(document.getElementById("root")!).render(

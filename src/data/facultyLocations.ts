@@ -46,6 +46,75 @@ const CITY_COORDS: Record<string, FacultyGeo> = {
   "zaprešić": { lat: 45.8561, lng: 15.8078 },
 };
 
+const CITY_DISPLAY: Record<string, string> = {
+  "biograd na moru": "Biograd na Moru",
+  bjelovar: "Bjelovar",
+  "čakovec": "Čakovec",
+  dubrovnik: "Dubrovnik",
+  "đakovo": "Đakovo",
+  "đurđevac": "Đurđevac",
+  "gospić": "Gospić",
+  "ivanić-grad": "Ivanić-Grad",
+  karlovac: "Karlovac",
+  knin: "Knin",
+  koprivnica: "Koprivnica",
+  krapina: "Krapina",
+  "križevci": "Križevci",
+  kutina: "Kutina",
+  makarska: "Makarska",
+  "nova gradiška": "Nova Gradiška",
+  opatija: "Opatija",
+  orahovica: "Orahovica",
+  osijek: "Osijek",
+  pazin: "Pazin",
+  petrinja: "Petrinja",
+  "poreč": "Poreč",
+  "požega": "Požega",
+  pregrada: "Pregrada",
+  pula: "Pula",
+  rijeka: "Rijeka",
+  sisak: "Sisak",
+  slatina: "Slatina",
+  "slavonski brod": "Slavonski Brod",
+  split: "Split",
+  "šibenik": "Šibenik",
+  "varaždin": "Varaždin",
+  "velika gorica": "Velika Gorica",
+  vinkovci: "Vinkovci",
+  virovitica: "Virovitica",
+  vukovar: "Vukovar",
+  zabok: "Zabok",
+  zadar: "Zadar",
+  zagreb: "Zagreb",
+  "zaprešić": "Zaprešić",
+};
+
+const cityKey = (city: string) =>
+  city
+    .trim()
+    .toLowerCase()
+    .replace(/đ/g, "d")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "");
+
+const CITY_COORDS_BY_NORM = (() => {
+  const map = new Map<string, FacultyGeo>();
+  for (const [key, geo] of Object.entries(CITY_COORDS)) {
+    map.set(cityKey(key), geo);
+  }
+  return map;
+})();
+
+/** Koordinate središta grada u kojem postoji visokoškolska ustanova. */
+export function getFacultyCityCenter(city: string): FacultyGeo | null {
+  return CITY_COORDS_BY_NORM.get(cityKey(city)) ?? CITY_COORDS[city.trim().toLowerCase()] ?? null;
+}
+
+/** Gradovi s fakultetima / veleučilištima — za odabir „gdje živiš / kamo ideš”. */
+export function listFacultyCities(): string[] {
+  return Object.values(CITY_DISPLAY).sort((a, b) => a.localeCompare(b, "hr"));
+}
+
 /**
  * Poznate (približne) lokacije istaknutih ustanova — podudaranje po podnizu
  * naziva (mala slova) i gradu. Prvi pogodak vrijedi.

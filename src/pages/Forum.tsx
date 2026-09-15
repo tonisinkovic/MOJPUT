@@ -29,6 +29,23 @@ import { Link, useLocation, useSearchParams } from "react-router-dom";
 import { authLogout, authMe, userFromAuthMe, type AuthUser } from "@/lib/auth";
 import { resolveExperienceMode, type MojPutExperienceMode } from "@/lib/experience";
 import { cn } from "@/lib/utils";
+import HeaderDecor, { HeaderHero } from "@/components/header-animations/HeaderDecor";
+import {
+  JUNIOR_FORUM_CITIES,
+  JUNIOR_FORUM_TRACKS,
+  attachForumMeta,
+  emptyForumMeta,
+  forumTrackLabel,
+  stripForumMeta,
+  type JuniorForumMeta,
+  type JuniorForumTrackId,
+} from "@/lib/juniorForum";
+import {
+  attachThirdYearBody,
+  isJuniorEditorialThread,
+  isJuniorEditorialUsername,
+  juniorThirdYearThreads,
+} from "@/lib/juniorThirdYearForum";
 
 type ForumMessage = {
   id: number;
@@ -163,86 +180,37 @@ const SENIOR_FALLBACK_CONVERSATIONS: ForumConversation[] = [
   },
 ];
 
-const JUNIOR_FALLBACK_CONVERSATIONS: ForumConversation[] = [
-  {
-    id: 2001,
-    title: "Kako odabrati srednju školu ako nisam siguran što želim?",
-    description: "Pitanja o interesima, smjerovima i savjetima starijih učenika.",
-    creator: "Petra",
+const JUNIOR_FALLBACK_CONVERSATIONS: ForumConversation[] = juniorThirdYearThreads.map((thread, index) => {
+  const askedAt = new Date(Date.UTC(2026, 2, 20 - index, 10, 0, 0));
+  const askerMsg = {
+    id: 7001 + index * 10,
+    userId: -20 - index,
+    username: thread.asker,
+    text: thread.question,
+    timestamp: askedAt,
+    likeCount: 4,
+    userLiked: false,
+  };
+  const replyMsgs = thread.replies.map((reply, ri) => ({
+    id: 7002 + index * 10 + ri,
+    userId: -40 - index * 4 - ri,
+    username: reply.username,
+    text: reply.text,
+    timestamp: new Date(askedAt.getTime() + (ri + 1) * 3600_000),
+    likeCount: 6 - ri,
+    userLiked: false,
+  }));
+  return {
+    id: 2101 + index,
+    title: thread.title,
+    description: attachThirdYearBody(thread),
+    creator: thread.asker,
     creatorId: -1,
-    createdAt: new Date("2026-03-13T12:00:00+01:00"),
-    messageCount: 1,
-    messages: [
-      {
-        id: 6001,
-        userId: -6,
-        username: "Petra",
-        text: "Ako ste bili neodlučni pri upisu u srednju, kako ste na kraju donijeli odluku?",
-        timestamp: new Date("2026-03-13T12:03:00+01:00"),
-        likeCount: 2,
-        userLiked: false,
-      },
-    ],
-  },
-  {
-    id: 2002,
-    title: "Gimnazija ili strukovna škola — kako ste odlučili?",
-    description: "Iskustva, praksa u učenju i što biste danas drugačije odabrali.",
-    creator: "LukaSS",
-    creatorId: -1,
-    createdAt: new Date("2026-03-11T15:20:00+01:00"),
-    messageCount: 2,
-    messages: [
-      {
-        id: 6101,
-        userId: -7,
-        username: "LukaSS",
-        text: "Ne znam je li bolje ići na gimnaziju ili neki IT smjer u strukovnoj — tko ima iskustva?",
-        timestamp: new Date("2026-03-11T15:22:00+01:00"),
-        likeCount: 3,
-        userLiked: false,
-      },
-      {
-        id: 6102,
-        userId: -8,
-        username: "MajaGim",
-        text: "Ja sam na gimnaziji i zadovoljna sam, ali kolege na strukovnoj puno više rade praktične stvari.",
-        timestamp: new Date("2026-03-11T17:45:00+01:00"),
-        likeCount: 4,
-        userLiked: false,
-      },
-    ],
-  },
-  {
-    id: 2003,
-    title: "Koji smjer u srednjoj za medicinu, IT ili ekonomiju?",
-    description: "Preporuke smjera, škola i savjeti za daljnji put nakon srednje.",
-    creator: "IvanaUpis",
-    creatorId: -1,
-    createdAt: new Date("2026-03-09T10:00:00+01:00"),
-    messageCount: 2,
-    messages: [
-      {
-        id: 6201,
-        userId: -9,
-        username: "IvanaUpis",
-        text: "Zanima me medicina poslije srednje — koji smjer i škola vam se čine najbolji start?",
-        timestamp: new Date("2026-03-09T10:05:00+01:00"),
-        likeCount: 5,
-        userLiked: false,
-      },
-      {
-        id: 6202,
-        userId: -10,
-        username: "TomoMed",
-        text: "Prirodoslovna gimnazija je klasičan put, ali znam i ljude koji su krenuli preko medicinske sestre u strukovnoj.",
-        timestamp: new Date("2026-03-09T11:30:00+01:00"),
-        likeCount: 3,
-        userLiked: false,
-      },
-    ],
-  },
-];
+    createdAt: askedAt,
+    messageCount: 1 + replyMsgs.length,
+    messages: [askerMsg, ...replyMsgs],
+  };
+});
 
 function fallbackConversationsFor(audience: MojPutExperienceMode): ForumConversation[] {
   return audience === "junior" ? JUNIOR_FALLBACK_CONVERSATIONS : SENIOR_FALLBACK_CONVERSATIONS;
@@ -317,6 +285,164 @@ function writeForumMessagesCache(conversationId: number, messages: ForumMessage[
   }
 }
 
+/** Animirana tipkovnica s prstom koji tipka „hej!” — kao kalkulator na /kalkulator. */
+function KeyboardTypingAnimation() {
+  const rows = [
+    ["Q", "W", "E", "R", "T", "Y", "U"],
+    ["A", "S", "D", "F", "G", "H", "J"],
+    ["Z", "X", "C", "V", "B", "N", "M"],
+  ];
+  const keyW = 22;
+  const keyH = 20;
+  const gap = 3.5;
+  const startY = 78;
+  const startX = [30, 38, 46];
+  const keyCenter = (row: number, col: number) => ({
+    x: startX[row] + col * (keyW + gap) + keyW / 2,
+    y: startY + row * (keyH + gap) + keyH / 2,
+  });
+  const bang = { x: 168, y: startY + 3 * (keyH + gap) + keyH / 2 };
+
+  const seq = [
+    { ...keyCenter(1, 5), ch: "h" },
+    { ...keyCenter(0, 2), ch: "e" },
+    { ...keyCenter(1, 6), ch: "j" },
+    { ...bang, ch: "!" },
+  ];
+
+  const animDur = "5.8s";
+  const stepPct = 100 / seq.length;
+  const movePct = 6;
+  let fingerKF = "";
+  const pressKFs: string[] = [];
+  const popKFs: string[] = [];
+  const charKFs: string[] = [];
+
+  for (let i = 0; i < seq.length; i++) {
+    const arriveAt = i * stepPct + movePct;
+    const pressAt = arriveAt + 3;
+    const leaveAt = (i + 1) * stepPct - 1;
+    const p = seq[i];
+    const lx = (p.x / 220) * 100;
+    const ty = (p.y / 190) * 100;
+    fingerKF += `${arriveAt.toFixed(1)}% { left: ${lx.toFixed(2)}%; top: ${(ty - 11).toFixed(2)}%; }\n`;
+    fingerKF += `${pressAt.toFixed(1)}% { left: ${lx.toFixed(2)}%; top: ${(ty - 6).toFixed(2)}%; }\n`;
+    fingerKF += `${(pressAt + 2).toFixed(1)}% { left: ${lx.toFixed(2)}%; top: ${(ty - 10).toFixed(2)}%; }\n`;
+    fingerKF += `${leaveAt.toFixed(1)}% { left: ${lx.toFixed(2)}%; top: ${(ty - 10).toFixed(2)}%; }\n`;
+
+    pressKFs.push(
+      `0% { opacity: 0.28; transform: scale(1); } ${arriveAt.toFixed(1)}% { opacity: 0.28; transform: scale(1); } ${pressAt.toFixed(1)}% { opacity: 0.9; transform: scale(0.9); } ${(pressAt + 3).toFixed(1)}% { opacity: 0.4; transform: scale(1); } 100% { opacity: 0.28; transform: scale(1); }`,
+    );
+    popKFs.push(
+      `0% { opacity: 0; transform: scale(0.4); } ${arriveAt.toFixed(1)}% { opacity: 0; transform: scale(0.4); } ${pressAt.toFixed(1)}% { opacity: 0.55; transform: scale(1.7); } ${(pressAt + 4).toFixed(1)}% { opacity: 0; transform: scale(2.1); } 100% { opacity: 0; transform: scale(0.4); }`,
+    );
+    charKFs.push(
+      `0% { opacity: 0; transform: scale(0.5); } ${(pressAt - 0.1).toFixed(1)}% { opacity: 0; transform: scale(0.5); } ${pressAt.toFixed(1)}% { opacity: 0.9; transform: scale(1.2); } ${(pressAt + 2).toFixed(1)}% { opacity: 0.75; transform: scale(1); } 90% { opacity: 0.75; transform: scale(1); } 100% { opacity: 0; transform: scale(0.5); }`,
+    );
+  }
+  fingerKF = `0% { left: ${((seq[0].x / 220) * 100).toFixed(2)}%; top: ${(((seq[0].y + 36) / 190) * 100).toFixed(2)}%; opacity: 0; }\n5% { opacity: 1; }\n${fingerKF}94% { opacity: 1; }\n100% { left: ${(((seq[3].x + 24) / 220) * 100).toFixed(2)}%; top: ${(((seq[3].y - 50) / 190) * 100).toFixed(2)}%; opacity: 0; }`;
+
+  return (
+    <div className="relative h-full w-full">
+      <style>{`
+        @keyframes forumKbFinger { ${fingerKF} }
+        ${pressKFs.map((kf, i) => `@keyframes forumKbGlow${i} { ${kf} }`).join("\n")}
+        ${popKFs.map((kf, i) => `@keyframes forumKbPop${i} { ${kf} }`).join("\n")}
+        ${charKFs.map((kf, i) => `@keyframes forumKbChar${i} { ${kf} }`).join("\n")}
+        .forum-kb-finger { animation: forumKbFinger ${animDur} cubic-bezier(.4,0,.2,1) infinite; }
+        ${pressKFs.map((_, i) => `.forum-kb-glow-${i} { animation: forumKbGlow${i} ${animDur} ease-out infinite; transform-origin: center; }`).join("\n")}
+        ${popKFs.map((_, i) => `.forum-kb-pop-${i} { animation: forumKbPop${i} ${animDur} ease-out infinite; }`).join("\n")}
+        ${charKFs.map((_, i) => `.forum-kb-char-${i} { animation: forumKbChar${i} ${animDur} ease-out infinite; }`).join("\n")}
+      `}</style>
+      <svg viewBox="0 0 220 190" fill="none" className="h-full w-full">
+        <rect x="18" y="10" width="184" height="170" rx="16" className="fill-current text-foreground" opacity="0.88" />
+        <rect x="30" y="20" width="160" height="42" rx="8" className="fill-current text-background" opacity="0.38" />
+        {seq.map((s, i) => (
+          <text
+            key={s.ch}
+            x={78 + i * 18}
+            y="48"
+            textAnchor="middle"
+            className={`fill-current text-foreground forum-kb-char-${i}`}
+            fontSize="20"
+            fontWeight="700"
+            fontFamily="ui-monospace, monospace"
+            opacity="0"
+          >
+            {s.ch}
+          </text>
+        ))}
+        {rows.map((row, r) =>
+          row.map((label, c) => {
+            const x = startX[r] + c * (keyW + gap);
+            const y = startY + r * (keyH + gap);
+            const pressIdx = seq.findIndex((s) => Math.abs(s.x - (x + keyW / 2)) < 0.5 && Math.abs(s.y - (y + keyH / 2)) < 0.5);
+            return (
+              <g key={`${r}-${label}`}>
+                <rect
+                  x={x}
+                  y={y}
+                  width={keyW}
+                  height={keyH}
+                  rx="5"
+                  className={cn("fill-current text-background", pressIdx >= 0 && `forum-kb-glow-${pressIdx}`)}
+                  opacity="0.32"
+                />
+                {pressIdx >= 0 && (
+                  <circle
+                    cx={x + keyW / 2}
+                    cy={y + keyH / 2}
+                    r="12"
+                    className={`fill-current text-background forum-kb-pop-${pressIdx}`}
+                    opacity="0"
+                  />
+                )}
+                <text
+                  x={x + keyW / 2}
+                  y={y + 14}
+                  textAnchor="middle"
+                  className="fill-current text-foreground"
+                  fontSize="9"
+                  fontWeight="700"
+                  opacity="0.8"
+                >
+                  {label}
+                </text>
+              </g>
+            );
+          }),
+        )}
+        <rect x="46" y={startY + 3 * (keyH + gap)} width="88" height={keyH} rx="5" className="fill-current text-background" opacity="0.28" />
+        <rect
+          x={bang.x - keyW / 2}
+          y={bang.y - keyH / 2}
+          width={keyW}
+          height={keyH}
+          rx="5"
+          className="fill-current text-background forum-kb-glow-3"
+          opacity="0.32"
+        />
+        <circle cx={bang.x} cy={bang.y} r="12" className="fill-current text-background forum-kb-pop-3" opacity="0" />
+        <text x={bang.x} y={bang.y + 4} textAnchor="middle" className="fill-current text-foreground" fontSize="11" fontWeight="700" opacity="0.85">
+          !
+        </text>
+      </svg>
+      <div className="forum-kb-finger absolute h-6 w-4 -translate-x-1/2 -translate-y-1/2 sm:h-10 sm:w-7">
+        <svg viewBox="0 0 30 44" fill="none" className="h-full w-full drop-shadow-md">
+          <ellipse cx="15" cy="41" rx="11" ry="3" className="fill-current text-foreground" opacity="0.25" />
+          <path
+            d="M9 40 C9 40 6 30 6 20 C6 11 10 4 15 4 C20 4 24 11 24 20 C24 30 21 40 21 40 Z"
+            className="fill-current text-foreground"
+            opacity="0.6"
+          />
+          <ellipse cx="15" cy="10" rx="5.5" ry="4.5" className="fill-current text-foreground" opacity="0.3" />
+          <ellipse cx="15" cy="37" rx="6.5" ry="4.5" className="fill-current text-foreground" opacity="0.8" />
+        </svg>
+      </div>
+    </div>
+  );
+}
+
 const Forum = () => {
   const location = useLocation();
   const [searchParams] = useSearchParams();
@@ -339,6 +465,12 @@ const Forum = () => {
   const [showNewConversationModal, setShowNewConversationModal] = useState(false);
   const [newConvTitle, setNewConvTitle] = useState("");
   const [newConvDescription, setNewConvDescription] = useState("");
+  const [newConvCity, setNewConvCity] = useState("");
+  const [newConvTrack, setNewConvTrack] = useState<JuniorForumTrackId | "">("");
+  const [newConvAsk, setNewConvAsk] = useState(false);
+  const [forumCity, setForumCity] = useState("all");
+  const [forumTrack, setForumTrack] = useState("all");
+  const [forumAskOnly, setForumAskOnly] = useState(false);
   const [messageInput, setMessageInput] = useState("");
   const [replyingTo, setReplyingTo] = useState<ForumMessage | null>(null);
   const [sendingMessage, setSendingMessage] = useState(false);
@@ -405,7 +537,14 @@ const Forum = () => {
         }));
         const localOnly = readLocalConversations(audience);
         const merged = [...localOnly, ...mapped];
-        setConversations(merged.length > 0 ? merged : fallbackConversations);
+        const withLive =
+          audience === "junior"
+            ? [
+                ...fallbackConversations.filter((seed) => !merged.some((c) => c.title === seed.title)),
+                ...merged,
+              ]
+            : merged;
+        setConversations(withLive.length > 0 ? withLive : fallbackConversations);
       } else {
         const localOnly = readLocalConversations(audience);
         setConversations([...localOnly, ...fallbackConversations]);
@@ -520,9 +659,20 @@ const Forum = () => {
     if (!currentUser) return;
     if (!newConvTitle.trim()) return;
 
+    const meta: JuniorForumMeta = isJunior
+      ? {
+          city: newConvCity.trim() || null,
+          track: newConvTrack || null,
+          askSenior: newConvAsk,
+        }
+      : emptyForumMeta();
+    const description = isJunior
+      ? attachForumMeta(newConvDescription.trim(), meta)
+      : newConvDescription.trim();
+
     const res = await apiPost<{ data?: { id: number; title: string; description: string; created_at: string; creator_username: string; message_count: number } }>(
       "/api/forum/conversations",
-      { title: newConvTitle.trim(), description: newConvDescription.trim(), audience },
+      { title: newConvTitle.trim(), description, audience },
     );
     let newConversation: ForumConversation | null = null;
     if (res.success) {
@@ -544,7 +694,7 @@ const Forum = () => {
       newConversation = {
         id: Date.now(),
         title: newConvTitle.trim(),
-        description: newConvDescription.trim(),
+        description,
         creator: currentUser.username,
         creatorId: currentUser.id,
         createdAt: new Date(),
@@ -560,6 +710,9 @@ const Forum = () => {
     }
     setNewConvTitle("");
     setNewConvDescription("");
+    setNewConvCity("");
+    setNewConvTrack("");
+    setNewConvAsk(false);
     setShowNewConversationModal(false);
     setSelectedConversation(newConversation);
   };
@@ -746,10 +899,19 @@ const Forum = () => {
 
   const sortedConversations = useMemo(() => {
     const term = searchTerm.trim().toLowerCase();
-    const filtered = conversations.filter(
-      (conv) =>
-        conv.title.toLowerCase().includes(term) || conv.description.toLowerCase().includes(term),
-    );
+    const filtered = conversations.filter((conv) => {
+      const { meta, body } = stripForumMeta(conv.description || "");
+      const textHit =
+        conv.title.toLowerCase().includes(term) ||
+        body.toLowerCase().includes(term) ||
+        (meta.city ?? "").toLowerCase().includes(term);
+      if (!textHit) return false;
+      if (!isJunior) return true;
+      if (forumCity !== "all" && meta.city !== forumCity) return false;
+      if (forumTrack !== "all" && meta.track !== forumTrack) return false;
+      if (forumAskOnly && !meta.askSenior) return false;
+      return true;
+    });
     const copy = [...filtered];
     if (sortMode === "recent") {
       copy.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
@@ -760,7 +922,7 @@ const Forum = () => {
       );
     }
     return copy;
-  }, [conversations, searchTerm, sortMode]);
+  }, [conversations, searchTerm, sortMode, isJunior, forumCity, forumTrack, forumAskOnly]);
 
   const forumStats = useMemo(() => {
     const totalConversations = conversations.length;
@@ -800,11 +962,18 @@ const Forum = () => {
             className="pointer-events-none absolute -bottom-14 -left-10 h-36 w-36 rounded-full bg-primary/10 blur-3xl sm:h-48 sm:w-48"
           />
 
-          <div className="relative flex flex-col gap-4 sm:flex-row sm:items-start sm:gap-5">
-            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl gradient-hero text-primary-foreground shadow-md sm:h-14 sm:w-14">
-              <MessagesSquare className="h-6 w-6 sm:h-7 sm:w-7" />
-            </div>
-            <div className="min-w-0 flex-1">
+          <HeaderHero
+            icon={
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl gradient-hero text-primary-foreground shadow-md sm:h-14 sm:w-14">
+                <MessagesSquare className="h-6 w-6 sm:h-7 sm:w-7" />
+              </div>
+            }
+            decor={
+              <HeaderDecor className="opacity-[0.42] sm:opacity-[0.18]">
+                <KeyboardTypingAnimation />
+              </HeaderDecor>
+            }
+          >
               <div className="flex flex-wrap items-center gap-2">
                 <span className="inline-flex items-center gap-1 rounded-full border border-primary/25 bg-primary/10 px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-primary">
                   <Sparkles className="h-3 w-3" />
@@ -816,7 +985,7 @@ const Forum = () => {
               </h1>
               <p className="mt-1.5 max-w-2xl text-pretty text-sm leading-relaxed text-muted-foreground sm:text-base">
                 {isJunior
-                  ? "Razmijeni iskustva i postavi pitanja o odabiru srednje škole, smjerovima i upisu — sve jasno poredano, brzo za pronalazak."
+                  ? "Pitaj o smjeru i upisu. Filter „3. razred srednje” su primjeri koje smo napisali — nisu stvarni učenici."
                   : "Razmijeni iskustva i postavi pitanja o maturi, fakultetima i studentskom životu — sve jasno poredano, brzo za pronalazak."}
               </p>
 
@@ -849,8 +1018,7 @@ const Forum = () => {
                   </p>
                 </div>
               </div>
-            </div>
-          </div>
+          </HeaderHero>
         </motion.div>
 
         {authChecked && !canUseForum && (
@@ -1002,7 +1170,59 @@ const Forum = () => {
                 </div>
               </div>
 
+              {isJunior ? (
+                <div className="border-b border-border px-3 py-2">
+                  <p className="mb-2 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+                    Grad i smjer
+                  </p>
+                  <div className="flex flex-wrap gap-1.5">
+                    <button
+                      type="button"
+                      onClick={() => setForumAskOnly((v) => !v)}
+                      className={cn(
+                        "rounded-full border px-2.5 py-1 text-[11px] font-semibold",
+                        forumAskOnly
+                          ? "border-primary bg-primary text-primary-foreground"
+                          : "border-border bg-background",
+                      )}
+                    >
+                      Pitaj 3. razred srednje
+                    </button>
+                    <select
+                      value={forumCity}
+                      onChange={(e) => setForumCity(e.target.value)}
+                      className="h-8 rounded-full border border-border bg-background px-2 text-[11px] font-semibold"
+                    >
+                      <option value="all">Svi gradovi</option>
+                      {JUNIOR_FORUM_CITIES.map((c) => (
+                        <option key={c} value={c}>
+                          {c}
+                        </option>
+                      ))}
+                    </select>
+                    <select
+                      value={forumTrack}
+                      onChange={(e) => setForumTrack(e.target.value)}
+                      className="h-8 rounded-full border border-border bg-background px-2 text-[11px] font-semibold"
+                    >
+                      <option value="all">Svi smjerovi</option>
+                      {JUNIOR_FORUM_TRACKS.map((t) => (
+                        <option key={t.id} value={t.id}>
+                          {t.label}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+              ) : null}
+
               <div className="min-h-0 flex-1 md:overflow-y-auto">
+                {isJunior ? (
+                  <p className="mx-2 mt-2 rounded-xl border border-amber-500/30 bg-amber-500/[0.08] px-3 py-2 text-[11px] leading-relaxed text-muted-foreground">
+                    Odgovori označenih „Urednički primjer” nisu stvarni učenici 3. razreda srednje — napisali smo ih
+                    da vidiš kako izgleda pitanje. Svoje pitanje i dalje možeš postaviti.
+                  </p>
+                ) : null}
                 {loadingConversations ? (
                   <div className="p-8 text-center">
                     <div className="inline-block h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
@@ -1020,6 +1240,7 @@ const Forum = () => {
                     {sortedConversations.map((conv) => {
                       const isActive = selectedConversation?.id === conv.id;
                       const initial = (conv.creator?.[0] || "?").toUpperCase();
+                      const { meta, body } = stripForumMeta(conv.description || "");
                       return (
                         <button
                           key={conv.id}
@@ -1050,8 +1271,36 @@ const Forum = () => {
                               {conv.title}
                             </p>
                             <p className="mt-0.5 line-clamp-1 text-xs text-muted-foreground">
-                              {conv.description || "Bez opisa"}
+                              {body || "Bez opisa"}
                             </p>
+                            {isJunior &&
+                            (meta.city ||
+                              meta.track ||
+                              meta.askSenior ||
+                              isJuniorEditorialThread(conv.title)) ? (
+                              <div className="mt-1 flex flex-wrap gap-1">
+                                {meta.city ? (
+                                  <span className="rounded-full bg-sky-500/15 px-1.5 py-0.5 text-[10px] font-bold text-sky-700 dark:text-sky-300">
+                                    {meta.city}
+                                  </span>
+                                ) : null}
+                                {forumTrackLabel(meta.track) ? (
+                                  <span className="rounded-full bg-violet-500/15 px-1.5 py-0.5 text-[10px] font-bold text-violet-700 dark:text-violet-300">
+                                    {forumTrackLabel(meta.track)}
+                                  </span>
+                                ) : null}
+                                {meta.askSenior ? (
+                                  <span className="rounded-full bg-amber-500/15 px-1.5 py-0.5 text-[10px] font-bold text-amber-800 dark:text-amber-200">
+                                    3. razred srednje
+                                  </span>
+                                ) : null}
+                                {isJuniorEditorialThread(conv.title) ? (
+                                  <span className="rounded-full bg-amber-500/20 px-1.5 py-0.5 text-[10px] font-bold text-amber-900 dark:text-amber-100">
+                                    Urednički primjer
+                                  </span>
+                                ) : null}
+                              </div>
+                            ) : null}
                             <div className="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-[11px] text-muted-foreground">
                               <span
                                 className={cn(
@@ -1070,7 +1319,12 @@ const Forum = () => {
                                   month: "short",
                                 })}
                               </span>
-                              <span className="truncate">· {conv.creator || "Anonim"}</span>
+                              <span className="truncate">
+                                · {conv.creator || "Anonim"}
+                                {isJunior && isJuniorEditorialUsername(conv.creator)
+                                  ? " · urednički primjer"
+                                  : ""}
+                              </span>
                             </div>
                           </div>
                         </button>
@@ -1114,8 +1368,13 @@ const Forum = () => {
                           <h2 className="text-pretty text-base font-bold leading-tight text-foreground sm:text-lg">
                             {selectedConversation.title}
                           </h2>
+                          {isJunior && isJuniorEditorialThread(selectedConversation.title) ? (
+                            <p className="mt-1 rounded-lg border border-amber-500/30 bg-amber-500/10 px-2 py-1 text-[11px] font-semibold text-amber-900 dark:text-amber-100">
+                              Urednički primjer — 3. razred srednje. Imena poput Marta3Med nisu stvarni učenici; napisali smo ih mi.
+                            </p>
+                          ) : null}
                           <p className="mt-0.5 line-clamp-2 text-xs text-muted-foreground sm:text-sm">
-                            {selectedConversation.description || "Bez opisa"}
+                            {stripForumMeta(selectedConversation.description || "").body || "Bez opisa"}
                           </p>
                           <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-muted-foreground">
                             <span className="inline-flex items-center gap-1 rounded-full bg-primary/15 px-2 py-0.5 font-semibold text-primary">
@@ -1125,6 +1384,9 @@ const Forum = () => {
                             </span>
                             <span className="truncate">
                               Autor: {selectedConversation.creator || "Anonim"}
+                              {isJunior && isJuniorEditorialUsername(selectedConversation.creator)
+                                ? " · urednički primjer"
+                                : ""}
                             </span>
                           </div>
                         </div>
@@ -1175,6 +1437,11 @@ const Forum = () => {
                                 className={`mb-1 flex items-center gap-2 ${msg.userId === currentUser?.id ? "flex-row-reverse" : ""}`}
                               >
                                 <span className="text-xs font-semibold text-foreground">{msg.username}</span>
+                                {isJunior && isJuniorEditorialUsername(msg.username) ? (
+                                  <span className="rounded-full bg-amber-500/20 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide text-amber-900 dark:text-amber-100">
+                                    Primjer
+                                  </span>
+                                ) : null}
                                 <span className="text-[11px] text-muted-foreground">
                                   {msg.timestamp.toLocaleTimeString("hr-HR", {
                                     hour: "2-digit",
@@ -1398,10 +1665,59 @@ const Forum = () => {
                       type="text"
                       value={newConvTitle}
                       onChange={(e) => setNewConvTitle(e.target.value)}
-                      placeholder={isJunior ? "npr. Gimnazija ili strukovna?" : "npr. Koji fakultet za IT?"}
+                      placeholder={isJunior ? "npr. Split, medicinska — prijemni?" : "npr. Koji fakultet za IT?"}
                       className="w-full rounded-xl border-2 border-input bg-background px-4 py-2.5 text-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-ring"
                     />
                   </div>
+                  {isJunior ? (
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="mb-1.5 block text-sm font-semibold" htmlFor="forum-city">
+                          Grad
+                        </label>
+                        <select
+                          id="forum-city"
+                          value={newConvCity}
+                          onChange={(e) => setNewConvCity(e.target.value)}
+                          className="w-full rounded-xl border-2 border-input bg-background px-3 py-2.5 text-sm"
+                        >
+                          <option value="">Svi / nije važno</option>
+                          {JUNIOR_FORUM_CITIES.map((c) => (
+                            <option key={c} value={c}>
+                              {c}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                      <div>
+                        <label className="mb-1.5 block text-sm font-semibold" htmlFor="forum-track">
+                          Smjer
+                        </label>
+                        <select
+                          id="forum-track"
+                          value={newConvTrack}
+                          onChange={(e) => setNewConvTrack(e.target.value as JuniorForumTrackId | "")}
+                          className="w-full rounded-xl border-2 border-input bg-background px-3 py-2.5 text-sm"
+                        >
+                          <option value="">Odaberi</option>
+                          {JUNIOR_FORUM_TRACKS.map((t) => (
+                            <option key={t.id} value={t.id}>
+                              {t.label}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                      <label className="col-span-2 flex items-center gap-2 text-sm">
+                        <input
+                          type="checkbox"
+                          checked={newConvAsk}
+                          onChange={(e) => setNewConvAsk(e.target.checked)}
+                          className="h-4 w-4 accent-primary"
+                        />
+                        Pitaj 3. razred srednje
+                      </label>
+                    </div>
+                  ) : null}
                   <div>
                     <label className="mb-1.5 block text-sm font-semibold text-foreground" htmlFor="forum-new-desc">
                       Opis (opcionalno)
@@ -1428,6 +1744,9 @@ const Forum = () => {
                         setShowNewConversationModal(false);
                         setNewConvTitle("");
                         setNewConvDescription("");
+                        setNewConvCity("");
+                        setNewConvTrack("");
+                        setNewConvAsk(false);
                       }}
                       className="flex-1 rounded-xl border-2 border-border bg-muted py-2.5 text-sm font-semibold text-foreground transition-colors hover:bg-muted/80"
                     >

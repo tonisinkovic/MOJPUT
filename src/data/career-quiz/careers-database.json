@@ -791,6 +791,402 @@
         "analiza",
         "financije"
       ]
+    },
+    {
+      "id": 31,
+      "name": "Farmaceut",
+      "description": "Put: integrirani studij farmacije (5 g.), staž i stručni ispit; rad u ljekarni, bolnici ili industriji.",
+      "facultyPaths": [
+        "FBF (Zagreb) — farmacija i medicinska biokemija",
+        "MEFST (Split) — farmacija"
+      ],
+      "interestCategories": ["investigative", "conventional"],
+      "competencyCategories": ["analytical", "attention_to_detail", "domain_knowledge"],
+      "education": "Integrirani studij farmacije",
+      "salary": "1500–2700 EUR bruto/mj. (okvirno; ljekarna, bolnica, industrija)",
+      "employmentPerspective": "Odličan",
+      "requiresInterestSignals": { "medicine_health_interest": 2 },
+      "keywords": ["farmacija", "lijekovi", "ljekarna"]
+    },
+    {
+      "id": 32,
+      "name": "Doktor dentalne medicine",
+      "description": "Put: integrirani studij dentalne medicine (6 g.), zatim rad u ordinaciji ili vlastita praksa.",
+      "facultyPaths": [
+        "SFZG (Zagreb), MEFST (Split), MEDRI (Rijeka) — dentalna medicina"
+      ],
+      "interestCategories": ["investigative", "realistic"],
+      "competencyCategories": ["attention_to_detail", "technical", "interpersonal"],
+      "education": "Integrirani studij dentalne medicine",
+      "salary": "1800–4500 EUR bruto/mj. (okvirno; javno vs. privatna praksa)",
+      "employmentPerspective": "Odličan",
+      "requiresInterestSignals": { "medicine_health_interest": 2 },
+      "keywords": ["stomatologija", "zubi", "ordinacija"]
+    },
+    {
+      "id": 33,
+      "name": "Psiholog",
+      "description": "Put: preddiplomski + diplomski studij psihologije, pa rad u školi, klinici, HR-u ili istraživanju.",
+      "facultyPaths": [
+        "FFZG (Zagreb), FFRI (Rijeka), FFOS (Osijek), FFST (Split), Hrvatski studiji — psihologija"
+      ],
+      "interestCategories": ["social", "investigative"],
+      "competencyCategories": ["emotional_intelligence", "analytical", "research"],
+      "education": "Diplomski studij psihologije",
+      "salary": "1300–2400 EUR bruto/mj. (okvirno; ovisi o sektoru)",
+      "employmentPerspective": "Vrlo dobar",
+      "requiresInterestSignals": { "social_help_interest": 2 },
+      "keywords": ["psihologija", "savjetovanje", "ljudi"]
+    },
+    {
+      "id": 34,
+      "name": "Logoped",
+      "description": "Put: studij logopedije na ERF-u; rad s djecom i odraslima na govorno-jezičnim teškoćama.",
+      "facultyPaths": [
+        "ERF (Zagreb) — logopedija"
+      ],
+      "interestCategories": ["social", "investigative"],
+      "competencyCategories": ["patience", "communication", "domain_knowledge"],
+      "education": "Diplomski studij logopedije",
+      "salary": "1300–2200 EUR bruto/mj. (okvirno; javno i privatno)",
+      "employmentPerspective": "Odličan",
+      "requiresInterestSignals": { "social_help_interest": 2 },
+      "keywords": ["logopedija", "govor", "djeca"]
+    },
+    {
+      "id": 35,
+      "name": "Socijalni radnik",
+      "description": "Put: studij socijalnog rada; rad u centrima za socijalnu skrb, domovima i udrugama.",
+      "facultyPaths": [
+        "Studijski centar socijalnog rada — Pravni fakultet (Zagreb)"
+      ],
+      "interestCategories": ["social"],
+      "competencyCategories": ["emotional_intelligence", "stress_management", "diversity"],
+      "education": "Diplomski studij socijalnog rada",
+      "salary": "1200–1900 EUR bruto/mj. (okvirno; pretežno javni sektor)",
+      "employmentPerspective": "Vrlo dobar",
+      "requiresInterestSignals": { "social_help_interest": 2 },
+      "keywords": ["socijalni rad", "pomaganje", "zajednica"]
+    },
+    {
+      "id": 36,
+      "name": "Odgojitelj predškolske djece",
+      "description": "Put: studij ranog i predškolskog odgoja; rad u vrtićima — struka s velikom potražnjom.",
+      "facultyPaths": [
+        "UFZG (Zagreb), FOOZOS (Osijek), UFRI (Rijeka), UNIZD (Zadar) — rani i predškolski odgoj"
+      ],
+      "interestCategories": ["social", "artistic"],
+      "competencyCategories": ["patience", "creativity", "interpersonal"],
+      "education": "Studij ranog i predškolskog odgoja",
+      "salary": "1200–1800 EUR bruto/mj. (okvirno; javni vrtići)",
+      "employmentPerspective": "Odličan",
+      "requiresInterestSignals": { "teaching_mentoring_interest": 2 },
+      "keywords": ["vrtić", "djeca", "odgoj"]
+    },
+    {
+      "id": 37,
+      "name": "Profesor / nastavnik u školi",
+      "description": "Put: nastavnički smjer bilo koje struke (jezici, matematika, povijest…), pa rad u školi.",
+      "facultyPaths": [
+        "FFZG i filozofski fakulteti — nastavnički smjerovi",
+        "PMF-ovi — nastavnički smjerovi (matematika, fizika, kemija, biologija)"
+      ],
+      "interestCategories": ["social", "investigative"],
+      "competencyCategories": ["presentation", "communication", "patience"],
+      "education": "Diplomski nastavnički studij",
+      "salary": "1300–2100 EUR bruto/mj. (okvirno; javne škole)",
+      "employmentPerspective": "Vrlo dobar",
+      "requiresInterestSignals": { "teaching_mentoring_interest": 2 },
+      "keywords": ["nastava", "škola", "poučavanje"]
+    },
+    {
+      "id": 38,
+      "name": "Kineziolog / sportski trener",
+      "description": "Put: studij kineziologije; rad kao trener, kondicijski trener ili profesor TZK.",
+      "facultyPaths": [
+        "KIF (Zagreb), KIFST (Split) — kineziologija"
+      ],
+      "interestCategories": ["realistic", "social"],
+      "competencyCategories": ["wellness", "leadership", "goal_oriented"],
+      "education": "Diplomski studij kineziologije",
+      "salary": "1200–2500 EUR bruto/mj. (okvirno; klubovi, škole, privatno)",
+      "employmentPerspective": "Dobar",
+      "requiresInterestSignals": { "sport_kinesiology_interest": 2 },
+      "keywords": ["sport", "trening", "kineziologija"]
+    },
+    {
+      "id": 39,
+      "name": "Politolog / analitičar javnih politika",
+      "description": "Put: studij politologije; rad u institucijama, medijima, udrugama ili međunarodnim organizacijama.",
+      "facultyPaths": [
+        "FPZG (Zagreb) — politologija"
+      ],
+      "interestCategories": ["investigative", "enterprising"],
+      "competencyCategories": ["critical_thinking", "writing", "research"],
+      "education": "Diplomski studij politologije",
+      "salary": "1300–2300 EUR bruto/mj. (okvirno; jako ovisi o sektoru)",
+      "employmentPerspective": "Umjeren",
+      "keywords": ["politika", "analiza", "institucije"]
+    },
+    {
+      "id": 40,
+      "name": "Prevoditelj / sudski tumač",
+      "description": "Put: studij stranih jezika (filologija), pa prevođenje, lokalizacija ili ovlašteni sudski tumač.",
+      "facultyPaths": [
+        "FFZG, FFST, FFRI, FFOS, UNIZD — filološki studiji (anglistika, germanistika…)"
+      ],
+      "interestCategories": ["artistic", "investigative"],
+      "competencyCategories": ["languages", "writing", "attention_to_detail"],
+      "education": "Diplomski filološki studij",
+      "salary": "1200–2500 EUR bruto/mj. (okvirno; freelance jako varira)",
+      "employmentPerspective": "Dobar",
+      "requiresInterestSignals": { "language_literature_interest": 2 },
+      "keywords": ["jezici", "prevođenje", "tumač"]
+    },
+    {
+      "id": 41,
+      "name": "Povjesničar / muzejski kustos",
+      "description": "Put: studij povijesti ili povijesti umjetnosti; rad u muzejima, arhivima, školama i znanosti.",
+      "facultyPaths": [
+        "FFZG (Zagreb), Hrvatski studiji, UNIZD (Zadar) — povijest, povijest umjetnosti"
+      ],
+      "interestCategories": ["investigative", "artistic"],
+      "competencyCategories": ["research", "writing", "domain_knowledge"],
+      "education": "Diplomski studij povijesti ili srodne humanistike",
+      "salary": "1200–1900 EUR bruto/mj. (okvirno; kultura i javni sektor)",
+      "employmentPerspective": "Umjeren",
+      "keywords": ["povijest", "muzej", "istraživanje"]
+    },
+    {
+      "id": 42,
+      "name": "Geodet",
+      "description": "Put: studij geodezije i geoinformatike; izmjere, katastar, GIS i prostorni podaci.",
+      "facultyPaths": [
+        "Geodetski fakultet (Zagreb) — geodezija i geoinformatika"
+      ],
+      "interestCategories": ["realistic", "conventional"],
+      "competencyCategories": ["numerical", "attention_to_detail", "technical"],
+      "education": "Diplomski studij geodezije",
+      "salary": "1400–2600 EUR bruto/mj. (okvirno; uredi i teren)",
+      "employmentPerspective": "Odličan",
+      "keywords": ["geodezija", "izmjera", "GIS"]
+    },
+    {
+      "id": 43,
+      "name": "Rudarsko-geološko-naftni inženjer",
+      "description": "Put: RGN studiji; energetika, geotehnika, rudarstvo i geologija — teren i industrija.",
+      "facultyPaths": [
+        "RGN fakultet (Zagreb) — rudarstvo, geologija, naftno rudarstvo"
+      ],
+      "interestCategories": ["realistic", "investigative"],
+      "competencyCategories": ["technical", "analytical", "safety"],
+      "education": "Diplomski studij RGN smjera",
+      "salary": "1500–3000 EUR bruto/mj. (okvirno; energetski sektor)",
+      "employmentPerspective": "Vrlo dobar",
+      "keywords": ["geologija", "rudarstvo", "energetika"]
+    },
+    {
+      "id": 44,
+      "name": "Inženjer prometa / logistike",
+      "description": "Put: studij prometa ili logistike; organizacija transporta, cestovni, zračni i željeznički sustavi.",
+      "facultyPaths": [
+        "FPZ (Zagreb) — promet, inteligentni transportni sustavi i logistika"
+      ],
+      "interestCategories": ["conventional", "realistic"],
+      "competencyCategories": ["organization", "analytical", "safety"],
+      "education": "Diplomski studij prometa",
+      "salary": "1400–2500 EUR bruto/mj. (okvirno; logistika raste)",
+      "employmentPerspective": "Vrlo dobar",
+      "keywords": ["promet", "logistika", "transport"]
+    },
+    {
+      "id": 45,
+      "name": "Pomorski časnik (nautika / brodostrojarstvo)",
+      "description": "Put: pomorski studiji, plovidbena praksa i časnička zvanja; rad na brodovima svjetske flote.",
+      "facultyPaths": [
+        "PFRI (Rijeka), PFST (Split), UNIZD, UNIDU — nautika i brodostrojarstvo"
+      ],
+      "interestCategories": ["realistic", "conventional"],
+      "competencyCategories": ["safety", "stress_management", "technical"],
+      "education": "Pomorski studij + plovidbena služba",
+      "salary": "2500–7000 EUR/mj. u plovidbi (okvirno; ugovorno, neto varira)",
+      "employmentPerspective": "Odličan",
+      "keywords": ["more", "brod", "plovidba"]
+    },
+    {
+      "id": 46,
+      "name": "Pilot / zrakoplovni stručnjak",
+      "description": "Put: aeronautika na FPZ-u ili licencirana letačka škola; skupo školovanje, tražena struka.",
+      "facultyPaths": [
+        "FPZ (Zagreb) — aeronautika (civilni/vojni pilot, kontrola leta)"
+      ],
+      "interestCategories": ["realistic", "investigative"],
+      "competencyCategories": ["stress_management", "attention_to_detail", "technical"],
+      "education": "Studij aeronautike + letačke licence",
+      "salary": "2500–8000 EUR bruto/mj. (okvirno; ovisi o kompaniji i nalijetu)",
+      "employmentPerspective": "Dobar",
+      "keywords": ["avion", "letenje", "aeronautika"]
+    },
+    {
+      "id": 47,
+      "name": "Šumarski inženjer",
+      "description": "Put: studij šumarstva; gospodarenje šumama, urbano šumarstvo i zaštita prirode.",
+      "facultyPaths": [
+        "Fakultet šumarstva i drvne tehnologije (Zagreb)"
+      ],
+      "interestCategories": ["realistic", "investigative"],
+      "competencyCategories": ["domain_knowledge", "independence", "organization"],
+      "education": "Diplomski studij šumarstva",
+      "salary": "1300–2200 EUR bruto/mj. (okvirno; Hrvatske šume i privatni sektor)",
+      "employmentPerspective": "Dobar",
+      "requiresInterestSignals": { "nature_outdoor_interest": 2 },
+      "keywords": ["šuma", "priroda", "teren"]
+    },
+    {
+      "id": 48,
+      "name": "Prehrambeni tehnolog",
+      "description": "Put: studij prehrambene tehnologije ili biotehnologije; razvoj i kontrola kvalitete hrane.",
+      "facultyPaths": [
+        "PBF (Zagreb), PTF (Osijek) — prehrambena tehnologija i biotehnologija"
+      ],
+      "interestCategories": ["investigative", "realistic"],
+      "competencyCategories": ["technical", "attention_to_detail", "research"],
+      "education": "Diplomski studij prehrambene tehnologije",
+      "salary": "1300–2400 EUR bruto/mj. (okvirno; industrija hrane)",
+      "employmentPerspective": "Vrlo dobar",
+      "keywords": ["hrana", "tehnologija", "kvaliteta"]
+    },
+    {
+      "id": 49,
+      "name": "Nutricionist",
+      "description": "Put: studij nutricionizma; savjetovanje o prehrani u zdravstvu, sportu i industriji.",
+      "facultyPaths": [
+        "PBF (Zagreb) — nutricionizam"
+      ],
+      "interestCategories": ["investigative", "social"],
+      "competencyCategories": ["domain_knowledge", "communication", "research"],
+      "education": "Diplomski studij nutricionizma",
+      "salary": "1200–2200 EUR bruto/mj. (okvirno; privatna praksa varira)",
+      "employmentPerspective": "Dobar",
+      "keywords": ["prehrana", "zdravlje", "savjetovanje"]
+    },
+    {
+      "id": 50,
+      "name": "Biolog / ekolog",
+      "description": "Put: studij biologije ili znanosti o okolišu; laboratorij, terenska istraživanja i zaštita okoliša.",
+      "facultyPaths": [
+        "PMF (Zagreb, Split), Odjel za biologiju (Osijek) — biologija, ekologija"
+      ],
+      "interestCategories": ["investigative"],
+      "competencyCategories": ["research", "analytical", "patience"],
+      "education": "Diplomski studij biologije",
+      "salary": "1200–2200 EUR bruto/mj. (okvirno; znanost i javni sektor)",
+      "employmentPerspective": "Umjeren",
+      "requiresInterestSignals": { "science_lab_interest": 2 },
+      "keywords": ["biologija", "okoliš", "istraživanje"]
+    },
+    {
+      "id": 51,
+      "name": "Matematičar / analitičar podataka",
+      "description": "Put: studij matematike; aktuarstvo, statistika, financijsko modeliranje i podatkovna znanost.",
+      "facultyPaths": [
+        "PMF-MO (Zagreb), PMF (Split), odjeli za matematiku (Osijek, Rijeka)"
+      ],
+      "interestCategories": ["investigative", "conventional"],
+      "competencyCategories": ["numerical", "analytical", "critical_thinking"],
+      "education": "Diplomski studij matematike",
+      "salary": "1800–4000 EUR bruto/mj. (okvirno; IT i financije plaćaju najviše)",
+      "employmentPerspective": "Odličan",
+      "requiresInterestSignals": { "math_interest": 2 },
+      "keywords": ["matematika", "podaci", "statistika"]
+    },
+    {
+      "id": 52,
+      "name": "Menadžer u turizmu i hotelijerstvu",
+      "description": "Put: studij turizma/hotelijerstva; vođenje hotela, destinacija i turističkih proizvoda.",
+      "facultyPaths": [
+        "FMTU (Opatija), EFST (Split), veleučilišta (Dubrovnik, Šibenik) — turizam i hotelijerstvo"
+      ],
+      "interestCategories": ["enterprising", "social"],
+      "competencyCategories": ["customer_service", "organization", "languages"],
+      "education": "Studij turizma ili hotelijerstva",
+      "salary": "1200–2500 EUR bruto/mj. (okvirno; sezona i pozicija)",
+      "employmentPerspective": "Vrlo dobar",
+      "keywords": ["turizam", "hotel", "gosti"]
+    },
+    {
+      "id": 53,
+      "name": "Policijski službenik / kriminalist",
+      "description": "Put: Policijska akademija ili studij kriminalistike; rad u policiji i sigurnosnim službama.",
+      "facultyPaths": [
+        "Visoka policijska škola (Zagreb) — kriminalistika"
+      ],
+      "interestCategories": ["realistic", "social"],
+      "competencyCategories": ["safety", "stress_management", "teamwork"],
+      "education": "Policijska akademija / studij kriminalistike",
+      "salary": "1300–2200 EUR bruto/mj. (okvirno; dodaci na teren i staž)",
+      "employmentPerspective": "Odličan",
+      "requiresInterestSignals": { "security_defense_interest": 2 },
+      "keywords": ["policija", "sigurnost", "kriminalistika"]
+    },
+    {
+      "id": 54,
+      "name": "Vojni časnik",
+      "description": "Put: Hrvatsko vojno učilište (kadetski programi uz stipendiju); vođenje i obrana.",
+      "facultyPaths": [
+        "HVU „Dr. Franjo Tuđman” (Zagreb) — vojno vođenje i upravljanje, vojno inženjerstvo"
+      ],
+      "interestCategories": ["realistic", "conventional"],
+      "competencyCategories": ["safety", "leadership", "work_ethic"],
+      "education": "Kadetski program HVU",
+      "salary": "1400–2500 EUR bruto/mj. (okvirno; čin i dodaci)",
+      "employmentPerspective": "Odličan",
+      "requiresInterestSignals": { "security_defense_interest": 2 },
+      "keywords": ["vojska", "obrana", "vodstvo"]
+    },
+    {
+      "id": 55,
+      "name": "Medicinsko-laboratorijski dijagnostičar",
+      "description": "Put: studij medicinsko-laboratorijske dijagnostike; analize u bolničkim i privatnim laboratorijima.",
+      "facultyPaths": [
+        "ZVU (Zagreb), FZS (Rijeka, Osijek) — medicinsko-laboratorijska dijagnostika"
+      ],
+      "interestCategories": ["investigative", "conventional"],
+      "competencyCategories": ["attention_to_detail", "technical", "analytical"],
+      "education": "Studij laboratorijske dijagnostike",
+      "salary": "1300–2100 EUR bruto/mj. (okvirno; zdravstvo)",
+      "employmentPerspective": "Vrlo dobar",
+      "requiresInterestSignals": { "science_lab_interest": 2 },
+      "keywords": ["laboratorij", "analize", "dijagnostika"]
+    },
+    {
+      "id": 56,
+      "name": "Modni / tekstilni dizajner",
+      "description": "Put: Tekstilno-tehnološki fakultet (dizajn tekstila i mode); kolekcije, industrija i vlastiti brend.",
+      "facultyPaths": [
+        "TTF (Zagreb) — tekstilni i modni dizajn, tekstilna tehnologija"
+      ],
+      "interestCategories": ["artistic", "realistic"],
+      "competencyCategories": ["creativity", "design", "attention_to_detail"],
+      "education": "Studij tekstilnog i modnog dizajna",
+      "salary": "1100–2200 EUR bruto/mj. (okvirno; brend i tržište jako variraju)",
+      "employmentPerspective": "Umjeren",
+      "requiresInterestSignals": { "design_visual_interest": 2 },
+      "keywords": ["moda", "dizajn", "tekstil"]
+    },
+    {
+      "id": 57,
+      "name": "Brodograđevni inženjer",
+      "description": "Put: studij brodogradnje; projektiranje i gradnja brodova i pučinskih konstrukcija.",
+      "facultyPaths": [
+        "FSB (Zagreb), Tehnički fakultet (Rijeka) — brodogradnja"
+      ],
+      "interestCategories": ["realistic", "investigative"],
+      "competencyCategories": ["technical", "analytical", "numerical"],
+      "education": "Diplomski studij brodogradnje",
+      "salary": "1500–2800 EUR bruto/mj. (okvirno; brodogradilišta i projektni uredi)",
+      "employmentPerspective": "Vrlo dobar",
+      "keywords": ["brodogradnja", "konstrukcije", "more"]
     }
   ]
 }

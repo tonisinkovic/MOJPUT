@@ -65,6 +65,12 @@ const INSERT_RETURNING_TABLES = new Set([
   "career_quiz_results",
   "site_feedback",
   "user_saved_faculties",
+  "junior_classes",
+  "junior_class_entries",
+  "junior_user_state",
+  "school_accounts",
+  "school_posts",
+  "school_post_images",
 ]);
 
 function needsReturningId(sql) {
@@ -305,6 +311,45 @@ function migrateSqlite(db) {
     `);
   }
 
+  try {
+    db.prepare("SELECT 1 FROM junior_classes LIMIT 1").get();
+  } catch {
+    db.exec(`
+      CREATE TABLE junior_classes (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        code TEXT NOT NULL UNIQUE,
+        label TEXT,
+        created_at TEXT NOT NULL DEFAULT (datetime('now'))
+      );
+      CREATE TABLE junior_class_entries (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        class_id INTEGER NOT NULL,
+        client_key TEXT NOT NULL,
+        alias TEXT,
+        program_id INTEGER NOT NULL,
+        program_name TEXT NOT NULL,
+        pathway TEXT,
+        city TEXT,
+        created_at TEXT NOT NULL DEFAULT (datetime('now')),
+        UNIQUE(class_id, client_key),
+        FOREIGN KEY (class_id) REFERENCES junior_classes(id)
+      )
+    `);
+  }
+
+  try {
+    db.prepare("SELECT 1 FROM junior_user_state LIMIT 1").get();
+  } catch {
+    db.exec(`
+      CREATE TABLE junior_user_state (
+        user_id INTEGER PRIMARY KEY,
+        payload TEXT NOT NULL,
+        updated_at TEXT NOT NULL DEFAULT (datetime('now')),
+        FOREIGN KEY (user_id) REFERENCES users(id)
+      )
+    `);
+  }
+
   const migrated = db.prepare("SELECT 1 FROM app_meta WHERE key = 'pending_registration_flow_v1'").get();
   if (!migrated) {
     db.prepare("INSERT INTO app_meta (key, value) VALUES ('pending_registration_flow_v1', '1')").run();
@@ -316,6 +361,62 @@ function migrateSqlite(db) {
     db.prepare("INSERT INTO app_meta (key, value) VALUES ('email_verify_otp_v1', '1')").run();
     console.log("[migrate] email_verify_otp_v1 označen bez brisanja korisnika.");
   }
+
+  migrateSchoolCmsSqlite(db);
+}
+
+function migrateSchoolCmsSqlite(db) {
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS school_accounts (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      high_school_id TEXT NOT NULL UNIQUE,
+      user_id INTEGER NOT NULL UNIQUE,
+      slug TEXT NOT NULL UNIQUE,
+      is_active INTEGER NOT NULL DEFAULT 1,
+      must_change_password INTEGER NOT NULL DEFAULT 1,
+      about_text TEXT,
+      logo_url TEXT,
+      cover_url TEXT,
+      extra_website TEXT,
+      created_at TEXT NOT NULL DEFAULT (datetime('now')),
+      updated_at TEXT NOT NULL DEFAULT (datetime('now')),
+      FOREIGN KEY (user_id) REFERENCES users(id)
+    );
+
+    CREATE TABLE IF NOT EXISTS school_posts (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      school_account_id INTEGER NOT NULL,
+      title TEXT NOT NULL,
+      content TEXT NOT NULL DEFAULT '',
+      slug TEXT NOT NULL,
+      category TEXT,
+      link_url TEXT,
+      status TEXT NOT NULL DEFAULT 'DRAFT',
+      published_at TEXT,
+      created_at TEXT NOT NULL DEFAULT (datetime('now')),
+      updated_at TEXT NOT NULL DEFAULT (datetime('now')),
+      FOREIGN KEY (school_account_id) REFERENCES school_accounts(id)
+    );
+
+    CREATE TABLE IF NOT EXISTS school_post_images (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      post_id INTEGER NOT NULL,
+      url TEXT NOT NULL,
+      alt TEXT,
+      sort_order INTEGER NOT NULL DEFAULT 0,
+      created_at TEXT NOT NULL DEFAULT (datetime('now')),
+      FOREIGN KEY (post_id) REFERENCES school_posts(id)
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_school_accounts_slug ON school_accounts(slug);
+    CREATE INDEX IF NOT EXISTS idx_school_accounts_user ON school_accounts(user_id);
+    CREATE INDEX IF NOT EXISTS idx_school_accounts_school ON school_accounts(high_school_id);
+    CREATE INDEX IF NOT EXISTS idx_school_posts_school ON school_posts(school_account_id);
+    CREATE INDEX IF NOT EXISTS idx_school_posts_status ON school_posts(status);
+    CREATE INDEX IF NOT EXISTS idx_school_posts_published ON school_posts(published_at);
+    CREATE INDEX IF NOT EXISTS idx_school_posts_slug ON school_posts(school_account_id, slug);
+    CREATE INDEX IF NOT EXISTS idx_school_post_images_post ON school_post_images(post_id);
+  `);
 }
 
 async function migratePg(pool) {
@@ -405,8 +506,73 @@ async function migratePg(pool) {
       message_count INTEGER NOT NULL DEFAULT 0,
       PRIMARY KEY (user_id, day)
     )`,
+    `CREATE TABLE IF NOT EXISTS junior_classes (
+      id SERIAL PRIMARY KEY,
+      code TEXT NOT NULL UNIQUE,
+      label TEXT,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
+    )`,
+    `CREATE TABLE IF NOT EXISTS junior_class_entries (
+      id SERIAL PRIMARY KEY,
+      class_id INTEGER NOT NULL REFERENCES junior_classes(id),
+      client_key TEXT NOT NULL,
+      alias TEXT,
+      program_id INTEGER NOT NULL,
+      program_name TEXT NOT NULL,
+      pathway TEXT,
+      city TEXT,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      UNIQUE(class_id, client_key)
+    )`,
+    `CREATE TABLE IF NOT EXISTS junior_user_state (
+      user_id INTEGER PRIMARY KEY REFERENCES users(id),
+      payload TEXT NOT NULL,
+      updated_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
+    )`,
+    `CREATE TABLE IF NOT EXISTS school_accounts (
+      id SERIAL PRIMARY KEY,
+      high_school_id TEXT NOT NULL UNIQUE,
+      user_id INTEGER NOT NULL UNIQUE REFERENCES users(id),
+      slug TEXT NOT NULL UNIQUE,
+      is_active INTEGER NOT NULL DEFAULT 1,
+      must_change_password INTEGER NOT NULL DEFAULT 1,
+      about_text TEXT,
+      logo_url TEXT,
+      cover_url TEXT,
+      extra_website TEXT,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      updated_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
+    )`,
+    `CREATE TABLE IF NOT EXISTS school_posts (
+      id SERIAL PRIMARY KEY,
+      school_account_id INTEGER NOT NULL REFERENCES school_accounts(id),
+      title TEXT NOT NULL,
+      content TEXT NOT NULL DEFAULT '',
+      slug TEXT NOT NULL,
+      category TEXT,
+      link_url TEXT,
+      status TEXT NOT NULL DEFAULT 'DRAFT',
+      published_at TEXT,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      updated_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
+    )`,
+    `CREATE TABLE IF NOT EXISTS school_post_images (
+      id SERIAL PRIMARY KEY,
+      post_id INTEGER NOT NULL REFERENCES school_posts(id) ON DELETE CASCADE,
+      url TEXT NOT NULL,
+      alt TEXT,
+      sort_order INTEGER NOT NULL DEFAULT 0,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
+    )`,
   ];
   for (const sql of ddl) await run(sql);
+  await run("CREATE INDEX IF NOT EXISTS idx_school_accounts_slug ON school_accounts(slug)");
+  await run("CREATE INDEX IF NOT EXISTS idx_school_accounts_user ON school_accounts(user_id)");
+  await run("CREATE INDEX IF NOT EXISTS idx_school_accounts_school ON school_accounts(high_school_id)");
+  await run("CREATE INDEX IF NOT EXISTS idx_school_posts_school ON school_posts(school_account_id)");
+  await run("CREATE INDEX IF NOT EXISTS idx_school_posts_status ON school_posts(status)");
+  await run("CREATE INDEX IF NOT EXISTS idx_school_posts_published ON school_posts(published_at)");
+  await run("CREATE INDEX IF NOT EXISTS idx_school_post_images_post ON school_post_images(post_id)");
   await run("ALTER TABLE users ADD COLUMN IF NOT EXISTS user_type TEXT DEFAULT 'srednjoskolac'");
   await run("ALTER TABLE pending_registrations ADD COLUMN IF NOT EXISTS user_type TEXT DEFAULT 'srednjoskolac'");
   await run(
@@ -661,4 +827,5 @@ module.exports = {
   seedForum,
   finalizePendingRegistration,
   getChatDayKey,
+  resolveSqliteDataDir,
 };

@@ -1,0 +1,2672 @@
+{
+  "version": "v2",
+  "durationMinutes": "6–8",
+  "sections": [
+    {
+      "key": "interests",
+      "title": "Što te zanima?",
+      "blurb": "Nema točnog i netočnog odgovora. Odaberi ono što ti je najbliže."
+    },
+    {
+      "key": "workstyle",
+      "title": "Kako voliš učiti?",
+      "blurb": "Odgovori kako ti je stvarno, ne kako treba."
+    },
+    {
+      "key": "subjects",
+      "title": "Još malo o tebi",
+      "blurb": "Još par pitanja da bolje pogodimo što ti leži."
+    },
+    {
+      "key": "context",
+      "title": "O tebi u školi",
+      "blurb": "Ocjene nisu obavezne. Možeš preskočiti."
+    }
+  ],
+  "interestCategories": {
+    "prakticno": "Rad rukama",
+    "istrazivanje": "Istraživanje i pokusi",
+    "kreativa": "Crtanje i stvaranje",
+    "ljudi": "Rad s ljudima",
+    "organizacija": "Organiziranje",
+    "red": "Red i preciznost",
+    "jezici": "Jezici i svijet"
+  },
+  "subjectCategories": {
+    "matematika": "Matematika",
+    "hrvatski": "Hrvatski",
+    "jezici": "Strani jezici",
+    "biologija": "Biologija",
+    "kemija_fizika": "Kemija i fizika",
+    "informatika": "Informatika",
+    "likovni": "Likovni",
+    "glazbeni": "Glazbeni",
+    "tjelesni": "Tjelesni",
+    "drustveni": "Povijest i geografija"
+  },
+  "traitLabels": {
+    "interests": {
+      "technology": "Računala i tehnika",
+      "mathematics": "Matematika",
+      "science": "Priroda i pokusi",
+      "people": "Pomaganje ljudima",
+      "languages": "Jezici",
+      "society": "Društvo i povijest",
+      "economy": "Posao i organizacija",
+      "art_design": "Crtanje i dizajn",
+      "practical": "Rad rukama",
+      "nature": "Priroda i životinje",
+      "sport": "Sport",
+      "media": "Video, tekst i objave"
+    },
+    "thinking": {
+      "analytical": "Rješavanje zadataka",
+      "practical": "Napraviti nešto konkretno",
+      "creative": "Smisliti nešto novo",
+      "verbal": "Pričanje i pisanje",
+      "social": "Rad s ljudima",
+      "organizational": "Složiti plan",
+      "technical": "Kako stvari rade",
+      "investigative": "Saznati zašto"
+    },
+    "learning": {
+      "theory": "Učenje iz knjiga",
+      "practical": "Učenje radom",
+      "project": "Projekti",
+      "experiment": "Isprobavanje",
+      "independent": "Samostalno",
+      "group": "S ekipom",
+      "repetition": "Vježbanje",
+      "reading": "Čitanje i pisanje",
+      "problems": "Zadaci"
+    }
+  },
+  "questions": [
+    {
+      "id": 1,
+      "format": "choice",
+      "pool": "core",
+      "section": "interests",
+      "prompt": "Dobiješ zadatak koji ti je nov. Što ti je najzanimljivije?",
+      "options": [
+        {
+          "id": "understand",
+          "label": "Shvatiti kako to radi",
+          "effects": {
+            "thinking": {
+              "analytical": 2,
+              "investigative": 2
+            },
+            "interests": {
+              "science": 1,
+              "technology": 1
+            }
+          }
+        },
+        {
+          "id": "invent",
+          "label": "Smisliti nešto potpuno novo",
+          "effects": {
+            "thinking": {
+              "creative": 3
+            },
+            "interests": {
+              "art_design": 1
+            },
+            "learning": {
+              "project": 2
+            }
+          }
+        },
+        {
+          "id": "experiment",
+          "label": "Odmah krenuti isprobavati",
+          "effects": {
+            "thinking": {
+              "practical": 2,
+              "technical": 1
+            },
+            "learning": {
+              "experiment": 2,
+              "practical": 2
+            },
+            "theoryPractice": 18
+          }
+        },
+        {
+          "id": "team",
+          "label": "Dogovoriti se s drugima tko što radi",
+          "effects": {
+            "thinking": {
+              "social": 2,
+              "organizational": 2
+            },
+            "learning": {
+              "group": 2
+            },
+            "interests": {
+              "people": 1
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "format": "choice",
+      "pool": "core",
+      "section": "interests",
+      "prompt": "Što bi ti cijelo popodne najradije?",
+      "options": [
+        {
+          "id": "app",
+          "label": "Napraviti malu igru ili aplikaciju",
+          "effects": {
+            "interests": {
+              "technology": 3,
+              "mathematics": 1
+            },
+            "thinking": {
+              "technical": 2,
+              "analytical": 1
+            },
+            "environment": {
+              "computer": 2
+            },
+            "signals": {
+              "tech_computers": 5
+            }
+          }
+        },
+        {
+          "id": "poster",
+          "label": "Napraviti plakat ili crtež",
+          "effects": {
+            "interests": {
+              "art_design": 3,
+              "media": 1
+            },
+            "thinking": {
+              "creative": 2
+            },
+            "environment": {
+              "studio": 2
+            },
+            "signals": {
+              "art_visual": 5
+            }
+          }
+        },
+        {
+          "id": "help",
+          "label": "Pomoći nekome s nekim problemom",
+          "effects": {
+            "interests": {
+              "people": 3
+            },
+            "thinking": {
+              "social": 2
+            },
+            "values": {
+              "helping": 2
+            },
+            "signals": {
+              "helping_people": 5
+            }
+          }
+        },
+        {
+          "id": "why",
+          "label": "Saznati zašto se nešto događa u prirodi",
+          "effects": {
+            "interests": {
+              "science": 3
+            },
+            "thinking": {
+              "investigative": 3,
+              "analytical": 1
+            },
+            "signals": {
+              "science_experiments": 5
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "format": "scale",
+      "pool": "core",
+      "section": "workstyle",
+      "prompt": "Kako ti ide učenje iz knjige?",
+      "scaleMinLabel": "Baš mi ne leži",
+      "scaleMaxLabel": "To mi jako leži",
+      "effects": {
+        "learning": {
+          "theory": 2,
+          "reading": 2
+        },
+        "tolerance": {
+          "reading": 2,
+          "concentration": 1
+        }
+      }
+    },
+    {
+      "id": 4,
+      "format": "choice",
+      "pool": "core",
+      "section": "interests",
+      "prompt": "Pokvari se bicikl. Što prvo radiš?",
+      "options": [
+        {
+          "id": "how",
+          "label": "Pogledati koji dio ne radi i zašto",
+          "effects": {
+            "thinking": {
+              "analytical": 2,
+              "technical": 2
+            },
+            "interests": {
+              "technology": 1,
+              "practical": 1
+            }
+          }
+        },
+        {
+          "id": "fix",
+          "label": "Uzeti alat i pokušati popraviti",
+          "effects": {
+            "interests": {
+              "practical": 3
+            },
+            "thinking": {
+              "practical": 2
+            },
+            "environment": {
+              "workshop": 2
+            },
+            "theoryPractice": 20,
+            "signals": {
+              "hands_on_craft": 5
+            }
+          }
+        },
+        {
+          "id": "look",
+          "label": "Naći upute ili video i pratiti",
+          "effects": {
+            "learning": {
+              "independent": 2,
+              "repetition": 1
+            },
+            "thinking": {
+              "organizational": 1
+            }
+          }
+        },
+        {
+          "id": "ask",
+          "label": "Pitati nekoga tko se u to razumije",
+          "effects": {
+            "thinking": {
+              "social": 2
+            },
+            "learning": {
+              "group": 1
+            },
+            "interests": {
+              "people": 1
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "format": "choice",
+      "pool": "core",
+      "section": "interests",
+      "prompt": "Treba organizirati školsku zabavu. Koji dio bi ti uzeo?",
+      "options": [
+        {
+          "id": "plan",
+          "label": "Napraviti raspored i tko što radi",
+          "effects": {
+            "thinking": {
+              "organizational": 3
+            },
+            "interests": {
+              "economy": 1,
+              "society": 1
+            },
+            "environment": {
+              "office": 1
+            }
+          }
+        },
+        {
+          "id": "look",
+          "label": "Smisliti izgled, glazbu ili ukras",
+          "effects": {
+            "interests": {
+              "art_design": 2,
+              "media": 2
+            },
+            "thinking": {
+              "creative": 2
+            },
+            "signals": {
+              "art_visual": 4
+            }
+          }
+        },
+        {
+          "id": "tech",
+          "label": "Srediti zvuk, slike ili tehniku",
+          "effects": {
+            "interests": {
+              "technology": 2,
+              "media": 1
+            },
+            "thinking": {
+              "technical": 2
+            },
+            "signals": {
+              "tech_computers": 4
+            }
+          }
+        },
+        {
+          "id": "people",
+          "label": "Dogovarati se s ljudima i sve držati na okupu",
+          "effects": {
+            "interests": {
+              "people": 2,
+              "society": 1
+            },
+            "thinking": {
+              "social": 2
+            },
+            "tolerance": {
+              "people": 2,
+              "publicSpeaking": 1
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "format": "choice",
+      "pool": "core",
+      "section": "workstyle",
+      "prompt": "Dva su ti izbora za školski projekt. Što biraš?",
+      "hint": "Nema boljeg odgovora — biraj kako ti stvarno misliš.",
+      "options": [
+        {
+          "id": "interest_math",
+          "label": "Zanimljivu temu, čak i ako ima dosta matematike",
+          "effects": {
+            "interests": {
+              "mathematics": 2
+            },
+            "tolerance": {
+              "math": 3
+            },
+            "values": {
+              "advancement": 1
+            },
+            "signals": {
+              "numbers_data": 4
+            }
+          }
+        },
+        {
+          "id": "mix",
+          "label": "Nešto zanimljivo, ali bez previše matematike",
+          "effects": {
+            "tolerance": {
+              "math": 1
+            },
+            "thinking": {
+              "practical": 1
+            }
+          }
+        },
+        {
+          "id": "avoid_math",
+          "label": "Manje matematike, čak i ako je tema dosadnija",
+          "effects": {
+            "tolerance": {
+              "math": -2
+            },
+            "interests": {
+              "mathematics": -1
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": 7,
+      "format": "choice",
+      "pool": "core",
+      "section": "interests",
+      "prompt": "Dobiješ 1000 € za školski projekt. Što radiš s tim?",
+      "options": [
+        {
+          "id": "app",
+          "label": "Aplikaciju ili neki digitalni alat",
+          "effects": {
+            "interests": {
+              "technology": 3
+            },
+            "learning": {
+              "project": 2
+            },
+            "signals": {
+              "tech_computers": 5
+            }
+          }
+        },
+        {
+          "id": "event",
+          "label": "Događaj za razred ili školu",
+          "effects": {
+            "interests": {
+              "people": 2,
+              "society": 2
+            },
+            "thinking": {
+              "organizational": 2
+            }
+          }
+        },
+        {
+          "id": "product",
+          "label": "Proizvod koji se može prodati",
+          "effects": {
+            "interests": {
+              "economy": 3,
+              "practical": 1
+            },
+            "values": {
+              "entrepreneurship": 3
+            },
+            "signals": {
+              "business_entrepreneur": 5
+            }
+          }
+        },
+        {
+          "id": "research",
+          "label": "Istraživanje i prikaz rezultata",
+          "effects": {
+            "interests": {
+              "science": 2,
+              "society": 1
+            },
+            "thinking": {
+              "investigative": 2
+            },
+            "learning": {
+              "theory": 1,
+              "experiment": 1
+            },
+            "signals": {
+              "science_experiments": 4
+            }
+          }
+        },
+        {
+          "id": "art",
+          "label": "Film, izložbu ili dizajn",
+          "effects": {
+            "interests": {
+              "art_design": 2,
+              "media": 2
+            },
+            "thinking": {
+              "creative": 2
+            },
+            "signals": {
+              "art_visual": 4
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": 8,
+      "format": "scale",
+      "pool": "core",
+      "section": "workstyle",
+      "prompt": "Kako ti stoji dan u kojem stalno radiš s ljudima?",
+      "scaleMinLabel": "Više volim biti sam",
+      "scaleMaxLabel": "To mi jako odgovara",
+      "effects": {
+        "interests": {
+          "people": 2
+        },
+        "thinking": {
+          "social": 2
+        },
+        "tolerance": {
+          "people": 3
+        },
+        "environment": {
+          "people": 2
+        }
+      }
+    },
+    {
+      "id": 9,
+      "format": "choice",
+      "pool": "core",
+      "section": "interests",
+      "prompt": "U pokusu nešto ispadne drugačije nego što ste očekivali. Što ti je najzanimljivije?",
+      "options": [
+        {
+          "id": "why",
+          "label": "Saznati zašto se to dogodilo",
+          "effects": {
+            "thinking": {
+              "investigative": 3,
+              "analytical": 2
+            },
+            "interests": {
+              "science": 2
+            },
+            "environment": {
+              "lab": 2
+            },
+            "signals": {
+              "science_experiments": 5
+            }
+          }
+        },
+        {
+          "id": "repeat",
+          "label": "Ponoviti pokus pažljivo, korak po korak",
+          "effects": {
+            "learning": {
+              "experiment": 2,
+              "repetition": 2
+            },
+            "tolerance": {
+              "precision": 2
+            }
+          }
+        },
+        {
+          "id": "write",
+          "label": "Zapisati što se vidi i objasniti",
+          "effects": {
+            "learning": {
+              "reading": 2
+            },
+            "thinking": {
+              "verbal": 2
+            },
+            "tolerance": {
+              "reading": 1
+            }
+          }
+        },
+        {
+          "id": "people",
+          "label": "Razgovarati s ekipom što dalje",
+          "effects": {
+            "learning": {
+              "group": 2
+            },
+            "thinking": {
+              "social": 1
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": 10,
+      "format": "choice",
+      "pool": "core",
+      "section": "interests",
+      "prompt": "Netko iz razreda ne razumije gradivo. Kako mu najradije pomažeš?",
+      "options": [
+        {
+          "id": "explain",
+          "label": "Objasniti svojim riječima dok ne sjedne",
+          "effects": {
+            "thinking": {
+              "verbal": 2,
+              "social": 1
+            },
+            "interests": {
+              "people": 2
+            },
+            "signals": {
+              "helping_people": 4
+            }
+          }
+        },
+        {
+          "id": "example",
+          "label": "Zajedno riješiti jedan zadatak",
+          "effects": {
+            "learning": {
+              "problems": 2
+            },
+            "thinking": {
+              "practical": 1
+            },
+            "interests": {
+              "people": 1
+            }
+          }
+        },
+        {
+          "id": "note",
+          "label": "Posuditi bilješke ili napraviti kratki sažetak",
+          "effects": {
+            "learning": {
+              "reading": 1,
+              "independent": 1
+            },
+            "thinking": {
+              "organizational": 1
+            }
+          }
+        },
+        {
+          "id": "space",
+          "label": "Neka svatko uči na svoj način",
+          "effects": {
+            "learning": {
+              "independent": 2
+            },
+            "tolerance": {
+              "people": -1
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": 11,
+      "format": "scale",
+      "pool": "core",
+      "section": "workstyle",
+      "prompt": "Koliko ti leži praviti stvari vlastitim rukama?",
+      "scaleMinLabel": "Baš mi ne leži",
+      "scaleMaxLabel": "To mi je najdraže",
+      "signalKey": "hands_on_craft",
+      "effects": {
+        "interests": {
+          "practical": 2
+        },
+        "learning": {
+          "practical": 2
+        },
+        "thinking": {
+          "practical": 1,
+          "technical": 1
+        },
+        "environment": {
+          "workshop": 2
+        },
+        "theoryPractice": 12
+      }
+    },
+    {
+      "id": 12,
+      "format": "choice",
+      "pool": "core",
+      "section": "interests",
+      "prompt": "Treba napraviti objave na Instagramu za neki novi proizvod. Što prvo radiš?",
+      "options": [
+        {
+          "id": "visual",
+          "label": "Složiti kako će izgledati",
+          "effects": {
+            "interests": {
+              "art_design": 2,
+              "media": 2
+            },
+            "thinking": {
+              "creative": 2
+            },
+            "signals": {
+              "art_visual": 4
+            }
+          }
+        },
+        {
+          "id": "text",
+          "label": "Napisati tekst koji će privući pažnju",
+          "effects": {
+            "interests": {
+              "media": 2,
+              "languages": 2
+            },
+            "thinking": {
+              "verbal": 2
+            }
+          }
+        },
+        {
+          "id": "data",
+          "label": "Pogledati što već radi kod drugih",
+          "effects": {
+            "thinking": {
+              "analytical": 2
+            },
+            "interests": {
+              "economy": 1,
+              "mathematics": 1
+            },
+            "signals": {
+              "numbers_data": 4
+            }
+          }
+        },
+        {
+          "id": "talk",
+          "label": "Pitati ljude što im se sviđa",
+          "effects": {
+            "interests": {
+              "people": 2,
+              "society": 1
+            },
+            "thinking": {
+              "social": 2
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": 13,
+      "format": "choice",
+      "pool": "core",
+      "section": "interests",
+      "prompt": "Dobiješ novi telefon ili uređaj koji ne znaš koristiti. Što najčešće napraviš?",
+      "options": [
+        {
+          "id": "tinker",
+          "label": "Klikam i isprobavam dok ne shvatim",
+          "effects": {
+            "interests": {
+              "technology": 2
+            },
+            "learning": {
+              "experiment": 2
+            },
+            "thinking": {
+              "technical": 2
+            },
+            "signals": {
+              "tech_computers": 4
+            }
+          }
+        },
+        {
+          "id": "manual",
+          "label": "Pročitam upute ili potražim objašnjenje",
+          "effects": {
+            "learning": {
+              "reading": 2,
+              "theory": 1
+            },
+            "thinking": {
+              "analytical": 1
+            }
+          }
+        },
+        {
+          "id": "friend",
+          "label": "Pitam prijatelja koji već zna",
+          "effects": {
+            "thinking": {
+              "social": 1
+            },
+            "learning": {
+              "group": 1
+            }
+          }
+        },
+        {
+          "id": "later",
+          "label": "Ostavim dok mi stvarno ne zatreba",
+          "effects": {
+            "interests": {
+              "technology": -1
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": 14,
+      "format": "scale",
+      "pool": "core",
+      "section": "interests",
+      "prompt": "Koliko ti odgovara biti vani — u prirodi, na terenu, sa životinjama?",
+      "scaleMinLabel": "Više volim unutra",
+      "scaleMaxLabel": "To mi jako odgovara",
+      "signalKey": "plants_outdoor",
+      "effects": {
+        "interests": {
+          "nature": 3,
+          "sport": 1
+        },
+        "environment": {
+          "nature": 2,
+          "field": 2
+        }
+      }
+    },
+    {
+      "id": 15,
+      "format": "choice",
+      "pool": "core",
+      "section": "workstyle",
+      "prompt": "Kad zamisliš posao jednog dana, što ti je važnije?",
+      "hint": "Nijedan odgovor nije bolji od drugog.",
+      "options": [
+        {
+          "id": "security",
+          "label": "Znati da ima posla i da je sve predvidljivo",
+          "effects": {
+            "values": {
+              "security": 3,
+              "stableHours": 2
+            }
+          }
+        },
+        {
+          "id": "pay",
+          "label": "Mogućnost dobre zarade",
+          "effects": {
+            "values": {
+              "salary": 3,
+              "advancement": 1
+            }
+          }
+        },
+        {
+          "id": "create",
+          "label": "Smisliti nešto novo i imati slobodu",
+          "effects": {
+            "values": {
+              "creativity": 2,
+              "freedom": 2
+            },
+            "interests": {
+              "art_design": 1
+            }
+          }
+        },
+        {
+          "id": "help",
+          "label": "Pomagati ljudima",
+          "effects": {
+            "values": {
+              "helping": 3,
+              "impact": 2
+            },
+            "interests": {
+              "people": 1
+            },
+            "signals": {
+              "helping_people": 4
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": 16,
+      "format": "choice",
+      "pool": "core",
+      "section": "workstyle",
+      "prompt": "Kad učiš nešto novo, što ti više odgovara?",
+      "options": [
+        {
+          "id": "solo",
+          "label": "Sam, svojim tempom",
+          "effects": {
+            "learning": {
+              "independent": 3
+            },
+            "tolerance": {
+              "people": -1
+            }
+          }
+        },
+        {
+          "id": "group",
+          "label": "U grupi, uz razgovor",
+          "effects": {
+            "learning": {
+              "group": 3
+            },
+            "thinking": {
+              "social": 1
+            }
+          }
+        },
+        {
+          "id": "tasks",
+          "label": "Kroz zadatke koje mogu riješiti",
+          "effects": {
+            "learning": {
+              "problems": 3
+            },
+            "thinking": {
+              "analytical": 1
+            }
+          }
+        },
+        {
+          "id": "make",
+          "label": "Kad odmah nešto napravim, ne samo pročitam",
+          "effects": {
+            "learning": {
+              "practical": 2,
+              "project": 1
+            },
+            "theoryPractice": 14
+          }
+        }
+      ]
+    },
+    {
+      "id": 20,
+      "format": "choice",
+      "pool": "health",
+      "section": "subjects",
+      "prompt": "Zamisli da pomažeš nekome kad mu nije dobro. Što bi ti više odgovaralo?",
+      "options": [
+        {
+          "id": "care",
+          "label": "Biti uz osobu i brinuti se kako joj je",
+          "effects": {
+            "interests": {
+              "people": 3
+            },
+            "environment": {
+              "health": 3,
+              "people": 2
+            },
+            "signals": {
+              "health_medicine": 5,
+              "helping_people": 5
+            }
+          }
+        },
+        {
+          "id": "move",
+          "label": "Pomoći da se opet kreće ili vježba",
+          "effects": {
+            "interests": {
+              "sport": 2,
+              "people": 2,
+              "science": 1
+            },
+            "environment": {
+              "health": 2
+            },
+            "signals": {
+              "health_medicine": 4,
+              "sport_active": 4
+            }
+          }
+        },
+        {
+          "id": "lab",
+          "label": "Raditi s uzorcima, mjerenjima ili lijekovima",
+          "effects": {
+            "interests": {
+              "science": 3
+            },
+            "environment": {
+              "lab": 3
+            },
+            "tolerance": {
+              "precision": 2,
+              "people": -1
+            },
+            "signals": {
+              "health_medicine": 4,
+              "science_experiments": 4
+            }
+          }
+        },
+        {
+          "id": "animals",
+          "label": "Pomagati životinjama",
+          "effects": {
+            "interests": {
+              "nature": 3,
+              "people": 1,
+              "science": 1
+            },
+            "environment": {
+              "field": 1,
+              "lab": 1
+            },
+            "signals": {
+              "animals_nature": 5,
+              "health_medicine": 3
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": 21,
+      "format": "choice",
+      "pool": "health",
+      "section": "subjects",
+      "prompt": "Što ti više leži kao običan dan?",
+      "options": [
+        {
+          "id": "hospital",
+          "label": "Rad u bolnici ili ambulanti, s ljudima",
+          "effects": {
+            "environment": {
+              "health": 3,
+              "dynamic": 1
+            },
+            "tolerance": {
+              "responsibility": 2,
+              "pressure": 1,
+              "people": 2
+            },
+            "signals": {
+              "health_medicine": 5
+            }
+          }
+        },
+        {
+          "id": "class",
+          "label": "Učionica i laboratorij — najprije dobro naučiti biologiju i kemiju",
+          "effects": {
+            "environment": {
+              "classroom": 2,
+              "lab": 2
+            },
+            "interests": {
+              "science": 2
+            },
+            "learning": {
+              "theory": 2
+            },
+            "postSchool": {
+              "faculty": 2
+            }
+          }
+        },
+        {
+          "id": "both",
+          "label": "I učiti, i vidjeti to uživo",
+          "effects": {
+            "learning": {
+              "theory": 1,
+              "practical": 1
+            },
+            "interests": {
+              "science": 1,
+              "people": 1
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": 22,
+      "format": "choice",
+      "pool": "health",
+      "section": "subjects",
+      "prompt": "Ako te zanima kako pomoći kad netko nije dobro, što ti više leži?",
+      "options": [
+        {
+          "id": "people_heavy",
+          "label": "Stalno biti uz ljude, čak i kad je naporno",
+          "effects": {
+            "tolerance": {
+              "people": 3,
+              "responsibility": 2
+            },
+            "interests": {
+              "people": 2
+            },
+            "signals": {
+              "helping_people": 5
+            }
+          }
+        },
+        {
+          "id": "less_people",
+          "label": "Više raditi u laboratoriju, s manje razgovora",
+          "effects": {
+            "interests": {
+              "science": 2
+            },
+            "tolerance": {
+              "people": -1,
+              "precision": 2
+            },
+            "environment": {
+              "lab": 2
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": 23,
+      "format": "choice",
+      "pool": "health",
+      "section": "subjects",
+      "prompt": "Što ti više leži?",
+      "options": [
+        {
+          "id": "facts",
+          "label": "Naučiti točne nazive, korake i pravila",
+          "effects": {
+            "learning": {
+              "repetition": 2,
+              "theory": 1
+            },
+            "tolerance": {
+              "memorizing": 2
+            }
+          }
+        },
+        {
+          "id": "practice",
+          "label": "Vježbati postupke dok ne sjednu u ruke",
+          "effects": {
+            "learning": {
+              "practical": 2
+            },
+            "theoryPractice": 12
+          }
+        },
+        {
+          "id": "understand",
+          "label": "Razumjeti zašto tijelo ili lijek tako djeluje",
+          "effects": {
+            "thinking": {
+              "investigative": 2,
+              "analytical": 1
+            },
+            "interests": {
+              "science": 2
+            },
+            "postSchool": {
+              "faculty": 1
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": 30,
+      "format": "choice",
+      "pool": "tech",
+      "section": "subjects",
+      "prompt": "Što te više vuče?",
+      "options": [
+        {
+          "id": "code",
+          "label": "Programiranje, aplikacije i računala",
+          "effects": {
+            "interests": {
+              "technology": 3,
+              "mathematics": 1
+            },
+            "environment": {
+              "computer": 3
+            },
+            "signals": {
+              "tech_computers": 5
+            }
+          }
+        },
+        {
+          "id": "electro",
+          "label": "Struja, sklopovi i uređaji",
+          "effects": {
+            "interests": {
+              "technology": 2,
+              "practical": 1,
+              "science": 1
+            },
+            "thinking": {
+              "technical": 3
+            },
+            "environment": {
+              "workshop": 1,
+              "lab": 1
+            }
+          }
+        },
+        {
+          "id": "machines",
+          "label": "Strojevi, motori i kako se stvari miču",
+          "effects": {
+            "interests": {
+              "practical": 2,
+              "technology": 1
+            },
+            "thinking": {
+              "technical": 2,
+              "practical": 1
+            },
+            "environment": {
+              "workshop": 2
+            },
+            "signals": {
+              "hands_on_craft": 4
+            }
+          }
+        },
+        {
+          "id": "design",
+          "label": "Nacrtati ili složiti kako nešto izgleda",
+          "effects": {
+            "interests": {
+              "art_design": 2,
+              "technology": 1
+            },
+            "thinking": {
+              "creative": 2
+            },
+            "signals": {
+              "art_visual": 4
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": 31,
+      "format": "choice",
+      "pool": "tech",
+      "section": "subjects",
+      "prompt": "Gdje ti više odgovara biti veći dio dana?",
+      "options": [
+        {
+          "id": "computer",
+          "label": "Za računalom",
+          "effects": {
+            "environment": {
+              "computer": 3,
+              "office": 1
+            },
+            "interests": {
+              "technology": 2
+            }
+          }
+        },
+        {
+          "id": "workshop",
+          "label": "U radionici, uz alat i dijelove",
+          "effects": {
+            "environment": {
+              "workshop": 3
+            },
+            "interests": {
+              "practical": 2
+            },
+            "theoryPractice": 16,
+            "signals": {
+              "hands_on_craft": 4
+            }
+          }
+        },
+        {
+          "id": "mix",
+          "label": "Pola nacrta i računala, pola rada rukama",
+          "effects": {
+            "environment": {
+              "computer": 1,
+              "workshop": 1
+            },
+            "learning": {
+              "theory": 1,
+              "practical": 1
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": 32,
+      "format": "choice",
+      "pool": "tech",
+      "section": "subjects",
+      "prompt": "Da shvatiš kako nešto radi, često treba matematika. Kako ti to zvuči?",
+      "options": [
+        {
+          "id": "ok",
+          "label": "U redu — tako bolje shvatim kako stvari rade",
+          "effects": {
+            "tolerance": {
+              "math": 3
+            },
+            "interests": {
+              "mathematics": 2,
+              "science": 1
+            },
+            "signals": {
+              "numbers_data": 4
+            }
+          }
+        },
+        {
+          "id": "if_needed",
+          "label": "Podnijet ću je ako me tema stvarno zanima",
+          "effects": {
+            "tolerance": {
+              "math": 1
+            },
+            "values": {
+              "advancement": 1
+            }
+          }
+        },
+        {
+          "id": "prefer_less",
+          "label": "Radije bih smjer u kojem matematike ima manje",
+          "effects": {
+            "tolerance": {
+              "math": -2
+            },
+            "interests": {
+              "practical": 1
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": 33,
+      "format": "choice",
+      "pool": "tech",
+      "section": "subjects",
+      "prompt": "Što ti je bliže?",
+      "options": [
+        {
+          "id": "theory",
+          "label": "Prvo razumjeti pravila, pa tek onda graditi",
+          "effects": {
+            "learning": {
+              "theory": 2
+            },
+            "thinking": {
+              "analytical": 2
+            },
+            "theoryPractice": -16,
+            "postSchool": {
+              "faculty": 1
+            }
+          }
+        },
+        {
+          "id": "build",
+          "label": "Graditi i popravljati, a pravila učiti usput",
+          "effects": {
+            "learning": {
+              "practical": 2
+            },
+            "thinking": {
+              "practical": 2
+            },
+            "theoryPractice": 18
+          }
+        }
+      ]
+    },
+    {
+      "id": 34,
+      "format": "choice",
+      "pool": "peoplebiz",
+      "section": "subjects",
+      "prompt": "Što ti je zanimljivije?",
+      "options": [
+        {
+          "id": "shop",
+          "label": "Smisliti kako nešto prodati ili organizirati",
+          "effects": {
+            "interests": {
+              "economy": 3
+            },
+            "thinking": {
+              "organizational": 2
+            },
+            "signals": {
+              "business_entrepreneur": 5
+            }
+          }
+        },
+        {
+          "id": "guest",
+          "label": "Raditi s gostima, putovanjima ili turizmom",
+          "effects": {
+            "interests": {
+              "people": 2,
+              "languages": 2
+            },
+            "thinking": {
+              "social": 2
+            },
+            "signals": {
+              "languages_travel": 5
+            }
+          }
+        },
+        {
+          "id": "office",
+          "label": "Srediti papire, raspored i da sve bude točno",
+          "effects": {
+            "thinking": {
+              "organizational": 3
+            },
+            "interests": {
+              "economy": 1
+            },
+            "tolerance": {
+              "precision": 2
+            }
+          }
+        },
+        {
+          "id": "move",
+          "label": "Organizirati kako stvari ili ljudi stignu na mjesto",
+          "effects": {
+            "thinking": {
+              "organizational": 2
+            },
+            "interests": {
+              "practical": 1,
+              "economy": 1
+            },
+            "signals": {
+              "logistics_transport": 5
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": 35,
+      "format": "choice",
+      "pool": "peoplebiz",
+      "section": "subjects",
+      "prompt": "Gdje ti više odgovara biti?",
+      "options": [
+        {
+          "id": "office",
+          "label": "U uredu, uz računalo i dokumente",
+          "effects": {
+            "environment": {
+              "office": 3,
+              "computer": 1
+            },
+            "thinking": {
+              "organizational": 2
+            }
+          }
+        },
+        {
+          "id": "hotel",
+          "label": "U hotelu, restoranu ili s gostima",
+          "effects": {
+            "interests": {
+              "people": 2,
+              "languages": 1
+            },
+            "environment": {
+              "people": 2,
+              "dynamic": 2
+            },
+            "signals": {
+              "languages_travel": 4
+            }
+          }
+        },
+        {
+          "id": "field",
+          "label": "Na terenu — dostava, skladište, organizacija",
+          "effects": {
+            "environment": {
+              "field": 2,
+              "dynamic": 2
+            },
+            "thinking": {
+              "organizational": 2
+            },
+            "signals": {
+              "logistics_transport": 5
+            }
+          }
+        },
+        {
+          "id": "own",
+          "label": "Smisliti nešto svoje, kao mali posao",
+          "effects": {
+            "values": {
+              "entrepreneurship": 3,
+              "freedom": 2
+            },
+            "interests": {
+              "economy": 2
+            },
+            "signals": {
+              "business_entrepreneur": 5
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": 36,
+      "format": "choice",
+      "pool": "peoplebiz",
+      "section": "subjects",
+      "prompt": "Što ti je bliže?",
+      "options": [
+        {
+          "id": "sport",
+          "label": "Sport, trening i kretanje",
+          "effects": {
+            "interests": {
+              "sport": 3
+            },
+            "environment": {
+              "dynamic": 2,
+              "field": 1
+            },
+            "signals": {
+              "sport_active": 5
+            }
+          }
+        },
+        {
+          "id": "food",
+          "label": "Hrana, kuhinja, gosti za stolom",
+          "effects": {
+            "interests": {
+              "practical": 2,
+              "people": 1
+            },
+            "signals": {
+              "cooking_food": 5
+            }
+          }
+        },
+        {
+          "id": "numbers",
+          "label": "Brojke, novac, tablica",
+          "effects": {
+            "interests": {
+              "mathematics": 2,
+              "economy": 2
+            },
+            "signals": {
+              "numbers_data": 5,
+              "business_entrepreneur": 3
+            }
+          }
+        },
+        {
+          "id": "talk",
+          "label": "Razgovor, dogovor, jezici",
+          "effects": {
+            "interests": {
+              "languages": 2,
+              "people": 2
+            },
+            "thinking": {
+              "verbal": 2,
+              "social": 1
+            },
+            "signals": {
+              "languages_travel": 4
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": 37,
+      "format": "choice",
+      "pool": "peoplebiz",
+      "section": "subjects",
+      "prompt": "Kad zamisliš posao, što ti više leži?",
+      "options": [
+        {
+          "id": "plan",
+          "label": "Napraviti plan i pratiti da se ostvari",
+          "effects": {
+            "thinking": {
+              "organizational": 3
+            },
+            "interests": {
+              "economy": 1
+            }
+          }
+        },
+        {
+          "id": "serve",
+          "label": "Pomagati gostima ili kupcima",
+          "effects": {
+            "interests": {
+              "people": 3
+            },
+            "thinking": {
+              "social": 2
+            },
+            "signals": {
+              "helping_people": 3,
+              "languages_travel": 3
+            }
+          }
+        },
+        {
+          "id": "sportjob",
+          "label": "Raditi oko sporta ili kretanja",
+          "effects": {
+            "interests": {
+              "sport": 3,
+              "people": 1
+            },
+            "signals": {
+              "sport_active": 5
+            }
+          }
+        },
+        {
+          "id": "kitchen",
+          "label": "Pripremati hranu ili posluživati za stolom",
+          "effects": {
+            "interests": {
+              "practical": 2,
+              "people": 1
+            },
+            "signals": {
+              "cooking_food": 4
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": 40,
+      "format": "choice",
+      "pool": "creative",
+      "section": "subjects",
+      "prompt": "Kad nešto stvaraš, što ti je najbliže?",
+      "options": [
+        {
+          "id": "visual",
+          "label": "Crtanje, dizajn, fotografija",
+          "effects": {
+            "interests": {
+              "art_design": 3
+            },
+            "environment": {
+              "studio": 2
+            },
+            "signals": {
+              "art_visual": 5
+            }
+          }
+        },
+        {
+          "id": "music",
+          "label": "Glazba, ritam, nastup",
+          "effects": {
+            "interests": {
+              "art_design": 1,
+              "media": 1
+            },
+            "environment": {
+              "studio": 1
+            },
+            "tolerance": {
+              "publicSpeaking": 2
+            },
+            "signals": {
+              "music_performance": 5
+            }
+          }
+        },
+        {
+          "id": "media",
+          "label": "Video, web i slike za ekran",
+          "effects": {
+            "interests": {
+              "media": 3,
+              "art_design": 1,
+              "technology": 1
+            },
+            "environment": {
+              "computer": 2
+            },
+            "signals": {
+              "art_visual": 4
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": 41,
+      "format": "choice",
+      "pool": "creative",
+      "section": "subjects",
+      "prompt": "Želiš li vježbati crtanje, glazbu ili dizajn da pokažeš što znaš?",
+      "options": [
+        {
+          "id": "yes",
+          "label": "Da — to mi je važno i želim vježbati",
+          "effects": {
+            "values": {
+              "creativity": 2
+            },
+            "tolerance": {
+              "pressure": 1
+            },
+            "signals": {
+              "art_visual": 4,
+              "music_performance": 3
+            }
+          }
+        },
+        {
+          "id": "maybe",
+          "label": "Volim stvarati, ali ne nužno za prijemni",
+          "effects": {
+            "interests": {
+              "art_design": 1,
+              "media": 1
+            }
+          }
+        },
+        {
+          "id": "no",
+          "label": "To mi trenutno nije privlačno",
+          "effects": {
+            "signals": {
+              "art_visual": 2,
+              "music_performance": 1
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": 42,
+      "format": "choice",
+      "pool": "creative",
+      "section": "subjects",
+      "prompt": "Gdje ti je najdraže stvarati?",
+      "options": [
+        {
+          "id": "studio",
+          "label": "U učionici ili radionici, s materijalima",
+          "effects": {
+            "environment": {
+              "studio": 3,
+              "workshop": 1
+            },
+            "signals": {
+              "art_visual": 4
+            }
+          }
+        },
+        {
+          "id": "computer",
+          "label": "Za računalom — digitalni dizajn",
+          "effects": {
+            "environment": {
+              "computer": 3
+            },
+            "interests": {
+              "media": 2,
+              "technology": 1
+            }
+          }
+        },
+        {
+          "id": "stage",
+          "label": "Na pozornici ili pred ljudima",
+          "effects": {
+            "tolerance": {
+              "publicSpeaking": 3
+            },
+            "environment": {
+              "dynamic": 2
+            },
+            "signals": {
+              "music_performance": 4
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": 50,
+      "format": "choice",
+      "pool": "practical",
+      "section": "subjects",
+      "prompt": "Ako radiš rukama, što ti je najzanimljivije?",
+      "options": [
+        {
+          "id": "food",
+          "label": "Hrana, kuhinja, kolači",
+          "effects": {
+            "interests": {
+              "practical": 2,
+              "art_design": 1
+            },
+            "signals": {
+              "cooking_food": 5
+            }
+          }
+        },
+        {
+          "id": "beauty",
+          "label": "Frizure i njega",
+          "effects": {
+            "interests": {
+              "art_design": 1,
+              "people": 2
+            },
+            "signals": {
+              "beauty_style": 5
+            }
+          }
+        },
+        {
+          "id": "cars",
+          "label": "Auti, motori, popravci",
+          "effects": {
+            "interests": {
+              "practical": 3,
+              "technology": 1
+            },
+            "signals": {
+              "hands_on_craft": 5
+            }
+          }
+        },
+        {
+          "id": "wood",
+          "label": "Drvo, namještaj, izrada predmeta",
+          "effects": {
+            "interests": {
+              "practical": 3,
+              "art_design": 1
+            },
+            "signals": {
+              "hands_on_craft": 5
+            }
+          }
+        },
+        {
+          "id": "plants",
+          "label": "Biljke, šuma, rad vani",
+          "effects": {
+            "interests": {
+              "nature": 3,
+              "practical": 1
+            },
+            "environment": {
+              "nature": 2,
+              "field": 2
+            },
+            "signals": {
+              "plants_outdoor": 5
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": 51,
+      "format": "scale",
+      "pool": "practical",
+      "section": "workstyle",
+      "prompt": "Koliko ti odgovara posao u kojem trebaš stajati, nositi i koristiti alat?",
+      "scaleMinLabel": "Baš mi ne odgovara",
+      "scaleMaxLabel": "To mi jako odgovara",
+      "effects": {
+        "tolerance": {
+          "physical": 3
+        },
+        "environment": {
+          "workshop": 1,
+          "field": 1,
+          "dynamic": 1
+        }
+      }
+    },
+    {
+      "id": 52,
+      "format": "choice",
+      "pool": "practical",
+      "section": "subjects",
+      "prompt": "Što ti je sad bliže?",
+      "options": [
+        {
+          "id": "job",
+          "label": "Što prije raditi i učiti na poslu",
+          "effects": {
+            "postSchool": {
+              "work": 3
+            },
+            "values": {
+              "salary": 1,
+              "security": 1
+            },
+            "theoryPractice": 12
+          }
+        },
+        {
+          "id": "craft",
+          "label": "Imati zanat i jednog dana možda svoj obrt",
+          "effects": {
+            "values": {
+              "entrepreneurship": 3,
+              "freedom": 1
+            },
+            "signals": {
+              "business_entrepreneur": 4
+            },
+            "postSchool": {
+              "work": 2
+            }
+          }
+        },
+        {
+          "id": "later",
+          "label": "Zanat da, ali ostaviti vrata za nastavak škole",
+          "effects": {
+            "postSchool": {
+              "both": 3
+            },
+            "learning": {
+              "theory": 1,
+              "practical": 1
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": 60,
+      "format": "choice",
+      "pool": "academic",
+      "section": "subjects",
+      "prompt": "Koji školski predmet želiš dublje učiti?",
+      "options": [
+        {
+          "id": "lang",
+          "label": "Jezici i knjige",
+          "effects": {
+            "interests": {
+              "languages": 3
+            },
+            "subjects": {
+              "jezici": 3,
+              "hrvatski": 2
+            },
+            "thinking": {
+              "verbal": 2
+            },
+            "signals": {
+              "languages_travel": 5
+            }
+          }
+        },
+        {
+          "id": "society",
+          "label": "Povijest, društvo, priče o svijetu",
+          "effects": {
+            "interests": {
+              "society": 3
+            },
+            "subjects": {
+              "drustveni": 3,
+              "hrvatski": 1
+            },
+            "thinking": {
+              "verbal": 1,
+              "investigative": 1
+            }
+          }
+        },
+        {
+          "id": "math",
+          "label": "Matematika i logika",
+          "effects": {
+            "interests": {
+              "mathematics": 3
+            },
+            "subjects": {
+              "matematika": 3
+            },
+            "thinking": {
+              "analytical": 2
+            },
+            "signals": {
+              "numbers_data": 5
+            }
+          }
+        },
+        {
+          "id": "bio",
+          "label": "Biologija i živi svijet",
+          "effects": {
+            "interests": {
+              "science": 3,
+              "nature": 1
+            },
+            "subjects": {
+              "biologija": 3
+            },
+            "signals": {
+              "science_experiments": 4
+            }
+          }
+        },
+        {
+          "id": "phy",
+          "label": "Fizika i kemija — kako stvari rade",
+          "effects": {
+            "interests": {
+              "science": 3,
+              "technology": 1
+            },
+            "subjects": {
+              "kemija_fizika": 3
+            },
+            "signals": {
+              "science_experiments": 5
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": 61,
+      "format": "scale",
+      "pool": "academic",
+      "section": "workstyle",
+      "prompt": "Kako ti stoji duže sjedenje, čitanje i učenje?",
+      "scaleMinLabel": "Brzo mi dođe previše",
+      "scaleMaxLabel": "To mi dobro leži",
+      "effects": {
+        "tolerance": {
+          "concentration": 3,
+          "reading": 2
+        },
+        "learning": {
+          "theory": 1
+        },
+        "environment": {
+          "classroom": 1
+        }
+      }
+    },
+    {
+      "id": 62,
+      "format": "choice",
+      "pool": "academic",
+      "section": "workstyle",
+      "prompt": "Što ti je sad bliže?",
+      "options": [
+        {
+          "id": "time",
+          "label": "Još želim više predmeta i vremena za odluku",
+          "effects": {
+            "postSchool": {
+              "faculty": 2,
+              "unsure": 1
+            },
+            "learning": {
+              "theory": 1
+            }
+          }
+        },
+        {
+          "id": "skill",
+          "label": "Želim jasniji smjer i konkretne vještine",
+          "effects": {
+            "learning": {
+              "practical": 2
+            },
+            "values": {
+              "security": 1
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": 70,
+      "format": "choice",
+      "pool": "context",
+      "section": "context",
+      "prompt": "Nakon srednje škole, što ti trenutno više odgovara?",
+      "options": [
+        {
+          "id": "work",
+          "label": "Što prije raditi",
+          "effects": {
+            "postSchool": {
+              "work": 4
+            }
+          }
+        },
+        {
+          "id": "faculty",
+          "label": "Ići na fakultet",
+          "effects": {
+            "postSchool": {
+              "faculty": 4
+            }
+          }
+        },
+        {
+          "id": "unsure",
+          "label": "Još ne znam",
+          "effects": {
+            "postSchool": {
+              "unsure": 4
+            }
+          }
+        },
+        {
+          "id": "both",
+          "label": "Obje opcije su OK",
+          "effects": {
+            "postSchool": {
+              "both": 4
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": 71,
+      "format": "choice",
+      "pool": "context",
+      "section": "context",
+      "prompt": "Što te više vuče?",
+      "options": [
+        {
+          "id": "how",
+          "label": "Učiti kako stvari funkcioniraju",
+          "effects": {
+            "theoryPractice": -28,
+            "learning": {
+              "theory": 2
+            },
+            "thinking": {
+              "analytical": 1
+            }
+          }
+        },
+        {
+          "id": "solve",
+          "label": "Rješavati konkretne probleme",
+          "effects": {
+            "theoryPractice": 8,
+            "learning": {
+              "problems": 2
+            },
+            "thinking": {
+              "practical": 1
+            }
+          }
+        },
+        {
+          "id": "hands",
+          "label": "Napraviti nešto vlastitim rukama",
+          "effects": {
+            "theoryPractice": 32,
+            "learning": {
+              "practical": 2
+            },
+            "signals": {
+              "hands_on_craft": 4
+            }
+          }
+        },
+        {
+          "id": "mix",
+          "label": "I jedno i drugo",
+          "effects": {
+            "theoryPractice": 0,
+            "learning": {
+              "theory": 1,
+              "practical": 1
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": 73,
+      "format": "choice",
+      "pool": "context",
+      "section": "context",
+      "skippable": true,
+      "prompt": "Ako želiš reći, kako ti otprilike ide u školi?",
+      "hint": "Možeš preskočiti. Ovo nije ocjena tebe.",
+      "options": [
+        {
+          "id": "excellent",
+          "label": "Uglavnom odličan"
+        },
+        {
+          "id": "very_good",
+          "label": "Vrlo dobar"
+        },
+        {
+          "id": "good",
+          "label": "Dobar"
+        },
+        {
+          "id": "mixed",
+          "label": "Ovisi o predmetu"
+        }
+      ]
+    },
+    {
+      "id": 74,
+      "format": "multi",
+      "pool": "context",
+      "section": "context",
+      "skippable": true,
+      "maxSelect": 3,
+      "prompt": "Koji su ti predmeti najdraži? (do 3, ili preskoči)",
+      "options": [
+        {
+          "id": "matematika",
+          "label": "Matematika"
+        },
+        {
+          "id": "hrvatski",
+          "label": "Hrvatski"
+        },
+        {
+          "id": "jezici",
+          "label": "Strani jezici"
+        },
+        {
+          "id": "biologija",
+          "label": "Biologija"
+        },
+        {
+          "id": "kemija_fizika",
+          "label": "Kemija / fizika"
+        },
+        {
+          "id": "informatika",
+          "label": "Informatika"
+        },
+        {
+          "id": "likovni",
+          "label": "Likovni"
+        },
+        {
+          "id": "glazbeni",
+          "label": "Glazbeni"
+        },
+        {
+          "id": "tjelesni",
+          "label": "Tjelesni"
+        },
+        {
+          "id": "drustveni",
+          "label": "Povijest / geografija"
+        }
+      ]
+    },
+    {
+      "id": 75,
+      "format": "multi",
+      "pool": "context",
+      "section": "context",
+      "skippable": true,
+      "maxSelect": 3,
+      "prompt": "Koji ti predmeti trenutno teže idu? (do 3, ili preskoči)",
+      "hint": "To nije ocjena tebe. Samo pomaže reći gdje program može biti teži.",
+      "options": [
+        {
+          "id": "matematika",
+          "label": "Matematika"
+        },
+        {
+          "id": "hrvatski",
+          "label": "Hrvatski"
+        },
+        {
+          "id": "jezici",
+          "label": "Strani jezici"
+        },
+        {
+          "id": "biologija",
+          "label": "Biologija"
+        },
+        {
+          "id": "kemija_fizika",
+          "label": "Kemija / fizika"
+        },
+        {
+          "id": "informatika",
+          "label": "Informatika"
+        },
+        {
+          "id": "drustveni",
+          "label": "Povijest / geografija"
+        }
+      ]
+    },
+    {
+      "id": 76,
+      "format": "text",
+      "pool": "context",
+      "section": "context",
+      "skippable": true,
+      "prompt": "Imaš li već neku ideju što upisati?",
+      "hint": "Nije obavezno. Ako upišeš, usporedit ćemo to s tvojim odgovorima.",
+      "placeholder": "Npr. medicina, računala, kuhar…"
+    },
+    {
+      "id": 77,
+      "format": "text",
+      "pool": "context",
+      "section": "context",
+      "skippable": true,
+      "prompt": "U kojem gradu (ili blizu kojeg) želiš ići u školu?",
+      "hint": "Možeš preskočiti. Trebamo ga samo da pokažemo škole u blizini.",
+      "placeholder": "Npr. Zagreb, Split, Bjelovar…"
+    },
+    {
+      "id": 80,
+      "format": "scale",
+      "pool": "context",
+      "section": "context",
+      "prompt": "Kako ti stoji govoriti pred razredom?",
+      "scaleMinLabel": "Jako mi je neugodno",
+      "scaleMaxLabel": "To mi ide lako",
+      "effects": {
+        "tolerance": {
+          "publicSpeaking": 3
+        },
+        "thinking": {
+          "verbal": 1
+        }
+      }
+    },
+    {
+      "id": 81,
+      "format": "scale",
+      "pool": "context",
+      "section": "context",
+      "prompt": "Kako ti stoji kad treba predati nešto do roka?",
+      "scaleMinLabel": "Baš mi ne odgovara",
+      "scaleMaxLabel": "Tada se čak bolje skoncentriram",
+      "effects": {
+        "tolerance": {
+          "pressure": 3,
+          "responsibility": 1
+        }
+      }
+    },
+    {
+      "id": 90,
+      "format": "choice",
+      "pool": "followup",
+      "section": "subjects",
+      "prompt": "Ako biraš samo jedno, što ti je bliže sljedeće četiri godine?",
+      "options": [
+        {
+          "id": "gym",
+          "label": "Više predmeta, više učenja, kasnije fakultet",
+          "effects": {
+            "postSchool": {
+              "faculty": 3
+            },
+            "learning": {
+              "theory": 2
+            },
+            "theoryPractice": -18
+          }
+        },
+        {
+          "id": "tech",
+          "label": "Konkretan tehnički smjer, uz mogućnost mature",
+          "effects": {
+            "interests": {
+              "technology": 2,
+              "practical": 1
+            },
+            "learning": {
+              "practical": 2
+            },
+            "postSchool": {
+              "both": 2
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": 91,
+      "format": "choice",
+      "pool": "followup",
+      "section": "subjects",
+      "prompt": "Što ti je bliže?",
+      "options": [
+        {
+          "id": "code",
+          "label": "Kod, mreže i računala",
+          "effects": {
+            "interests": {
+              "technology": 3
+            },
+            "environment": {
+              "computer": 3
+            },
+            "signals": {
+              "tech_computers": 5
+            }
+          }
+        },
+        {
+          "id": "electro",
+          "label": "Struja, instalacije i elektronika",
+          "effects": {
+            "thinking": {
+              "technical": 3
+            },
+            "interests": {
+              "practical": 1,
+              "technology": 1
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": 92,
+      "format": "choice",
+      "pool": "followup",
+      "section": "subjects",
+      "prompt": "Što ti je bliže?",
+      "options": [
+        {
+          "id": "nurse",
+          "label": "Njega i svakodnevni rad s ljudima",
+          "effects": {
+            "interests": {
+              "people": 3
+            },
+            "environment": {
+              "health": 3
+            },
+            "signals": {
+              "health_medicine": 5,
+              "helping_people": 5
+            }
+          }
+        },
+        {
+          "id": "pharma",
+          "label": "Lijekovi, točnost i rad u ljekarni ili laboratoriju",
+          "effects": {
+            "interests": {
+              "science": 3
+            },
+            "tolerance": {
+              "precision": 2,
+              "people": 0
+            },
+            "environment": {
+              "lab": 2
+            },
+            "signals": {
+              "health_medicine": 4
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": 93,
+      "format": "choice",
+      "pool": "followup",
+      "section": "subjects",
+      "prompt": "Što ti je bliže?",
+      "options": [
+        {
+          "id": "art",
+          "label": "Crtanje, dizajn, umjetnička škola",
+          "effects": {
+            "interests": {
+              "art_design": 3
+            },
+            "signals": {
+              "art_visual": 5
+            }
+          }
+        },
+        {
+          "id": "media",
+          "label": "Web, grafika i mediji",
+          "effects": {
+            "interests": {
+              "media": 3,
+              "technology": 1
+            },
+            "environment": {
+              "computer": 2
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": 94,
+      "format": "choice",
+      "pool": "followup",
+      "section": "context",
+      "prompt": "Ako kasnije poželiš fakultet, što ti je važnije sada?",
+      "options": [
+        {
+          "id": "matura",
+          "label": "Da program ima maturu",
+          "effects": {
+            "postSchool": {
+              "faculty": 3
+            }
+          }
+        },
+        {
+          "id": "skill",
+          "label": "Da odmah dobijem vještinu, a fakultet vidim kasnije",
+          "effects": {
+            "postSchool": {
+              "work": 2,
+              "both": 1
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": 95,
+      "format": "choice",
+      "pool": "followup",
+      "section": "subjects",
+      "prompt": "Priroda ti je bliska. Što više?",
+      "options": [
+        {
+          "id": "vet",
+          "label": "Životinje i skrb o njima",
+          "effects": {
+            "interests": {
+              "nature": 3
+            },
+            "signals": {
+              "animals_nature": 5
+            }
+          }
+        },
+        {
+          "id": "farm",
+          "label": "Polje, šuma, uzgoj, rad vani",
+          "effects": {
+            "interests": {
+              "nature": 2,
+              "practical": 2
+            },
+            "environment": {
+              "field": 2,
+              "nature": 2
+            },
+            "signals": {
+              "plants_outdoor": 5
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": 96,
+      "format": "scale",
+      "pool": "followup",
+      "section": "workstyle",
+      "prompt": "Kako ti stoji posao u kojem greška puno znači?",
+      "scaleMinLabel": "To me opterećuje",
+      "scaleMaxLabel": "To mi čak odgovara",
+      "effects": {
+        "tolerance": {
+          "precision": 3,
+          "responsibility": 2
+        }
+      }
+    }
+  ]
+}

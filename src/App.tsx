@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { lazy, Suspense, useEffect } from "react";
 import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import { warmupApiHealth } from "@/lib/api";
+import { startJuniorCloudSync } from "@/lib/juniorCloud";
 import Index from "./pages/Index";
 import KartaFakulteta from "./pages/KartaFakulteta";
 import KartaSrednjihSkola from "./pages/KartaSrednjihSkola";
@@ -45,6 +46,17 @@ import { trackPageView } from "./lib/analytics";
 
 const queryClient = new QueryClient();
 const KalkulatorFakulteti = lazy(() => import("./pages/KalkulatorFakulteti"));
+const KvizSrednja = lazy(() => import("./pages/KvizSrednja"));
+const UsporediSkole = lazy(() => import("./pages/UsporediSkole"));
+const RoditeljskiRezultat = lazy(() => import("./pages/RoditeljskiRezultat"));
+const JuniorProgrami = lazy(() => import("./pages/JuniorProgrami"));
+const JuniorProgramDetail = lazy(() => import("./pages/JuniorProgramDetail"));
+const Razred = lazy(() => import("./pages/Razred"));
+const HighSchoolProfile = lazy(() => import("./pages/HighSchoolProfile"));
+const HighSchoolProfiles = lazy(() => import("./pages/HighSchoolProfiles"));
+const JuniorSchoolFeed = lazy(() => import("./pages/JuniorSchoolFeed"));
+const SchoolLogin = lazy(() => import("./pages/SchoolLogin"));
+const SchoolDashboard = lazy(() => import("./pages/SchoolDashboard"));
 
 /** Usklađeno s `base` u vite.config (`import.meta.env.BASE_URL`). */
 const routerBasename =
@@ -61,7 +73,6 @@ const AnalyticsPageTracker = () => {
   return null;
 };
 
-/** Probudi Render API pri učitavanju auth stranica. */
 const ApiWarmup = () => {
   const location = useLocation();
 
@@ -78,6 +89,13 @@ const ApiWarmup = () => {
   return null;
 };
 
+const JuniorCloudSync = () => {
+  useEffect(() => {
+    startJuniorCloudSync();
+  }, []);
+  return null;
+};
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
@@ -88,6 +106,7 @@ const App = () => (
         <ScrollToTop />
         <AnalyticsPageTracker />
         <ApiWarmup />
+        <JuniorCloudSync />
         <Suspense
           fallback={
             <main className="flex min-h-[70vh] items-center justify-center px-4">
@@ -101,7 +120,18 @@ const App = () => (
             <Route path="/" element={<Index />} />
             <Route path="/karta" element={<KartaFakulteta />} />
             <Route path="/srednje-skole" element={<KartaSrednjihSkola />} />
+            <Route path="/srednje-skole/prijava" element={<SchoolLogin />} />
+            <Route path="/srednje-skole/objave" element={<JuniorSchoolFeed />} />
+            <Route path="/srednje-skole/profili" element={<HighSchoolProfiles />} />
+            <Route path="/srednje-skole/:slug" element={<HighSchoolProfile />} />
+            <Route path="/skola" element={<SchoolDashboard />} />
+            <Route path="/skola/dashboard" element={<SchoolDashboard />} />
             <Route path="/kviz" element={<Kviz />} />
+            <Route path="/kviz-srednja" element={<KvizSrednja />} />
+            <Route path="/usporedi-skole" element={<UsporediSkole />} />
+            <Route path="/programi" element={<JuniorProgrami />} />
+            <Route path="/programi/:slug" element={<JuniorProgramDetail />} />
+            <Route path="/razred" element={<Razred />} />
             <Route path="/samoprocjena" element={<Samoprocjena />} />
             <Route path="/kalkulator" element={<Kalkulator />} />
             <Route path="/kalkulator-fakulteti" element={<KalkulatorFakulteti />} />
@@ -111,6 +141,7 @@ const App = () => (
             <Route path="/forum" element={<Forum />} />
             <Route path="/kalendar" element={<Kalendar />} />
             <Route path="/mature" element={<Mature />} />
+            <Route path="/roditeljski-rezultat" element={<RoditeljskiRezultat />} />
             <Route path="/roditelji" element={<Roditelji />} />
             <Route path="/roditeljski-kutak" element={<Roditelji />} />
             <Route path="/roditeljski-kutak/vodic-za-roditelje" element={<ParentGuide />} />
@@ -129,9 +160,9 @@ const App = () => (
             <Route path="/verify" element={<Verify />} />
             <Route path="/registracija" element={<Registracija />} />
             <Route path="/fakulteti" element={<FacultyProfiles />} />
-            <Route path="/fakulteti/:facultyId" element={<FacultyProfile />} />
             <Route path="/fakulteti/prijava" element={<FacultyLogin />} />
             <Route path="/fakulteti/dashboard" element={<FacultyDashboard />} />
+            <Route path="/fakulteti/:facultyId" element={<FacultyProfile />} />
             <Route path="/tim" element={<TimDashboard />} />
             <Route path="*" element={<NotFound />} />
           </Routes>

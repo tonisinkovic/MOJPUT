@@ -594,10 +594,23 @@ Za IT / matematiku / srodne smjerove često su relevantni FER, FOI, PMF, TVZ —
 Budi dovoljno kratak: jasno i konkretno, bez dugog ponavljanja — štedi token korisnika.
 `.trim();
 
+const OPENAI_JUNIOR_SYSTEM_PROMPT = `
+Ti si Dražen — asistent u aplikaciji MojPut Junior. Govoriš učenicima 8. razreda koji biraju srednju školu u Hrvatskoj.
+Piši prirodno, toplo, na hrvatskom, u odlomcima. Kratke liste samo kad stvarno pomažu.
+
+Kad ispod imaš PODACI IZ BAZE, to su srednje škole iz naše baze (nazivi, gradovi, kontakt, web). Ugradi ih u odgovor. Ne izmišljaj škole, smjerove, adrese ni pragove. Ako škole nema u bloku, reci da je nemamo i predloži Kartu srednjih škola ili kalkulator bodova na MojPutu.
+
+Prag, ako ga spominješ, je od prošle godine — iduće može biti drugačije. Reci da pitaju školu prije odluke.
+Ne guraj fakultete ni maturu osim ako učenik izričito pita.
+Ne tvrdi da si „samo baza” — ti si AI koji koristi našu bazu kao činjenice.
+
+Budi kratak i konkretan — štedi token korisnika.
+`.trim();
+
 /**
  * OpenAI + RAG: odgovor u razgovornom tonu, uz kontekst iz baze.
  */
-async function chatOpenAI(messages, databaseContextSnippet) {
+async function chatOpenAI(messages, databaseContextSnippet, mode = "senior") {
   const apiKey = String(process.env.OPENAI_API_KEY || "").trim();
   if (!apiKey) {
     throw new Error("OPENAI_API_KEY nije postavljen");
@@ -619,7 +632,12 @@ async function chatOpenAI(messages, databaseContextSnippet) {
       ? `--- PODACI IZ BAZE (MojPut) — koristi za točne nazive i brojke ---\n${databaseContextSnippet}\n--- kraj podataka iz baze ---`
       : `--- PODACI IZ BAZE: za ovo pitanje nema dovoljno redaka u bazi — odgovori svejedno prijateljski i predloži što dodatno pitati. ---`;
 
-  const system = `${OPENAI_SYSTEM_PROMPT}\n\n${dbBlock}\n\n--- Opći kontekst (FER, FOI, PMF, TVZ) ---\n${OPENAI_FACULTY_CONTEXT}`;
+  const systemBase = mode === "junior" ? OPENAI_JUNIOR_SYSTEM_PROMPT : OPENAI_SYSTEM_PROMPT;
+  const extra =
+    mode === "junior"
+      ? ""
+      : `\n\n--- Opći kontekst (FER, FOI, PMF, TVZ) ---\n${OPENAI_FACULTY_CONTEXT}`;
+  const system = `${systemBase}\n\n${dbBlock}${extra}`;
 
   const history = messages
     .filter((m) => m.role === "user" || m.role === "assistant")
@@ -840,29 +858,13 @@ function formatHighSchoolResponse(query, searchResults) {
   return response;
 }
 
-async function chatLocal(messages, mode = "senior") {
-  // Junior mode: High schools chatbot
-  if (mode === "junior") {
-    const lastUserMsg = [...messages].reverse().find((m) => m.role === "user");
-    const query = getMessageTextForRag(lastUserMsg) || "";
-    
-    // Pretraži srednje škole
-    try {
-      const results = searchHighSchools(query);
-      if (results.schools.length > 0 || results.parsed.grad || results.parsed.category || results.parsed.keyword) {
-        return formatHighSchoolResponse(query, results);
-      }
-    } catch (err) {
-      console.warn("[chatLocal] Junior mode search error:", err?.message);
-    }
-    
-    // Fallback za općenita pitanja
-    const allSchools = loadHighSchoolsFromJson();
-    const totalCount = allSchools.length;
-    const cities = [...new Set(allSchools.map(s => s.city))].sort();
-    const topCities = cities.slice(0, 10);
-    
-    return `Imam podatke o **${totalCount} srednje škole** u Hrvatskoj! 🎓
+function juniorCatalogFallback() {
+  const allSchools = loadHighSchoolsFromJson();
+  const totalCount = allSchools.length;
+  const cities = [...new Set(allSchools.map((s) => s.city))].sort();
+  const topCities = cities.slice(0, 10);
+
+  return `Imam podatke o **${totalCount} srednjih škola** u Hrvatskoj.
 
 Mogu ti pomoći pronaći:
 - Škole u određenom gradu (npr. "Srednje škole u Zagrebu")
@@ -873,9 +875,34 @@ Mogu ti pomoći pronaći:
 
 **Kategorije**: Gimnazije, strukovne škole, umjetničke škole
 
-**Smjerovi**: IT/informatika, medicina/zdravstvo, ekonomija, jezici, elektrotehnika, strojarstvo
-
 Pitaj me konkretno, npr: "Koje gimnazije ima u Osijeku?" ili "Strukovne škole u Zadru"`;
+}
+
+async function chatLocal(messages, mode = "senior") {
+  if (mode === "junior") {
+    const lastUserMsg = [...messages].reverse().find((m) => m.role === "user");
+    const query = getMessageTextForRag(lastUserMsg) || "";
+
+    let dbSnippet = "";
+    try {
+      const results = searchHighSchools(query);
+      dbSnippet = formatHighSchoolResponse(query, results);
+    } catch (err) {
+      console.warn("[chatLocal] Junior search:", err?.message || err);
+    }
+
+    const useOpenAI = Boolean(String(process.env.OPENAI_API_KEY || "").trim());
+    if (useOpenAI) {
+      try {
+        return await chatOpenAI(messages, dbSnippet, "junior");
+      } catch (err) {
+        console.warn("[chatLocal] Junior OpenAI neuspjeh, padam na bazu:", err?.message || err);
+        if (dbSnippet) return dbSnippet;
+        throw err;
+      }
+    }
+
+    return dbSnippet || juniorCatalogFallback();
   }
 
   // Senior mode: Universities/faculties

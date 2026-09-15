@@ -1,4 +1,5 @@
 import Layout from "@/components/Layout";
+import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
   ArrowLeft,
@@ -247,6 +248,15 @@ const KartaFakulteta = () => {
                 Istraži sve fakultete, sveučilišta i veleučilišta u Hrvatskoj — studijski programi i
                 bodovni pragovi, sve na jednom mjestu.
               </p>
+              <div className="mt-4 flex flex-wrap gap-2">
+                <Link
+                  to="/fakulteti"
+                  className="inline-flex items-center gap-1.5 rounded-full border border-primary/25 bg-background/80 px-3 py-1.5 text-xs font-semibold text-primary hover:bg-primary/10"
+                >
+                  <GraduationCap className="h-3.5 w-3.5" />
+                  Profili fakulteta
+                </Link>
+              </div>
 
               <div className="mt-4 grid grid-cols-3 gap-2 sm:max-w-lg sm:gap-3">
                 <div className="rounded-xl border border-border/60 bg-background/70 px-3 py-2 backdrop-blur-sm">

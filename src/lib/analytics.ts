@@ -5,7 +5,13 @@ type QuizEventName =
   | "quiz_completed"
   | "quiz_passed"
   | "quiz_failed"
-  | "quiz_abandoned";
+  | "quiz_abandoned"
+  | "quiz_result_viewed"
+  | "recommendation_clicked"
+  | "program_opened"
+  | "school_opened"
+  | "result_shared"
+  | "quiz_restarted";
 
 type AuthEventName =
   | "sign_up_started"
@@ -27,19 +33,15 @@ declare global {
   }
 }
 
-const measurementId = import.meta.env.VITE_GA_MEASUREMENT_ID;
-const requireConsent = import.meta.env.VITE_ANALYTICS_REQUIRE_CONSENT === "true";
-const CONSENT_KEY = "analytics_consent";
+/** Isti ID kao u index.html — javni GA4 ključ, nije tajna. */
+const DEFAULT_MEASUREMENT_ID = "G-9N7061Q2JN";
+const measurementId = import.meta.env.VITE_GA_MEASUREMENT_ID || DEFAULT_MEASUREMENT_ID;
 
 let gaInitialized = false;
 
-function hasConsent(): boolean {
-  if (!requireConsent) return true;
-  try {
-    return localStorage.getItem(CONSENT_KEY) === "granted";
-  } catch {
-    return false;
-  }
+function isLocalHost(): boolean {
+  const host = window.location.hostname;
+  return host === "localhost" || host === "127.0.0.1";
 }
 
 function normalizeParams(params: AnalyticsParams = {}): Record<string, string | number | boolean> {
@@ -52,25 +54,37 @@ function normalizeParams(params: AnalyticsParams = {}): Record<string, string | 
 }
 
 export function initAnalytics(): void {
-  if (gaInitialized || !measurementId || !hasConsent()) return;
-
-  const gtagScript = document.createElement("script");
-  gtagScript.async = true;
-  gtagScript.src = `https://www.googletagmanager.com/gtag/js?id=${measurementId}`;
-  document.head.appendChild(gtagScript);
+  if (gaInitialized || !measurementId || isLocalHost()) return;
 
   window.dataLayer = window.dataLayer || [];
-  window.gtag = (...args: unknown[]) => {
-    window.dataLayer?.push(args);
-  };
-  window.gtag("js", new Date());
-  window.gtag("config", measurementId, { send_page_view: false });
+  if (typeof window.gtag !== "function") {
+    window.gtag = function gtag() {
+      window.dataLayer?.push(arguments);
+    };
+    const gtagScript = document.createElement("script");
+    gtagScript.async = true;
+    gtagScript.src = `https://www.googletagmanager.com/gtag/js?id=${measurementId}`;
+    document.head.appendChild(gtagScript);
+    window.gtag("js", new Date());
+  }
+
+  window.gtag("consent", "update", {
+    analytics_storage: "granted",
+    ad_storage: "denied",
+    ad_user_data: "denied",
+    ad_personalization: "denied",
+  });
+  window.gtag("config", measurementId, {
+    send_page_view: true,
+    page_path: `${window.location.pathname}${window.location.search}${window.location.hash}`,
+    page_location: window.location.href,
+  });
 
   gaInitialized = true;
 }
 
 export function trackEvent(eventName: AnalyticsEventName, params: AnalyticsParams = {}): void {
-  if (!measurementId || !hasConsent()) return;
+  if (!measurementId || isLocalHost()) return;
   if (!gaInitialized) initAnalytics();
   if (typeof window.gtag !== "function") return;
 
@@ -83,13 +97,3 @@ export function trackPageView(path: string): void {
     page_location: window.location.href,
   });
 }
-
-export function setAnalyticsConsent(granted: boolean): void {
-  try {
-    localStorage.setItem(CONSENT_KEY, granted ? "granted" : "denied");
-  } catch {
-    /* ignore storage issues */
-  }
-  if (granted) initAnalytics();
-}
-

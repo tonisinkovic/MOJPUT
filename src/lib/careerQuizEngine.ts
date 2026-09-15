@@ -28,7 +28,19 @@ export type CareerInterestSignalKey =
   | "sales_persuasion_interest"
   | "office_administration_interest"
   | "media_stage_interest"
-  | "science_lab_interest";
+  | "science_lab_interest"
+  // Prošireni signali za precizno podudaranje studijskih programa (v3).
+  | "software_it_interest"
+  | "math_interest"
+  | "sport_kinesiology_interest"
+  | "security_defense_interest"
+  | "design_visual_interest"
+  | "language_literature_interest"
+  | "social_help_interest"
+  | "entrepreneurship_interest"
+  | "nature_outdoor_interest"
+  | "materials_construction_interest"
+  | "machines_tech_interest";
 
 export type CareerRow = {
   id: number;
