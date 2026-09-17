@@ -217,7 +217,19 @@ export default function JuniorProfilHome() {
               <>
                 <p className="text-2xl font-extrabold tabular-nums">{points.toLocaleString("hr-HR")}</p>
                 <p className="text-xs text-muted-foreground">
-                  {calcPoints ? `od ${calcPoints.max} (bez dodatnih: ${calcPoints.zajednicki.toLocaleString("hr-HR")})` : "okvirni zbroj"}
+                  {calcPoints
+                    ? `ocjene do ${calcPoints.max}${
+                        calcPoints.scaleMax > calcPoints.max
+                          ? ` · skala smjera ${calcPoints.scaleMax}`
+                          : ""
+                      }${
+                        calcPoints.dodatni + calcPoints.exam + calcPoints.extraSchool + calcPoints.sport > 0
+                          ? ` · posebni ${
+                              (calcPoints.dodatni + calcPoints.exam + calcPoints.extraSchool + calcPoints.sport).toLocaleString("hr-HR")
+                            }`
+                          : ""
+                      }`
+                    : "okvirni zbroj"}
                 </p>
               </>
             ) : (

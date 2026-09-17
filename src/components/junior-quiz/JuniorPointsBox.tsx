@@ -10,6 +10,7 @@ import {
   loadJuniorGrades,
   loadQuickPoints,
   onJuniorPointsChange,
+  QUICK_POINTS_MAX,
   saveQuickPoints,
 } from "@/lib/juniorPath";
 
@@ -46,7 +47,7 @@ export default function JuniorPointsBox() {
 
   const applyQuick = () => {
     const n = Number.parseFloat(draft.replace(",", "."));
-    if (!Number.isFinite(n) || n < 0 || n > 80) return;
+    if (!Number.isFinite(n) || n < 0 || n > QUICK_POINTS_MAX) return;
     saveQuickPoints(Math.round(n * 10) / 10);
     refresh();
   };
@@ -60,8 +61,8 @@ export default function JuniorPointsBox() {
         <div className="min-w-0 flex-1">
           <h3 className="text-sm font-bold">Tvoji bodovi — da vidiš šansu</h3>
           <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
-            Upiši okvirni zbroj (do 80) ili točnije izračunaj u kalkulatoru. Škole ispod uspoređuju
-            s lanjskim pragom.
+            Upiši okvirni zbroj. Obična gimnazija je do 80 iz ocjena; glazba, ples, likovni i sport
+            idu i iznad toga (prijamni / rang-lista). Točnije u kalkulatoru.
           </p>
           {points != null ? (
             <p className="mt-2 text-sm font-semibold text-foreground">
