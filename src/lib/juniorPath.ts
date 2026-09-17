@@ -18,6 +18,25 @@ import type {
   JuniorProgramMatch,
   JuniorQuizAnalysis,
 } from "@/lib/juniorQuizEngine";
+import {
+  gradeScaleHintFromPrag,
+  resolveScoringTrack,
+  scaleMaxFor,
+  scoringTrackMeta,
+  type SrednjaScoringTrack,
+} from "@/lib/srednjaScoring";
+
+export {
+  comparisonMaxFor,
+  gradeScaleHintFromPrag,
+  posebniPredmetiLabels,
+  programHasExtendedScale,
+  resolveScoringTrack,
+  scaleMaxFor,
+  scoringTrackMeta,
+  SCORING_TRACK,
+} from "@/lib/srednjaScoring";
+export type { ScoringTrackMeta, SrednjaScoringTrack } from "@/lib/srednjaScoring";
 
 export const JUNIOR_CLOUD_PUSH_EVENT = "junior-cloud-push";
 
@@ -43,6 +62,48 @@ export type JuniorGradeDraft = {
   razred7: SevenEightGrades;
   razred8: SevenEightGrades;
   dodatniBodovi: string;
+  /** Prijamni / provjera darovitosti (glazba, ples, likovni). */
+  prijamniBodovi?: string;
+  /** Opći uspjeh 5. razreda glazbene škole (0–5). */
+  glazbenaProsjek5?: string;
+  /** Opći uspjeh 6. razreda glazbene škole (0–5). */
+  glazbenaProsjek6?: string;
+  /** Opći uspjeh 4. razreda plesne/baletne škole (0–5). */
+  plesnaProsjek?: string;
+  /** Bodovi sportske uspješnosti (0–80) za odjel za sportaše. */
+  sportskiBodovi?: string;
+  lastProgramName?: string;
+  lastSchoolName?: string;
+  lastSector?: string | null;
+};
+
+export type SrednjaPointsContext = {
+  programName?: string;
+  schoolName?: string;
+  sector?: string | null;
+  prag?: KalkulatorPrag | null;
+};
+
+export type SrednjaPointsResult = {
+  opciUspjeh: number;
+  kljucniPredmeti: number;
+  posebniPredmeti: number;
+  dodatni: number;
+  zajednicki: number;
+  ukupno: number;
+  /** Strop iz ocjena (20 / 50 / 80). */
+  max: number;
+  track: SrednjaScoringTrack;
+  scaleMax: number;
+  exam: number;
+  examMax: number;
+  examMin: number | null;
+  examMissing: boolean;
+  examBelowMin: boolean;
+  extraSchool: number;
+  extraSchoolMax: number;
+  sport: number;
+  sportMax: number;
 };
 
 export type JuniorCutoff = {
@@ -145,6 +206,9 @@ export const MAX_BY_PROGRAM: Record<SrednjaProgramType, number> = {
   kraci: 20,
 };
 
+/** Okvirni unos u kvizu / profilu: ocjene + prijamni / sport. */
+export const QUICK_POINTS_MAX = 300;
+
 export function emptySevenEight(): SevenEightGrades {
   return {
     prosjek: "",
@@ -165,6 +229,14 @@ export function emptyGradeDraft(): JuniorGradeDraft {
     razred7: emptySevenEight(),
     razred8: emptySevenEight(),
     dodatniBodovi: "",
+    prijamniBodovi: "",
+    glazbenaProsjek5: "",
+    glazbenaProsjek6: "",
+    plesnaProsjek: "",
+    sportskiBodovi: "",
+    lastProgramName: "",
+    lastSchoolName: "",
+    lastSector: null,
   };
 }
 
@@ -225,22 +297,17 @@ function clamp(value: number, min: number, max: number): number {
 }
 
 export function programTypeFromPrag(prag: KalkulatorPrag | null): SrednjaProgramType | null {
-  const reference = prag?.max ?? prag?.min ?? null;
+  const reference = gradeScaleHintFromPrag(prag);
   if (reference == null) return null;
   if (reference > 50) return "gimnazija4";
   if (reference > 20) return "trogodisnji";
   return "kraci";
 }
 
-export function computeSrednjaPoints(draft: JuniorGradeDraft): {
-  opciUspjeh: number;
-  kljucniPredmeti: number;
-  posebniPredmeti: number;
-  dodatni: number;
-  zajednicki: number;
-  ukupno: number;
-  max: number;
-} {
+export function computeSrednjaPoints(
+  draft: JuniorGradeDraft,
+  context?: SrednjaPointsContext,
+): SrednjaPointsResult {
   const { program, razred7, razred8 } = draft;
   const opciUspjeh = clamp(
     clamp(toNum(draft.prosjek5), 0, 5) +
@@ -274,15 +341,46 @@ export function computeSrednjaPoints(draft: JuniorGradeDraft): {
   if (program === "gimnazija4" || program === "trogodisnji") zajednicki += kljucniPredmeti;
   if (program === "gimnazija4") zajednicki += posebniPredmeti;
   const dodatni = Math.max(0, toNum(draft.dodatniBodovi));
+
+  const track = resolveScoringTrack(
+    context?.programName ?? draft.lastProgramName ?? "",
+    context?.schoolName ?? draft.lastSchoolName ?? "",
+    context?.prag ?? null,
+    context?.sector ?? draft.lastSector ?? null,
+  );
+  const meta = scoringTrackMeta(track);
+  const examEntered = (draft.prijamniBodovi ?? "").trim() !== "";
+  const exam = meta.examMax > 0 ? clamp(toNum(draft.prijamniBodovi ?? ""), 0, meta.examMax) : 0;
+  const extraSchool =
+    track === "glazba"
+      ? clamp(toNum(draft.glazbenaProsjek5 ?? ""), 0, 5) + clamp(toNum(draft.glazbenaProsjek6 ?? ""), 0, 5)
+      : track === "ples"
+        ? clamp(toNum(draft.plesnaProsjek ?? ""), 0, 5)
+        : 0;
+  const sport = meta.sportMax > 0 ? clamp(toNum(draft.sportskiBodovi ?? ""), 0, meta.sportMax) : 0;
+  const examMissing = meta.examMax > 0 && !examEntered;
+  const examBelowMin = meta.examMin != null && examEntered && exam < meta.examMin;
   const max = MAX_BY_PROGRAM[program];
+  const scaleMax = scaleMaxFor(track, program, context?.prag ?? null);
   return {
     opciUspjeh,
     kljucniPredmeti,
     posebniPredmeti,
     dodatni,
     zajednicki,
-    ukupno: zajednicki + dodatni,
+    ukupno: zajednicki + dodatni + exam + extraSchool + sport,
     max,
+    track,
+    scaleMax,
+    exam,
+    examMax: meta.examMax,
+    examMin: meta.examMin,
+    examMissing,
+    examBelowMin,
+    extraSchool,
+    extraSchoolMax: meta.extraSchoolMax,
+    sport,
+    sportMax: meta.sportMax,
   };
 }
 
@@ -542,7 +640,13 @@ export function calculatorHref(schoolId?: number | null, programId?: number | nu
 export function loadJuniorGrades(): JuniorGradeDraft | null {
   const raw = readJson<JuniorGradeDraft>(GRADES_KEY);
   if (!raw || typeof raw !== "object") return null;
-  return raw;
+  const base = emptyGradeDraft();
+  return {
+    ...base,
+    ...raw,
+    razred7: { ...base.razred7, ...(raw.razred7 ?? {}) },
+    razred8: { ...base.razred8, ...(raw.razred8 ?? {}) },
+  };
 }
 
 export function saveJuniorGrades(draft: JuniorGradeDraft): void {
