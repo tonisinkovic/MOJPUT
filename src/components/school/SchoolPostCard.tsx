@@ -1,15 +1,19 @@
-import { Link } from "react-router-dom";
-import { Calendar, MapPin } from "lucide-react";
+import { useState } from "react";
+import { ArrowRight, Calendar, MapPin } from "lucide-react";
+import SchoolPostDialog, {
+  SCHOOL_POST_CATEGORY_LABEL,
+  formatSchoolPostDate,
+} from "@/components/school/SchoolPostDialog";
 import type { SchoolPost } from "@/lib/schoolCmsApi";
 import { schoolMediaUrl } from "@/lib/schoolCmsApi";
+import { cn } from "@/lib/utils";
 
-const CATEGORY_LABEL: Record<string, string> = {
-  dogadaj: "Događaj",
-  upisi: "Upisi",
-  uspjeh: "Uspjeh učenika",
-  obavijest: "Obavijest",
-  ostalo: "Objava",
-};
+function excerpt(text: string, max = 88): string {
+  const t = String(text || "").replace(/\s+/g, " ").trim();
+  if (!t) return "";
+  if (t.length <= max) return t;
+  return `${t.slice(0, max).replace(/\s+\S*$/, "")}…`;
+}
 
 type Props = {
   post: SchoolPost;
@@ -17,55 +21,68 @@ type Props = {
 };
 
 export default function SchoolPostCard({ post, showSchool = false }: Props) {
+  const [open, setOpen] = useState(false);
   const cover = schoolMediaUrl(post.images[0]?.url);
-  const dateRaw = post.publishedAt || post.createdAt;
-  const date = dateRaw
-    ? new Date(dateRaw).toLocaleDateString("hr-HR", { day: "2-digit", month: "2-digit", year: "numeric" })
-    : "";
-  const href = post.schoolSlug ? `/srednje-skole/${post.schoolSlug}` : undefined;
+  const date = formatSchoolPostDate(post.publishedAt || post.createdAt);
+  const preview = excerpt(post.content);
 
   return (
-    <article className="overflow-hidden rounded-2xl border border-border/70 bg-card p-4 shadow-card sm:p-5">
-      {cover && (
-        <img src={cover} alt={post.images[0]?.alt || post.title} className="mb-4 h-44 w-full rounded-xl object-cover" />
-      )}
-      {showSchool && post.schoolName && href && (
-        <Link to={href} className="mb-2 inline-flex items-center gap-1 text-xs font-semibold text-primary hover:underline">
-          <MapPin className="h-3 w-3" />
-          {post.schoolName}
-          {post.schoolCity ? ` · ${post.schoolCity}` : ""}
-        </Link>
-      )}
-      <div className="flex flex-wrap items-center gap-2 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
-        {post.category && <span>{CATEGORY_LABEL[post.category] || post.category}</span>}
-        {date && (
-          <span className="inline-flex items-center gap-1">
-            <Calendar className="h-3 w-3" />
-            {date}
+    <>
+      <button
+        type="button"
+        aria-haspopup="dialog"
+        onClick={() => setOpen(true)}
+        className={cn(
+          "group flex w-full gap-3 rounded-2xl border border-border/70 bg-card p-2.5 text-left shadow-sm transition",
+          "hover:border-primary/35 hover:shadow-card",
+          "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/60",
+        )}
+      >
+        {cover ? (
+          <img
+            src={cover}
+            alt=""
+            className="h-[4.75rem] w-[5.5rem] shrink-0 rounded-xl object-cover sm:h-24 sm:w-28"
+          />
+        ) : (
+          <span className="flex h-[4.75rem] w-[5.5rem] shrink-0 items-center justify-center rounded-xl bg-muted text-[10px] font-semibold uppercase tracking-wide text-muted-foreground sm:h-24 sm:w-28">
+            Objava
           </span>
         )}
-      </div>
-      <h3 className="mt-1 text-lg font-semibold leading-snug">{post.title}</h3>
-      {post.content && <p className="mt-2 whitespace-pre-wrap text-sm leading-relaxed text-muted-foreground">{post.content}</p>}
-      {post.linkUrl && (
-        <a
-          href={post.linkUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="mt-3 inline-block text-sm font-semibold text-primary hover:underline"
-        >
-          Otvori poveznicu
-        </a>
-      )}
-      {post.images.length > 1 && (
-        <div className="mt-3 grid grid-cols-3 gap-2">
-          {post.images.slice(1, 4).map((img) => {
-            const src = schoolMediaUrl(img.url);
-            if (!src) return null;
-            return <img key={img.id} src={src} alt={img.alt || ""} className="h-20 w-full rounded-lg object-cover" />;
-          })}
-        </div>
-      )}
-    </article>
+        <span className="min-w-0 flex-1 py-0.5">
+          {showSchool && post.schoolName && (
+            <span className="mb-1 flex items-center gap-1 truncate text-[11px] font-semibold text-muted-foreground">
+              <MapPin className="h-3 w-3 shrink-0" />
+              <span className="truncate">
+                {post.schoolName}
+                {post.schoolCity ? ` · ${post.schoolCity}` : ""}
+              </span>
+            </span>
+          )}
+          <span className="flex flex-wrap items-center gap-1.5">
+            {post.category && (
+              <span className="rounded-full bg-primary/10 px-2 py-px text-[10px] font-semibold uppercase tracking-[0.12em] text-primary">
+                {SCHOOL_POST_CATEGORY_LABEL[post.category] || post.category}
+              </span>
+            )}
+            {date && (
+              <span className="inline-flex items-center gap-0.5 text-[11px] font-medium text-muted-foreground">
+                <Calendar className="h-3 w-3" />
+                {date}
+              </span>
+            )}
+          </span>
+          <span className="mt-1 block text-sm font-bold leading-snug tracking-tight">{post.title}</span>
+          {preview ? (
+            <span className="mt-0.5 block text-xs leading-relaxed text-muted-foreground line-clamp-2">{preview}</span>
+          ) : null}
+          <span className="mt-1.5 inline-flex items-center gap-0.5 text-[11px] font-semibold text-primary">
+            Otvori
+            <ArrowRight className="h-3 w-3 transition group-hover:translate-x-0.5" />
+          </span>
+        </span>
+      </button>
+      <SchoolPostDialog open={open} onOpenChange={setOpen} post={post} showSchool={showSchool} />
+    </>
   );
 }

@@ -124,7 +124,63 @@ export function schoolMediaUrl(path?: string | null): string | null {
   if (!path) return null;
   if (/^https?:\/\//i.test(path)) return path;
   const rel = path.startsWith("/") ? path : `/${path}`;
+  if (rel.startsWith("/schools/") || rel.startsWith("/team/")) {
+    const base = (import.meta.env.BASE_URL || "/").replace(/\/$/, "");
+    return `${base}${rel}`;
+  }
   return `${API_BASE_URL}${rel}`;
+}
+
+/** Interni povratak nakon prijave škole — bez otvorenog redirecta. */
+export function safeSchoolReturnPath(next: string | null | undefined): string {
+  const raw = String(next || "").trim();
+  if (!raw.startsWith("/") || raw.startsWith("//") || raw.includes("://") || raw.includes("\\")) {
+    return "/skola/dashboard";
+  }
+  const path = raw.split("?")[0].split("#")[0];
+  if (path === "/skola" || path === "/skola/dashboard") return path;
+  if (path.startsWith("/srednje-skole/") && !path.includes("..")) return path;
+  return "/skola/dashboard";
+}
+
+const MAX_POST_IMAGES = 6;
+
+export async function publishSchoolPostWithImages(body: {
+  title: string;
+  content: string;
+  status?: SchoolPostStatus;
+  category?: string;
+  linkUrl?: string;
+  files?: File[];
+}): Promise<ApiResponse<SchoolPost> & { imageWarning?: string }> {
+  const created = await createSchoolPost({
+    title: body.title,
+    content: body.content,
+    status: body.status,
+    category: body.category,
+    linkUrl: body.linkUrl,
+  });
+  if (!created.success || !created.data?.id) return created;
+  const files = (body.files || []).slice(0, MAX_POST_IMAGES);
+  let failed = 0;
+  for (const file of files) {
+    const form = new FormData();
+    form.append("file", file);
+    form.append("kind", "post");
+    form.append("postId", String(created.data.id));
+    const up = await uploadSchoolFile(form);
+    if (!up.success) failed += 1;
+  }
+  if (failed > 0) {
+    return {
+      ...created,
+      imageWarning:
+        failed === files.length
+          ? "Objava je spremljena, ali slike nisu prenesene."
+          : "Objava je spremljena, ali neke slike nisu prenesene.",
+    };
+  }
+  return created;
 }
 
 export async function schoolLogin(params: {

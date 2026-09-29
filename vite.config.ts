@@ -117,6 +117,9 @@ export default defineConfig(({ mode }) => {
       hmr: {
         overlay: false,
       },
+      watch: {
+        ignored: ["**/data/faculty-credentials/**", "**/data/school-credentials/**"],
+      },
       proxy: {
         "/api": {
           target: "http://127.0.0.1:3000",

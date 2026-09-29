@@ -47,6 +47,8 @@ const perks = [
 
 /** Pro ponuda je najava; naplata i aktivacija još nisu uključene. */
 const SHOW_PREMIUM_TEASER = true;
+/** Kad je false, Pro marker ostaje na rubu, ali ne otvara ponudu. Dialog i sadržaj ostaju u kodu. */
+const PREMIUM_TEASER_OPENS_OFFER = false;
 
 type ProSound = "open" | "close";
 
@@ -112,7 +114,9 @@ const MojPutPremiumTeaser = () => {
       {/* Desktop / tablet: animirani premium marker na desnom rubu */}
       <motion.button
         type="button"
-        onClick={() => handleOpenChange(true)}
+        disabled={!PREMIUM_TEASER_OPENS_OFFER}
+        tabIndex={PREMIUM_TEASER_OPENS_OFFER ? 0 : -1}
+        onClick={PREMIUM_TEASER_OPENS_OFFER ? () => handleOpenChange(true) : undefined}
         initial={{ x: 56, opacity: 0 }}
         animate={{
           x: 0,
@@ -128,15 +132,17 @@ const MojPutPremiumTeaser = () => {
           opacity: { duration: 0.35, delay: 0.4 },
           boxShadow: { duration: 2.8, repeat: Infinity, ease: "easeInOut" },
         }}
-        whileHover={{ x: -7, scale: 1.04 }}
-        whileTap={{ scale: 0.96 }}
+        whileHover={PREMIUM_TEASER_OPENS_OFFER ? { x: -7, scale: 1.04 } : undefined}
+        whileTap={PREMIUM_TEASER_OPENS_OFFER ? { scale: 0.96 } : undefined}
         className={cn(
           "group fixed z-[45] hidden overflow-hidden md:flex",
           "right-0 top-[clamp(7rem,30vh,38%)] -translate-y-1/2",
           "w-[3.65rem] flex-col items-center gap-1.5 rounded-l-[1.35rem] border border-r-0 border-amber-300/50",
           "bg-[linear-gradient(155deg,#17120b_0%,#090b14_56%,#111827_100%)] py-4 text-amber-100",
+          !PREMIUM_TEASER_OPENS_OFFER && "pointer-events-none cursor-default disabled:opacity-100",
         )}
-        aria-label="MojPut Pro — pregled ponude"
+        aria-hidden={!PREMIUM_TEASER_OPENS_OFFER}
+        aria-label={PREMIUM_TEASER_OPENS_OFFER ? "MojPut Pro — pregled ponude" : undefined}
       >
         <span
           aria-hidden
@@ -154,7 +160,9 @@ const MojPutPremiumTeaser = () => {
       {/* Mobitel: ikona iznad chatbota */}
       <motion.button
         type="button"
-        onClick={() => handleOpenChange(true)}
+        disabled={!PREMIUM_TEASER_OPENS_OFFER}
+        tabIndex={PREMIUM_TEASER_OPENS_OFFER ? 0 : -1}
+        onClick={PREMIUM_TEASER_OPENS_OFFER ? () => handleOpenChange(true) : undefined}
         initial={{ scale: 0, opacity: 0 }}
         animate={{
           scale: 1,
@@ -170,14 +178,16 @@ const MojPutPremiumTeaser = () => {
           opacity: { duration: 0.3, delay: 0.35 },
           boxShadow: { duration: 2.8, repeat: Infinity, ease: "easeInOut" },
         }}
-        whileTap={{ scale: 0.9 }}
+        whileTap={PREMIUM_TEASER_OPENS_OFFER ? { scale: 0.9 } : undefined}
         className={cn(
           "fixed z-[45] flex overflow-hidden md:hidden",
           "bottom-[calc(6.25rem+env(safe-area-inset-bottom,0px))] right-6",
           "size-12 items-center justify-center rounded-full border border-amber-300/45",
           "bg-[linear-gradient(145deg,#211607,#090b14_65%)] text-amber-200",
+          !PREMIUM_TEASER_OPENS_OFFER && "pointer-events-none cursor-default disabled:opacity-100",
         )}
-        aria-label="MojPut Pro"
+        aria-hidden={!PREMIUM_TEASER_OPENS_OFFER}
+        aria-label={PREMIUM_TEASER_OPENS_OFFER ? "MojPut Pro" : undefined}
       >
         <motion.span
           aria-hidden

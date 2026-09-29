@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
-import { Navigate } from "react-router-dom";
+import { Link, Navigate } from "react-router-dom";
 import { CheckCircle2, ImagePlus, LayoutDashboard, Newspaper, Settings, UserRound, Video } from "lucide-react";
+import { facultyInitial } from "@/lib/facultyCatalog";
 import Layout from "@/components/Layout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -171,7 +172,6 @@ const FacultyDashboard = () => {
       type: "video",
       url: embedUrl,
       title: mediaTitle || "Novi video",
-      thumbnailUrl: "https://placehold.co/900x600?text=Video",
     });
     setMediaTitle("");
     setMediaVideoUrl("");
@@ -189,9 +189,14 @@ const FacultyDashboard = () => {
               Prijavljen fakultet: <span className="font-medium text-foreground">{faculty?.name ?? "Nepoznato"}</span>
             </p>
           </div>
-          <Button variant="outline" onClick={handleLogout}>
-            Odjava
-          </Button>
+          <div className="flex flex-wrap gap-2">
+            <Button variant="outline" asChild>
+              <Link to={`/fakulteti/${session.facultyId}`}>Javni profil</Link>
+            </Button>
+            <Button variant="outline" onClick={handleLogout}>
+              Odjava
+            </Button>
+          </div>
         </div>
         {success && (
           <div className="mb-6 rounded-xl border border-primary/20 bg-primary/10 px-4 py-3 text-sm text-primary flex items-center gap-2">
@@ -243,11 +248,21 @@ const FacultyDashboard = () => {
 
               <article className="rounded-2xl border bg-card p-6 shadow-card">
                 <h2 className="text-lg font-semibold mb-4">Live preview</h2>
-                <div className="rounded-2xl overflow-hidden border">
-                  <img src={profileForm.coverImageUrl || "https://placehold.co/1200x320?text=Cover"} className="w-full h-32 object-cover" />
+                <div className="overflow-hidden rounded-2xl border">
+                  {profileForm.coverImageUrl ? (
+                    <img src={profileForm.coverImageUrl} alt="" className="h-32 w-full object-cover" />
+                  ) : (
+                    <div className="h-24 bg-gradient-to-r from-primary/25 via-primary/10 to-transparent" />
+                  )}
                   <div className="p-4">
                     <div className="-mt-12">
-                      <img src={profileForm.logoUrl || "https://placehold.co/120x120?text=Logo"} className="w-16 h-16 rounded-xl border-4 border-background object-cover" />
+                      {profileForm.logoUrl ? (
+                        <img src={profileForm.logoUrl} alt="" className="h-16 w-16 rounded-xl border-4 border-background object-cover" />
+                      ) : (
+                        <div className="flex h-16 w-16 items-center justify-center rounded-xl border-4 border-background bg-primary text-lg font-extrabold text-primary-foreground">
+                          {facultyInitial(profileForm.name || faculty?.name || "F")}
+                        </div>
+                      )}
                     </div>
                     <h3 className="mt-3 font-semibold text-lg">{profileForm.name || "Naziv fakulteta"}</h3>
                     <p className="text-sm text-muted-foreground">{profileForm.city || "Grad"} • {profileForm.area || "Područje"}</p>
@@ -318,7 +333,17 @@ const FacultyDashboard = () => {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   {(faculty?.media || []).map((item) => (
                     <div key={item.id} className="rounded-xl border p-3">
-                      <img src={item.type === "video" ? (item.thumbnailUrl || "https://placehold.co/600x360?text=Video") : item.url} className="w-full h-28 object-cover rounded-lg" />
+                      {item.type === "video" && !item.thumbnailUrl ? (
+                        <div className="flex h-28 w-full items-center justify-center rounded-lg bg-muted text-xs text-muted-foreground">
+                          Video
+                        </div>
+                      ) : (
+                        <img
+                          src={item.type === "video" ? item.thumbnailUrl : item.url}
+                          alt=""
+                          className="h-28 w-full rounded-lg object-cover"
+                        />
+                      )}
                       <p className="text-sm font-medium mt-2">{item.title}</p>
                       <Button
                         size="sm"

@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
-import { Loader2 } from "lucide-react";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
+import { ArrowLeft, Loader2 } from "lucide-react";
 import Layout from "@/components/Layout";
 import PageSeo from "@/components/seo/PageSeo";
 import SchoolLoginForm from "@/components/school/SchoolLoginForm";
 import { authMe, userFromAuthMe } from "@/lib/auth";
+import { safeSchoolReturnPath } from "@/lib/schoolCmsApi";
 
 export default function SchoolLogin() {
   const navigate = useNavigate();
@@ -17,7 +18,7 @@ export default function SchoolLogin() {
       if (!alive) return;
       const user = userFromAuthMe(res);
       if (user && (user.user_type === "skola" || user.school)) {
-        navigate("/skola/dashboard", { replace: true });
+        navigate(safeSchoolReturnPath(searchParams.get("next")), { replace: true });
         return;
       }
       setChecking(false);
@@ -25,7 +26,7 @@ export default function SchoolLogin() {
     return () => {
       alive = false;
     };
-  }, [navigate]);
+  }, [navigate, searchParams]);
 
   if (checking) {
     return (
@@ -44,8 +45,21 @@ export default function SchoolLogin() {
         description="Prijava školskog računa za uređivanje profila i objava na MojPut Junioru."
         canonical="https://mojput.com/srednje-skole/prijava"
       />
-      <section className="container mx-auto max-w-md px-4 py-10 md:py-16">
-        <SchoolLoginForm resetOk={searchParams.get("reset") === "ok"} />
+      <section className="relative flex min-h-[calc(100vh-4rem)] items-center">
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-x-0 top-0 h-64 bg-[var(--hero-gradient-soft)] opacity-70 blur-3xl"
+        />
+        <div className="container relative mx-auto max-w-md px-4 py-8 md:py-12">
+          <Link
+            to="/srednje-skole/profili"
+            className="mb-6 inline-flex items-center gap-1.5 text-sm font-medium text-muted-foreground hover:text-foreground"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Natrag na škole
+          </Link>
+          <SchoolLoginForm resetOk={searchParams.get("reset") === "ok"} />
+        </div>
       </section>
     </Layout>
   );

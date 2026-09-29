@@ -9,24 +9,34 @@ type FacultyMediaCardProps = {
 };
 
 const FacultyMediaCard = ({ item, onOpen }: FacultyMediaCardProps) => {
-  const preview = item.type === "video" ? item.thumbnailUrl || item.url : item.url;
+  const preview = item.type === "video" ? item.thumbnailUrl : item.url;
   return (
     <button
       type="button"
       onClick={() => onOpen(item)}
-      className="group relative overflow-hidden rounded-2xl border bg-card shadow-card transition-all duration-300 hover:shadow-card-hover hover:-translate-y-0.5"
+      className="group relative overflow-hidden rounded-2xl border bg-card shadow-card transition-all duration-300 hover:-translate-y-0.5 hover:shadow-card-hover"
     >
-      <img src={preview} alt={item.title} className="h-44 w-full object-cover transition-transform duration-300 group-hover:scale-[1.03]" />
+      {preview ? (
+        <img
+          src={preview}
+          alt={item.title}
+          className="h-44 w-full object-cover transition-transform duration-300 group-hover:scale-[1.03]"
+        />
+      ) : (
+        <div className="flex h-44 w-full items-center justify-center bg-muted">
+          <Play className="h-8 w-8 text-muted-foreground" />
+        </div>
+      )}
       <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/65 to-transparent p-3 text-left text-white">
         <p className="text-sm font-medium">{item.title}</p>
       </div>
-      {item.type === "video" && (
+      {item.type === "video" && preview ? (
         <div className="absolute inset-0 flex items-center justify-center">
           <span className="rounded-full bg-background/90 p-3 text-foreground">
-            <Play className="w-5 h-5" />
+            <Play className="h-5 w-5" />
           </span>
         </div>
-      )}
+      ) : null}
     </button>
   );
 };

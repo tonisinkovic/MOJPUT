@@ -29,4 +29,10 @@ describe("school slugs", () => {
     expect(schoolIdFromSlug("profili", highSchools)).toBeNull();
     expect(schoolIdFromSlug("nepostoji-xyz", highSchools)).toBeNull();
   });
+
+  it("Jure Kaštelan Omiš ima predvidiv slug", () => {
+    const school = highSchools.find((item) => item.id === "ss-304");
+    expect(school).toBeTruthy();
+    expect(slugForSchool(school!, highSchools)).toBe("srednja-skola-jure-kastelan-omis");
+  });
 });

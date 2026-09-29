@@ -6769,7 +6769,7 @@ export const highSchools: HighSchool[] = [
     "postalCode": "21310",
     "category": "Srednja škola",
     "alsoElementary": false,
-    "website": "https://ssjk.hr",
+    "website": "https://ss-jkastelan-omis.skole.hr/",
     "emails": [
       "ured@ss-jkastelan-omis.skole.hr"
     ],

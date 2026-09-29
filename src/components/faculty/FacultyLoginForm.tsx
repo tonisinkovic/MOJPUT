@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { Eye, EyeOff, GraduationCap, LogIn } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { loginFaculty } from "@/lib/facultyStore";
+import { cn } from "@/lib/utils";
 
 type Props = {
   compact?: boolean;
@@ -10,7 +11,7 @@ type Props = {
 
 export default function FacultyLoginForm({ compact = false }: Props) {
   const navigate = useNavigate();
-  const [email, setEmail] = useState("");
+  const [login, setLogin] = useState("");
   const [password, setPassword] = useState("");
   const [showPw, setShowPw] = useState(false);
   const [error, setError] = useState("");
@@ -18,12 +19,12 @@ export default function FacultyLoginForm({ compact = false }: Props) {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
-    if (!email.trim() || !password) {
-      setError("Unesi email i lozinku.");
+    if (!login.trim() || !password) {
+      setError("Unesi korisničko ime ili email i lozinku.");
       return;
     }
 
-    const session = loginFaculty(email.trim(), password);
+    const session = loginFaculty(login.trim(), password);
     if (!session) {
       setError("Neispravni podaci za prijavu fakulteta.");
       return;
@@ -33,11 +34,11 @@ export default function FacultyLoginForm({ compact = false }: Props) {
 
   return (
     <div
-      className={
+      className={cn(
         compact
           ? "rounded-2xl border-2 border-primary/20 bg-card p-4 shadow-card sm:p-5"
-          : "rounded-3xl border-2 border-primary/20 bg-card p-6 shadow-card md:p-8"
-      }
+          : "rounded-3xl border border-border/70 bg-card p-6 shadow-[var(--shadow-elevated)] md:p-8",
+      )}
     >
       <div className="mb-4 flex items-center gap-3">
         <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-primary text-primary-foreground">
@@ -49,15 +50,15 @@ export default function FacultyLoginForm({ compact = false }: Props) {
         </div>
       </div>
       <form className="space-y-3" onSubmit={handleSubmit}>
-        <label className="block text-sm font-medium" htmlFor={compact ? "faculty-email-compact" : "faculty-email"}>
-          Email
+        <label className="block text-sm font-medium" htmlFor={compact ? "faculty-login-compact" : "faculty-login"}>
+          Email ili korisničko ime
           <input
-            id={compact ? "faculty-email-compact" : "faculty-email"}
-            type="email"
+            id={compact ? "faculty-login-compact" : "faculty-login"}
+            type="text"
             className="mt-1.5 w-full rounded-xl border-2 border-border bg-background px-3 py-2 text-sm"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            placeholder="fakultet@email.hr"
+            value={login}
+            onChange={(e) => setLogin(e.target.value)}
+            placeholder="npr. fer-zg ili fer-zg@fakultet.mojput.hr"
             autoComplete="username"
             required
           />
@@ -85,7 +86,7 @@ export default function FacultyLoginForm({ compact = false }: Props) {
             </button>
           </div>
         </label>
-        {error && <p className="text-sm text-destructive">{error}</p>}
+        {error ? <p className="text-sm text-destructive">{error}</p> : null}
         <Button type="submit" className="w-full">
           <LogIn className="h-4 w-4" />
           <span className="ml-2">Prijava</span>

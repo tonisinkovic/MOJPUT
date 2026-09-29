@@ -544,7 +544,7 @@ export default function SrednjaKalkulator() {
     setRazred8((prev) => ({ ...prev, [field]: value }));
 
   return (
-    <div className="mx-auto max-w-4xl">
+    <div className="mx-auto w-full max-w-7xl">
       <header className="relative mb-6 overflow-hidden rounded-[2rem] border border-primary/20 bg-gradient-to-br from-primary/10 via-card to-amber-500/10 p-5 shadow-card sm:p-8">
         <div className="pointer-events-none absolute -right-16 -top-16 h-44 w-44 rounded-full bg-primary/15 blur-3xl" />
 
@@ -562,7 +562,7 @@ export default function SrednjaKalkulator() {
           <h1 className="mt-2.5 text-balance text-2xl font-extrabold tracking-tight sm:mt-3 sm:text-5xl">
             Kalkulator bodova
           </h1>
-          <p className="mt-2 max-w-2xl text-pretty text-sm leading-relaxed text-muted-foreground sm:mt-3 sm:text-base">
+          <p className="mt-2 max-w-3xl text-pretty text-sm leading-relaxed text-muted-foreground sm:mt-3 sm:text-base">
             Odaberi školu i program, unesi ocjene iz osnovne škole i saznaj lanjski prag te svoje šanse za
             upis.
           </p>

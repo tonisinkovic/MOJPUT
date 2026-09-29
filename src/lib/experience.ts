@@ -70,6 +70,14 @@ export function resolveExperienceMode(
   return getStoredExperience() ?? "senior";
 }
 
+/** Početni ekran odabranog Junior/Senior iskustva — ne uvodni odabir na /. */
+export function experienceHomePath(mode?: MojPutExperienceMode | null): string {
+  const resolved = mode === undefined ? getStoredExperience() : mode;
+  if (resolved === "junior") return "/?experience=junior";
+  if (resolved === "senior") return "/?experience=senior";
+  return "/";
+}
+
 export function onExperienceChange(callback: () => void): () => void {
   window.addEventListener(CHANGE_EVENT, callback);
   window.addEventListener("storage", callback);

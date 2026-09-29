@@ -3,9 +3,12 @@ export type Faculty = {
   name: string;
   city: string;
   area: string;
+  university: string;
+  universityType: string;
+  levels: string[];
   description: string;
   longDescription?: string;
-  logoUrl: string;
+  logoUrl?: string;
   coverImageUrl?: string;
   websiteUrl?: string;
   studentCount?: number;

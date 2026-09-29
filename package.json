@@ -29,7 +29,8 @@
     "clear:auth": "node scripts/clear-auth-users.cjs",
     "clear:forum": "node scripts/clear-forum.cjs",
     "setup:moderator": "node scripts/ensure-moderator-user.cjs",
-    "seed:schools": "node scripts/seed-school-accounts.cjs"
+    "seed:schools": "node scripts/seed-school-accounts.cjs",
+    "seed:faculties": "npx --yes tsx scripts/generate-faculty-credentials.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",

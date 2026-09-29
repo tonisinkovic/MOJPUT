@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Compass, ArrowUpRight } from "lucide-react";
-import { getStoredExperience, onExperienceChange } from "@/lib/experience";
+import { experienceHomePath, getStoredExperience, onExperienceChange } from "@/lib/experience";
 
 const footerLinks = [
   {
@@ -82,7 +82,7 @@ const Footer = () => {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           <div>
             <Link
-              to="/"
+              to={experienceHomePath()}
               className="group inline-flex items-center gap-2.5 font-bold text-lg mb-4"
             >
               <div className="w-9 h-9 rounded-xl gradient-hero flex items-center justify-center shadow-md shadow-primary/20 ring-1 ring-primary/20 transition-transform duration-300 group-hover:scale-105 group-hover:rotate-3">

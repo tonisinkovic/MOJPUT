@@ -1,8 +1,8 @@
 import { useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import { motion } from "framer-motion";
-import { ArrowUpRight, GraduationCap, MapPin, ShieldCheck, Sparkles } from "lucide-react";
+import { ArrowUpRight, Building2, Calculator, GraduationCap, MapPin, ShieldCheck } from "lucide-react";
 import Layout from "@/components/Layout";
+import PageSeo from "@/components/seo/PageSeo";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -15,6 +15,7 @@ import {
 import InfoPill from "@/components/faculty/InfoPill";
 import FacultyPostCard from "@/components/faculty/FacultyPostCard";
 import FacultyMediaCard from "@/components/faculty/FacultyMediaCard";
+import { facultyInitial } from "@/lib/facultyCatalog";
 import { getFacultyById, getFacultyPosts } from "@/lib/facultyStore";
 
 const FacultyProfile = () => {
@@ -27,9 +28,16 @@ const FacultyProfile = () => {
   if (!faculty) {
     return (
       <Layout>
+        <PageSeo
+          title="Fakultet nije pronađen | MojPut"
+          description="Traženi fakultet ne postoji u MojPut katalogu."
+        />
         <section className="container py-16">
-          <h1 className="text-2xl font-bold">Fakultet nije pronađen</h1>
-          <p className="text-muted-foreground mt-2">Provjeri URL ili odaberi fakultet iz liste profila.</p>
+          <h1 className="text-2xl font-extrabold tracking-tight">Fakultet nije pronađen</h1>
+          <p className="mt-2 text-muted-foreground">Provjeri poveznicu ili se vrati na popis fakulteta.</p>
+          <Button className="mt-4" asChild>
+            <Link to="/fakulteti">Svi fakulteti</Link>
+          </Button>
         </section>
       </Layout>
     );
@@ -37,145 +45,160 @@ const FacultyProfile = () => {
 
   const media = faculty.media ?? [];
   const activeMedia = media.find((item) => item.id === activeMediaId) || null;
-  const infoItems = [
-    { label: "Grad", value: faculty.city, icon: <MapPin className="w-4 h-4" /> },
-    { label: "Područje", value: faculty.area, icon: <Sparkles className="w-4 h-4" /> },
-    {
-      label: "Broj studenata",
-      value: faculty.studentCount ? `${faculty.studentCount.toLocaleString("hr-HR")}+` : "N/A",
-      icon: <GraduationCap className="w-4 h-4" />,
-    },
-  ];
+  const about = faculty.longDescription || faculty.description;
+  const levelsLabel = faculty.levels.length ? faculty.levels.join(" · ") : "nije navedeno";
+  const canonical = `https://mojput.com/fakulteti/${faculty.id}`;
 
   return (
     <Layout>
-      <section className="container py-12 md:py-16 space-y-6 md:space-y-8">
-        <motion.article
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.3 }}
-          className="relative overflow-hidden rounded-3xl border bg-card shadow-card"
-        >
-          <img
-            src={faculty.coverImageUrl || "https://placehold.co/1200x400?text=Faculty+Cover"}
-            alt={`${faculty.name} naslovna`}
-            className="h-36 md:h-48 w-full object-cover"
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-background/80 to-transparent" />
+      <PageSeo
+        title={`${faculty.name} – ${faculty.city} | MojPut`}
+        description={`${faculty.name} pri ${faculty.university} u gradu ${faculty.city}. Opis, kontakti i novosti ustanove.`}
+        canonical={canonical}
+        image={faculty.coverImageUrl || faculty.logoUrl}
+      />
+      <section className="container space-y-6 py-10 md:space-y-8 md:py-14">
+        <article className="relative overflow-hidden rounded-3xl border bg-card shadow-card">
+          {faculty.coverImageUrl ? (
+            <img src={faculty.coverImageUrl} alt="" className="h-36 w-full object-cover md:h-48" />
+          ) : (
+            <div className="h-28 bg-gradient-to-r from-primary/25 via-primary/10 to-transparent md:h-36" />
+          )}
           <div className="relative px-5 pb-6 md:px-8 md:pb-8">
-            <div className="-mt-10 md:-mt-12 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+            <div className="-mt-10 flex flex-col gap-4 md:-mt-12 md:flex-row md:items-end md:justify-between">
               <div className="flex items-end gap-4">
-                <img
-                  src={faculty.logoUrl}
-                  alt={`${faculty.name} logo`}
-                  className="w-20 h-20 md:w-24 md:h-24 rounded-2xl border-4 border-background object-cover shadow-lg"
-                />
+                {faculty.logoUrl ? (
+                  <img
+                    src={faculty.logoUrl}
+                    alt={`Logo ${faculty.name}`}
+                    className="h-20 w-20 rounded-2xl border-4 border-background object-cover shadow-lg md:h-24 md:w-24"
+                  />
+                ) : (
+                  <div className="flex h-20 w-20 items-center justify-center rounded-2xl border-4 border-background bg-primary text-2xl font-extrabold tracking-tight text-primary-foreground shadow-lg md:h-24 md:w-24 md:text-3xl">
+                    {facultyInitial(faculty.name)}
+                  </div>
+                )}
                 <div>
-                  <h1 className="text-2xl md:text-4xl font-extrabold tracking-tight">{faculty.name}</h1>
-                  <p className="text-sm md:text-base text-muted-foreground mt-1">{faculty.city}</p>
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-primary">{faculty.area}</p>
+                  <h1 className="mt-0.5 text-2xl font-extrabold leading-tight tracking-tight md:text-4xl">
+                    {faculty.name}
+                  </h1>
+                  <p className="mt-1.5 flex items-center gap-1.5 text-sm font-medium tracking-tight text-muted-foreground md:text-base">
+                    <MapPin className="h-3.5 w-3.5 shrink-0" />
+                    {faculty.city} · {faculty.university}
+                  </p>
                 </div>
               </div>
               <div className="flex flex-wrap items-center gap-2">
-                {faculty.verified && (
+                {faculty.verified ? (
                   <Badge className="gap-1">
-                    <ShieldCheck className="w-3.5 h-3.5" />
+                    <ShieldCheck className="h-3.5 w-3.5" />
                     Verificiran fakultet
                   </Badge>
-                )}
-                <Button variant="outline" asChild>
-                  <a href="#o-fakultetu">Saznaj više</a>
+                ) : null}
+                <Button variant="outline" className="rounded-full" asChild>
+                  <Link to="/fakulteti">Svi fakulteti</Link>
                 </Button>
-                <Button asChild>
-                  <a href={faculty.websiteUrl || "#"} target="_blank" rel="noreferrer">
-                    Posjeti stranicu
-                    <ArrowUpRight className="w-4 h-4" />
-                  </a>
+                <Button className="rounded-full" asChild>
+                  <Link to="/kalkulator-fakulteti">
+                    Kalkulator
+                    <Calculator className="ml-1 h-4 w-4" />
+                  </Link>
                 </Button>
+                {faculty.websiteUrl ? (
+                  <Button variant="outline" className="rounded-full" asChild>
+                    <a href={faculty.websiteUrl} target="_blank" rel="noreferrer">
+                      Web fakulteta
+                      <ArrowUpRight className="ml-1 h-4 w-4" />
+                    </a>
+                  </Button>
+                ) : null}
               </div>
             </div>
           </div>
-        </motion.article>
-
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 md:gap-4">
-          {infoItems.map((item) => (
-            <InfoPill key={item.label} icon={item.icon} label={item.label} value={item.value} />
-          ))}
-        </div>
-
-        <article id="o-fakultetu" className="rounded-2xl border bg-card p-5 md:p-7 shadow-card scroll-mt-24">
-          <h2 className="text-xl md:text-2xl font-semibold">O fakultetu</h2>
-          <p className={`mt-3 text-muted-foreground leading-relaxed ${descriptionExpanded ? "" : "line-clamp-5"}`}>
-            {faculty.longDescription || faculty.description}
-          </p>
-          <Button
-            type="button"
-            variant="ghost"
-            className="mt-2 px-0 text-primary hover:text-primary"
-            onClick={() => setDescriptionExpanded((current) => !current)}
-          >
-            {descriptionExpanded ? "Prikaži manje" : "Pročitaj više"}
-          </Button>
         </article>
 
-        <section>
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-3 md:gap-4">
+          <InfoPill icon={<MapPin className="h-4 w-4" />} label="Grad" value={faculty.city} />
+          <InfoPill icon={<Building2 className="h-4 w-4" />} label="Ustanova" value={faculty.universityType} />
+          <InfoPill icon={<GraduationCap className="h-4 w-4" />} label="Razina" value={levelsLabel} />
+        </div>
+
+        <article id="o-fakultetu" className="scroll-mt-24 rounded-2xl border bg-card p-5 shadow-card md:p-7">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-primary">O fakultetu</p>
+          <h2 className="mt-1 text-xl font-extrabold tracking-tight md:text-2xl">{faculty.university}</h2>
+          <p className={`mt-4 text-sm leading-relaxed text-foreground/80 md:text-[0.95rem] ${descriptionExpanded ? "" : "line-clamp-5"}`}>
+            {about}
+          </p>
+          {about.length > 220 ? (
+            <Button
+              type="button"
+              variant="ghost"
+              className="mt-2 px-0 text-primary hover:text-primary"
+              onClick={() => setDescriptionExpanded((current) => !current)}
+            >
+              {descriptionExpanded ? "Prikaži manje" : "Pročitaj više"}
+            </Button>
+          ) : null}
+        </article>
+
+        <section className="rounded-2xl border bg-card p-5 shadow-card md:p-7">
           <div className="mb-4">
-            <h2 className="text-xl md:text-2xl font-semibold">Objave</h2>
-            <p className="text-sm text-muted-foreground mt-1">Najnovije objave prikazane su prve.</p>
+            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-primary">Novosti</p>
+            <h2 className="mt-1 text-xl font-extrabold tracking-tight md:text-2xl">Objave fakulteta</h2>
+            <p className="mt-1 text-sm text-muted-foreground">Najnovije objave prikazane su prve.</p>
           </div>
-          <div className="grid gap-4">
-            {posts.length === 0 ? (
-              <div className="rounded-xl border bg-card p-5 text-sm text-muted-foreground">
-                Ovaj fakultet trenutno nema javnih objava.
-              </div>
-            ) : (
-              posts.map((post) => <FacultyPostCard key={post.id} post={post} />)
-            )}
-          </div>
+          {posts.length === 0 ? (
+            <div className="rounded-xl border border-dashed bg-muted/20 p-5 text-sm text-muted-foreground">
+              Ovaj fakultet trenutno nema javnih objava.
+            </div>
+          ) : (
+            <div className="grid gap-3 sm:grid-cols-2">
+              {posts.map((post) => (
+                <FacultyPostCard key={post.id} post={post} />
+              ))}
+            </div>
+          )}
         </section>
 
-        <section>
+        <section className="rounded-2xl border bg-card p-5 shadow-card md:p-7">
           <div className="mb-4">
-            <h2 className="text-xl md:text-2xl font-semibold">Mediji</h2>
-            <p className="text-sm text-muted-foreground mt-1">Pogledaj fotografije i video sadržaje fakulteta.</p>
+            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-primary">Galerija</p>
+            <h2 className="mt-1 text-xl font-extrabold tracking-tight md:text-2xl">Mediji</h2>
+            <p className="mt-1 text-sm text-muted-foreground">Fotografije i video sadržaji koje je fakultet objavio.</p>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {media.map((item) => (
-              <FacultyMediaCard key={item.id} item={item} onOpen={(entry) => setActiveMediaId(entry.id)} />
-            ))}
-          </div>
+          {media.length === 0 ? (
+            <div className="rounded-xl border border-dashed bg-muted/20 p-5 text-sm text-muted-foreground">
+              Još nema medija na profilu.
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {media.map((item) => (
+                <FacultyMediaCard key={item.id} item={item} onOpen={(entry) => setActiveMediaId(entry.id)} />
+              ))}
+            </div>
+          )}
         </section>
 
         <Dialog open={Boolean(activeMedia)} onOpenChange={(open) => !open && setActiveMediaId(null)}>
-          <DialogContent className="max-w-4xl p-0 overflow-hidden">
-            <DialogHeader className="p-4 border-b">
+          <DialogContent className="max-w-4xl overflow-hidden p-0">
+            <DialogHeader className="border-b p-4">
               <DialogTitle>{activeMedia?.title}</DialogTitle>
               <DialogDescription>Medijski prikaz fakulteta</DialogDescription>
             </DialogHeader>
             {activeMedia?.type === "video" ? (
               <div className="aspect-video">
-                <iframe
-                  title={activeMedia.title}
-                  src={activeMedia.url}
-                  className="w-full h-full"
-                  allowFullScreen
-                />
+                <iframe title={activeMedia.title} src={activeMedia.url} className="h-full w-full" allowFullScreen />
               </div>
             ) : (
-              <img src={activeMedia?.url} alt={activeMedia?.title} className="w-full max-h-[70vh] object-contain bg-black/10" />
+              <img
+                src={activeMedia?.url}
+                alt={activeMedia?.title}
+                className="max-h-[70vh] w-full bg-black/10 object-contain"
+              />
             )}
           </DialogContent>
         </Dialog>
-
-        <div className="fixed left-0 right-0 bottom-4 z-40 px-4">
-          <div className="container">
-            <div className="ml-auto w-full md:w-fit rounded-2xl border bg-card/95 backdrop-blur px-4 py-3 shadow-card flex items-center justify-between gap-4">
-              <p className="text-sm font-medium">Zanima te ovaj fakultet?</p>
-              <Button asChild size="sm">
-                <Link to="/kontakt">Saznaj više</Link>
-              </Button>
-            </div>
-          </div>
-        </div>
       </section>
     </Layout>
   );

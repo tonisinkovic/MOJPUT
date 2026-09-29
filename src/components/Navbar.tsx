@@ -36,7 +36,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { HeaderThemeToggle } from "@/components/HeaderThemeToggle";
 import { authLogout, authMe, userFromAuthMe, type AuthUser } from "@/lib/auth";
-import { getStoredExperience, onExperienceChange } from "@/lib/experience";
+import { experienceHomePath, getStoredExperience, onExperienceChange } from "@/lib/experience";
 import { cn } from "@/lib/utils";
 
 type NavEntry = { label: string; path: string; icon: LucideIcon };
@@ -96,7 +96,12 @@ const Navbar = () => {
   const secondaryNav = isJunior ? secondaryNavJunior : secondaryNavSenior;
   // Cijela lista za mobitel (redoslijed važnosti).
   const navItems: NavEntry[] = [...primaryNav, ...secondaryNav];
-  const accountHome = user?.user_type === "skola" ? "/skola/dashboard" : "/profil";
+  const accountHome =
+    user?.user_type === "skola" && user.school?.slug
+      ? `/srednje-skole/${user.school.slug}`
+      : user?.user_type === "skola"
+        ? "/skola/dashboard"
+        : "/profil";
 
   useEffect(() => {
     let alive = true;
@@ -139,7 +144,9 @@ const Navbar = () => {
       <div className="container flex h-16 items-center justify-between gap-2 md:gap-4">
         <div className="flex min-w-0 shrink-0 items-center gap-1.5 sm:gap-2">
           <Link
-            to="/"
+            to={experienceHomePath()}
+            title={isJunior ? "Početna MojPut Junior" : "Početna MojPut Senior"}
+            aria-label={isJunior ? "Početna MojPut Junior" : "Početna MojPut Senior"}
             className="group flex min-w-0 items-center gap-2 rounded-xl py-1 pr-1 outline-none transition-transform hover:opacity-95 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background sm:gap-2.5 sm:pr-2"
           >
             <div className="relative flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-background shadow-md shadow-primary/20 ring-2 ring-primary/20 transition duration-300 group-hover:scale-[1.04] group-hover:shadow-lg group-hover:shadow-primary/25 md:h-10 md:w-10">

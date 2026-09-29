@@ -9,6 +9,7 @@ import {
   Settings,
   Trash2,
 } from "lucide-react";
+import SchoolPostComposer from "@/components/school/SchoolPostComposer";
 import Layout from "@/components/Layout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -319,6 +320,7 @@ export default function SchoolDashboard() {
           </TabsContent>
 
           <TabsContent value="objave">
+            {editingId ? (
             <form
               className="space-y-3 rounded-2xl border bg-card p-5"
               onSubmit={(e) => {
@@ -326,7 +328,7 @@ export default function SchoolDashboard() {
                 void savePost("PUBLISHED");
               }}
             >
-              <h2 className="font-semibold">{editingId ? "Uredi objavu" : "Nova objava"}</h2>
+              <h2 className="font-semibold">Uredi objavu</h2>
               <Input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Naslov" required />
               <Textarea
                 value={content}
@@ -350,18 +352,25 @@ export default function SchoolDashboard() {
               </div>
               <div className="flex flex-wrap gap-2">
                 <Button type="submit" disabled={saving || !title.trim()}>
-                  Objavi
+                  Spremi
                 </Button>
                 <Button type="button" variant="outline" disabled={saving || !title.trim()} onClick={() => void savePost("DRAFT")}>
                   Spremi draft
                 </Button>
-                {editingId && (
-                  <Button type="button" variant="ghost" onClick={() => { setEditingId(null); setTitle(""); setContent(""); }}>
-                    Odustani
-                  </Button>
-                )}
+                <Button type="button" variant="ghost" onClick={() => { setEditingId(null); setTitle(""); setContent(""); }}>
+                  Odustani
+                </Button>
               </div>
             </form>
+            ) : (
+              <SchoolPostComposer
+                allowDraft
+                onPublished={() => {
+                  loadMe();
+                  loadPosts(statusFilter);
+                }}
+              />
+            )}
 
             <div className="mt-6 flex flex-wrap gap-2">
               {STATUS_FILTERS.map((f) => (

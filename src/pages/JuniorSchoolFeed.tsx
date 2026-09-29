@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { highSchools } from "@/data/highSchools";
 import { slugForSchool } from "@/lib/schoolSlug";
 import { fetchSchoolFeed, type SchoolPost } from "@/lib/schoolCmsApi";
+import { demoSchoolPosts, mergeDemoSchoolPosts } from "@/data/schoolDemoPosts";
 
 const CATEGORIES = [
   { id: "sve", label: "Sve kategorije" },
@@ -49,7 +50,18 @@ export default function JuniorSchoolFeed() {
       from: from || undefined,
     }).then((res) => {
       if (!alive) return;
-      setPosts(res.success && Array.isArray(res.data) ? res.data : []);
+      let list = res.success && Array.isArray(res.data) ? res.data : [];
+      const demo = demoSchoolPosts()[0];
+      if (demo?.schoolSlug) {
+        const cityOk = city === "sve" || city === demo.schoolCity;
+        const catOk = category === "sve" || category === demo.category;
+        const schoolOk = schoolSlug === "sve" || schoolSlug === demo.schoolSlug;
+        const fromOk = !from || (demo.publishedAt && demo.publishedAt.slice(0, 10) >= from);
+        if (cityOk && catOk && schoolOk && fromOk) {
+          list = mergeDemoSchoolPosts(demo.schoolSlug, list);
+        }
+      }
+      setPosts(list);
       setLoading(false);
     });
     return () => {
@@ -125,7 +137,7 @@ export default function JuniorSchoolFeed() {
             Još nema objava za odabrane filtere. Škole mogu objaviti novosti nakon prijave.
           </div>
         ) : (
-          <div className="grid gap-4">
+          <div className="grid gap-3 sm:grid-cols-2">
             {posts.map((post) => (
               <SchoolPostCard key={post.id} post={post} showSchool />
             ))}
