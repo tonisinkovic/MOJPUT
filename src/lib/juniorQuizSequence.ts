@@ -7,9 +7,10 @@ import {
   calculateQuizProfile,
   juniorQuestions,
   type JuniorAnswers,
-  type JuniorQuestion,
-  type JuniorStudentProfile,
   type JuniorProgramMatch,
+  type JuniorQuestion,
+  type JuniorSignalKey,
+  type JuniorStudentProfile,
 } from "@/lib/juniorQuizEngine";
 
 const byPool = (pool: JuniorQuestion["pool"]) =>
@@ -19,68 +20,93 @@ export const CORE_QUESTIONS = byPool("core");
 export const CONTEXT_QUESTIONS = byPool("context");
 export const FOLLOWUP_QUESTIONS = byPool("followup");
 
+/** Likert 1–5 → 0–100. Nedostajući signal se ne ubraja (nije „tako-tako”). */
+const answeredSignal = (profile: JuniorStudentProfile, key: JuniorSignalKey): number | null => {
+  const value = profile.signals[key];
+  if (typeof value !== "number") return null;
+  return ((value - 1) / 4) * 100;
+};
+
+const meanKnown = (parts: Array<number | null>): number => {
+  const known = parts.filter((part): part is number => part !== null);
+  if (!known.length) return 0;
+  return known.reduce((sum, part) => sum + part, 0) / known.length;
+};
+
 export const BRANCH_PACKS: { id: string; pool: JuniorQuestion["pool"]; score: (p: JuniorStudentProfile) => number }[] = [
   {
     id: "health",
     pool: "health",
     score: (p) =>
-      p.interests.people +
-      p.interests.science +
-      p.environment.health +
-      (p.signals.health_medicine ?? 3) * 8 +
-      (p.signals.helping_people ?? 3) * 6,
+      meanKnown([
+        p.interests.people,
+        p.interests.science,
+        p.environment.health,
+        answeredSignal(p, "health_medicine"),
+        answeredSignal(p, "helping_people"),
+      ]),
   },
   {
     id: "tech",
     pool: "tech",
     score: (p) =>
-      p.interests.technology +
-      p.thinking.technical +
-      p.environment.computer +
-      (p.signals.tech_computers ?? 3) * 8,
+      meanKnown([
+        p.interests.technology,
+        p.thinking.technical,
+        p.environment.computer,
+        answeredSignal(p, "tech_computers"),
+      ]),
   },
   {
     id: "creative",
     pool: "creative",
     score: (p) =>
-      p.interests.art_design +
-      p.interests.media +
-      p.thinking.creative +
-      (p.signals.art_visual ?? 3) * 7 +
-      (p.signals.music_performance ?? 3) * 6,
+      meanKnown([
+        p.interests.art_design,
+        p.interests.media,
+        p.thinking.creative,
+        answeredSignal(p, "art_visual"),
+        answeredSignal(p, "music_performance"),
+      ]),
   },
   {
     id: "practical",
     pool: "practical",
     score: (p) =>
-      p.interests.practical +
-      p.thinking.practical +
-      p.theoryPractice +
-      (p.signals.hands_on_craft ?? 3) * 6 +
-      (p.signals.cooking_food ?? 3) * 4,
+      meanKnown([
+        p.interests.practical,
+        p.thinking.practical,
+        p.theoryPractice,
+        answeredSignal(p, "hands_on_craft"),
+        answeredSignal(p, "cooking_food"),
+      ]),
   },
   {
     id: "academic",
     pool: "academic",
     score: (p) =>
-      p.learning.theory +
-      p.thinking.investigative +
-      p.interests.languages +
-      p.interests.society +
-      p.postSchool.faculty,
+      meanKnown([
+        p.learning.theory,
+        p.thinking.investigative,
+        p.interests.languages,
+        p.interests.society,
+        p.postSchool.faculty,
+      ]),
   },
   {
     id: "peoplebiz",
     pool: "peoplebiz",
     score: (p) =>
-      p.interests.economy +
-      p.interests.people +
-      p.thinking.organizational +
-      (p.signals.business_entrepreneur ?? 3) * 7 +
-      (p.signals.languages_travel ?? 3) * 6 +
-      (p.signals.sport_active ?? 3) * 5 +
-      (p.signals.cooking_food ?? 3) * 4 +
-      (p.signals.logistics_transport ?? 3) * 6,
+      meanKnown([
+        p.interests.economy,
+        p.interests.people,
+        p.thinking.organizational,
+        answeredSignal(p, "business_entrepreneur"),
+        answeredSignal(p, "languages_travel"),
+        answeredSignal(p, "sport_active"),
+        answeredSignal(p, "cooking_food"),
+        answeredSignal(p, "logistics_transport"),
+      ]),
   },
 ];
 
@@ -100,11 +126,22 @@ const uniqueIds = (ids: number[]): number[] => {
 
 export const pickBranchQuestionIds = (profile: JuniorStudentProfile): number[] => {
   const ranked = [...BRANCH_PACKS].sort((a, b) => b.score(profile) - a.score(profile));
+  const [first, second, third] = ranked;
+  const s1 = first.score(profile);
+  const s2 = second.score(profile);
+  const s3 = third.score(profile);
+  const gap = 6;
+  const take = (pack: (typeof BRANCH_PACKS)[number], count: number) => byPool(pack.pool).slice(0, count).map((q) => q.id);
   const ids: number[] = [];
-  ids.push(...byPool(ranked[0].pool).map((q) => q.id));
-  ids.push(...byPool(ranked[1].pool).map((q) => q.id));
-  const third = byPool(ranked[2].pool).slice(0, 2).map((q) => q.id);
-  ids.push(...third);
+  if (s1 - s3 <= gap) {
+    ids.push(...take(first, 3), ...take(second, 3), ...take(third, 2));
+  } else if (s1 - s2 <= gap) {
+    ids.push(...take(first, 4), ...take(second, 4));
+  } else {
+    ids.push(...take(first, 4), ...take(second, 3));
+    const probe = byPool(third.pool)[0];
+    if (probe) ids.push(probe.id);
+  }
   return uniqueIds(ids).slice(0, 8);
 };
 
@@ -117,7 +154,14 @@ export const buildMainSequence = (answers: JuniorAnswers, existing?: number[]): 
   }
   const profile = calculateQuizProfile(answers);
   const branchIds = pickBranchQuestionIds(profile);
-  return uniqueIds([...coreIds, ...branchIds, ...contextIds]);
+  const peopleFork =
+    profile.interests.people >= 58 ||
+    (profile.signals.helping_people ?? 0) >= 4 ||
+    (profile.signals.health_medicine ?? 0) >= 4 ||
+    (profile.signals.languages_travel ?? 0) >= 4
+      ? [97]
+      : [];
+  return uniqueIds([...coreIds, ...branchIds, ...peopleFork, ...contextIds]);
 };
 
 export const expandSequenceIfNeeded = (
@@ -152,7 +196,7 @@ export const selectFollowupQuestions = (
   const q92 = FOLLOWUP_QUESTIONS.find((q) => q.id === 92);
   if (healthish && q92 && unused(q92)) ranked.push(q92);
 
-  const creativeish = topNames.some((n) => /dizajn|medij|glazben/i.test(n));
+  const creativeish = topNames.some((n) => /dizajn|medij|glazben|plesa/i.test(n));
   const q93 = FOLLOWUP_QUESTIONS.find((q) => q.id === 93);
   if (creativeish && q93 && unused(q93)) ranked.push(q93);
 

@@ -128,7 +128,13 @@ export default function JuniorSchoolCompare({ compact = false }: { compact?: boo
                 <div className={cn("rounded-xl bg-muted/40 px-2.5 py-2", bestMatch.has(item.key) && "ring-1 ring-primary/40")}>
                   <dt className="text-muted-foreground">Kviz</dt>
                   <dd className="font-semibold">
-                    {item.matchPercentage != null ? `${item.matchPercentage}%` : "—"}
+                    {item.matchPercentage == null
+                      ? "—"
+                      : item.matchPercentage >= 80
+                        ? "Jako blizu"
+                        : item.matchPercentage >= 65
+                          ? "Blizu"
+                          : "Dalje"}
                   </dd>
                 </div>
                 <div className="rounded-xl bg-muted/40 px-2.5 py-2">

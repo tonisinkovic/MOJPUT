@@ -233,6 +233,42 @@ const BY_ID: Partial<Record<number, TypicalDay>> = {
     subjects: "Prodaja, robe, rad s ljudima.",
     after: "Posao u trgovini ili komercijali. Za faks treba još škole.",
   },
+  34: {
+    morning: "Prvo zagrijavanje, onda sala i koreografija.",
+    rhythm: "Tijelo radi cijeli dan. Sat teorije je kraći od probe.",
+    subjects: "Ples, glazba, kondicija, nastup.",
+    after: "Akademija ili plesna karijera. Upis ide preko prijemnog.",
+  },
+  35: {
+    morning: "Prvo cvijeće i materijal, onda aranžman ili vrt.",
+    rhythm: "Ruke, miris, dućan ili teren. Tempo ovisi o narudžbi.",
+    subjects: "Cvijeće, biljke, aranžiranje.",
+    after: "Cvjećarna, vrtni centar ili vlastiti obrt.",
+  },
+  36: {
+    morning: "Prvo tijesto, još dok je vani mrak, onda peć.",
+    rhythm: "Vruće je i rano. Isti pokret se ponavlja dok ne sjedne.",
+    subjects: "Pekarstvo, higijena, pecivo.",
+    after: "Posao u pekari. Za faks treba još škole.",
+  },
+  37: {
+    morning: "Prvo mjera i kroj, onda stroj i šav.",
+    rhythm: "Tiho, precizno, komad po komad.",
+    subjects: "Krojenje, šivanje, odjeća.",
+    after: "Modni obrt ili radionica. Za faks treba još škole.",
+  },
+  38: {
+    morning: "Prvo alat i zaštita, onda lim, brava ili karoserija.",
+    rhythm: "Buka, metal, ruke. Učiš i kako se dio drži.",
+    subjects: "Bravarija, limarija, popravci.",
+    after: "Radionica ili servis. Matura nije u ove 3 godine.",
+  },
+  39: {
+    morning: "Prvo navigacija ili brod, onda vježba na terenu ili simulatoru.",
+    rhythm: "Pravila mora i smjene. Nije uredski posao.",
+    subjects: "Pomorstvo, navigacija, jezici.",
+    after: "Brod, luka ili pomorski fakultet. Ima maturu.",
+  },
 };
 
 export const typicalDayFor = (program: HighSchoolProgram): TypicalDay => {

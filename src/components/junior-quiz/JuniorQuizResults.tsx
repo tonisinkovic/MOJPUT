@@ -72,11 +72,11 @@ const CONFIDENCE_STYLES = {
   low: { label: "Još istražuješ", cls: "bg-orange-500/15 text-orange-600 dark:text-orange-300" },
 } as const;
 
-const MATCH_TONE = (pct: number) => {
-  if (pct >= 80) return "Dosta ti odgovara";
-  if (pct >= 65) return "Moglo bi ti odgovarati";
-  if (pct >= 50) return "Srednje ti odgovara";
-  return "Manje ti odgovara";
+const MATCH_TONE = (score: number, leader: number) => {
+  const gap = leader - score;
+  if (gap <= 2) return "Jako blizu";
+  if (gap <= 6) return "Blizu";
+  return "Dalje";
 };
 
 function trackProgram(programId: number, name: string) {
@@ -107,11 +107,11 @@ function peopleLabel(program: import("@/lib/juniorQuizEngine").HighSchoolProgram
   return "Ponešto rada s ljudima";
 }
 
-function MatchScore({ pct }: { pct: number }) {
+function MatchScore({ score, leader }: { score: number; leader: number }) {
   return (
     <div className="text-right">
-      <div className="text-sm font-extrabold leading-snug text-primary sm:text-base">{MATCH_TONE(pct)}</div>
-      <div className="text-[11px] text-muted-foreground">{pct}% · nije ocjena</div>
+      <div className="text-sm font-extrabold leading-snug text-primary sm:text-base">{MATCH_TONE(score, leader)}</div>
+      <div className="text-[11px] text-muted-foreground">nije ocjena</div>
     </div>
   );
 }
@@ -190,7 +190,7 @@ function ProgramCard({
             ) : null}
           </div>
         </div>
-        <MatchScore pct={rec.matchPercentage} />
+        <MatchScore score={rec.rankScore} leader={recommendations[0]?.rankScore ?? rec.rankScore} />
       </div>
 
       {!compact && !hero ? <p className="mt-3 text-sm text-muted-foreground">{rec.program.description}</p> : null}
@@ -230,6 +230,24 @@ function ProgramCard({
           <span className="font-semibold">Zanima te: </span>
           {rec.interestLine}
         </p>
+      ) : null}
+
+      {hero && city && nearby ? (
+        (() => {
+          const nearest = (nearby.byProgram.get(rec.program.id) ?? [])[0];
+          return nearest ? (
+            <p className="mt-2 flex items-start gap-2 text-sm">
+              <MapPin className="mt-0.5 h-3.5 w-3.5 shrink-0 text-primary" />
+              <span>
+                Škola u blizini: <span className="font-semibold">{nearest.name}</span>, {nearest.city}
+              </span>
+            </p>
+          ) : (
+            <p className="mt-2 text-sm text-muted-foreground">U blizini nema škole za ovaj program u bazi.</p>
+          );
+        })()
+      ) : hero && !city ? (
+        <p className="mt-2 text-sm text-muted-foreground">Upiši grad da vidiš konkretne škole.</p>
       ) : null}
 
       {(hero || full) && (
@@ -531,14 +549,13 @@ export default function JuniorQuizResults({
         <p className="rounded-3xl border border-primary/20 bg-primary/5 px-4 py-3 text-sm leading-relaxed">{analysis.consideringNote}</p>
       ) : null}
 
-      {!city || showDetails ? (
       <div className="rounded-3xl border border-border/70 bg-card/80 p-6 shadow-lg backdrop-blur sm:p-8">
         <div className="flex items-center gap-2">
           <MapPin className="h-5 w-5 text-primary" />
           <h3 className="text-lg font-bold">Gdje živiš?</h3>
         </div>
         <p className="mt-1.5 text-sm text-muted-foreground">
-          Upiši grad. Pokazat ćemo škole s ovim programima do {NEARBY_MAX_KM} km, ako ih imamo u bazi.
+          Upiši grad. Škole s ovim programima pokazujemo do {NEARBY_MAX_KM} km, ako ih imamo u bazi.
         </p>
         {city ? (
           <div className="mt-4 flex flex-wrap items-center gap-3">
@@ -582,18 +599,19 @@ export default function JuniorQuizResults({
           </div>
         )}
       </div>
-      ) : null}
 
       {showDetails ? <JuniorPointsBox /> : null}
 
-      {showDetails && resultSchools.length > 0 ? (
+      {resultSchools.length > 0 ? (
         <div className="rounded-3xl border border-primary/25 bg-primary/5 p-5 shadow-lg sm:p-6">
           <div className="flex items-center gap-2">
             <School className="h-5 w-5 text-primary" />
-            <h3 className="text-lg font-bold">Škole za ove programe</h3>
+            <h3 className="text-lg font-bold">Škole koje možeš pogledati</h3>
           </div>
           <p className="mt-1.5 text-sm text-muted-foreground">
-            {city ? `Blizu ${city}. Prvo program, onda škola.` : "Primjeri iz baze. Upiši grad gore za okolinu."}
+            {city
+              ? `Blizu ${city}. Škola je prvi korak, program kaže što se tamo uči.`
+              : "Primjeri iz baze. Upiši grad gore pa suzi na svoju okolicu."}
           </p>
           <ul className="mt-3 space-y-2">
             {resultSchools.map((item) => (
@@ -617,6 +635,20 @@ export default function JuniorQuizResults({
         </div>
       ) : null}
 
+      {analysis.gymnasiumOffer ? (
+        <div className="rounded-3xl border border-violet-400/40 bg-violet-500/10 p-5 sm:p-6">
+          <div className="flex items-center gap-2">
+            <GraduationCap className="h-5 w-5 text-violet-600 dark:text-violet-300" />
+            <h3 className="text-lg font-bold">Ako još ne znaš koji fakultet</h3>
+          </div>
+          <p className="mt-2 text-sm leading-relaxed">
+            Želiš ići na fakultet, a još nemaš konkretan smjer. Opća gimnazija ostavlja otvorena vrata: svi predmeti, odluka kasnije. Drži je uz ostale prijedloge.
+          </p>
+          <p className="mt-2 text-sm font-semibold">{analysis.gymnasiumOffer.program.name}</p>
+          <p className="mt-1 text-sm text-muted-foreground">{analysis.gymnasiumOffer.program.description}</p>
+        </div>
+      ) : null}
+
       <JuniorHomeTalkCard analysis={analysis} />
 
       <div>
@@ -625,9 +657,12 @@ export default function JuniorQuizResults({
           <h3 className="text-lg font-bold">Što ti se slaže s odgovorima</h3>
         </div>
         <p className="mb-4 text-sm text-muted-foreground">
-          {analysis.indecisive
-            ? "Tri područja koja vrijedi pogledati — nijedno nije jedini točan odgovor."
-            : "Prema tvojim odgovorima, ovo bi ti moglo odgovarati. Prvo program, tek onda škola."}
+          {analysis.recommendations.length >= 3 &&
+          analysis.recommendations[0].rankScore - analysis.recommendations[2].rankScore <= 3
+            ? "Prve tri su skoro izjednačene. Usporedi škole, ne redoslijed."
+            : analysis.indecisive
+              ? "Tri područja koja vrijedi pogledati — nijedno nije jedini točan odgovor."
+              : "Prema tvojim odgovorima, ovo bi ti moglo odgovarati. Škole su gore, ovdje je smjer."}
         </p>
         <div className="grid gap-4">
           {(showDetails ? analysis.recommendations : overviewRecs).map((rec, i) => (

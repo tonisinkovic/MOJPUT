@@ -9,7 +9,6 @@ import {
   JUNIOR_MAP_SCHOOL_COUNT,
   JUNIOR_QUIZ_QUESTION_COUNT,
 } from "@/lib/juniorHonesty";
-import JuniorNumbersNote from "@/components/junior/JuniorNumbersNote";
 import {
   getPreferredExperience,
   getStoredExperience,
@@ -2225,6 +2224,7 @@ const Index = () => {
       )}
 
       {/* Stats */}
+      {!isJunior && (
       <motion.section
         className="relative border-y bg-gradient-to-b from-background via-muted/20 to-background"
         initial={{ opacity: 0.88 }}
@@ -2252,15 +2252,10 @@ const Index = () => {
           viewport={{ once: false, amount: 0.35 }}
           transition={{ duration: 0.65, ease: [0.22, 1, 0.36, 1] }}
         >
-          {isJunior ? (
-            <div className="mx-auto max-w-2xl text-center">
-              <JuniorNumbersNote counts className="justify-center" />
-          </div>
-          ) : (
             <AnimatedStatsGrid stats={seniorStats} />
-          )}
         </motion.div>
       </motion.section>
+      )}
 
       {/* Features */}
       <motion.section

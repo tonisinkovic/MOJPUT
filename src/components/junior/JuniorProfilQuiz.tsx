@@ -79,7 +79,9 @@ export default function JuniorProfilQuiz() {
                         {juniorProgramTypeLabels[rec.type]}
                       </span>
                     </span>
-                    <Badge variant="secondary">{rec.matchPercentage}%</Badge>
+                    <Badge variant="secondary">
+                      {rec.matchPercentage >= 80 ? "Jako blizu" : rec.matchPercentage >= 65 ? "Blizu" : "Dalje"}
+                    </Badge>
                   </li>
                 ))}
               </ul>

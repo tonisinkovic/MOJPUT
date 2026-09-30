@@ -229,6 +229,7 @@ export type JuniorSignalKey =
   | "numbers_data"
   | "plants_outdoor"
   | "cooking_food"
+  | "baking_food"
   | "beauty_style"
   | "sport_active"
   | "languages_travel"
@@ -302,6 +303,8 @@ export type JuniorQuestion = {
   scaleMinLabel?: string;
   scaleMaxLabel?: string;
   signalKey?: JuniorSignalKey;
+  /** Dodatni Likert signali na skali 1–5. Vrijednost prati odgovor, ne broj u JSON-u. */
+  signalKeys?: JuniorSignalKey[];
   options?: JuniorQuestionOption[];
   effects?: JuniorEffects;
   maxSelect?: number;
@@ -367,6 +370,8 @@ export type JuniorStudentProfile = {
   signals: Partial<Record<JuniorSignalKey, number>>;
   schoolContext: SchoolContext;
   considering: string | null;
+  /** Kako želi raditi s drugima: njega, medicina, laboratorij, životinje, gosti, sport, ples ili razred. */
+  peopleFocus: "care" | "doctor" | "lab" | "animals" | "guests" | "sport" | "dance" | "class" | null;
   answeredCount: number;
   knownInterests: number;
 };
@@ -531,6 +536,11 @@ export const calculateQuizProfile = (answers: JuniorAnswers): JuniorStudentProfi
   };
 
   let considering: string | null = null;
+  let peopleFocus: JuniorStudentProfile["peopleFocus"] = null;
+  let healthClass = false;
+  let wantsFaculty = false;
+  let animalLean = false;
+  let labLean = false;
   const schoolContext: SchoolContext = {
     grade: null,
     city: null,
@@ -551,12 +561,30 @@ export const calculateQuizProfile = (answers: JuniorAnswers): JuniorStudentProfi
     if (q.format === "scale" && typeof raw === "number") {
       applyEffects(q.effects, clamp(((raw - 1) / 4) * 100, 0, 100), acc);
       if (q.signalKey) acc.signals[q.signalKey] = raw;
+      for (const key of q.signalKeys ?? []) acc.signals[key] = raw;
       continue;
     }
 
     if (q.format === "choice" && typeof raw === "string") {
       const option = q.options?.find((o) => o.id === raw);
       applyEffects(option?.effects, 100, acc);
+      if (
+        q.id === 97 &&
+        (raw === "care" ||
+          raw === "doctor" ||
+          raw === "lab" ||
+          raw === "animals" ||
+          raw === "guests" ||
+          raw === "sport" ||
+          raw === "dance" ||
+          raw === "class")
+      ) {
+        peopleFocus = raw;
+      }
+      if (q.id === 20 && raw === "animals") animalLean = true;
+      if (q.id === 20 && raw === "lab") labLean = true;
+      if (q.id === 21 && raw === "class") healthClass = true;
+      if (q.id === 70 && (raw === "faculty" || raw === "both")) wantsFaculty = true;
       if (q.id === 72) schoolContext.grade = raw;
       if (q.id === 73) schoolContext.averageBand = raw;
       continue;
@@ -585,6 +613,10 @@ export const calculateQuizProfile = (answers: JuniorAnswers): JuniorStudentProfi
     }
   }
 
+  if (!peopleFocus && healthClass && wantsFaculty) peopleFocus = "doctor";
+  else if (!peopleFocus && animalLean) peopleFocus = "animals";
+  else if (!peopleFocus && labLean) peopleFocus = "lab";
+
   return {
     interests: finalize(acc.interests, INTEREST_DIMS),
     thinking: finalize(acc.thinking, THINKING_DIMS),
@@ -598,6 +630,7 @@ export const calculateQuizProfile = (answers: JuniorAnswers): JuniorStudentProfi
     signals: acc.signals,
     schoolContext,
     considering,
+    peopleFocus,
     answeredCount: Object.values(answers).filter((v) => isAnswered(v)).length,
     knownInterests: knownCount(acc.interests),
   };

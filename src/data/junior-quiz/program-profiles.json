@@ -328,5 +328,65 @@
     "requirements": { "people": "high", "publicSpeaking": "medium" },
     "postSchool": { "faculty": 0.25, "work": 0.85 },
     "theoryPractice": 70
+  },
+  "34": {
+    "interests": { "art_design": 0.75, "sport": 0.9, "practical": 0.65, "media": 0.25 },
+    "thinking": { "creative": 0.85, "practical": 0.7 },
+    "learning": { "practical": 0.9, "repetition": 0.7, "theory": 0.25 },
+    "environment": { "studio": 0.85, "dynamic": 0.75 },
+    "values": { "creativity": 0.9, "prestige": 0.35 },
+    "requirements": { "physical": "high", "publicSpeaking": "medium" },
+    "postSchool": { "faculty": 0.55, "work": 0.5 },
+    "theoryPractice": 62
+  },
+  "35": {
+    "interests": { "nature": 0.95, "practical": 0.85, "art_design": 0.5 },
+    "thinking": { "practical": 0.85, "creative": 0.45 },
+    "learning": { "practical": 0.9, "theory": 0.2 },
+    "environment": { "nature": 0.8, "shop": 0.65, "workshop": 0.4 },
+    "values": { "creativity": 0.55, "entrepreneurship": 0.5 },
+    "requirements": { "physical": "medium", "precision": "medium" },
+    "postSchool": { "faculty": 0.15, "work": 0.9 },
+    "theoryPractice": 84
+  },
+  "36": {
+    "interests": { "practical": 0.95 },
+    "thinking": { "practical": 0.9, "technical": 0.35 },
+    "learning": { "practical": 0.95, "repetition": 0.6, "theory": 0.15 },
+    "environment": { "workshop": 0.85 },
+    "values": { "security": 0.45, "entrepreneurship": 0.4 },
+    "requirements": { "physical": "medium-high", "precision": "medium" },
+    "postSchool": { "faculty": 0.12, "work": 0.92 },
+    "theoryPractice": 88
+  },
+  "37": {
+    "interests": { "art_design": 0.9, "practical": 0.85 },
+    "thinking": { "creative": 0.75, "practical": 0.8 },
+    "learning": { "practical": 0.9, "project": 0.5, "theory": 0.2 },
+    "environment": { "studio": 0.7, "workshop": 0.65 },
+    "values": { "creativity": 0.8, "entrepreneurship": 0.5 },
+    "requirements": { "precision": "high", "physical": "low" },
+    "postSchool": { "faculty": 0.2, "work": 0.85 },
+    "theoryPractice": 78
+  },
+  "38": {
+    "interests": { "practical": 0.95, "technology": 0.5 },
+    "thinking": { "practical": 0.95, "technical": 0.7 },
+    "learning": { "practical": 0.95, "theory": 0.15 },
+    "environment": { "workshop": 0.95 },
+    "values": { "salary": 0.55, "security": 0.5 },
+    "requirements": { "physical": "high", "precision": "medium-high" },
+    "postSchool": { "faculty": 0.12, "work": 0.92 },
+    "theoryPractice": 90
+  },
+  "39": {
+    "interests": { "practical": 0.55, "languages": 0.5, "technology": 0.4, "society": 0.3 },
+    "thinking": { "practical": 0.6, "organizational": 0.55, "technical": 0.45 },
+    "learning": { "practical": 0.6, "theory": 0.45, "problems": 0.4 },
+    "environment": { "field": 0.75, "dynamic": 0.65 },
+    "values": { "abroad": 0.7, "salary": 0.45 },
+    "requirements": { "mathematics": "medium", "concentration": "medium", "physical": "medium" },
+    "postSchool": { "faculty": 0.6, "work": 0.55 },
+    "theoryPractice": 52
   }
 }

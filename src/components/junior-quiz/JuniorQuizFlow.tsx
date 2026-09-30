@@ -55,6 +55,10 @@ const SECTION_ICONS: Record<JuniorSectionKey, typeof Sparkles> = {
 };
 
 const SCALE_VALUES = [1, 2, 3, 4, 5] as const;
+const BRANCH_POOLS = new Set(["health", "tech", "creative", "practical", "academic", "peoplebiz"]);
+const BRANCH_CHOICE_IDS = new Set(
+  juniorQuestions.filter((q) => q.format === "choice" && BRANCH_POOLS.has(q.pool)).map((q) => q.id),
+);
 
 const remainingMinutesLabel = (remaining: number): string => {
   const mins = Math.max(1, Math.round(remaining / 4));
@@ -173,15 +177,42 @@ const JuniorQuizFlow = () => {
     return allCities.filter((c) => c.toLowerCase().startsWith(q)).slice(0, 8);
   }, [cityQuery, allCities]);
 
+  const schoolRecs = useMemo(() => {
+    if (!analysis) return [];
+    const offer = analysis.gymnasiumOffer;
+    if (!offer || analysis.recommendations.some((rec) => rec.program.id === offer.program.id)) {
+      return analysis.recommendations;
+    }
+    return [offer, ...analysis.recommendations];
+  }, [analysis]);
+
   const nearby = useMemo(
-    () => (analysis && city ? analyzeNearby(analysis.recommendations, city) : null),
-    [analysis, city],
+    () => (analysis && city ? analyzeNearby(schoolRecs, city) : null),
+    [analysis, city, schoolRecs],
   );
 
-  const resultSchools = useMemo(
-    () => (analysis ? pickQuizResultSchools(analysis.recommendations, nearby?.byProgram ?? null, 3) : []),
-    [analysis, nearby],
-  );
+  const resultSchools = useMemo(() => {
+    if (!analysis) return [];
+    const nearbyMap = nearby?.byProgram ?? null;
+    const offer = analysis.gymnasiumOffer;
+    if (!offer) return pickQuizResultSchools(analysis.recommendations, nearbyMap, 3);
+    const gym = pickQuizResultSchools([offer], nearbyMap, 1);
+    const rest = pickQuizResultSchools(
+      analysis.recommendations.filter((rec) => rec.program.id !== offer.program.id),
+      nearbyMap,
+      2,
+    );
+    const seen = new Set<string>();
+    const out = [];
+    for (const item of [...gym, ...rest]) {
+      const key = `${item.school.name}|${item.school.city}`;
+      if (seen.has(key)) continue;
+      seen.add(key);
+      out.push(item);
+      if (out.length >= 3) break;
+    }
+    return out;
+  }, [analysis, nearby]);
 
   useEffect(() => onJuniorPointsChange(() => setPoints(effectiveJuniorPoints())), []);
 
@@ -333,7 +364,7 @@ const JuniorQuizFlow = () => {
           <h1 className="text-balance text-3xl font-extrabold tracking-tight sm:text-4xl">Koja je srednja škola za mene?</h1>
           <p className="mx-auto mt-3 max-w-xl text-pretty text-muted-foreground">
             Kratak kviz, oko 8 minuta. Nema točnih i netočnih odgovora. Odgovori iskreno — želimo vidjeti što tebi
-            odgovara. Na kraju dobiješ prijedloge programa, ne jednu „pravu” školu.
+            odgovara. Na kraju dobiješ škole i smjerove, ne jednu „pravu” školu.
           </p>
 
           <div className="mt-8 grid gap-3 sm:grid-cols-3">
@@ -496,6 +527,18 @@ const JuniorQuizFlow = () => {
                     {opt.label}
                   </button>
                 ))}
+                {BRANCH_CHOICE_IDS.has(question.id) ? (
+                  <button
+                    type="button"
+                    onClick={() => commitAnswer("nije_moje")}
+                    className={cn(
+                      "min-h-14 rounded-2xl border-2 bg-background/70 px-4 py-3.5 text-left text-[15px] font-semibold leading-snug transition-all active:scale-[0.98]",
+                      selected === "nije_moje" ? "border-primary ring-2 ring-primary" : "border-border/60 hover:border-primary/40",
+                    )}
+                  >
+                    Nije moje
+                  </button>
+                ) : null}
               </div>
             ) : null}
 

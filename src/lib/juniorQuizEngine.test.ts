@@ -7,10 +7,11 @@ import {
   getProgramAvailability,
   highSchoolPrograms,
   juniorQuestions,
+  selectTopRecommendations,
   type JuniorAnswers,
   type JuniorQuestion,
 } from "./juniorQuizEngine";
-import { buildMainSequence, typicalJuniorQuizLength } from "./juniorQuizSequence";
+import { buildMainSequence, pickBranchQuestionIds, typicalJuniorQuizLength } from "./juniorQuizSequence";
 import { programFactChips } from "./juniorProgramFacts";
 import { typicalDayFor } from "./juniorTypicalDay";
 import { buildHomeTalk } from "./juniorHomeTalk";
@@ -318,7 +319,8 @@ describe("junior kviz v2 — scoring ugovori", () => {
         answers[4] = "fix";
         answers[11] = 5;
       }
-      if (program.boostSignals.cooking_food) answers[50] = "food";
+      if (program.boostSignals.baking_food) answers[50] = "bake";
+      else if (program.boostSignals.cooking_food) answers[50] = "food";
       if (program.boostSignals.beauty_style) answers[50] = "beauty";
       if (program.boostSignals.languages_travel) answers[60] = "lang";
       if (program.boostSignals.animals_nature) answers[20] = "animals";
@@ -620,7 +622,10 @@ describe("junior kviz v2.2 — nove grane i rezultat", () => {
       ]),
       5,
     );
-    expect(food.some((n) => /kuhar|konobar|prehramben/i.test(n))).toBe(true);
+    const cookAt = food.findIndex((n) => /kuhar/i.test(n));
+    const bakerAt = food.findIndex((n) => /pekar/i.test(n));
+    expect(cookAt).toBeGreaterThanOrEqual(0);
+    expect(cookAt).toBeLessThan(bakerAt === -1 ? 99 : bakerAt);
 
     const logistics = names(
       persona([
@@ -646,5 +651,207 @@ describe("junior kviz v2.2 — nove grane i rezultat", () => {
       expect(chips.some((c) => c.id === "matura" || c.id === "no-matura")).toBe(true);
       expect(chips.some((c) => c.id === "bar")).toBe(true);
     }
+  });
+});
+
+describe("junior kviz — bodovanje praznih signala i grane", () => {
+  it("nepostavljeno pitanje ne kažnjava program koji taj signal traži", () => {
+    const profile = calculateQuizProfile({});
+    const program = highSchoolPrograms.find((item) => item.name === "Tehničar za računarstvo")!;
+    expect(calculateProgramMatch(profile, program).constraintScore).toBe(100);
+  });
+
+  it("odgovor „baš ne” na traženi signal spušta program", () => {
+    const profile = calculateQuizProfile({ 2: "app" });
+    const low = calculateQuizProfile({});
+    low.signals.tech_computers = 1;
+    const program = highSchoolPrograms.find((item) => item.name === "Tehničar za računarstvo")!;
+    expect(calculateProgramMatch(low, program).constraintScore).toBeLessThan(
+      calculateProgramMatch(profile, program).constraintScore,
+    );
+  });
+
+  it("skala o prirodi puni i signal za životinje", () => {
+    expect(calculateQuizProfile({ 14: 5 }).signals.animals_nature).toBe(5);
+    expect(calculateQuizProfile({ 14: 5 }).signals.plants_outdoor).toBe(5);
+    expect(calculateQuizProfile({ 14: 1 }).signals.animals_nature).toBe(1);
+  });
+
+  it("jasan tehnički odgovor vuče tehničku granu, bez praznih signala", () => {
+    const profile = calculateQuizProfile({ 2: "app" });
+    const ids = pickBranchQuestionIds(profile);
+    const techIds = juniorQuestions.filter((q) => q.pool === "tech").map((q) => q.id);
+    expect(techIds.filter((id) => ids.includes(id)).length).toBe(techIds.length);
+  });
+
+  it("upisana ideja uđe u prijedloge, a rad s ljudima se razdvoji", () => {
+    const pharmacy = analyzeJuniorQuiz({
+      1: "understand",
+      2: "why",
+      3: 4,
+      12: "text",
+      16: "solo",
+      70: "faculty",
+      71: "how",
+      76: "farmacija",
+    }).recommendations.map((item) => item.program.name);
+    expect(pharmacy.slice(0, 3).some((name) => /farmaceut/i.test(name))).toBe(true);
+
+    const sea = analyzeJuniorQuiz({
+      1: "understand",
+      2: "sport",
+      11: 4,
+      14: 5,
+      16: "make",
+      70: "both",
+      71: "mix",
+      76: "pomorstvo",
+    }).recommendations.map((item) => item.program.name);
+    expect(sea.some((name) => /pomorski|nauti/i.test(name))).toBe(true);
+
+    const base = calculateQuizProfile({ 2: "help", 8: 4, 15: "help", 70: "faculty" });
+    const sportSchool = highSchoolPrograms.find((item) => item.id === 6)!;
+    const nurse = highSchoolPrograms.find((item) => item.id === 12)!;
+    const asSport = calculateProgramMatch({ ...base, peopleFocus: "sport" }, sportSchool).rankScore;
+    const asCare = calculateProgramMatch({ ...base, peopleFocus: "care" }, nurse).rankScore;
+    const sportAsCare = calculateProgramMatch({ ...base, peopleFocus: "care" }, sportSchool).rankScore;
+    const nurseAsSport = calculateProgramMatch({ ...base, peopleFocus: "sport" }, nurse).rankScore;
+    expect(asSport).toBeGreaterThan(nurseAsSport);
+    expect(asCare).toBeGreaterThan(sportAsCare);
+
+    expect(buildMainSequence({ 2: "help", 8: 5, 15: "help" })).toContain(97);
+    expect(buildMainSequence({ 2: "sport" })).not.toContain(97);
+  });
+
+  it("doktor i fakultet dižu prirodoslovnu iznad sestre, a njega ostaje sestra", () => {
+    const doctor = names(
+      {
+        2: "help",
+        8: 5,
+        15: "help",
+        20: "care",
+        21: "hospital",
+        22: "mix",
+        70: "faculty",
+        71: "how",
+        76: "želim biti doktorica",
+        97: "doctor",
+      },
+      3,
+    );
+    const doctorGym = doctor.findIndex((n) => /^prirodoslovna gimnazija/i.test(n));
+    const doctorNurse = doctor.findIndex((n) => /medicinska sestra/i.test(n));
+    expect(doctorGym).toBeGreaterThanOrEqual(0);
+    expect(doctorGym).toBeLessThan(doctorNurse === -1 ? 99 : doctorNurse);
+
+    const nursePath = names(
+      {
+        2: "help",
+        8: 5,
+        15: "help",
+        20: "care",
+        21: "hospital",
+        22: "people_heavy",
+        70: "work",
+        97: "care",
+      },
+      3,
+    );
+    expect(nursePath[0]).toMatch(/medicinska sestra/i);
+
+    expect(calculateQuizProfile({ 20: "lab", 21: "class", 70: "faculty" }).peopleFocus).toBe("doctor");
+    expect(calculateQuizProfile({ 2: "sport" }).peopleFocus).toBeNull();
+  });
+
+  it("kuhinja i peć se razdvajaju, a životinje i ples ne padaju na sestru ili sport", () => {
+    const baker = names({ 2: "cook", 11: 4, 16: "make", 36: "bake", 50: "bake", 52: "job", 70: "work" }, 3);
+    const bakerAt = baker.findIndex((n) => /pekar/i.test(n));
+    const cookAt = baker.findIndex((n) => /kuhar/i.test(n));
+    expect(bakerAt).toBeGreaterThanOrEqual(0);
+    expect(bakerAt).toBeLessThan(cookAt === -1 ? 99 : cookAt);
+
+    const animals = names(
+      { 2: "why", 14: 5, 20: "animals", 70: "both", 76: "veterina", 97: "animals" },
+      3,
+    );
+    expect(animals.some((n) => /veterinar/i.test(n))).toBe(true);
+
+    const dancer = calculateQuizProfile({ 2: "music", 40: "music", 97: "dance" });
+    const danceSchool = highSchoolPrograms.find((item) => item.id === 34)!;
+    const sportSchool = highSchoolPrograms.find((item) => item.id === 6)!;
+    expect(calculateProgramMatch(dancer, danceSchool).rankScore).toBeGreaterThan(
+      calculateProgramMatch(dancer, sportSchool).rankScore,
+    );
+  });
+
+  it("popodne pokriva sport i kuhanje, a teže ocjene spuštaju visok prag", () => {
+    expect(calculateQuizProfile({ 2: "sport" }).signals.sport_active).toBe(5);
+    expect(calculateQuizProfile({ 2: "cook" }).signals.cooking_food).toBe(5);
+    const afternoon = juniorQuestions.find((q) => q.id === 2);
+    expect(afternoon?.options?.map((o) => o.id)).toEqual(
+      expect.arrayContaining(["sport", "music", "cook"]),
+    );
+    const hard = juniorQuestions.find((q) => q.id === 75);
+    expect(hard?.options?.map((o) => o.id)).toEqual(expect.arrayContaining(["likovni", "glazbeni", "tjelesni"]));
+    const low = calculateQuizProfile({ 73: "harder", 1: "understand", 3: 3, 16: "tasks" });
+    const open = highSchoolPrograms.find((p) => p.id === 1)!;
+    const plain = calculateQuizProfile({ 1: "understand", 3: 3, 16: "tasks" });
+    expect(calculateProgramMatch(low, open).constraintScore).toBeLessThan(calculateProgramMatch(plain, open).constraintScore);
+  });
+
+  it("fakultet bez konkretne ideje nudi opću gimnaziju sa strane", () => {
+    const answers = persona([
+      [1, "understand"],
+      [3, 4],
+      [10, "explain"],
+      [12, "text"],
+      [16, "tasks"],
+      [60, "lang"],
+      [70, "faculty"],
+      [71, "how"],
+    ]);
+    const analysis = analyzeJuniorQuiz(answers);
+    expect(analysis.gymnasiumOffer?.program.name).toBe("Opća gimnazija");
+  });
+
+  it("konkretna ideja ili jak praktičan put gase bočnu gimnaziju", () => {
+    const withIdea = analyzeJuniorQuiz(
+      persona([
+        [1, "understand"],
+        [2, "app"],
+        [3, 4],
+        [16, "tasks"],
+        [30, "code"],
+        [70, "faculty"],
+        [71, "how"],
+        [76, "računarstvo"],
+      ]),
+    );
+    expect(withIdea.gymnasiumOffer).toBeNull();
+
+    const hands = analyzeJuniorQuiz(
+      persona([
+        [1, "experiment"],
+        [4, "fix"],
+        [11, 5],
+        [16, "make"],
+        [50, "cars"],
+        [52, "job"],
+        [70, "faculty"],
+        [71, "hands"],
+      ]),
+    );
+    expect(hands.gymnasiumOffer).toBeNull();
+  });
+
+  it("u vrhu ne ostaju tri ista tipa ako je druga vrsta blizu", () => {
+    const types = ["tehnicka", "tehnicka", "tehnicka", "tehnicka", "gimnazija", "obrtnicka", "umjetnicka"] as const;
+    const matches = types.map((type, index) => ({
+      program: { ...highSchoolPrograms[index], type, id: 900 + index },
+      matchPercentage: 80 - index,
+    })) as ReturnType<typeof analyzeJuniorQuiz>["recommendations"];
+    const top = selectTopRecommendations(matches, 5);
+    expect(top.filter((item) => item.program.type === "tehnicka")).toHaveLength(2);
+    expect(new Set(top.map((item) => item.program.type)).size).toBeGreaterThanOrEqual(3);
   });
 });

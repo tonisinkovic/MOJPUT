@@ -17,9 +17,9 @@ import {
 } from "@/lib/juniorThirdYearForum";
 
 describe("junior honesty copy", () => {
-  it("kaže da 33 vrste smjerova nisu cijeli popis", () => {
-    expect(JUNIOR_PROGRAM_FAMILY_COUNT).toBe(33);
-    expect(JUNIOR_CATALOG_NOTE).toMatch(/33/);
+  it("kaže da vrste smjerova nisu cijeli popis", () => {
+    expect(JUNIOR_PROGRAM_FAMILY_COUNT).toBe(39);
+    expect(JUNIOR_CATALOG_NOTE).toMatch(/39/);
     expect(JUNIOR_CATALOG_NOTE).toMatch(/nije cijeli službeni popis/i);
     expect(JUNIOR_CATALOG_NOTE).not.toMatch(/obitelj/i);
   });
