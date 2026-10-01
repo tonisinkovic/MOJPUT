@@ -7,6 +7,7 @@ import { srednjaProgramCounties } from "@/data/srednjaPrograms";
 import {
   INTEREST_DIMS,
   INTEREST_KEYS,
+  HARD_SUBJECT_INTERESTS,
   JUNIOR_TOP_RECOMMENDATIONS,
   SUBJECT_KEYS,
   THINKING_DIMS,
@@ -182,12 +183,15 @@ export const resolveProgramProfile = (program: HighSchoolProgram): ProgramDimens
 export const weightedFit = (
   scores: Record<string, number>,
   weights: Partial<Record<string, number>> | undefined,
+  onlyKeys?: readonly string[],
 ): number => {
   if (!weights) return 50;
+  const allowed = onlyKeys ? new Set(onlyKeys) : null;
   let total = 0;
   let weightSum = 0;
   for (const [key, weight] of Object.entries(weights)) {
     if (!weight || weight <= 0) continue;
+    if (allowed && !allowed.has(key)) continue;
     const score = scores[key];
     if (typeof score !== "number" || !Number.isFinite(score)) continue;
     total += score * weight;
@@ -241,7 +245,7 @@ const peopleFocusAdjustment = (profile: JuniorStudentProfile, program: HighSchoo
   let delta = 0;
   if (focus === "care") delta = (nurse ? 10 : 0) + (physio ? 4 : 0) + (guests ? -8 : 0) + (sport ? -5 : 0);
   if (focus === "doctor") delta = (scienceGym ? 16 : 0) + (mathGym ? 4 : 0) + (nurse ? -12 : 0) + (physio ? -8 : 0);
-  if (focus === "lab") delta = (pharmacy ? 12 : 0) + (scienceGym ? 4 : 0) + (/kemijski/i.test(name) ? 6 : 0) + (nurse ? -8 : 0);
+  if (focus === "lab") delta = (pharmacy ? 16 : 0) + (scienceGym ? 2 : 0) + (/kemijski/i.test(name) ? -8 : 0) + (nurse ? -10 : 0);
   if (focus === "animals") delta = (vet ? 14 : 0) + (nurse ? -12 : 0) + (physio ? -8 : 0);
   if (focus === "guests") delta = (guests ? 12 : 0) + (nurse ? -10 : 0) + (sport ? -5 : 0);
   if (focus === "sport") delta = (sport ? 12 : 0) + (nurse ? -10 : 0) + (guests ? -6 : 0) + (dance ? -6 : 0);
@@ -256,7 +260,14 @@ const peopleFocusAdjustment = (profile: JuniorStudentProfile, program: HighSchoo
     if (nurse) delta = Math.min(delta, -10);
   }
   if (wantsNurse && nurse) delta = Math.max(delta, 8);
-  return clamp(delta, -16, 16);
+  if (/farmac/.test(idea)) {
+    if (pharmacy) delta = Math.max(delta, 16);
+    if (/kemijski/i.test(name)) delta = Math.min(delta, -8);
+  }
+  const healthOn =
+    (profile.signals.health_medicine ?? 0) >= 4 || focus === "care" || focus === "doctor" || focus === "lab";
+  if (!healthOn && (nurse || physio)) delta -= 14;
+  return clamp(delta, -18, 18);
 };
 
 /** Kuhinja za goste nije peć. Jedan signal „hrana” ne smije izjednačiti kuhara i pekara. */
@@ -273,6 +284,76 @@ const foodAdjustment = (profile: JuniorStudentProfile, program: HighSchoolProgra
 };
 
 const seaWord = (text: string): boolean => /pomor|nautic|brod|luka|\bmore\b/.test(normalizeText(text));
+
+/** Kod, struja, crtež i zgrade vode na različite škole. */
+const techChoiceAdjustment = (profile: JuniorStudentProfile, program: HighSchoolProgram): number => {
+  const choice = profile.techChoice;
+  if (!choice) return 0;
+  const name = program.name;
+  if (choice === "code") {
+    if (/računar/i.test(name)) return 10;
+    if (/elektro/i.test(name)) return -4;
+  }
+  if (choice === "electro") {
+    if (/elektro/i.test(name)) return 12;
+    if (/računar/i.test(name)) return -6;
+  }
+  if (choice === "design") {
+    if (/arhitekt|medij|dizajn/i.test(name)) return 8;
+  }
+  if (choice === "build") {
+    if (/građev/i.test(name)) return 14;
+    if (/arhitekt/i.test(name)) return 8;
+    if (/računar/i.test(name)) return -6;
+  }
+  return 0;
+};
+
+/** Kuhinja, auti, metal, strojevi i more nisu isti „rad rukama”. */
+const craftAdjustment = (profile: JuniorStudentProfile, program: HighSchoolProgram): number => {
+  const name = program.name;
+  const cook = /kuhar/i.test(name);
+  const baker = /pekar/i.test(name);
+  const auto = /automehatron/i.test(name);
+  const metal = /bravar|limar/i.test(name);
+  const machine = /strojar/i.test(name);
+  const sea = program.id === 39;
+  const forest = /šumar|poljoprivred/i.test(name);
+  const hands = profile.handsChoice;
+  const cooking = profile.signals.cooking_food ?? 0;
+  const wantsMachines =
+    profile.machineLean &&
+    (profile.postSchool.faculty >= 55 || /stroj/.test(normalizeText(profile.considering ?? "")));
+  const namedSea = seaWord(profile.considering ?? "");
+
+  if (hands === "food" || (cooking >= 4 && hands !== "bake" && hands !== "cars" && hands !== "metal" && hands !== "sea")) {
+    if (cook) return 12;
+    if (baker) return -8;
+    if (auto || metal) return -14;
+  }
+  if (hands === "cars") {
+    if (auto) return 16;
+    if (metal) return -12;
+    if (machine) return wantsMachines ? 2 : -8;
+    if (baker) return -10;
+  }
+  if (hands === "metal") {
+    if (wantsMachines && machine) return 16;
+    if (metal) return wantsMachines ? 2 : 12;
+    if (auto) return -10;
+    if (machine) return 4;
+  }
+  if (hands === "sea" || namedSea) {
+    if (sea) return 18;
+    if (forest) return hands === "plants" ? -6 : -12;
+  }
+  if (profile.machineLean && hands !== "cars" && hands !== "food" && hands !== "sea") {
+    if (machine) return 14;
+    if (auto) return -6;
+    if (metal && hands !== "metal") return -4;
+  }
+  return 0;
+};
 
 const seaAdjustment = (profile: JuniorStudentProfile, program: HighSchoolProgram): number => {
   if (program.id !== 39) return 0;
@@ -319,15 +400,24 @@ const readinessAdjustment = (profile: JuniorStudentProfile, program: HighSchoolP
   let delta = 0;
   const hard = new Set(profile.schoolContext.hardSubjects);
   const fav = new Set(profile.schoolContext.favoriteSubjects);
-  if (hard.has("matematika") && (program.subjectWeights.matematika ?? 0) >= 2) delta -= 6;
-  if (hard.has("hrvatski") && (program.subjectWeights.hrvatski ?? 0) >= 2) delta -= 4;
-  if (hard.has("jezici") && (program.subjectWeights.jezici ?? 0) >= 2) delta -= 4;
-  if (fav.has("informatika") && /računar|informat/i.test(program.name)) delta += 4;
-  if (fav.has("biologija") && /medicin|farmac|veterin|prirodoslov/i.test(program.name)) delta += 3;
+  if (fav.has("informatika") && !hard.has("informatika") && /računar|informat/i.test(program.name)) delta += 4;
+  if (fav.has("biologija") && !hard.has("biologija") && /medicin|farmac|veterin|prirodoslov/i.test(program.name)) delta += 3;
   if (profile.schoolContext.averageBand === "good" && program.entryBar === "visok") delta -= 4;
   if (profile.schoolContext.averageBand === "harder" && program.entryBar === "visok") delta -= 6;
   if (profile.schoolContext.averageBand === "excellent" && program.entryBar === "visok") delta += 2;
   return delta;
+};
+
+/** Predmet koji teže ide skida smjer kojem je taj predmet važan, izravno na poredak. */
+const hardSubjectAdjustment = (profile: JuniorStudentProfile, program: HighSchoolProgram): number => {
+  let delta = 0;
+  for (const subject of profile.schoolContext.hardSubjects) {
+    const weight = program.subjectWeights[subject] ?? 0;
+    if (weight >= 3) delta -= 14;
+    else if (weight >= 2) delta -= 9;
+    else if (weight >= 1) delta -= 4;
+  }
+  return clamp(delta, -22, 0);
 };
 
 const priorityAdjustment = (
@@ -425,9 +515,14 @@ const buildExplanations = (
       "Ovdje ima dosta matematike. Ako te program jako zanima, vrijedi ga pogledati — samo računaj da treba vježbati.",
     );
   }
-  if (profile.schoolContext.hardSubjects.includes("matematika") && (program.subjectWeights.matematika ?? 0) >= 2) {
+  const hardHere = profile.schoolContext.hardSubjects.filter((subject) => (program.subjectWeights[subject] ?? 0) >= 2);
+  if (hardHere.length) {
+    const names = hardHere
+      .slice(0, 2)
+      .map((subject) => (juniorSubjectLabels[subject] ?? subject).toLowerCase())
+      .join(" i ");
     caution.push(
-      "Matematika ti trenutno teže ide, a ovdje je ima. Ako te program zanima, vrijedi ga pogledati — samo obrati pažnju na taj dio.",
+      `${names.charAt(0).toUpperCase()}${names.slice(1)} ti trenutno teže ${hardHere.length > 1 ? "idu" : "ide"}, a ovdje toga ima dosta. Ako te program zanima, vrijedi ga pogledati — samo obrati pažnju na taj dio.`,
     );
   }
   if ((overlay.requirements?.people === "high" || overlay.requirements?.people === "medium-high") && profile.tolerance.people < 40) {
@@ -479,7 +574,7 @@ export const calculateProgramMatch = (
   options: AnalyzeOptions = {},
 ): JuniorProgramMatch => {
   const overlay = resolveProgramProfile(program);
-  const interestScore = weightedFit(profile.interests, overlay.interests);
+  const interestScore = weightedFit(profile.interests, overlay.interests, profile.touchedInterests);
   const thinkingFit = weightedFit(profile.thinking, overlay.thinking);
   const learningFit = weightedFit(profile.learning, overlay.learning);
   const theoryFit = round100(100 - Math.abs(profile.theoryPractice - (overlay.theoryPractice ?? 50)));
@@ -502,7 +597,10 @@ export const calculateProgramMatch = (
     priorityAdjustment(options.priority, profile, program, overlay) +
     peopleFocusAdjustment(profile, program) +
     foodAdjustment(profile, program) +
-    seaAdjustment(profile, program);
+    seaAdjustment(profile, program) +
+    craftAdjustment(profile, program) +
+    techChoiceAdjustment(profile, program) +
+    hardSubjectAdjustment(profile, program);
   const { positive, caution, answerReasons, interestLine, readinessNotes } = buildExplanations(
     profile,
     program,
@@ -621,8 +719,20 @@ const detectContradictions = (profile: JuniorStudentProfile): string[] => {
   return notes;
 };
 
+const blockedInterestKeys = (profile: JuniorStudentProfile): Set<string> => {
+  const blocked = new Set<string>();
+  for (const subject of profile.schoolContext.hardSubjects) {
+    for (const key of HARD_SUBJECT_INTERESTS[subject] ?? []) blocked.add(key);
+  }
+  return blocked;
+};
+
 const profileSummaryFrom = (profile: JuniorStudentProfile): string => {
-  const interest = INTEREST_DIMS.map((key) => ({ key, score: profile.interests[key] })).sort((a, b) => b.score - a.score)[0];
+  const blocked = blockedInterestKeys(profile);
+  const techShown = (profile.signals.tech_computers ?? 0) >= 4;
+  const interest = INTEREST_DIMS.map((key) => ({ key, score: profile.interests[key] }))
+    .filter((item) => !blocked.has(item.key) && (item.key !== "technology" || techShown))
+    .sort((a, b) => b.score - a.score)[0];
   const drive =
     interest && interest.score >= 60
       ? ` Posebno te zanima ${(juniorTraitLabels.interests[interest.key] ?? interest.key).toLowerCase()}.`
@@ -653,25 +763,18 @@ const learningSummaryFrom = (profile: JuniorStudentProfile): string => {
 };
 
 const driversFrom = (profile: JuniorStudentProfile): string[] => {
-  const pool = [
-    ...THINKING_DIMS.map((key) => ({
-      label: juniorTraitLabels.thinking[key] ?? key,
-      score: profile.thinking[key],
-    })),
-    ...INTEREST_DIMS.map((key) => ({
-      label: juniorTraitLabels.interests[key] ?? key,
-      score: profile.interests[key],
-    })),
-    { label: "rješavanje problema", score: profile.learning.problems },
-    { label: "samostalni rad", score: profile.learning.independent },
-    { label: "rad u grupi", score: profile.learning.group },
-    { label: "praktičan rad", score: profile.learning.practical },
-  ];
-  return pool
+  const blocked = blockedInterestKeys(profile);
+  const techShown = (profile.signals.tech_computers ?? 0) >= 4;
+  return INTEREST_DIMS.map((key) => ({
+    key,
+    label: juniorTraitLabels.interests[key] ?? key,
+    score: profile.interests[key],
+  }))
+    .filter((item) => item.score >= 64 && !blocked.has(item.key))
+    .filter((item) => item.key !== "technology" || techShown)
     .sort((a, b) => b.score - a.score)
-    .filter((x, i, arr) => arr.findIndex((y) => y.label === x.label) === i && x.score >= 58)
-    .slice(0, 5)
-    .map((x) => x.label);
+    .slice(0, 3)
+    .map((item) => item.label);
 };
 
 const topTraitsFrom = (profile: JuniorStudentProfile): ProfileTrait[] => {
@@ -691,7 +794,10 @@ const topTraitsFrom = (profile: JuniorStudentProfile): ProfileTrait[] => {
       band: bandFor(profile.thinking[key]),
     })),
   ];
-  const interesting = rows.filter((r) => r.score !== 50).sort((a, b) => b.score - a.score);
+  const blocked = blockedInterestKeys(profile);
+  const interesting = rows
+    .filter((r) => r.score !== 50 && !(r.group === "interests" && blocked.has(r.key)))
+    .sort((a, b) => b.score - a.score);
   return (interesting.length >= 5 ? interesting : rows.sort((a, b) => b.score - a.score)).slice(0, 8);
 };
 
@@ -814,10 +920,25 @@ const IDEA_RULES: { test: RegExp; program: RegExp }[] = [
   { test: /sestr/, program: /medicinska sestra/i },
   { test: /doktor|lijecnik|medicinski fakultet|\bmedicina\b/, program: /prirodoslovna gimnazija/i },
   { test: /farmac/, program: /farmaceut/i },
+  { test: /fizioter/, program: /fizioterapeut/i },
   { test: /pomor|nautic|brod|luka|\bmore\b/, program: /pomorski|nauti/i },
   { test: /ples/, program: /plesa/i },
   { test: /krojac|siva/, program: /kroja/i },
   { test: /kuh/, program: /kuhar/i },
+  { test: /prehramb|prehran/, program: /prehramben/i },
+  { test: /cvijec|cvjec/, program: /cvjećar/i },
+  { test: /frizer|kozmet/, program: /frizer/i },
+  { test: /konobar/, program: /konobar/i },
+  { test: /glazb/, program: /glazben/i },
+  { test: /kemij/, program: /kemijski/i },
+  { test: /arhitekt/, program: /arhitekton/i },
+  { test: /gradev|gradjev|zidar|gradilist/, program: /građevinsk/i },
+  { test: /elektricar|elektroinst/, program: /električar/i },
+  { test: /elektroteh|elektronik/, program: /elektrotehn/i },
+  { test: /\bured\b|upravn/, program: /upravni/i },
+  { test: /logist|promet/, program: /promet|logist/i },
+  { test: /sumar|\bsuma\b/, program: /šumar/i },
+  { test: /video|\bmedij|web/, program: /medijski/i },
   { test: /dizajn|likov/, program: /dizajn/i },
   { test: /stroj/, program: /strojar/i },
   { test: /racun|informat/, program: /računar/i },
@@ -828,6 +949,44 @@ const IDEA_RULES: { test: RegExp; program: RegExp }[] = [
   { test: /jezik/, program: /jezič/i },
   { test: /auto|mehanic/, program: /automehatron/i },
 ];
+
+const CHOICE_ONLY_PROGRAM = /bravar|limar|stolar|automehatron|električar|građevinsk/i;
+
+const choiceBacksProgram = (profile: JuniorStudentProfile, program: HighSchoolProgram): boolean => {
+  const name = program.name;
+  const tech = profile.techChoice;
+  const hands = profile.handsChoice;
+  if (tech === "electro" && /elektro/i.test(name)) return true;
+  if (tech === "code" && /računar/i.test(name)) return true;
+  if (tech === "machines" && /strojar/i.test(name)) return true;
+  if (tech === "build" && /građev|arhitekt/i.test(name)) return true;
+  if (tech === "design" && /arhitekt|medij|dizajn/i.test(name)) return true;
+  if (hands === "metal" && /bravar|limar/i.test(name)) return true;
+  if (hands === "wood" && /stolar/i.test(name)) return true;
+  if (hands === "cars" && /automehatron/i.test(name)) return true;
+  if (hands === "food" && /kuhar/i.test(name)) return true;
+  if (hands === "bake" && /pekar/i.test(name)) return true;
+  if (hands === "sea" && /pomor|nauti/i.test(name)) return true;
+  if (hands === "plants" && /cvjeć|poljopriv|šumar/i.test(name)) return true;
+  if (hands === "beauty" && /frizer|kozmet/i.test(name)) return true;
+  return false;
+};
+
+/** Nedostajući uvjet nije „ne”, ali smjer se ne pokazuje. Zanat bez svog izbora isto ostaje van popisa. */
+const earnedVisible = (
+  match: JuniorProgramMatch,
+  profile: JuniorStudentProfile,
+  namedId: number | null,
+): boolean => {
+  if (namedId != null && match.program.id === namedId) return true;
+  const requirementsOk = Object.entries(match.program.requiresSignals).every(([key, minimum]) => {
+    const value = profile.signals[key];
+    return typeof value === "number" && value >= (minimum ?? 1);
+  });
+  if (!requirementsOk) return false;
+  if (CHOICE_ONLY_PROGRAM.test(match.program.name) && !choiceBacksProgram(profile, match.program)) return false;
+  return true;
+};
 
 const namedIdeaMatch = (profile: JuniorStudentProfile, matches: JuniorProgramMatch[]): JuniorProgramMatch | null => {
   const text = normalizeText(profile.considering ?? "");
@@ -842,6 +1001,18 @@ const namedIdeaMatch = (profile: JuniorStudentProfile, matches: JuniorProgramMat
   );
 };
 
+const readProgramChecks = (answers: JuniorAnswers): Array<{ keep: number; drop: number }> => {
+  const found: Array<{ keep: number; drop: number }> = [];
+  for (const id of [98, 99]) {
+    const raw = answers[id];
+    if (typeof raw !== "string") continue;
+    const match = /^keep-(\d+)-drop-(\d+)$/.exec(raw);
+    if (!match) continue;
+    found.push({ keep: Number(match[1]), drop: Number(match[2]) });
+  }
+  return found;
+};
+
 const pinNamedIdea = (
   recommendations: JuniorProgramMatch[],
   matches: JuniorProgramMatch[],
@@ -849,17 +1020,23 @@ const pinNamedIdea = (
 ): JuniorProgramMatch[] => {
   const hit = namedIdeaMatch(profile, matches);
   if (!hit) return recommendations;
-  const index = recommendations.findIndex((item) => item.program.id === hit.program.id);
-  if (index >= 0 && index < 3) return recommendations;
+  const wantsFaculty = profile.postSchool.faculty >= 62 || profile.postSchool.both >= 62;
   const rest = recommendations.filter((item) => item.program.id !== hit.program.id);
-  return [...rest.slice(0, 2), hit, ...rest.slice(2)].slice(0, JUNIOR_TOP_RECOMMENDATIONS);
+  const gym =
+    wantsFaculty && hit.program.type !== "gimnazija"
+      ? (rest.find((item) => item.program.type === "gimnazija") ??
+        matches.find((item) => item.program.id === 1) ??
+        null)
+      : null;
+  const tail = rest.filter((item) => item.program.id !== gym?.program.id);
+  return (gym ? [hit, gym, ...tail] : [hit, ...rest]).slice(0, JUNIOR_TOP_RECOMMENDATIONS);
 };
 
 const consideringNoteFor = (profile: JuniorStudentProfile, matches: JuniorProgramMatch[]): string | null => {
   if (!profile.considering) return null;
   const hit = namedIdeaMatch(profile, matches);
   if (hit) {
-    return `U kvizu stoji da razmišljaš o „${profile.considering}”. Zato je ${hit.program.name} među prijedlozima.`;
+    return `U kvizu stoji da razmišljaš o „${profile.considering}”. Zato je ${hit.program.name} prvi prijedlog.`;
   }
   return `U kvizu stoji da razmišljaš o „${profile.considering}”. Usporedi tu ideju s programima niže: gdje se slaže, a gdje ne.`;
 };
@@ -885,11 +1062,32 @@ export const analyzeJuniorQuiz = (answers: JuniorAnswers, options: AnalyzeOption
     return { ...m, matchPercentage: capped, overallScore: capped, rankScore: Math.min(m.rankScore, 78) };
   });
 
-  const recommendations = pinNamedIdea(
-    selectTopRecommendations(displayMatches, JUNIOR_TOP_RECOMMENDATIONS),
+  const namedHit = namedIdeaMatch(profile, displayMatches);
+  const droppedProgramIds = new Set<number>();
+  const keptProgramIds: number[] = [];
+  for (const check of readProgramChecks(answers)) {
+    droppedProgramIds.delete(check.keep);
+    droppedProgramIds.add(check.drop);
+    const rest = keptProgramIds.filter((id) => id !== check.keep && id !== check.drop);
+    rest.unshift(check.keep);
+    keptProgramIds.splice(0, keptProgramIds.length, ...rest);
+  }
+  const visibleMatches = displayMatches.filter(
+    (match) => earnedVisible(match, profile, namedHit?.program.id ?? null) && !droppedProgramIds.has(match.program.id),
+  );
+  let recommendations = pinNamedIdea(
+    selectTopRecommendations(visibleMatches, JUNIOR_TOP_RECOMMENDATIONS),
     displayMatches,
     profile,
   );
+  for (const id of [...keptProgramIds].reverse()) {
+    const chosen = displayMatches.find((match) => match.program.id === id);
+    if (!chosen || droppedProgramIds.has(id)) continue;
+    recommendations = [chosen, ...recommendations.filter((match) => match.program.id !== id)];
+  }
+  recommendations = recommendations
+    .filter((match) => !droppedProgramIds.has(match.program.id))
+    .slice(0, JUNIOR_TOP_RECOMMENDATIONS);
   const lessAligned = [...displayMatches]
     .sort((a, b) => a.matchPercentage - b.matchPercentage)
     .filter((m) => !recommendations.some((r) => r.program.id === m.program.id))

@@ -10,12 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import JuniorQuizResults from "@/components/junior-quiz/JuniorQuizResults";
 import { analyzeNearby, listQuizCities } from "@/lib/juniorGeo";
-import {
-  effectiveJuniorPoints,
-  onJuniorPointsChange,
-  pickQuizResultSchools,
-  saveJuniorSnapshot,
-} from "@/lib/juniorPath";
+import { pickQuizResultSchools, saveJuniorSnapshot } from "@/lib/juniorPath";
 import { buildParentBrief, saveParentBrief } from "@/lib/juniorParentBrief";
 import { trackEvent } from "@/lib/analytics";
 import {
@@ -23,6 +18,7 @@ import {
   JUNIOR_QUIZ_VERSION,
   JUNIOR_SCALE_WORDS,
   analyzeJuniorQuiz,
+  calculateQuizProfile,
   analyticsAnswerPayload,
   isAnswered,
   juniorQuestions,
@@ -38,6 +34,8 @@ import {
   CORE_QUESTIONS,
   buildMainSequence,
   expandSequenceIfNeeded,
+  jobOptionIds,
+  peopleDayOptionIds,
   selectFollowupQuestions,
 } from "@/lib/juniorQuizSequence";
 import { normalizeClassCode, saveLastClassCode } from "@/lib/juniorClass";
@@ -114,11 +112,26 @@ const JuniorQuizFlow = () => {
   const [priority, setPriority] = useState<JuniorPriority | null>(stored?.priority ?? null);
   const [multiDraft, setMultiDraft] = useState<string[]>([]);
   const [textDraft, setTextDraft] = useState("");
-  const [points, setPoints] = useState<number | null>(() => effectiveJuniorPoints());
   const [corePause, setCorePause] = useState(false);
+  const [confirmRound, setConfirmRound] = useState(false);
+  const [checkQuestions, setCheckQuestions] = useState<JuniorQuestion[]>([]);
   const startedRef = useRef(false);
   const completedRef = useRef(phase === "results");
+  const confirmOfferedRef = useRef(false);
   const classCodeFromUrl = normalizeClassCode(searchParams.get("razred") ?? "") ?? "";
+
+  useEffect(() => {
+    if (phase !== "followup" || checkQuestions.length > 0) return;
+    if (!sequence.some((id) => id === 98 || id === 99)) return;
+    const preview = analyzeJuniorQuiz(answers, { priority });
+    const extra = selectFollowupQuestions(answers, preview.recommendations);
+    if (!extra.length) {
+      setPhase("results");
+      setIndex(0);
+      return;
+    }
+    setCheckQuestions(extra);
+  }, [phase, sequence, checkQuestions.length, answers, priority]);
 
   useEffect(() => {
     if (classCodeFromUrl) saveLastClassCode(classCodeFromUrl);
@@ -162,12 +175,18 @@ const JuniorQuizFlow = () => {
   const activeIds = phase === "followup" ? sequence : sequence;
   const total = activeIds.length;
   const questionId = activeIds[index];
-  const question = questionId ? questionById(questionId) : undefined;
+  const question = questionId
+    ? (checkQuestions.find((item) => item.id === questionId) ?? questionById(questionId))
+    : undefined;
   const section = juniorSections.find((s) => s.key === question?.section);
 
   const analysis = useMemo(
     () => (phase === "results" ? analyzeJuniorQuiz(answers, { priority }) : null),
     [phase, answers, priority],
+  );
+  const canFollowUp = useMemo(
+    () => Boolean(analysis && selectFollowupQuestions(answers, analysis.recommendations).length),
+    [analysis, answers],
   );
 
   const allCities = useMemo(() => listQuizCities(), []);
@@ -214,8 +233,6 @@ const JuniorQuizFlow = () => {
     return out;
   }, [analysis, nearby]);
 
-  useEffect(() => onJuniorPointsChange(() => setPoints(effectiveJuniorPoints())), []);
-
   useEffect(() => {
     if (phase === "results" && analysis) {
       saveJuniorSnapshot(analysis, city);
@@ -253,6 +270,15 @@ const JuniorQuizFlow = () => {
   const goNext = (nextAnswers: JuniorAnswers, fromIndex = index) => {
     if (phase === "followup") {
       if (fromIndex + 1 >= sequence.length) {
+        const preview = analyzeJuniorQuiz(nextAnswers, { priority });
+        const extra = selectFollowupQuestions(nextAnswers, preview.recommendations);
+        const asked = [98, 99].filter((id) => nextAnswers[id] !== undefined).length;
+        if (asked < 2 && extra.length) {
+          setCheckQuestions(extra.slice(0, 1));
+          setSequence([extra[0].id]);
+          setIndex(0);
+          return;
+        }
         setPhase("results");
         setIndex(0);
         return;
@@ -270,6 +296,19 @@ const JuniorQuizFlow = () => {
     }
     if (nextSequence !== sequence) setSequence(nextSequence);
     if (fromIndex + 1 >= nextSequence.length) {
+      if (!confirmOfferedRef.current) {
+        confirmOfferedRef.current = true;
+        const preview = analyzeJuniorQuiz(nextAnswers, { priority });
+        const extra = selectFollowupQuestions(nextAnswers, preview.recommendations);
+        if (extra.length) {
+          setCheckQuestions(extra.slice(0, 1));
+          setConfirmRound(true);
+          setSequence([extra[0].id]);
+          setIndex(0);
+          setPhase("followup");
+          return;
+        }
+      }
       setPhase("results");
       setIndex(0);
       return;
@@ -279,6 +318,15 @@ const JuniorQuizFlow = () => {
 
   const commitAnswer = (value: JuniorAnswerValue) => {
     if (!question) return;
+    if (value === "skip" && (question.id === 98 || question.id === 99)) {
+      const ids = (question.options ?? [])
+        .map((option) => /^keep-(\d+)-drop-\d+$/.exec(option.id)?.[1])
+        .filter((id): id is string => Boolean(id));
+      if (ids.length === 2) {
+        commitAnswer(`skip-${ids[0]}-${ids[1]}`);
+        return;
+      }
+    }
     const next = { ...answers, [question.id]: value };
     setAnswers(next);
     trackEvent("quiz_question_answered", {
@@ -305,8 +353,11 @@ const JuniorQuizFlow = () => {
     setMultiDraft([]);
     setTextDraft("");
     setCorePause(false);
+    setConfirmRound(false);
+    setCheckQuestions([]);
     completedRef.current = false;
     startedRef.current = false;
+    confirmOfferedRef.current = false;
     try {
       window.localStorage.removeItem(STORAGE_KEY);
       window.sessionStorage.removeItem(STORAGE_KEY);
@@ -329,9 +380,11 @@ const JuniorQuizFlow = () => {
 
   const startFollowup = () => {
     const current = analyzeJuniorQuiz(answers, { priority });
-    const extra = selectFollowupQuestions(answers, current.allMatches);
+    const extra = selectFollowupQuestions(answers, current.recommendations);
     if (!extra.length) return;
-    setSequence(extra.map((q) => q.id));
+    setCheckQuestions(extra.slice(0, 1));
+    setConfirmRound(false);
+    setSequence([extra[0].id]);
     setIndex(0);
     setPhase("followup");
     completedRef.current = false;
@@ -459,11 +512,16 @@ const JuniorQuizFlow = () => {
                 const Icon = SECTION_ICONS[question.section];
                 return <Icon className="h-3.5 w-3.5 text-primary" />;
               })()}
-              {phase === "followup" ? "Još par pitanja" : section?.title}
+              {phase === "followup" ? (confirmRound ? "Provjera prije rezultata" : "Još par pitanja") : section?.title}
             </span>
             <span className="text-right">{progressLabel}</span>
           </div>
           <Progress value={progressPct} className="h-2" />
+          {phase === "followup" && confirmRound ? (
+            <p className="mt-2 text-sm text-muted-foreground">
+              Još jedno ili dva pitanja. Pitamo te imenom smjerova s kartice, da vidimo koji ostaje.
+            </p>
+          ) : null}
         </div>
 
         <AnimatePresence mode="wait">
@@ -514,7 +572,16 @@ const JuniorQuizFlow = () => {
 
             {question.format === "choice" ? (
               <div className="mt-6 grid gap-3">
-                {question.options?.map((opt) => (
+                {(question.id === 97
+                  ? peopleDayOptionIds(calculateQuizProfile(answers))
+                      .map((id) => question.options?.find((opt) => opt.id === id))
+                      .filter((opt): opt is NonNullable<typeof opt> => Boolean(opt))
+                  : question.id === 37
+                    ? jobOptionIds(answers)
+                        .map((id) => question.options?.find((opt) => opt.id === id))
+                        .filter((opt): opt is NonNullable<typeof opt> => Boolean(opt))
+                    : question.options
+                )?.map((opt) => (
                   <button
                     key={opt.id}
                     type="button"
@@ -536,7 +603,7 @@ const JuniorQuizFlow = () => {
                       selected === "nije_moje" ? "border-primary ring-2 ring-primary" : "border-border/60 hover:border-primary/40",
                     )}
                   >
-                    Nije moje
+                    Ništa od navedenog
                   </button>
                 ) : null}
               </div>
@@ -685,7 +752,7 @@ const JuniorQuizFlow = () => {
         citySuggestions={citySuggestions}
         nearby={nearby}
         resultSchools={resultSchools}
-        points={points}
+        points={null}
         classCodeFromUrl={classCodeFromUrl}
         onCityQuery={setCityQuery}
         onCity={(value) => {
@@ -694,6 +761,7 @@ const JuniorQuizFlow = () => {
         }}
         onPriority={setPriority}
         onFollowup={startFollowup}
+        canFollowUp={canFollowUp}
         onRestart={restart}
       />
     );

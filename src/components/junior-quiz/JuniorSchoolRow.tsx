@@ -29,28 +29,33 @@ export default function JuniorSchoolRow({
   program,
   matchPercentage,
   onSchoolOpen,
+  useSavedPoints = true,
+  about,
 }: {
   school: EnrichedNearbySchool;
   program: HighSchoolProgram;
   matchPercentage: number | null;
   onSchoolOpen?: () => void;
+  /** Kviz ne vuče stari izračun. Šansa se vidi tek nakon novog izračuna u kalkulatoru. */
+  useSavedPoints?: boolean;
+  about?: string;
 }) {
   const [saved, setSaved] = useState(() =>
     isOnShortlist(shortlistFromNearby(school, program, matchPercentage).key),
   );
-  const [points, setPoints] = useState<number | null>(() => effectiveJuniorPoints());
+  const [points, setPoints] = useState<number | null>(() => (useSavedPoints ? effectiveJuniorPoints() : null));
 
   useEffect(() => {
     const syncList = () =>
       setSaved(isOnShortlist(shortlistFromNearby(school, program, matchPercentage).key));
-    const syncPts = () => setPoints(effectiveJuniorPoints());
+    const syncPts = () => setPoints(useSavedPoints ? effectiveJuniorPoints() : null);
     const offList = onShortlistChange(syncList);
     const offPts = onJuniorPointsChange(syncPts);
     return () => {
       offList();
       offPts();
     };
-  }, [school, program, matchPercentage]);
+  }, [school, program, matchPercentage, useSavedPoints]);
 
   const item = shortlistFromNearby(school, program, matchPercentage);
   const chance =
@@ -94,15 +99,8 @@ export default function JuniorSchoolRow({
               .filter(Boolean)
               .join(" · ")}
           </p>
-          {school.cutoff?.programName ? (
-            <p className="mt-0.5 text-[11px] text-muted-foreground">
-              Službeni smjer: <span className="font-semibold text-foreground">{school.cutoff.programName}</span>
-            </p>
-          ) : null}
           {school.cutoff?.min == null ? (
-            <p className="mt-1 text-[11px] leading-relaxed text-amber-800 dark:text-amber-200">
-              {school.mapSchoolId || school.cutoff ? JUNIOR_MISSING_CUTOFF_NOTE : JUNIOR_MISSING_SCHOOL_NOTE}
-            </p>
+            <p className="mt-1 text-[11px] text-muted-foreground">Prag nije u bazi. Otvori za objašnjenje.</p>
           ) : null}
         </div>
         <button
@@ -120,7 +118,7 @@ export default function JuniorSchoolRow({
         </button>
       </div>
 
-      {chance ? (
+      {useSavedPoints && chance ? (
         <p
           className={cn(
             "mt-2 inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-bold",
@@ -129,11 +127,24 @@ export default function JuniorSchoolRow({
         >
           {chance.label}
         </p>
-      ) : school.cutoff?.min != null ? (
-        <p className="mt-1.5 text-[11px] text-muted-foreground">Unesi bodove iznad da vidiš šansu.</p>
       ) : null}
 
-      <div className="mt-2 flex flex-wrap gap-1.5">
+      <details className="group mt-2 border-t border-border/50 pt-2">
+        <summary className="cursor-pointer list-none text-xs font-medium text-foreground/80 [&::-webkit-details-marker]:hidden">
+          Opis škole
+        </summary>
+        <div className="mt-2 space-y-2 text-sm leading-relaxed text-muted-foreground">
+          {about ? <p>{about}</p> : null}
+          {school.cutoff?.programName ? (
+            <p>
+              Službeni smjer: <span className="font-medium text-foreground">{school.cutoff.programName}</span>
+            </p>
+          ) : null}
+          {school.cutoff?.min == null ? (
+            <p>{school.mapSchoolId || school.cutoff ? JUNIOR_MISSING_CUTOFF_NOTE : JUNIOR_MISSING_SCHOOL_NOTE}</p>
+          ) : null}
+        </div>
+      </details>
         <Button asChild size="sm" variant="outline" className="h-8 rounded-lg px-2.5 text-xs">
           <Link
             to={mapSchoolHref(school.mapSchoolId, school.name, school.city)}
@@ -146,7 +157,7 @@ export default function JuniorSchoolRow({
         <Button asChild size="sm" variant="outline" className="h-8 rounded-lg px-2.5 text-xs">
           <Link to={calculatorHref(school.cutoff?.schoolId, school.cutoff?.programId)}>
             <Calculator className="mr-1 h-3 w-3" />
-            Izračunaj šansu
+            Izračunaj bodove
           </Link>
         </Button>
       </div>

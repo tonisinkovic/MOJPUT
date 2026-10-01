@@ -110,6 +110,35 @@ export const BRANCH_PACKS: { id: string; pool: JuniorQuestion["pool"]; score: (p
   },
 ];
 
+/** Najviše četiri bliska dana, plus izlaz. Ne baca svih osam odjednom. */
+export const peopleDayOptionIds = (profile: JuniorStudentProfile): string[] => {
+  const ids: string[] = [];
+  const push = (id: string) => {
+    if (!ids.includes(id)) ids.push(id);
+  };
+  const health = (profile.signals.health_medicine ?? 0) >= 4 || (profile.signals.helping_people ?? 0) >= 4;
+  const animals = (profile.signals.animals_nature ?? 0) >= 4;
+  const lab = (profile.signals.science_experiments ?? 0) >= 4;
+  const guests = (profile.signals.languages_travel ?? 0) >= 4;
+  const dance = (profile.signals.music_performance ?? 0) >= 4;
+  const sport = (profile.signals.sport_active ?? 0) >= 4 && !dance;
+  if (health) {
+    push("doctor");
+    push("care");
+  }
+  if (lab) push("lab");
+  if (animals) push("animals");
+  if (guests) push("guests");
+  if (dance) push("dance");
+  if (sport) push("sport");
+  if (profile.interests.people >= 58 && ids.length < 3) push("class");
+  for (const id of ["care", "doctor", "guests", "class"]) {
+    if (ids.length >= 4) break;
+    push(id);
+  }
+  return [...ids.slice(0, 4), "none"];
+};
+
 export const typicalJuniorQuizLength = (): number =>
   CORE_QUESTIONS.length + 8 + CONTEXT_QUESTIONS.length;
 
@@ -175,57 +204,125 @@ export const expandSequenceIfNeeded = (
   return buildMainSequence(answers);
 };
 
+/** Drugo pitanje o poslu ne ponavlja hranu ili sport ako je dijete to već reklo. */
+export const jobOptionIds = (answers: JuniorAnswers): string[] => {
+  const prior = answers[36];
+  const ids = ["plan", "serve", "sportjob", "kitchen"];
+  if (prior === "sport") return ids.filter((id) => id !== "sportjob");
+  if (prior === "food" || prior === "bake") return ids.filter((id) => id !== "kitchen");
+  if (prior === "talk") return ids.filter((id) => id !== "serve");
+  return ids;
+};
+
+const CHECK_IDS = [98, 99] as const;
+
+const shortProgramName = (name: string): string => name.split("/")[0].replace(/\s*\(.*\)\s*/, "").trim();
+
+const sameFamily = (left: string, right: string): boolean => {
+  const families = [
+    /bravar|limar|strojar|električar|stolar|automehatron|građevinsk/i,
+    /sestra|fizioter/i,
+    /farmac|kemijski/i,
+    /kuhar|pekar|krojač|prehramben/i,
+    /hotel|konobar|turisti/i,
+    /šumar|poljopriv|cvjeć|veterin/i,
+    /dizajn|likov|medij|glazben|plesa/i,
+    /računar|elektroteh/i,
+  ];
+  return families.some((pattern) => pattern.test(left) && pattern.test(right));
+};
+
+const explicitFork = (left: string, right: string): boolean => {
+  const forks: Array<[RegExp, RegExp]> = [
+    [/sestra|fizioter/i, /farmac|kemijski/i],
+    [/kuhar|pekar/i, /krojač/i],
+    [/bravar|limar|stolar|automehatron/i, /strojar|električar|građevinsk/i],
+    [/hotel|turisti/i, /konobar/i],
+  ];
+  return forks.some(
+    ([one, other]) => (one.test(left) && other.test(right)) || (other.test(left) && one.test(right)),
+  );
+};
+
+const answeredChecks = (answers: JuniorAnswers): Array<{ keep: number; drop: number }> => {
+  const found: Array<{ keep: number; drop: number }> = [];
+  for (const id of CHECK_IDS) {
+    const raw = answers[id];
+    if (typeof raw !== "string") continue;
+    const kept = /^keep-(\d+)-drop-(\d+)$/.exec(raw);
+    if (kept) {
+      found.push({ keep: Number(kept[1]), drop: Number(kept[2]) });
+      continue;
+    }
+    const skipped = /^skip-(\d+)-(\d+)$/.exec(raw);
+    if (skipped) found.push({ keep: Number(skipped[1]), drop: Number(skipped[2]) });
+  }
+  return found;
+};
+
+const pairAlreadyAsked = (answers: JuniorAnswers, leftId: number, rightId: number): boolean =>
+  answeredChecks(answers).some(
+    (check) =>
+      (check.keep === leftId && check.drop === rightId) || (check.keep === rightId && check.drop === leftId),
+  );
+
+const strongestSignalMet = (match: JuniorProgramMatch, profile: JuniorStudentProfile): boolean => {
+  const boosts = Object.entries(match.program.boostSignals).filter(([, weight]) => (weight ?? 0) > 0);
+  if (!boosts.length) return match.program.type === "gimnazija";
+  const [key] = boosts.sort((a, b) => (b[1] ?? 0) - (a[1] ?? 0))[0];
+  return (profile.signals[key as JuniorSignalKey] ?? 0) >= 4;
+};
+
+const pairNeedsCheck = (
+  left: JuniorProgramMatch,
+  right: JuniorProgramMatch,
+  answers: JuniorAnswers,
+  profile: JuniorStudentProfile,
+): boolean => {
+  if (pairAlreadyAsked(answers, left.program.id, right.program.id)) return false;
+  const gap = Math.abs((left.rankScore ?? 0) - (right.rankScore ?? 0));
+  const close = Number.isFinite(left.rankScore) && Number.isFinite(right.rankScore) && gap <= 6;
+  const lookalike =
+    (left.program.type === "gimnazija" && right.program.type === "gimnazija") ||
+    sameFamily(left.program.name, right.program.name) ||
+    explicitFork(left.program.name, right.program.name);
+  const leader = (left.rankScore ?? 0) >= (right.rankScore ?? 0) ? left : right;
+  const trailer = leader === left ? right : left;
+  return close || lookalike || !strongestSignalMet(trailer, profile);
+};
+
+const cardCheckQuestion = (id: number, left: JuniorProgramMatch, right: JuniorProgramMatch): JuniorQuestion => ({
+  id,
+  format: "choice",
+  pool: "followup",
+  section: "context",
+  skippable: true,
+  prompt: `Što ti je bliže: ${shortProgramName(left.program.name)} ili ${shortProgramName(right.program.name)}?`,
+  hint: `${left.program.goodFor[0] ?? ""}. ${right.program.goodFor[0] ?? ""}`.trim(),
+  options: [
+    { id: `keep-${left.program.id}-drop-${right.program.id}`, label: left.program.name },
+    { id: `keep-${right.program.id}-drop-${left.program.id}`, label: right.program.name },
+  ],
+});
+
+/** Najviše dva pitanja. Svako imenuje dva smjera s kartice i može jedan zadržati, a drugi maknuti. */
 export const selectFollowupQuestions = (
   answers: JuniorAnswers,
   matches: JuniorProgramMatch[],
 ): JuniorQuestion[] => {
-  const unused = (q: JuniorQuestion) => answers[q.id] === undefined;
-  const topTypes = new Set(matches.slice(0, 3).map((m) => m.program.type));
-  const topNames = matches.slice(0, 3).map((m) => m.program.name);
-  const ranked: JuniorQuestion[] = [];
-
-  const gymVsTech = topTypes.has("gimnazija") && topTypes.has("tehnicka");
-  const q90 = FOLLOWUP_QUESTIONS.find((q) => q.id === 90);
-  if (gymVsTech && q90 && unused(q90)) ranked.push(q90);
-
-  const techish = topNames.some((n) => /računar|elektro|strojar/i.test(n));
-  const q91 = FOLLOWUP_QUESTIONS.find((q) => q.id === 91);
-  if (techish && q91 && unused(q91)) ranked.push(q91);
-
-  const healthish = topNames.some((n) => /medicin|farmac|fizioter/i.test(n));
-  const q92 = FOLLOWUP_QUESTIONS.find((q) => q.id === 92);
-  if (healthish && q92 && unused(q92)) ranked.push(q92);
-
-  const creativeish = topNames.some((n) => /dizajn|medij|glazben|plesa/i.test(n));
-  const q93 = FOLLOWUP_QUESTIONS.find((q) => q.id === 93);
-  if (creativeish && q93 && unused(q93)) ranked.push(q93);
-
-  const q94 = FOLLOWUP_QUESTIONS.find((q) => q.id === 94);
-  if (q94 && unused(q94)) ranked.push(q94);
-
-  const natureish = topNames.some((n) => /veterin|šumar|poljopriv/i.test(n));
-  const q95 = FOLLOWUP_QUESTIONS.find((q) => q.id === 95);
-  if (natureish && q95 && unused(q95)) ranked.push(q95);
-
-  const q96 = FOLLOWUP_QUESTIONS.find((q) => q.id === 96);
-  if (q96 && unused(q96)) ranked.push(q96);
-
-  for (const q of FOLLOWUP_QUESTIONS) {
-    if (unused(q) && !ranked.includes(q)) ranked.push(q);
-  }
-
-  const fromUnusedBranch = juniorQuestions.filter(
-    (q) =>
-      (q.pool === "health" ||
-        q.pool === "tech" ||
-        q.pool === "creative" ||
-        q.pool === "practical" ||
-        q.pool === "academic" ||
-        q.pool === "peoplebiz") &&
-      unused(q),
-  );
-  return uniqueIds([...ranked, ...fromUnusedBranch].map((q) => q.id))
-    .slice(0, 5)
-    .map((id) => juniorQuestions.find((q) => q.id === id)!)
-    .filter(Boolean);
+  const cards = matches.slice(0, 3).filter((card) => card?.program);
+  if (cards.length < 2) return [];
+  const profile = calculateQuizProfile(answers);
+  const pairs: Array<[JuniorProgramMatch, JuniorProgramMatch]> = [];
+  const consider = (left?: JuniorProgramMatch, right?: JuniorProgramMatch) => {
+    if (!left || !right || pairs.length >= 2) return;
+    if (pairs.some(([a, b]) => a.program.id === left.program.id && b.program.id === right.program.id)) return;
+    if (!pairNeedsCheck(left, right, answers, profile)) return;
+    pairs.push([left, right]);
+  };
+  consider(cards[0], cards[1]);
+  consider(cards[1], cards[2]);
+  consider(cards[0], cards[2]);
+  const freeIds = CHECK_IDS.filter((id) => answers[id] === undefined);
+  return pairs.slice(0, freeIds.length).map((pair, index) => cardCheckQuestion(freeIds[index], pair[0], pair[1]));
 };

@@ -26,7 +26,6 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
 import { cn } from "@/lib/utils";
-import JuniorPointsBox from "@/components/junior-quiz/JuniorPointsBox";
 import JuniorSchoolRow from "@/components/junior-quiz/JuniorSchoolRow";
 import JuniorNumbersNote from "@/components/junior/JuniorNumbersNote";
 import JuniorPlanBCard from "@/components/junior/JuniorPlanBCard";
@@ -72,12 +71,49 @@ const CONFIDENCE_STYLES = {
   low: { label: "Još istražuješ", cls: "bg-orange-500/15 text-orange-600 dark:text-orange-300" },
 } as const;
 
-const MATCH_TONE = (score: number, leader: number) => {
+const MATCH_TONE = (score: number, leader: number, tied = false) => {
+  if (tied) return "Podjednako blizu";
   const gap = leader - score;
   if (gap <= 2) return "Jako blizu";
   if (gap <= 6) return "Blizu";
   return "Dalje";
 };
+
+function optionDifference(rec: JuniorProgramMatch): string {
+  const program = rec.program;
+  if (program.type === "gimnazija") return `${program.name} ostavlja fakultet otvoren.`;
+  if (program.type === "umjetnicka") return `${program.name} uči umjetnost, a upis ide i preko prijemnog.`;
+  if (program.duration <= 3) return `${program.name} traje ${program.duration} godine i vodi na posao. Fakultet kasnije traži još škole.`;
+  if (program.type === "tehnicka") return `${program.name} uči posao i ima maturu.`;
+  return `${program.name} vrijedi usporediti s ostalima.`;
+}
+
+function compareLead(recommendations: JuniorProgramMatch[]): string {
+  const shown = recommendations.slice(0, 3);
+  if (shown.length <= 1) return `Ovo vrijedi pogledati. ${shown[0] ? optionDifference(shown[0]) : "Nije odluka o upisu."}`;
+  const count = shown.length === 3 ? "tri" : "dvije";
+  return `Ove ${count} vrijedi pogledati. ${shown.map(optionDifference).join(" ")}`;
+}
+
+function computerFacultyNote(analysis: JuniorQuizAnalysis): string | null {
+  const { profile, recommendations } = analysis;
+  const idea = (profile.considering ?? "").toLowerCase();
+  const tech = (profile.signals.tech_computers ?? 0) >= 4 || /račun|informat|program/.test(idea);
+  const faculty = profile.postSchool.faculty >= 62 || /fakultet/.test(idea);
+  const craft = ["food", "bake", "cars", "metal", "sea"].includes(profile.handsChoice ?? "");
+  if (/farmac/.test(idea)) {
+    return "Farmacija ima dva vrata, ne jedan pobjednik. Farmaceutski tehničar uči lijekove već u srednjoj. Prirodoslovna gimnazija ostavlja put na farmaceutski fakultet.";
+  }
+  if (/doktor|liječn|medicin/.test(idea) && !/sestr/.test(idea)) {
+    return "Medicina na fakultetu ide preko gimnazije, najčešće prirodoslovne. Medicinska sestra je posao već iz srednje. To nisu ista vrata.";
+  }
+  if (!tech || !faculty || craft) return null;
+  const names = recommendations.slice(0, 5).map((rec) => rec.program.name);
+  const hasGym = names.some((name) => /prirodoslovno-matematička|prirodoslovna gimnazija/i.test(name));
+  const hasComp = names.some((name) => /računarstvo/i.test(name));
+  if (!hasGym && !hasComp && !/račun|informat/.test(idea)) return null;
+  return "Prirodoslovno-matematička gimnazija i tehničar za računarstvo su ti dva vrata, ne jedan pobjednik. Gimnazija ostavlja širi put na fakultet. Računarstvo uči struku odmah, a može imati i maturu.";
+}
 
 function trackProgram(programId: number, name: string) {
   trackEvent("program_opened", {
@@ -107,10 +143,56 @@ function peopleLabel(program: import("@/lib/juniorQuizEngine").HighSchoolProgram
   return "Ponešto rada s ljudima";
 }
 
-function MatchScore({ score, leader }: { score: number; leader: number }) {
+function orientationPitch(analysis: JuniorQuizAnalysis): { title: string; text: string } {
+  const top = analysis.recommendations[0]?.program;
+  const { pathway } = analysis;
+  const technicalName = top ? /računar|elektro|strojar|kemij|građev|arhitekt|mehatron|nauti/i.test(top.name) : false;
+  if (top?.type === "umjetnicka") {
+    return {
+      title: "Više si za umjetničku školu",
+      text: "Više ti leži stvarati: crtež, glazba, ples ili dizajn. Škole su ispod. Upis često ide i preko prijemnog, ne samo preko bodova.",
+    };
+  }
+  if (top?.type === "obrtnicka") {
+    return {
+      title: "Više si za zanat",
+      text: "Više ti leži učiti radeći i imati vještinu u rukama. Zanat vodi prema poslu. Ako kasnije poželiš fakultet, usporedi i četverogodišnje smjerove.",
+    };
+  }
+  if (top?.type === "tehnicka" && technicalName) {
+    return {
+      title: "Više si za tehniku",
+      text: "Više ti leže računala, strojevi ili kako stvari rade. Tehnički smjer uči tu vještinu, a četverogodišnji ostavlja i maturu.",
+    };
+  }
+  if (top?.type === "tehnicka") {
+    return {
+      title: "Više si za struku",
+      text: "Više ti leži konkretan smjer i vještina koju možeš raditi. Četverogodišnja struka ostavlja i vrata za maturu.",
+    };
+  }
+  if (pathway.direction === "gimnazija" || top?.type === "gimnazija") {
+    return {
+      title: "Više si za učenje",
+      text: "Više ti leži širi program i vrijeme da odluka o fakultetu dođe kasnije. Zato je gimnazija prva stvar za pogledati.",
+    };
+  }
+  if (pathway.direction === "strukovna" || top?.type === "tehnicka") {
+    return {
+      title: "Više si za struku",
+      text: "Više ti leži konkretan smjer i vještina koju možeš raditi. Četverogodišnja struka ostavlja i vrata za maturu.",
+    };
+  }
+  return {
+    title: "Odgovara ti i učenje i struka",
+    text: "Nisi samo na jednoj strani. Pogledaj i gimnaziju i četverogodišnji strukovni smjer. Oba mogu voditi dalje.",
+  };
+}
+
+function MatchScore({ score, leader, tied = false }: { score: number; leader: number; tied?: boolean }) {
   return (
     <div className="text-right">
-      <div className="text-sm font-extrabold leading-snug text-primary sm:text-base">{MATCH_TONE(score, leader)}</div>
+      <div className="text-sm font-extrabold leading-snug text-primary sm:text-base">{MATCH_TONE(score, leader, tied)}</div>
       <div className="text-[11px] text-muted-foreground">nije ocjena</div>
     </div>
   );
@@ -125,6 +207,8 @@ function ProgramCard({
   points,
   highlight,
   variant = "full",
+  tied = false,
+  hideRank = false,
 }: {
   rec: JuniorProgramMatch;
   rank: number;
@@ -134,6 +218,8 @@ function ProgramCard({
   points: number | null;
   highlight?: boolean;
   variant?: "hero" | "compact" | "full";
+  tied?: boolean;
+  hideRank?: boolean;
 }) {
   const style = TYPE_STYLES[rec.program.type];
   const Icon = style.Icon;
@@ -144,14 +230,10 @@ function ProgramCard({
   const full = variant === "full";
   return (
     <motion.div
-      initial={{ opacity: 0, y: 14 }}
+      initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: rank * 0.04 }}
-      className={cn(
-        "rounded-3xl border bg-card/80 p-5 shadow-lg backdrop-blur sm:p-6",
-        highlight ? "border-primary/40" : "border-border/70",
-        compact && "p-4 sm:p-5",
-      )}
+      className="rounded-2xl border border-border/60 bg-card px-4 py-4 sm:px-5"
     >
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="flex min-w-0 items-start gap-3">
@@ -166,10 +248,10 @@ function ProgramCard({
                   className="hover:underline"
                   onClick={() => trackProgram(rec.program.id, rec.program.name)}
                 >
-                  {rank}. {rec.program.name}
+                  {hideRank ? rec.program.name : `${rank}. ${rec.program.name}`}
                 </Link>
               </h4>
-              {rank === 1 ? (
+              {rank === 1 && !hideRank ? (
                 <Badge className="bg-primary text-primary-foreground hover:bg-primary">Vrijedi pogledati</Badge>
               ) : null}
             </div>
@@ -190,131 +272,66 @@ function ProgramCard({
             ) : null}
           </div>
         </div>
-        <MatchScore score={rec.rankScore} leader={recommendations[0]?.rankScore ?? rec.rankScore} />
+        <MatchScore score={rec.rankScore} leader={recommendations[0]?.rankScore ?? rec.rankScore} tied={tied} />
       </div>
 
-      {!compact && !hero ? <p className="mt-3 text-sm text-muted-foreground">{rec.program.description}</p> : null}
+      {why ? <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{why}</p> : null}
 
-      {compact && why ? (
-        <p className="mt-2.5 flex items-start gap-2 text-sm">
-          <Lightbulb className="mt-0.5 h-3.5 w-3.5 shrink-0 text-emerald-500" />
-          <span>{why}</span>
-        </p>
-      ) : null}
-
-      {(hero || full) && (
-      <div className="mt-3 flex flex-wrap gap-1.5">
-        {programFactChips(rec.program).slice(0, hero ? 3 : 8).map((chip) => (
-          <span key={chip.id} className="rounded-full bg-background/80 px-2.5 py-1 text-[11px] font-semibold text-muted-foreground">
-            {chip.label}
-          </span>
-        ))}
-      </div>
-      )}
-
-      {full ? (
-      <div className="mt-3 grid gap-2 sm:grid-cols-2">
-        <div className="rounded-2xl bg-emerald-500/10 px-3.5 py-2.5">
-          <p className="text-xs font-bold text-emerald-800 dark:text-emerald-200">Zanima te</p>
-          <p className="mt-0.5 text-sm">{rec.interestLine}</p>
-        </div>
-        <div className="rounded-2xl bg-amber-500/10 px-3.5 py-2.5">
-          <p className="text-xs font-bold text-amber-800 dark:text-amber-200">U školi može biti teže</p>
-          <p className="mt-0.5 text-sm text-muted-foreground">
-            {rec.readinessNotes[0] ?? "Nema posebnog upozorenja iz tvojih odgovora — svejedno pogledaj kako izgleda običan dan."}
+      <details className="group mt-3 border-t border-border/50 pt-2">
+        <summary className="cursor-pointer list-none text-sm font-medium text-foreground/80 [&::-webkit-details-marker]:hidden">
+          <span className="underline-offset-2 group-open:underline">Opis smjera</span>
+        </summary>
+        <div className="mt-3 space-y-3 text-sm leading-relaxed">
+          <p>{rec.program.description}</p>
+          <p>
+            <span className="font-medium">Što se uči: </span>
+            <span className="text-muted-foreground">{rec.program.goodFor.join(" · ")}</span>
           </p>
-        </div>
-      </div>
-      ) : hero ? (
-        <p className="mt-3 text-sm">
-          <span className="font-semibold">Zanima te: </span>
-          {rec.interestLine}
-        </p>
-      ) : null}
-
-      {hero && city && nearby ? (
-        (() => {
-          const nearest = (nearby.byProgram.get(rec.program.id) ?? [])[0];
-          return nearest ? (
-            <p className="mt-2 flex items-start gap-2 text-sm">
-              <MapPin className="mt-0.5 h-3.5 w-3.5 shrink-0 text-primary" />
-              <span>
-                Škola u blizini: <span className="font-semibold">{nearest.name}</span>, {nearest.city}
-              </span>
+          <p>
+            <span className="font-medium">Nakon škole: </span>
+            <span className="text-muted-foreground">{rec.program.afterSchool}</span>
+          </p>
+          <p>
+            <span className="font-medium">Zanima te: </span>
+            {rec.interestLine}
+          </p>
+          {rec.readinessNotes[0] ? (
+            <p className="text-muted-foreground">
+              <span className="font-medium text-foreground">U školi može biti teže: </span>
+              {rec.readinessNotes[0]}
             </p>
-          ) : (
-            <p className="mt-2 text-sm text-muted-foreground">U blizini nema škole za ovaj program u bazi.</p>
-          );
-        })()
-      ) : hero && !city ? (
-        <p className="mt-2 text-sm text-muted-foreground">Upiši grad da vidiš konkretne škole.</p>
-      ) : null}
-
-      {(hero || full) && (
-      <div className="mt-3">
-        <p className="text-xs font-bold uppercase tracking-wide text-emerald-700 dark:text-emerald-300">Zašto ti ovo odgovara?</p>
-        <div className="mt-1.5 space-y-1.5">
-          {(rec.answerReasons.length ? rec.answerReasons : rec.positiveReasons).slice(0, hero ? 2 : 4).map((reason, ri) => (
-            <p key={ri} className="flex items-start gap-2 text-sm">
-              <Lightbulb className="mt-0.5 h-3.5 w-3.5 shrink-0 text-emerald-500" />
-              <span>{reason}</span>
-            </p>
+          ) : null}
+          {(rec.answerReasons.length ? rec.answerReasons : rec.positiveReasons).slice(0, 3).map((reason, ri) => (
+            <p key={ri} className="text-muted-foreground">{reason}</p>
           ))}
-        </div>
-      </div>
-      )}
-
-      {full && rec.readinessNotes.length > 0 ? (
-        <div className="mt-3">
-          <p className="text-xs font-bold uppercase tracking-wide text-amber-700 dark:text-amber-300">Na što obrati pažnju</p>
-          <div className="mt-1.5 space-y-1.5">
-            {rec.readinessNotes.map((warning, wi) => (
-              <p key={wi} className="flex items-start gap-2 text-sm text-muted-foreground">
-                <TriangleAlert className="mt-0.5 h-3.5 w-3.5 shrink-0 text-amber-500" />
-                <span>{warning}</span>
-              </p>
-            ))}
+          {(() => {
+            const day = typicalDayFor(rec.program);
+            return (
+              <div>
+                <p className="font-medium">Običan dan</p>
+                <ul className="mt-1 list-disc space-y-1 pl-4 text-muted-foreground">
+                  <li>{day.morning}</li>
+                  <li>{day.rhythm}</li>
+                  <li>{day.subjects}</li>
+                  <li>{day.after}</li>
+                </ul>
+              </div>
+            );
+          })()}
+          <div className="flex flex-wrap gap-2">
+            <Button asChild size="sm" variant="outline" className="h-8 rounded-lg px-3 text-xs">
+              <Link to={programHref(rec.program)} onClick={() => trackProgram(rec.program.id, rec.program.name)}>
+                Cijela stranica smjera
+              </Link>
+            </Button>
+            <Button asChild size="sm" variant="outline" className="h-8 rounded-lg px-3 text-xs">
+              <Link to={calculatorHref(official?.schoolId, official?.programId)}>
+                Izračunaj bodove
+              </Link>
+            </Button>
           </div>
         </div>
-      ) : null}
-
-      {(hero || full) && (() => {
-        const day = typicalDayFor(rec.program);
-        return (
-          <div className="mt-3 rounded-2xl bg-background/60 px-3.5 py-2.5 text-sm">
-            <p className="text-xs font-bold uppercase tracking-wide text-foreground">Običan dan</p>
-            <ul className="mt-1.5 list-disc space-y-1 pl-4 text-muted-foreground">
-              <li>{day.morning}</li>
-              <li>{day.rhythm}</li>
-              <li>{day.subjects}</li>
-              <li>{day.after}</li>
-            </ul>
-          </div>
-        );
-      })()}
-
-      {full ? (
-      <div className="mt-3 grid gap-2 text-xs text-muted-foreground sm:grid-cols-2">
-        <div className="rounded-2xl bg-background/60 px-3.5 py-2.5">
-          <span className="font-semibold text-foreground">Što se uči: </span>
-          {rec.program.goodFor.join(" · ")}
-        </div>
-        <div className="rounded-2xl bg-background/60 px-3.5 py-2.5">
-          <span className="font-semibold text-foreground">Nakon škole: </span>
-          {rec.program.afterSchool}
-        </div>
-      </div>
-      ) : null}
-
-      {full ? (
-      <div className="mt-3 flex flex-wrap gap-2">
-        <Button asChild size="sm" variant={rank === 1 ? "default" : "outline"} className="h-9 rounded-lg px-3 text-xs">
-          <Link to={programHref(rec.program)} onClick={() => trackProgram(rec.program.id, rec.program.name)}>
-            {rank === 1 ? "Pogledaj ovaj program" : "O programu"}
-          </Link>
-        </Button>
-      </div>
-      ) : null}
+      </details>
 
       {full && city && nearby ? (
         (() => {
@@ -332,6 +349,7 @@ function ProgramCard({
                     school={enrichNearbySchool(s, rec.program)}
                     program={rec.program}
                     matchPercentage={rec.matchPercentage}
+                    useSavedPoints={false}
                     onSchoolOpen={() =>
                       trackEvent("school_opened", {
                         quiz_id: "junior_quiz",
@@ -392,6 +410,7 @@ type Props = {
   onCity: (value: string | null) => void;
   onPriority: (value: JuniorPriority | null) => void;
   onFollowup: () => void;
+  canFollowUp: boolean;
   onRestart: () => void;
 };
 
@@ -408,6 +427,7 @@ export default function JuniorQuizResults({
   onCity,
   onPriority,
   onFollowup,
+  canFollowUp,
   onRestart,
 }: Props) {
   const [showDetails, setShowDetails] = useState(false);
@@ -417,6 +437,9 @@ export default function JuniorQuizResults({
   const { pathway } = analysis;
   const top = analysis.recommendations[0];
   const overviewRecs = analysis.recommendations.slice(0, 3);
+  const closeTop =
+    analysis.recommendations.length >= 3 &&
+    analysis.recommendations[0].rankScore - analysis.recommendations[2].rankScore <= 3;
   const left = analysis.recommendations.find((r) => r.program.id === compareA) ?? top;
   const right =
     analysis.recommendations.find((r) => r.program.id === compareB) ??
@@ -424,246 +447,67 @@ export default function JuniorQuizResults({
     null;
 
   return (
-    <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.45 }} className="mx-auto max-w-4xl space-y-6">
-      <div className="rounded-3xl border border-border/70 bg-card/80 p-6 text-center shadow-xl backdrop-blur sm:p-8">
-        <Badge className="mx-auto mb-3 bg-primary/10 text-primary hover:bg-primary/10">
-          <Award className="mr-1 h-3.5 w-3.5" /> Tvoj rezultat
-        </Badge>
-        <h2 className="text-2xl font-extrabold sm:text-3xl">
+    <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }} className="mx-auto max-w-3xl space-y-8">
+      <header>
+        <p className="text-sm text-muted-foreground">Ovo nisu upute za upis. Smjerovi koje možeš razmotriti.</p>
+        <h2 className="mt-2 text-2xl font-semibold tracking-tight sm:text-3xl">
           {analysis.insufficientData
             ? "Još par odgovora pa možemo predložiti"
             : analysis.indecisive
-              ? "Nemaš jedan jasan smjer — i to je sasvim normalno."
-              : "Ovo nije odluka — samo prijedlog što vrijedi pogledati"}
+              ? "Nemaš jedan jasan smjer"
+              : orientationPitch(analysis).title}
         </h2>
-        <div className="mx-auto mt-3 inline-flex items-center gap-2">
-          <span className={cn("rounded-full px-3 py-1 text-xs font-bold uppercase tracking-wide", conf.cls)}>{conf.label}</span>
-        </div>
-        <p className="mx-auto mt-3 max-w-2xl text-pretty text-sm text-muted-foreground">{analysis.confidence.explanation}</p>
-        <p className="mx-auto mt-4 max-w-2xl text-pretty text-sm leading-relaxed">{analysis.profileSummary}</p>
-        <p className="mx-auto mt-2 max-w-2xl text-xs text-muted-foreground">
-          Postotak znači koliko se program slaže s tvojim odgovorima. Nije predviđanje budućnosti.
-        </p>
-      </div>
+        {!analysis.insufficientData ? (
+          <p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted-foreground">{orientationPitch(analysis).text}</p>
+        ) : null}
+        <p className="mt-2 text-sm text-muted-foreground">{conf.label}. {analysis.confidence.explanation}</p>
+      </header>
 
-      {!analysis.insufficientData && top ? (
-        <JuniorClassJoin
-          programId={top.program.id}
-          programName={top.program.name}
-          pathway={analysis.pathway.title}
-          city={city}
-          initialCode={classCodeFromUrl}
-          prominent={Boolean(classCodeFromUrl)}
-        />
-      ) : null}
-
-      {analysis.insufficientData ? (
-        <div className="rounded-3xl border border-amber-400/40 bg-amber-500/10 p-5 text-sm">
-          Još nemamo dovoljno odgovora za jasan prijedlog.
-          <div className="mt-3 flex flex-wrap gap-2">
-            <Button size="sm" onClick={onFollowup}>
-              Odgovori na još 5 pitanja
-            </Button>
-            <Button size="sm" variant="outline" onClick={onRestart}>
-              Kreni ispočetka
-            </Button>
-          </div>
-        </div>
-      ) : null}
-
-      {analysis.drivers.length > 0 ? (
-        <div className="rounded-3xl border border-border/70 bg-card/80 p-5 shadow-lg sm:p-6">
-          <div className="flex items-center gap-2">
-            <Sparkles className="h-4 w-4 text-primary" />
-            <h3 className="text-sm font-bold uppercase tracking-wide">Što te najviše zanima</h3>
-          </div>
-          <ul className="mt-3 flex flex-wrap gap-2">
-            {analysis.drivers.map((d) => (
-              <li key={d} className="rounded-full bg-primary/10 px-3 py-1.5 text-sm font-semibold text-primary">
-                {d}
-              </li>
-            ))}
-          </ul>
-          <p className="mt-3 text-sm text-muted-foreground">
-            <BookOpen className="mr-1 inline h-3.5 w-3.5" />
-            Kako voliš učiti: {analysis.learningSummary}
-          </p>
-        </div>
-      ) : null}
-
-      {showDetails ? (
-        <>
-          <div className="rounded-3xl border border-border/70 bg-card/80 p-5 shadow-lg sm:p-6">
-            <div className="flex items-center gap-2">
-              <Target className="h-4 w-4 text-primary" />
-              <h3 className="text-sm font-bold uppercase tracking-wide">Što ti se najviše sviđa</h3>
-            </div>
-            <div className="mt-4 space-y-2.5">
-              {analysis.topTraits.map((t) => (
-                <div key={`${t.group}-${t.key}`}>
-                  <div className="mb-1 flex justify-between text-xs font-semibold">
-                    <span>{t.label}</span>
-                    <span className="text-muted-foreground">{bandLabel(t.band)}</span>
-                  </div>
-                  <Progress value={t.score} className="h-1.5" />
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div className="rounded-3xl border border-border/70 bg-card/80 p-6 shadow-lg backdrop-blur sm:p-8">
-            <div className="flex items-center gap-2">
-              <Compass className="h-5 w-5 text-primary" />
-              <h3 className="text-lg font-bold">{pathway.title}</h3>
-            </div>
-            <p className="mt-2 text-sm text-muted-foreground">{pathway.explanation}</p>
-            <div className="mt-5 grid gap-4 sm:grid-cols-2">
-              <div>
-                <div className="mb-1.5 flex items-center justify-between text-xs font-semibold">
-                  <span className="inline-flex items-center gap-1.5">
-                    <GraduationCap className="h-3.5 w-3.5 text-violet-500" /> Više učenja (npr. gimnazija)
-                  </span>
-                </div>
-                <Progress value={pathway.academicScore} className="h-2.5" />
-              </div>
-              <div>
-                <div className="mb-1.5 flex items-center justify-between text-xs font-semibold">
-                  <span className="inline-flex items-center gap-1.5">
-                    <Wrench className="h-3.5 w-3.5 text-amber-500" /> Više praktičnog rada
-                  </span>
-                </div>
-                <Progress value={pathway.practicalScore} className="h-2.5" />
-              </div>
-            </div>
-          </div>
-        </>
-      ) : null}
-
-      {analysis.contradictions.map((note) => (
-        <p key={note} className="rounded-3xl border border-amber-400/30 bg-amber-500/10 px-4 py-3 text-sm leading-relaxed">
-          {note}
-        </p>
-      ))}
-
-      {analysis.consideringNote ? (
-        <p className="rounded-3xl border border-primary/20 bg-primary/5 px-4 py-3 text-sm leading-relaxed">{analysis.consideringNote}</p>
-      ) : null}
-
-      <div className="rounded-3xl border border-border/70 bg-card/80 p-6 shadow-lg backdrop-blur sm:p-8">
-        <div className="flex items-center gap-2">
-          <MapPin className="h-5 w-5 text-primary" />
-          <h3 className="text-lg font-bold">Gdje živiš?</h3>
-        </div>
-        <p className="mt-1.5 text-sm text-muted-foreground">
-          Upiši grad. Škole s ovim programima pokazujemo do {NEARBY_MAX_KM} km, ako ih imamo u bazi.
-        </p>
+      <div className="flex flex-wrap items-center gap-2">
         {city ? (
-          <div className="mt-4 flex flex-wrap items-center gap-3">
-            <Badge className="bg-primary/10 px-3 py-1.5 text-sm text-primary hover:bg-primary/10">
-              <MapPin className="mr-1.5 h-3.5 w-3.5" />
-              {city}
-            </Badge>
-            {nearby ? (
-              <span className="text-sm font-semibold">
-                U tvojoj blizini vidi se {nearby.availableCount} od {nearby.totalCount} preporučenih programa.
-              </span>
-            ) : null}
-            <Button variant="ghost" size="sm" className="text-muted-foreground" onClick={() => onCity(null)}>
-              Promijeni grad
+          <>
+            <span className="text-sm text-muted-foreground">Grad: {city}</span>
+            <Button variant="ghost" size="sm" className="h-8 text-muted-foreground" onClick={() => onCity(null)}>
+              Promijeni
             </Button>
-          </div>
+          </>
         ) : (
-          <div className="mt-4">
+          <div className="w-full max-w-sm">
             <Input
               value={cityQuery}
               onChange={(e) => onCityQuery(e.target.value)}
-              placeholder="Npr. Zagreb, Split, Bjelovar…"
-              className="max-w-sm rounded-xl"
+              placeholder="Grad, npr. Zagreb"
+              className="rounded-xl"
+              aria-label="Grad"
             />
             {citySuggestions.length > 0 ? (
-              <div className="mt-2.5 flex flex-wrap gap-2">
+              <div className="mt-2 flex flex-wrap gap-2">
                 {citySuggestions.map((c) => (
                   <button
                     key={c}
                     type="button"
                     onClick={() => onCity(c)}
-                    className="rounded-full border border-border/70 bg-background/60 px-3 py-1.5 text-sm font-semibold transition-colors hover:border-primary/50 hover:bg-primary/10"
+                    className="rounded-full border border-border/70 px-3 py-1 text-sm hover:bg-muted"
                   >
                     {c}
                   </button>
                 ))}
               </div>
             ) : cityQuery.trim().length >= 2 ? (
-              <p className="mt-2 text-xs text-muted-foreground">Nema grada s tim imenom u bazi — probaj najbliži veći grad.</p>
+              <p className="mt-2 text-xs text-muted-foreground">Nema grada s tim imenom. Probaj najbliži veći grad.</p>
             ) : null}
           </div>
         )}
       </div>
 
-      {showDetails ? <JuniorPointsBox /> : null}
-
-      {resultSchools.length > 0 ? (
-        <div className="rounded-3xl border border-primary/25 bg-primary/5 p-5 shadow-lg sm:p-6">
-          <div className="flex items-center gap-2">
-            <School className="h-5 w-5 text-primary" />
-            <h3 className="text-lg font-bold">Škole koje možeš pogledati</h3>
-          </div>
-          <p className="mt-1.5 text-sm text-muted-foreground">
-            {city
-              ? `Blizu ${city}. Škola je prvi korak, program kaže što se tamo uči.`
-              : "Primjeri iz baze. Upiši grad gore pa suzi na svoju okolicu."}
+      <section>
+        <h3 className="text-base font-semibold">Smjerovi</h3>
+        <p className="mt-1 mb-4 text-sm text-muted-foreground">{compareLead(analysis.recommendations)}</p>
+        {computerFacultyNote(analysis) ? (
+          <p className="mb-4 rounded-2xl border border-primary/20 bg-primary/5 px-4 py-3 text-sm leading-relaxed">
+            {computerFacultyNote(analysis)}
           </p>
-          <ul className="mt-3 space-y-2">
-            {resultSchools.map((item) => (
-              <JuniorSchoolRow
-                key={`${item.school.name}-${item.school.city}-${item.program.id}`}
-                school={item.school}
-                program={item.program}
-                matchPercentage={item.matchPercentage}
-                onSchoolOpen={() =>
-                  trackEvent("school_opened", {
-                    quiz_id: "junior_quiz",
-                    quiz_version: JUNIOR_QUIZ_VERSION,
-                    school_name: item.school.name,
-                    program_id: item.program.id,
-                  })
-                }
-              />
-            ))}
-          </ul>
-          <JuniorNumbersNote compact className="mt-2" />
-        </div>
-      ) : null}
-
-      {analysis.gymnasiumOffer ? (
-        <div className="rounded-3xl border border-violet-400/40 bg-violet-500/10 p-5 sm:p-6">
-          <div className="flex items-center gap-2">
-            <GraduationCap className="h-5 w-5 text-violet-600 dark:text-violet-300" />
-            <h3 className="text-lg font-bold">Ako još ne znaš koji fakultet</h3>
-          </div>
-          <p className="mt-2 text-sm leading-relaxed">
-            Želiš ići na fakultet, a još nemaš konkretan smjer. Opća gimnazija ostavlja otvorena vrata: svi predmeti, odluka kasnije. Drži je uz ostale prijedloge.
-          </p>
-          <p className="mt-2 text-sm font-semibold">{analysis.gymnasiumOffer.program.name}</p>
-          <p className="mt-1 text-sm text-muted-foreground">{analysis.gymnasiumOffer.program.description}</p>
-        </div>
-      ) : null}
-
-      <JuniorHomeTalkCard analysis={analysis} />
-
-      <div>
-        <div className="mb-3 flex items-center gap-2">
-          <Target className="h-5 w-5 text-primary" />
-          <h3 className="text-lg font-bold">Što ti se slaže s odgovorima</h3>
-        </div>
-        <p className="mb-4 text-sm text-muted-foreground">
-          {analysis.recommendations.length >= 3 &&
-          analysis.recommendations[0].rankScore - analysis.recommendations[2].rankScore <= 3
-            ? "Prve tri su skoro izjednačene. Usporedi škole, ne redoslijed."
-            : analysis.indecisive
-              ? "Tri područja koja vrijedi pogledati — nijedno nije jedini točan odgovor."
-              : "Prema tvojim odgovorima, ovo bi ti moglo odgovarati. Škole su gore, ovdje je smjer."}
-        </p>
+        ) : null}
         <div className="grid gap-4">
           {(showDetails ? analysis.recommendations : overviewRecs).map((rec, i) => (
             <ProgramCard
@@ -675,10 +519,53 @@ export default function JuniorQuizResults({
               recommendations={analysis.recommendations}
               points={points}
               highlight={i === 0}
+              tied={closeTop && i < 3}
+              hideRank={i < 3}
               variant={showDetails ? "full" : i === 0 ? "hero" : "compact"}
             />
           ))}
         </div>
+        {resultSchools.length > 0 ? (
+          <div className="mt-8">
+            <h3 className="text-base font-semibold">Škole u blizini</h3>
+            <p className="mt-1 text-sm text-muted-foreground">
+              {city ? `Do ${NEARBY_MAX_KM} km od ${city}.` : "Primjeri iz baze. Upiši grad pa suzi na svoju okolicu."} Otvori školu za prag i opis.
+            </p>
+            <ul className="mt-3 space-y-2">
+              {resultSchools.slice(0, 3).map((item) => (
+                <JuniorSchoolRow
+                  key={`${item.school.name}-${item.school.city}-${item.program.id}`}
+                  school={item.school}
+                  program={item.program}
+                  matchPercentage={item.matchPercentage}
+                  useSavedPoints={false}
+                  about={item.program.description}
+                  onSchoolOpen={() =>
+                    trackEvent("school_opened", {
+                      quiz_id: "junior_quiz",
+                      quiz_version: JUNIOR_QUIZ_VERSION,
+                      school_name: item.school.name,
+                      program_id: item.program.id,
+                    })
+                  }
+                />
+              ))}
+            </ul>
+            <JuniorNumbersNote compact className="mt-2" />
+          </div>
+        ) : null}
+        {classCodeFromUrl && top ? (
+          <div className="mt-6">
+            <JuniorClassJoin
+              programId={top.program.id}
+              programName={top.program.name}
+              pathway={analysis.pathway.title}
+              city={city}
+              initialCode={classCodeFromUrl}
+              prominent
+            />
+          </div>
+        ) : null}
         {overviewRecs.length >= 2 ? (
           <div className="mt-4">
             <Button
@@ -811,9 +698,11 @@ export default function JuniorQuizResults({
               </Link>
             </Button>
           ) : null}
-          <Button variant="outline" onClick={onFollowup}>
-            Još par pitanja za jasniji rezultat
-          </Button>
+          {canFollowUp ? (
+            <Button variant="outline" onClick={onFollowup}>
+              Još par pitanja za jasniji rezultat
+            </Button>
+          ) : null}
         </div>
         <div className="mt-4">
           <JuniorPlanCard />

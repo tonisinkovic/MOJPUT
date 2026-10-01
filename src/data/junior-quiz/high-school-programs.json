@@ -114,7 +114,7 @@
     },
     "academicLoad": 3,
     "boostSignals": {
-      "languages_travel": 1
+      "languages_travel": 2
     },
     "requiresSignals": {},
     "matchKeywords": [
@@ -606,7 +606,7 @@
     },
     "academicLoad": 2,
     "boostSignals": {
-      "numbers_data": 1
+      "numbers_data": 2
     },
     "requiresSignals": {},
     "matchKeywords": [

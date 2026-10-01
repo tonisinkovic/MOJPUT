@@ -259,6 +259,20 @@ export const SUBJECT_KEYS: readonly JuniorSubjectCategory[] = [
   "drustveni",
 ];
 
+/** Predmet koji teže ide gasi istoimeni interes, da se ne prikaže kao „najviše te zanima”. */
+export const HARD_SUBJECT_INTERESTS: Record<JuniorSubjectCategory, readonly InterestKey[]> = {
+  matematika: ["mathematics"],
+  hrvatski: ["languages"],
+  jezici: ["languages"],
+  biologija: ["science", "nature"],
+  kemija_fizika: ["science"],
+  informatika: ["technology"],
+  likovni: ["art_design"],
+  glazbeni: ["art_design"],
+  tjelesni: ["sport"],
+  drustveni: ["society"],
+};
+
 export type JuniorEffects = {
   interests?: Partial<Record<string, number>>;
   thinking?: Partial<Record<string, number>>;
@@ -372,8 +386,16 @@ export type JuniorStudentProfile = {
   considering: string | null;
   /** Kako želi raditi s drugima: njega, medicina, laboratorij, životinje, gosti, sport, ples ili razred. */
   peopleFocus: "care" | "doctor" | "lab" | "animals" | "guests" | "sport" | "dance" | "class" | null;
+  /** Odgovor na rad rukama: kuhinja, auti, metal, more… */
+  handsChoice: "food" | "bake" | "cars" | "metal" | "wood" | "sea" | "plants" | "beauty" | null;
+  /** Na tehničkoj grani bira strojeve, ne kod. */
+  machineLean: boolean;
+  /** Kod, struja, crtež ili zgrade. */
+  techChoice: "code" | "electro" | "machines" | "design" | "build" | null;
   answeredCount: number;
   knownInterests: number;
+  /** Interesi koje je neko pitanje stvarno dirnulo. Ostali nisu „srednje”. */
+  touchedInterests: InterestKey[];
 };
 
 export type ProfileTrait = {
@@ -537,10 +559,14 @@ export const calculateQuizProfile = (answers: JuniorAnswers): JuniorStudentProfi
 
   let considering: string | null = null;
   let peopleFocus: JuniorStudentProfile["peopleFocus"] = null;
+  let handsChoice: JuniorStudentProfile["handsChoice"] = null;
+  let machineLean = false;
+  let techChoice: JuniorStudentProfile["techChoice"] = null;
   let healthClass = false;
   let wantsFaculty = false;
   let animalLean = false;
   let labLean = false;
+  let declinedPeopleDay = false;
   const schoolContext: SchoolContext = {
     grade: null,
     city: null,
@@ -581,6 +607,28 @@ export const calculateQuizProfile = (answers: JuniorAnswers): JuniorStudentProfi
       ) {
         peopleFocus = raw;
       }
+      if (q.id === 97 && raw === "none") declinedPeopleDay = true;
+      if (
+        q.id === 50 &&
+        (raw === "food" ||
+          raw === "bake" ||
+          raw === "cars" ||
+          raw === "metal" ||
+          raw === "wood" ||
+          raw === "sea" ||
+          raw === "plants" ||
+          raw === "beauty")
+      ) {
+        handsChoice = raw;
+      }
+      if ((q.id === 30 || q.id === 91) && raw === "machines") machineLean = true;
+      if (
+        (q.id === 30 || q.id === 91) &&
+        (raw === "code" || raw === "electro" || raw === "machines" || raw === "design" || raw === "build") &&
+        (q.id === 30 || !techChoice)
+      ) {
+        techChoice = raw;
+      }
       if (q.id === 20 && raw === "animals") animalLean = true;
       if (q.id === 20 && raw === "lab") labLean = true;
       if (q.id === 21 && raw === "class") healthClass = true;
@@ -613,9 +661,19 @@ export const calculateQuizProfile = (answers: JuniorAnswers): JuniorStudentProfi
     }
   }
 
-  if (!peopleFocus && healthClass && wantsFaculty) peopleFocus = "doctor";
-  else if (!peopleFocus && animalLean) peopleFocus = "animals";
-  else if (!peopleFocus && labLean) peopleFocus = "lab";
+  if (!declinedPeopleDay) {
+    if (!peopleFocus && healthClass && wantsFaculty) peopleFocus = "doctor";
+    else if (!peopleFocus && animalLean) peopleFocus = "animals";
+    else if (!peopleFocus && labLean) peopleFocus = "lab";
+  }
+  const pulledInterests = new Set<string>();
+  for (const subject of schoolContext.hardSubjects) {
+    for (const key of HARD_SUBJECT_INTERESTS[subject] ?? []) {
+      if (pulledInterests.has(key)) continue;
+      pulledInterests.add(key);
+      addEffect(acc.interests, key, 8, 10);
+    }
+  }
 
   return {
     interests: finalize(acc.interests, INTEREST_DIMS),
@@ -631,8 +689,12 @@ export const calculateQuizProfile = (answers: JuniorAnswers): JuniorStudentProfi
     schoolContext,
     considering,
     peopleFocus,
+    handsChoice,
+    machineLean,
+    techChoice,
     answeredCount: Object.values(answers).filter((v) => isAnswered(v)).length,
     knownInterests: knownCount(acc.interests),
+    touchedInterests: (Object.keys(acc.interests) as InterestKey[]).filter((key) => (acc.interests[key]?.weight ?? 0) > 0),
   };
 };
 

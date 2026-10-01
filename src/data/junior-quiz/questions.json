@@ -96,10 +96,6 @@
             "thinking": {
               "analytical": 2,
               "investigative": 2
-            },
-            "interests": {
-              "science": 1,
-              "technology": 1
             }
           }
         },
@@ -109,9 +105,6 @@
           "effects": {
             "thinking": {
               "creative": 3
-            },
-            "interests": {
-              "art_design": 1
             },
             "learning": {
               "project": 2
@@ -143,9 +136,6 @@
             },
             "learning": {
               "group": 2
-            },
-            "interests": {
-              "people": 1
             }
           }
         }
@@ -265,7 +255,7 @@
         },
         {
           "id": "cook",
-          "label": "Kuhati ili peći",
+          "label": "Kuhati jela",
           "effects": {
             "interests": {
               "practical": 3
@@ -458,7 +448,7 @@
       "format": "choice",
       "pool": "core",
       "section": "workstyle",
-      "prompt": "Za školski projekt, što ti je bliže?",
+      "prompt": "Koliko matematike želiš u školskom projektu?",
       "hint": "Nema boljeg odgovora — biraj kako ti stvarno misliš.",
       "options": [
         {
@@ -510,26 +500,11 @@
       "format": "choice",
       "pool": "core",
       "section": "interests",
-      "prompt": "Dobiješ 1000 € za školski projekt. Što radiš s tim?",
+      "prompt": "Razred smije jedan dan raditi što hoće. Što biraš?",
       "options": [
         {
-          "id": "app",
-          "label": "Aplikaciju ili neki digitalni alat",
-          "effects": {
-            "interests": {
-              "technology": 3
-            },
-            "learning": {
-              "project": 2
-            },
-            "signals": {
-              "tech_computers": 5
-            }
-          }
-        },
-        {
           "id": "event",
-          "label": "Događaj za razred ili školu",
+          "label": "Organizirati nešto za cijeli razred",
           "effects": {
             "interests": {
               "people": 2,
@@ -542,7 +517,7 @@
         },
         {
           "id": "product",
-          "label": "Proizvod koji se može prodati",
+          "label": "Napraviti nešto što se može prodati",
           "effects": {
             "interests": {
               "economy": 3,
@@ -558,7 +533,7 @@
         },
         {
           "id": "research",
-          "label": "Istraživanje i prikaz rezultata",
+          "label": "Istražiti kako nešto radi i pokazati rezultat",
           "effects": {
             "interests": {
               "science": 2,
@@ -577,36 +552,21 @@
           }
         },
         {
-          "id": "art",
-          "label": "Film, izložbu ili dizajn",
+          "id": "guests",
+          "label": "Raditi s gostima, kao na izletu ili priredbi",
           "effects": {
             "interests": {
-              "art_design": 2,
-              "media": 2
-            },
-            "thinking": {
-              "creative": 2
+              "people": 2,
+              "languages": 1
             },
             "signals": {
-              "art_visual": 4
-            }
-          }
-        },
-        {
-          "id": "sport",
-          "label": "Sport, trening ili opremu",
-          "effects": {
-            "interests": {
-              "sport": 3
-            },
-            "signals": {
-              "sport_active": 5
+              "languages_travel": 4
             }
           }
         },
         {
           "id": "books",
-          "label": "Knjige ili nešto za čitanje",
+          "label": "Čitati, pisati ili učiti jezike",
           "effects": {
             "interests": {
               "languages": 2,
@@ -618,6 +578,9 @@
             },
             "tolerance": {
               "reading": 2
+            },
+            "signals": {
+              "languages_travel": 4
             }
           }
         }
@@ -728,12 +691,6 @@
             "thinking": {
               "verbal": 2,
               "social": 1
-            },
-            "interests": {
-              "people": 2
-            },
-            "signals": {
-              "helping_people": 4
             }
           }
         },
@@ -746,9 +703,6 @@
             },
             "thinking": {
               "practical": 1
-            },
-            "interests": {
-              "people": 1
             }
           }
         },
@@ -895,17 +849,11 @@
           "id": "tinker",
           "label": "Klikam i isprobavam dok ne shvatim",
           "effects": {
-            "interests": {
-              "technology": 2
-            },
             "learning": {
               "experiment": 2
             },
             "thinking": {
               "technical": 2
-            },
-            "signals": {
-              "tech_computers": 4
             }
           }
         },
@@ -938,8 +886,8 @@
           "id": "later",
           "label": "Ostavim dok mi stvarno ne zatreba",
           "effects": {
-            "interests": {
-              "technology": -1
+            "learning": {
+              "independent": 1
             }
           }
         }
@@ -1169,7 +1117,7 @@
       "format": "choice",
       "pool": "health",
       "section": "subjects",
-      "prompt": "Što ti više leži kao običan dan?",
+      "prompt": "U zdravstvu, kakav ti je dan bliži?",
       "options": [
         {
           "id": "hospital",
@@ -1229,7 +1177,7 @@
       "format": "choice",
       "pool": "health",
       "section": "subjects",
-      "prompt": "Ako te zanima kako pomoći kad netko nije dobro, što ti više leži?",
+      "prompt": "Uz bolesnu osobu ili više u laboratoriju?",
       "options": [
         {
           "id": "people_heavy",
@@ -1284,7 +1232,7 @@
       "format": "choice",
       "pool": "health",
       "section": "subjects",
-      "prompt": "Što ti više leži?",
+      "prompt": "U zdravstvu, što ti više leži učiti?",
       "options": [
         {
           "id": "facts",
@@ -1332,7 +1280,7 @@
       "format": "choice",
       "pool": "tech",
       "section": "subjects",
-      "prompt": "Što te više vuče?",
+      "prompt": "Kod, struja, strojevi, crtež ili zgrade?",
       "options": [
         {
           "id": "code",
@@ -1401,6 +1349,21 @@
             },
             "signals": {
               "art_visual": 4
+            }
+          }
+        },
+        {
+          "id": "build",
+          "label": "Zgrade, nacrti i gradilište",
+          "effects": {
+            "interests": {
+              "practical": 2
+            },
+            "thinking": {
+              "technical": 2
+            },
+            "signals": {
+              "hands_on_craft": 4
             }
           }
         }
@@ -1527,7 +1490,7 @@
       "format": "choice",
       "pool": "tech",
       "section": "subjects",
-      "prompt": "Kod tehnike, što ti je bliže?",
+      "prompt": "Kod tehnike: prvo pravila ili prvo graditi?",
       "options": [
         {
           "id": "theory",
@@ -1560,7 +1523,7 @@
         },
         {
           "id": "both",
-          "label": "I jedno i drugo",
+          "label": "Sve od navedenog",
           "effects": {
             "learning": {
               "theory": 1,
@@ -1579,7 +1542,7 @@
       "format": "choice",
       "pool": "peoplebiz",
       "section": "subjects",
-      "prompt": "Što ti je zanimljivije?",
+      "prompt": "Prodaja, gosti, ured ili dostava?",
       "options": [
         {
           "id": "shop",
@@ -1624,6 +1587,9 @@
             },
             "tolerance": {
               "precision": 2
+            },
+            "signals": {
+              "numbers_data": 4
             }
           }
         },
@@ -1820,7 +1786,7 @@
       "format": "choice",
       "pool": "peoplebiz",
       "section": "subjects",
-      "prompt": "Kad zamisliš posao, što ti više leži?",
+      "prompt": "Kakav posao želiš od ovoga?",
       "options": [
         {
           "id": "plan",
@@ -2133,6 +2099,21 @@
           }
         },
         {
+          "id": "sea",
+          "label": "Brod, luka ili more",
+          "effects": {
+            "interests": {
+              "practical": 2
+            },
+            "environment": {
+              "field": 2
+            },
+            "signals": {
+              "logistics_transport": 5
+            }
+          }
+        },
+        {
           "id": "plants",
           "label": "Biljke, šuma, rad vani",
           "effects": {
@@ -2188,7 +2169,7 @@
       "format": "choice",
       "pool": "practical",
       "section": "subjects",
-      "prompt": "Nakon ovih godina zanata, što ti je bliže?",
+      "prompt": "Nakon zanata, što želiš?",
       "options": [
         {
           "id": "job",
@@ -2435,7 +2416,7 @@
       "format": "choice",
       "pool": "context",
       "section": "context",
-      "prompt": "Što te više vuče?",
+      "prompt": "Što te više vuče: kako stvari rade, problemi ili rad rukama?",
       "options": [
         {
           "id": "how",
@@ -2478,7 +2459,7 @@
         },
         {
           "id": "mix",
-          "label": "I jedno i drugo",
+          "label": "Sve od navedenog",
           "effects": {
             "theoryPractice": 0,
             "learning": {
@@ -2680,7 +2661,7 @@
       "format": "choice",
       "pool": "followup",
       "section": "subjects",
-      "prompt": "Ako biraš samo jedno, što ti je bliže sljedeće četiri godine?",
+      "prompt": "Sljedeće četiri godine: više predmeta ili konkretan smjer?",
       "options": [
         {
           "id": "gym",
@@ -2959,7 +2940,7 @@
       "format": "choice",
       "pool": "followup",
       "section": "interests",
-      "prompt": "Koji ti je od ovih dana najbliži?",
+      "prompt": "Od ovoga, što ti je najbliže?",
       "options": [
         {
           "id": "care",
@@ -3028,6 +3009,10 @@
             "interests": { "people": 1, "society": 1 },
             "learning": { "group": 1 }
           }
+        },
+        {
+          "id": "none",
+          "label": "Ništa od navedenog"
         }
       ]
     }
