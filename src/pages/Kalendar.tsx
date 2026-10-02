@@ -49,6 +49,41 @@ const seniorEvents: CalendarEvent[] = [
     type: "Rezultati",
     urgent: true,
   },
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // DRŽAVNA MATURA 2026./2027. (prema NCVVO)
+  // ═══════════════════════════════════════════════════════════════════════════
+
+  // --- Prijave ispita mature 2026./2027. ---
+  { year: 2026, month: 11, day: 1, title: "Početak prijava ispita mature 2027.", type: "Rok", urgent: true },
+  { year: 2027, month: 1, day: 15, title: "Kraj prijava ispita mature 2027.", type: "Rok", urgent: true },
+
+  // --- Ljetni ispitni rok 2027. (1. – 25. lipnja) ---
+  { year: 2027, month: 5, day: 1, title: "Početak provedbe ispita – ljetni rok", type: "Ispit", urgent: true },
+  { year: 2027, month: 5, day: 16, title: "Hrvatski jezik – test + sažetak (9h)", type: "Ispit", urgent: true },
+  { year: 2027, month: 5, day: 17, title: "Hrvatski jezik – esej (9h)", type: "Ispit", urgent: true },
+  { year: 2027, month: 5, day: 25, title: "Završetak provedbe ispita – ljetni rok", type: "Ispit", urgent: false },
+  { year: 2027, month: 6, day: 7, title: "Objava privremenih rezultata mature", type: "Rezultati", urgent: true },
+  { year: 2027, month: 6, day: 9, title: "Rok za prigovore na rezultate mature", type: "Rok", urgent: true },
+  { year: 2027, month: 6, day: 14, title: "Konačni rezultati mature • izdavanje svjedodžbi", type: "Rezultati", urgent: true },
+  { year: 2027, month: 6, day: 16, title: "Podjela svjedodžbi u školama", type: "Rezultati", urgent: false },
+
+  // --- Prijave jesenskog roka 2027. ---
+  { year: 2027, month: 6, day: 17, title: "Početak prijava – jesenski rok (17. – 26. 7.)", type: "Rok", urgent: true },
+  { year: 2027, month: 6, day: 26, title: "Kraj prijava – jesenski rok", type: "Rok", urgent: true },
+
+  // --- Jesenski ispitni rok 2027. (od 18. kolovoza) ---
+  { year: 2027, month: 7, day: 18, title: "Početak provedbe ispita – jesenski rok", type: "Ispit", urgent: true },
+  { year: 2027, month: 7, day: 25, title: "Hrvatski jezik – esej • Glazbena umjetnost", type: "Ispit", urgent: true },
+  { year: 2027, month: 7, day: 26, title: "Kemija • Psihologija", type: "Ispit", urgent: false },
+  { year: 2027, month: 7, day: 27, title: "Fizika • Likovna umjetnost", type: "Ispit", urgent: false },
+  { year: 2027, month: 7, day: 30, title: "Matematika – viša i osnovna razina", type: "Ispit", urgent: true },
+  { year: 2027, month: 7, day: 31, title: "Biologija • Povijest", type: "Ispit", urgent: false },
+  { year: 2027, month: 8, day: 1, title: "Informatika • Politika i gospodarstvo", type: "Ispit", urgent: false },
+  { year: 2027, month: 8, day: 8, title: "Objava privremenih rezultata – jesenski rok", type: "Rezultati", urgent: true },
+  { year: 2027, month: 8, day: 10, title: "Rok za prigovore – jesenski rok", type: "Rok", urgent: true },
+  { year: 2027, month: 8, day: 15, title: "Objava konačnih rezultata – jesenski rok", type: "Rezultati", urgent: true },
+  { year: 2027, month: 8, day: 16, title: "Podjela svjedodžbi – jesenski rok", type: "Rezultati", urgent: false },
 ];
 
 const juniorEvents: CalendarEvent[] = [
