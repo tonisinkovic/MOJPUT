@@ -3,7 +3,6 @@ import { motion } from "framer-motion";
 import {
   ArrowLeft,
   BookOpen,
-  Building2,
   ChevronDown,
   ChevronUp,
   ExternalLink,
@@ -16,13 +15,13 @@ import {
   Phone,
   School,
   Search,
-  Sparkles,
   User,
   X,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { lazy, Suspense, useMemo, useState } from "react";
+import { Link } from "react-router-dom";
 import { highSchools, type HighSchool, type HighSchoolCategory } from "@/data/highSchools";
 import {
   srednjaProgramCounties,
@@ -60,6 +59,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
+import { slugForSchool } from "@/lib/schoolSlug";
 
 const CATEGORY_ORDER: HighSchoolCategory[] = [
   "Gimnazija",
@@ -347,84 +347,29 @@ const KartaSrednjihSkola = () => {
 
   return (
     <Layout>
-      <section className="container max-w-7xl mx-auto px-3 sm:px-4 py-4 sm:py-8 md:py-12 pb-[max(1.5rem,env(safe-area-inset-bottom))]">
-        {/* Back button */}
+      <section className="container mx-auto max-w-7xl px-3 pb-[max(1.5rem,env(safe-area-inset-bottom))] pt-3 sm:px-4 sm:pt-5">
         <button
           type="button"
           onClick={() => window.history.back()}
-          className="mb-4 inline-flex items-center gap-1.5 text-sm font-medium text-slate-500 transition-colors hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100"
+          className="mb-2 inline-flex items-center gap-1.5 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
         >
           <ArrowLeft className="h-4 w-4" />
           <span>Natrag</span>
         </button>
 
-        {/* Hero */}
-        <motion.div
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.3 }}
-          className="relative mb-5 overflow-hidden rounded-2xl border-2 border-primary/20 bg-gradient-to-br from-primary/[0.12] via-primary/[0.04] to-card p-4 shadow-card sm:mb-7 sm:p-5 md:mb-8 md:p-6"
-        >
-          <div
-            aria-hidden
-            className="pointer-events-none absolute -right-10 -top-10 h-36 w-36 rounded-full bg-primary/15 blur-3xl sm:h-52 sm:w-52"
-          />
-          <div
-            aria-hidden
-            className="pointer-events-none absolute -bottom-14 -left-10 h-32 w-32 rounded-full bg-primary/10 blur-3xl sm:h-48 sm:w-48"
-          />
-
-          <div className="relative flex flex-col gap-4 sm:flex-row sm:items-start sm:gap-5">
-            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl gradient-hero text-primary-foreground shadow-md sm:h-14 sm:w-14">
-              <School className="h-6 w-6 sm:h-7 sm:w-7" />
-            </div>
-            <div className="min-w-0 flex-1">
-              <div className="flex flex-wrap items-center gap-2">
-                <span className="inline-flex items-center gap-1 rounded-full border border-primary/25 bg-primary/10 px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-primary">
-                  <Sparkles className="h-3 w-3" />
-                  Pronađi svoju srednju školu
-                </span>
-              </div>
-              <h1 className="mt-2 text-balance text-2xl font-bold tracking-tight text-foreground sm:text-3xl md:text-4xl">
-                <span className="text-gradient">Karta</span> srednjih škola
-              </h1>
-              <p className="mt-1.5 max-w-2xl text-pretty text-sm leading-relaxed text-muted-foreground sm:text-base">
-                Istraži sve srednje škole u Hrvatskoj — gimnazije, strukovne i umjetničke škole, s kontaktima i
-                web stranicama, sve na jednom mjestu.
-              </p>
-
-              <div className="mt-4 grid grid-cols-3 gap-2 sm:max-w-lg sm:gap-3">
-                <div className="rounded-xl border border-border/60 bg-background/70 px-3 py-2 backdrop-blur-sm">
-                  <div className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
-                    <Building2 className="h-3.5 w-3.5 text-primary" />
-                    Škole
-                  </div>
-                  <p className="mt-0.5 text-lg font-bold leading-none text-foreground sm:text-xl">
-                    {totalStats.schools}
-                  </p>
-                </div>
-                <div className="rounded-xl border border-border/60 bg-background/70 px-3 py-2 backdrop-blur-sm">
-                  <div className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
-                    <MapPin className="h-3.5 w-3.5 text-primary" />
-                    Gradovi
-                  </div>
-                  <p className="mt-0.5 text-lg font-bold leading-none text-foreground sm:text-xl">
-                    {totalStats.citiesCount}
-                  </p>
-                </div>
-                <div className="rounded-xl border border-border/60 bg-background/70 px-3 py-2 backdrop-blur-sm">
-                  <div className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
-                    <Landmark className="h-3.5 w-3.5 text-primary" />
-                    Županije
-                  </div>
-                  <p className="mt-0.5 text-lg font-bold leading-none text-foreground sm:text-xl">
-                    {totalStats.countiesCount}
-                  </p>
-                </div>
-              </div>
-            </div>
+        <div className="mb-3 flex items-center gap-3 rounded-2xl border border-primary/20 bg-gradient-to-r from-primary/10 via-card to-card px-3 py-3 shadow-card sm:px-4">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary text-primary-foreground">
+            <School className="h-5 w-5" />
           </div>
-        </motion.div>
+          <div className="min-w-0">
+            <h1 className="truncate text-lg font-bold tracking-tight text-foreground sm:text-2xl">
+              Karta srednjih škola
+            </h1>
+            <p className="truncate text-xs text-muted-foreground sm:text-sm">
+              {totalStats.schools} škola · {totalStats.citiesCount} gradova · {totalStats.countiesCount} županija
+            </p>
+          </div>
+        </div>
 
         <div className="flex flex-col gap-5 lg:flex-row lg:gap-6">
           {/* Filter sidebar */}
@@ -684,7 +629,7 @@ const KartaSrednjihSkola = () => {
                 </div>
                 <Suspense
                   fallback={
-                    <div className="flex h-72 items-center justify-center bg-muted/30 sm:h-80 md:h-96">
+                    <div className="flex h-80 items-center justify-center bg-muted/30 sm:h-96 lg:h-[min(70vh,640px)]">
                       <div className="flex flex-col items-center gap-2 text-muted-foreground">
                         <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
                         <span className="text-sm">Učitavam kartu...</span>
@@ -696,7 +641,7 @@ const KartaSrednjihSkola = () => {
                     schools={filtered}
                     focusedSchoolId={focusedSchoolId}
                     onOpenDetail={setDetailSchoolId}
-                    className="h-72 sm:h-80 md:h-96"
+                    className="h-80 sm:h-96 lg:h-[min(70vh,640px)]"
                   />
                 </Suspense>
               </div>
@@ -928,21 +873,17 @@ const KartaSrednjihSkola = () => {
                             )}
                           </div>
 
-                          {/* Footer */}
-                          <div className="mt-3 flex items-center justify-between border-t border-border/40 pt-3">
+                          <div className="mt-3 flex items-center justify-between gap-2 border-t border-border/40 pt-3">
                             <span className="text-xs font-medium text-muted-foreground group-hover:text-foreground">
-                              Pogledaj detalje
+                              Detalji
                             </span>
-                            <span className={cn(
-                              "flex h-6 w-6 items-center justify-center rounded-full text-white transition-transform duration-200 group-hover:translate-x-0.5",
-                              school.category === "Gimnazija" && "bg-primary",
-                              school.category === "Strukovna škola" && "bg-sky-500",
-                              school.category === "Umjetnička škola" && "bg-violet-500",
-                              school.category === "Srednja škola" && "bg-emerald-500",
-                              school.category === "Posebni programi" && "bg-amber-500",
-                            )}>
-                              →
-                            </span>
+                            <Link
+                              to={`/srednje-skole/${slugForSchool(school, highSchools)}`}
+                              onClick={(event) => event.stopPropagation()}
+                              className="inline-flex min-h-8 items-center rounded-full bg-primary/10 px-3 text-xs font-semibold text-primary hover:bg-primary/15"
+                            >
+                              Profil
+                            </Link>
                           </div>
                         </div>
                       </motion.div>

@@ -278,6 +278,9 @@ function migrateSqlite(db) {
   if (!forumConvCols.includes("audience")) {
     db.exec("ALTER TABLE forum_conversations ADD COLUMN audience TEXT NOT NULL DEFAULT 'senior'");
   }
+  if (!forumConvCols.includes("category")) {
+    db.exec("ALTER TABLE forum_conversations ADD COLUMN category TEXT NOT NULL DEFAULT 'opce'");
+  }
 
   try {
     db.prepare("SELECT 1 FROM user_saved_faculties LIMIT 1").get();
@@ -293,6 +296,23 @@ function migrateSqlite(db) {
         created_at TEXT NOT NULL DEFAULT (datetime('now')),
         FOREIGN KEY (user_id) REFERENCES users(id),
         UNIQUE(user_id, faculty_id)
+      )
+    `);
+  }
+
+  try {
+    db.prepare("SELECT 1 FROM parent_conversation_notes LIMIT 1").get();
+  } catch {
+    db.exec(`
+      CREATE TABLE parent_conversation_notes (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER NOT NULL,
+        date_iso TEXT NOT NULL,
+        teme TEXT NOT NULL DEFAULT '',
+        dijete_kaze TEXT NOT NULL DEFAULT '',
+        sljedeci_korak TEXT NOT NULL DEFAULT '',
+        created_at TEXT NOT NULL DEFAULT (datetime('now')),
+        FOREIGN KEY (user_id) REFERENCES users(id)
       )
     `);
   }
@@ -500,6 +520,15 @@ async function migratePg(pool) {
       created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
       UNIQUE(user_id, faculty_id)
     )`,
+    `CREATE TABLE IF NOT EXISTS parent_conversation_notes (
+      id SERIAL PRIMARY KEY,
+      user_id INTEGER NOT NULL REFERENCES users(id),
+      date_iso TEXT NOT NULL,
+      teme TEXT NOT NULL DEFAULT '',
+      dijete_kaze TEXT NOT NULL DEFAULT '',
+      sljedeci_korak TEXT NOT NULL DEFAULT '',
+      created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
+    )`,
     `CREATE TABLE IF NOT EXISTS chatbot_daily_usage (
       user_id INTEGER NOT NULL REFERENCES users(id),
       day TEXT NOT NULL,
@@ -577,6 +606,9 @@ async function migratePg(pool) {
   await run("ALTER TABLE pending_registrations ADD COLUMN IF NOT EXISTS user_type TEXT DEFAULT 'srednjoskolac'");
   await run(
     "ALTER TABLE forum_conversations ADD COLUMN IF NOT EXISTS audience TEXT NOT NULL DEFAULT 'senior'",
+  );
+  await run(
+    "ALTER TABLE forum_conversations ADD COLUMN IF NOT EXISTS category TEXT NOT NULL DEFAULT 'opce'",
   );
 
   let migrated;

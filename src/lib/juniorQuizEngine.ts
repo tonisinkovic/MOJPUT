@@ -420,6 +420,65 @@ const hardSubjectAdjustment = (profile: JuniorStudentProfile, program: HighSchoo
   return clamp(delta, -22, 0);
 };
 
+const techLocked = (profile: JuniorStudentProfile): boolean =>
+  (profile.signals.tech_computers ?? 0) >= 4 ||
+  profile.techChoice === "code" ||
+  profile.techChoice === "electro" ||
+  profile.techChoice === "machines";
+
+const craftLocked = (profile: JuniorStudentProfile): boolean =>
+  profile.handsChoice != null || profile.machineLean;
+
+const healthLocked = (profile: JuniorStudentProfile): boolean =>
+  (profile.signals.health_medicine ?? 0) >= 4 ||
+  profile.peopleFocus === "doctor" ||
+  profile.peopleFocus === "care" ||
+  profile.peopleFocus === "lab" ||
+  profile.peopleFocus === "animals";
+
+const wantsFacultyDoor = (profile: JuniorStudentProfile): boolean =>
+  profile.postSchool.faculty >= 55 || profile.postSchool.both >= 55 || profile.postSchool.unsure >= 62;
+
+/** Jedan klik „priroda” nije potvrda za prirodoslovnu ili kemiju. */
+const scienceConfirmed = (profile: JuniorStudentProfile): boolean => {
+  if (healthLocked(profile) || profile.peopleFocus === "lab") return true;
+  if (profile.schoolContext.favoriteSubjects.includes("biologija")) return true;
+  if (profile.schoolContext.favoriteSubjects.includes("kemija_fizika")) return true;
+  return /kemij|biolog|medic|farmac|prirod|labor/.test(normalizeText(profile.considering ?? ""));
+};
+
+/** Poslovanje, brojevi ili organizacija + zarada — vrata prema ekonomiji, ne prema zanatu. */
+const economyDoor = (profile: JuniorStudentProfile): boolean => {
+  if (techLocked(profile) || healthLocked(profile) || craftLocked(profile)) return false;
+  const business = profile.signals.business_entrepreneur ?? 0;
+  const numbers = profile.signals.numbers_data ?? 0;
+  if (business >= 4) return true;
+  if (profile.interests.economy >= 62) return true;
+  if (numbers >= 4 && profile.thinking.organizational >= 52) return true;
+  return (
+    profile.values.salary >= 62 &&
+    profile.thinking.organizational >= 58 &&
+    wantsFacultyDoor(profile)
+  );
+};
+
+const doorAdjustment = (profile: JuniorStudentProfile, program: HighSchoolProgram): number => {
+  const name = program.name;
+  const faculty = wantsFacultyDoor(profile);
+  let delta = 0;
+  const scienceSignal = profile.signals.science_experiments ?? 0;
+  if (scienceSignal >= 4 && !scienceConfirmed(profile)) {
+    if (program.id === 5 || /kemijski|prehramben/i.test(name)) delta -= 8;
+    if (program.id === 1 && faculty) delta += 5;
+  }
+  if (!economyDoor(profile)) return delta;
+  if (program.id === 18) delta += 8;
+  if (program.id === 1 && faculty) delta += 6;
+  if (program.id === 33 && faculty) delta -= 8;
+  if (/upravni/i.test(name) && (profile.signals.business_entrepreneur ?? 0) >= 4) delta -= 4;
+  return delta;
+};
+
 const priorityAdjustment = (
   priority: JuniorPriority | null | undefined,
   profile: JuniorStudentProfile,
@@ -493,6 +552,21 @@ const buildExplanations = (
 
   if (profile.postSchool.faculty >= 65 && program.duration === 4 && program.academicLoad >= 2) {
     positive.push("Želiš ostaviti vrata za fakultet, a ovaj program ima maturu.");
+  }
+  if (program.id === 1 && profile.postSchool.faculty >= 55) {
+    positive.push("Želiš fakultet, a nemaš jedan uski smjer. Opća gimnazija drži više vrata otvorenima.");
+  }
+  if (/klasična/i.test(program.name)) {
+    positive.push("Od prvog razreda se uči latinski, a često i grčki.");
+  }
+  if (
+    profile.tolerance.publicSpeaking < 42 &&
+    (/hotel|konobar|glazben|ples/i.test(program.name) || overlay.requirements?.publicSpeaking === "high")
+  ) {
+    caution.push("Pred razredom ti je nezgodno, a ovdje se često govori ili nastupa.");
+  }
+  if (profile.tolerance.pressure < 42 && (program.academicLoad >= 3 || /medicin|farmac/i.test(program.name))) {
+    caution.push("Rokovi te opterećuju, a ovdje ih ima dosta.");
   }
   if (profile.postSchool.work >= 65 && program.duration === 3) {
     positive.push("Želiš što prije raditi — ovdje se uči vještina za posao.");
@@ -600,7 +674,8 @@ export const calculateProgramMatch = (
     seaAdjustment(profile, program) +
     craftAdjustment(profile, program) +
     techChoiceAdjustment(profile, program) +
-    hardSubjectAdjustment(profile, program);
+    hardSubjectAdjustment(profile, program) +
+    doorAdjustment(profile, program);
   const { positive, caution, answerReasons, interestLine, readinessNotes } = buildExplanations(
     profile,
     program,
@@ -882,7 +957,7 @@ export const selectTopRecommendations = (
     rest.shift();
   }
 
-  return picked;
+  return picked.sort((a, b) => scoreOf(b) - scoreOf(a) || b.matchPercentage - a.matchPercentage);
 };
 
 const consideringNamesProgram = (profile: JuniorStudentProfile, matches: JuniorProgramMatch[]): boolean => {
@@ -917,6 +992,9 @@ export const generalGymnasiumOffer = (
 };
 
 const IDEA_RULES: { test: RegExp; program: RegExp }[] = [
+  { test: /psiholog/, program: /opća gimnazija/i },
+  { test: /\bpravo\b|pravni fakultet|pravni faks/, program: /opća gimnazija/i },
+  { test: /novinar/, program: /jezič/i },
   { test: /sestr/, program: /medicinska sestra/i },
   { test: /doktor|lijecnik|medicinski fakultet|\bmedicina\b/, program: /prirodoslovna gimnazija/i },
   { test: /farmac/, program: /farmaceut/i },
@@ -985,6 +1063,152 @@ const earnedVisible = (
   });
   if (!requirementsOk) return false;
   if (CHOICE_ONLY_PROGRAM.test(match.program.name) && !choiceBacksProgram(profile, match.program)) return false;
+  if (!neighborEarned(profile, match.program)) return false;
+  return true;
+};
+
+/** Susjedni smjer ostaje van liste ako dijete nije reklo baš taj svijet. */
+const neighborEarned = (profile: JuniorStudentProfile, program: HighSchoolProgram): boolean => {
+  if (profile.answeredCount < 3) return true;
+  const name = program.name;
+  const idea = normalizeText(profile.considering ?? "");
+  const music = (profile.signals.music_performance ?? 0) >= 4 || profile.peopleFocus === "dance" || /ples|glazb/.test(idea);
+  const beauty = (profile.signals.beauty_style ?? 0) >= 4 || profile.handsChoice === "beauty" || /krojac|odjec|sivanj/.test(idea);
+  const plants = profile.handsChoice === "plants" || /cvijec|sumar|poljopriv|biljk/.test(idea);
+  const outdoors = (profile.signals.plants_outdoor ?? 0) >= 4;
+  const guests = profile.peopleFocus === "guests" || /konobar|hotel|turiz|gost/.test(idea);
+  const chemistry =
+    ((profile.signals.science_experiments ?? 0) >= 4 &&
+      (profile.peopleFocus === "lab" ||
+        profile.schoolContext.favoriteSubjects.includes("kemija_fizika") ||
+        /kemij/.test(idea))) ||
+    /kemij/.test(idea);
+  if (/plesač/i.test(name)) return music;
+  if (/krojač/i.test(name)) return beauty;
+  if (/cvjećar/i.test(name)) return plants || (outdoors && (profile.signals.art_visual ?? 0) >= 4);
+  if (/konobar/i.test(name)) return guests;
+  if (/kemijski/i.test(name)) return chemistry;
+  if (/šumar/i.test(name)) return plants || (profile.signals.plants_outdoor ?? 0) >= 5 || /sumar|\bsuma\b/.test(idea);
+  if (/fizioterap/i.test(name)) {
+    return (profile.signals.health_medicine ?? 0) >= 4 && (profile.signals.sport_active ?? 0) >= 4;
+  }
+  if (/prehramben/i.test(name)) {
+    return (profile.signals.cooking_food ?? 0) >= 4 || (profile.signals.baking_food ?? 0) >= 4;
+  }
+  const baking = profile.signals.baking_food ?? 0;
+  const cooking = profile.signals.cooking_food ?? 0;
+  if (/kuhar/i.test(name) && !/prehramben/i.test(name)) return cooking >= 4 && baking < 4;
+  if (/pekar/i.test(name)) return baking >= 4 && cooking < 4;
+  if (/upravni/i.test(name)) {
+    return (
+      /ured|uprav/.test(idea) ||
+      ((profile.signals.numbers_data ?? 0) >= 4 &&
+        profile.tolerance.precision >= 60 &&
+        (profile.signals.business_entrepreneur ?? 0) < 4)
+    );
+  }
+  if (/klasična/i.test(name)) {
+    const reads =
+      profile.interests.languages >= 62 ||
+      profile.schoolContext.favoriteSubjects.some((subject) => subject === "jezici" || subject === "hrvatski");
+    return reads || /jezik|latinsk|klasic|grck/.test(idea);
+  }
+  if (/jezičn/i.test(name)) {
+    return (
+      profile.interests.languages >= 60 ||
+      (profile.signals.languages_travel ?? 0) >= 4 ||
+      profile.schoolContext.favoriteSubjects.includes("jezici") ||
+      /jezik/.test(idea)
+    );
+  }
+  if (/prodavač|komercijalist/i.test(name)) {
+    if (profile.postSchool.faculty >= 62 && profile.postSchool.faculty >= profile.postSchool.work) return false;
+    return (profile.signals.business_entrepreneur ?? 0) >= 4 || /prodav|trgov|komerc/.test(idea);
+  }
+  if (/^ekonomist/i.test(name)) {
+    return (
+      (profile.signals.business_entrepreneur ?? 0) >= 4 ||
+      profile.interests.economy >= 62 ||
+      /ekonom/.test(idea)
+    );
+  }
+  if (/strojar/i.test(name)) {
+    return (
+      profile.machineLean ||
+      profile.techChoice === "machines" ||
+      profile.handsChoice === "metal" ||
+      profile.handsChoice === "cars" ||
+      profile.handsChoice === "wood" ||
+      /stroj/.test(idea)
+    );
+  }
+  if (/elektrotehn|elektronik/i.test(name)) {
+    return (
+      profile.techChoice === "electro" ||
+      profile.handsChoice === "cars" ||
+      profile.handsChoice === "metal" ||
+      profile.handsChoice === "wood" ||
+      /elektro/.test(idea)
+    );
+  }
+  if (/poljoprivred/i.test(name)) {
+    return (
+      profile.handsChoice === "plants" ||
+      (profile.signals.plants_outdoor ?? 0) >= 5 ||
+      ((profile.signals.animals_nature ?? 0) >= 4 && (profile.signals.plants_outdoor ?? 0) >= 4) ||
+      /poljopriv|agrotur|biljk/.test(idea)
+    );
+  }
+  if (/pomorski|nauti/i.test(name)) {
+    return profile.handsChoice === "sea" || (profile.signals.logistics_transport ?? 0) >= 4 || /pomor|nautic|brod|luka|\bmore\b/.test(idea);
+  }
+  if (/promet|logistike/i.test(name)) {
+    return (profile.signals.logistics_transport ?? 0) >= 4 || /logist|promet/.test(idea);
+  }
+  if (/hotelijer/i.test(name)) {
+    return guests || /hotel|turiz/.test(idea);
+  }
+  if (/farmaceut/i.test(name)) {
+    return (profile.signals.health_medicine ?? 0) >= 4 || profile.peopleFocus === "lab" || /farmac/.test(idea);
+  }
+  if (program.id === 5) {
+    return (
+      (profile.signals.science_experiments ?? 0) >= 4 ||
+      profile.peopleFocus === "doctor" ||
+      profile.peopleFocus === "lab" ||
+      profile.schoolContext.favoriteSubjects.some((subject) => subject === "biologija" || subject === "kemija_fizika") ||
+      /medic|biolog|kemij|prirod|farmac/.test(idea)
+    );
+  }
+  if (program.id === 2) {
+    const wantsMath =
+      profile.interests.mathematics >= 60 ||
+      profile.schoolContext.favoriteSubjects.includes("matematika") ||
+      /matem/.test(idea);
+    return wantsMath;
+  }
+  if (/arhitekton/i.test(name)) {
+    return (
+      profile.techChoice === "design" ||
+      profile.techChoice === "build" ||
+      (profile.signals.art_visual ?? 0) >= 4 ||
+      /arhitekt/.test(idea)
+    );
+  }
+  if (/medijski/i.test(name)) {
+    const art = profile.signals.art_visual ?? 0;
+    const music = profile.signals.music_performance ?? 0;
+    if (music >= 4 && art < 4) return false;
+    return art >= 4 || /medij|video|\bweb\b|dizajn/.test(idea);
+  }
+  if (program.id === 1) {
+    return (
+      profile.postSchool.faculty >= 55 ||
+      profile.postSchool.both >= 55 ||
+      profile.postSchool.unsure >= 55 ||
+      /gimnaz/.test(idea)
+    );
+  }
   return true;
 };
 
@@ -1011,6 +1235,36 @@ const readProgramChecks = (answers: JuniorAnswers): Array<{ keep: number; drop: 
     found.push({ keep: Number(match[1]), drop: Number(match[2]) });
   }
   return found;
+};
+
+/** Fakultetska vrata i ekonomija moraju biti u prikazanom vrhu, ne samo u pozadinskom izračunu. */
+const ensureFacultyDoors = (
+  recommendations: JuniorProgramMatch[],
+  matches: JuniorProgramMatch[],
+  profile: JuniorStudentProfile,
+  priority?: JuniorPriority | null,
+): JuniorProgramMatch[] => {
+  const leader = recommendations[0]?.rankScore ?? matches[0]?.rankScore ?? 0;
+  const closeEnough = (item: JuniorProgramMatch) => leader - item.rankScore <= 14;
+  let next = [...recommendations];
+  const offer = generalGymnasiumOffer(profile, matches, priority);
+  const economy = economyDoor(profile) ? (matches.find((item) => item.program.id === 18) ?? null) : null;
+  const named = namedIdeaMatch(profile, matches);
+  const namedStaysFirst = named != null && named.program.id !== 18 && next[0]?.program.id === named.program.id;
+
+  if (namedStaysFirst || !economy) {
+    if (offer && closeEnough(offer) && !next.some((item) => item.program.id === offer.program.id)) {
+      next.splice(Math.min(1, next.length), 0, offer);
+    }
+    return next.slice(0, JUNIOR_TOP_RECOMMENDATIONS);
+  }
+
+  const head: JuniorProgramMatch[] = [];
+  if (closeEnough(economy)) head.push(economy);
+  if (offer && closeEnough(offer)) head.push(offer);
+  head.sort((a, b) => b.rankScore - a.rankScore || b.matchPercentage - a.matchPercentage);
+  const rest = next.filter((item) => !head.some((kept) => kept.program.id === item.program.id));
+  return [...head, ...rest].slice(0, JUNIOR_TOP_RECOMMENDATIONS);
 };
 
 const pinNamedIdea = (
@@ -1085,9 +1339,12 @@ export const analyzeJuniorQuiz = (answers: JuniorAnswers, options: AnalyzeOption
     if (!chosen || droppedProgramIds.has(id)) continue;
     recommendations = [chosen, ...recommendations.filter((match) => match.program.id !== id)];
   }
-  recommendations = recommendations
-    .filter((match) => !droppedProgramIds.has(match.program.id))
-    .slice(0, JUNIOR_TOP_RECOMMENDATIONS);
+  recommendations = ensureFacultyDoors(
+    recommendations.filter((match) => !droppedProgramIds.has(match.program.id)).slice(0, JUNIOR_TOP_RECOMMENDATIONS),
+    displayMatches,
+    profile,
+    options.priority,
+  );
   const lessAligned = [...displayMatches]
     .sort((a, b) => a.matchPercentage - b.matchPercentage)
     .filter((m) => !recommendations.some((r) => r.program.id === m.program.id))
@@ -1115,6 +1372,17 @@ export const analyzeJuniorQuiz = (answers: JuniorAnswers, options: AnalyzeOption
   if ((profile.signals.security_service ?? 0) >= 4) {
     specialNotes.push(
       "Zanimaju te policija, vojska ili vatrogasci? Za to se školuješ nakon srednje. Dobro je završiti četverogodišnju školu — plus kondicija.",
+    );
+  }
+  if (
+    profile.answeredCount >= 8 &&
+    recommendations.length < 2 &&
+    profile.postSchool.work >= 65 &&
+    !profile.handsChoice &&
+    !profile.techChoice
+  ) {
+    specialNotes.push(
+      "Želiš raditi, ali još nisi rekao koji posao. Bez toga ne izmišljam smjer. Odgovori što radiš rukama ili što te vuče.",
     );
   }
 

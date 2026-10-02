@@ -6,7 +6,10 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { parentArticlesFor, type ParentArticle } from "@/data/parentHub";
+import { juniorQuickTopics, parentArticlesFor, type JuniorQuickTopic, type ParentArticle } from "@/data/parentHub";
+import { parentForumAudience, parentForumBoardTitle, parentForumBoards } from "@/data/parentForumBoards";
+import { apiGet } from "@/lib/api";
+import { juniorUpisKalendar, nextUpcomingUpisDate } from "@/data/parentJuniorCalendar";
 import { resolveExperienceMode } from "@/lib/experience";
 import { getTotalViews, readParentHubState, setLastVisited, toggleFavorite } from "@/lib/parentHubStore";
 import { motion } from "framer-motion";
@@ -15,7 +18,9 @@ import {
   BarChart3,
   BookmarkCheck,
   BookOpen,
+  Calendar,
   ChevronRight,
+  ExternalLink,
   Eye,
   Heart,
   MessageSquare,
@@ -25,7 +30,7 @@ import {
   Users,
   X,
 } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import HeaderDecor, { HeaderHero } from "@/components/header-animations/HeaderDecor";
 
@@ -131,15 +136,6 @@ const seniorMainSections = [
     icon: Heart,
   },
   {
-    id: "forum",
-    emoji: "💬",
-    title: "Forum za roditelje",
-    description: "Pitanja, iskustva i primjeri drugih roditelja koji prolaze slične odluke i dileme.",
-    advice: "Koristite forum za ideje i iskustva, ali završne odluke uvijek prilagodite svom djetetu i njegovim potrebama.",
-    href: "/roditeljski-kutak/forum",
-    icon: MessageSquare,
-  },
-  {
     id: "procjena",
     emoji: "📊",
     title: "Zajednička procjena",
@@ -170,15 +166,6 @@ const juniorMainSections = [
     icon: Heart,
   },
   {
-    id: "forum",
-    emoji: "💬",
-    title: "Forum roditelja",
-    description: "Pitanja i iskustva drugih roditelja o upisu u srednju.",
-    advice: "Tuđa iskustva su korisna, ali konačna odluka mora odgovarati vašem djetetu.",
-    href: "/roditeljski-kutak/forum",
-    icon: MessageSquare,
-  },
-  {
     id: "procjena",
     emoji: "📊",
     title: "Procjena interesa",
@@ -186,70 +173,6 @@ const juniorMainSections = [
     advice: "Roditelj i dijete odvojeno odgovore, pa usporede — bez rasprave tko je u pravu.",
     href: "/roditeljski-kutak/zajednicka-procjena",
     icon: BarChart3,
-  },
-] as const;
-
-/** Brze teme za Junior roditelje — kratke i direktne */
-const juniorQuickTopics = [
-  {
-    emoji: "🎯",
-    title: "Gimnazija ili strukovna?",
-    tip: "Ovisi o stilu učenja, ne o 'prestiž'",
-    detail: "Gimnazija je za učenike koji vole teoriju, čitanje i apstraktno razmišljanje. Strukovna škola je za praktičare koji uče kroz rad. Nema 'bolje' opcije — samo ona koja odgovara vašem djetetu. Pitajte dijete: 'Voliš li više čitati i učiti iz knjiga ili raditi rukama i vidjeti rezultat odmah?'"
-  },
-  {
-    emoji: "📅",
-    title: "Rokovi za upis",
-    tip: "Veljača-lipanj, ovisno o školi",
-    detail: "Upisi u srednje škole traju od veljače do srpnja. Ljetni rok je glavni (lipanj-srpanj), ali neke škole imaju i ranije prijave za posebne programe. Pratite NISpuSŠ sustav i web stranice škola. Koristite MojPut kalendar za sve važne datume!"
-  },
-  {
-    emoji: "🏫",
-    title: "Dan otvorenih vrata",
-    tip: "Obavezno posjetite barem 2-3 škole",
-    detail: "Dani otvorenih vrata su najbolji način da dijete 'osjeti' školu. Posjetite barem 2-3 škole koje razmatrate. Pripremite pitanja: Kakvi su učitelji? Koje su izvannastavne aktivnosti? Kako izgleda tipičan dan? Pitajte i sadašnje učenike — oni daju najiskrenije odgovore."
-  },
-  {
-    emoji: "📝",
-    title: "Prijemni ispit?",
-    tip: "Samo neke škole traže — provjerite!",
-    detail: "Većina srednjih škola nema prijemni ispit — upis ide po bodovima iz osnovne. Ali neke škole (umjetničke, sportske, IT smjerovi) imaju dodatne provjere: test, portfolio, audicija, razgovor. Provjerite na vrijeme jer priprema može trajati mjesecima!"
-  },
-  {
-    emoji: "🚌",
-    title: "Putovanje do škole",
-    tip: "Dnevno 2h+ može biti previše",
-    detail: "Računajte ukupno vrijeme putovanja — ako je više od 2 sata dnevno, dijete će biti umorno i neće imati vremena za aktivnosti i učenje. Razmislite o domu ili stanu ako je škola daleko. Ili — potražite sličan program bliže domu."
-  },
-  {
-    emoji: "💰",
-    title: "Troškovi školovanja",
-    tip: "Udžbenici, oprema, izleti — planirajte",
-    detail: "Osim udžbenika (koji mogu koštati 500-2000 kn), računajte na: školsku opremu (lab mantili, alati), izlete, prijevoz, možda i dom. Strukovne škole često imaju veće troškove opreme. Pitajte školu za procjenu godišnjih troškova prije upisa."
-  },
-  {
-    emoji: "👥",
-    title: "Novo društvo",
-    tip: "Normalno je da dijete brine o prijateljima",
-    detail: "Strah od gubitka prijatelja je čest razlog zašto djeca biraju školu. To je normalno, ali ne bi trebao biti jedini kriterij. Prijateljstva se održavaju i na daljinu, a nova se stvaraju. Razgovarajte o tome otvoreno — priznajte da je strah razumljiv, ali da će naći nove prijatelje."
-  },
-  {
-    emoji: "📊",
-    title: "Bodovi za upis",
-    tip: "Koristite kalkulator na MojPut",
-    detail: "Bodovi za upis = ocjene iz 7. i 8. razreda + dodatni bodovi (natjecanja, posebne okolnosti). Svaka škola ima svoj 'prag' — minimalan broj bodova za upis. Koristite MojPut kalkulator da vidite koliko bodova dijete ima i koje škole može upisati!"
-  },
-  {
-    emoji: "🎨",
-    title: "Umjetnički smjer?",
-    tip: "Portfolio i prijemni — počnite rano",
-    detail: "Umjetničke škole (likovna, glazbena, plesna) traže portfolio radova i/ili audiciju. Priprema traje mjesecima — počnite u 7. razredu! Neka dijete pohađa pripremne tečajeve ili radionice. Važno: talent nije sve — traži se i rad i motivacija."
-  },
-  {
-    emoji: "⚠️",
-    title: "Ne pritiskajte",
-    tip: "Vaš stres = djetetov stres",
-    detail: "Ako ste vi nervozni oko upisa, dijete to osjeća i postaje još anksioznije. Vaša uloga je biti mirna podrška, ne dodatni izvor pritiska. Izbjegavajte usporedbe s drugom djecom. Jedna loša odluka se može ispraviti — promjena škole je moguća."
   },
 ] as const;
 
@@ -299,6 +222,31 @@ const juniorRecommendedInsights: Record<string, { label: string; advice: string 
     advice:
       "Procjena je najkorisnija kada otvara razgovor o smjeru i školi, a ne kada služi kao brz način da se odmah donese konačna odluka.",
   },
+  "roditeljske-greske-kod-odabira-srednje": {
+    label: "Što izbjegavati",
+    advice:
+      "Pet najčešćih grešaka iz najbolje namjere — od nametanja vizije do zanemarivanja NISpuSŠ mehanike. Prepoznavanje je pola rješenja.",
+  },
+  "sto-ako-dijete-ne-upise-prvi-izbor": {
+    label: "Plan B u NISpuSŠ-u",
+    advice:
+      "Prvi dan priznajte osjećaj, drugi dan otvorite drugu i treću prijavu. Prelazak u drugu školu kasnije je realna opcija — nije sve odlučeno u lipnju.",
+  },
+  "razgovor-s-pedagogom-u-8-razredu": {
+    label: "Kako doći pripremljen",
+    advice:
+      "Donesite 2–3 smjera, prosjek i 1–2 konkretna pitanja. Dnevnik razgovora u Vodiču služi za sažetak koji pedagog može pročitati u minuti.",
+  },
+  "natjecanja-i-izvannastavne-7-8-razred": {
+    label: "Bodovna i razvojna strana",
+    advice:
+      "Prije ulaganja u pripremu za natjecanje provjerite s pedagogom nosi li ono stvarno upisne bodove. Dvije ozbiljne aktivnosti su više nego dovoljno.",
+  },
+  "gimnazija-ili-strukovna-roditeljski-vodic": {
+    label: "Bez mita o prestižu",
+    advice:
+      "Strukovna + fakultet je legitiman put. Dualno obrazovanje spaja praksu i stabilan dohodak već od 2. razreda. Odluka se gradi na stilu učenja, ne na reputaciji.",
+  },
 };
 
 const filterChips: { id: "sve" | "vodic" | "mentalno" | "procjena"; emoji: string; label: string; labelMd: string }[] = [
@@ -321,6 +269,99 @@ const listItem = {
   show: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 380, damping: 28 } },
 };
 
+function ParentForumSpotlight({ isJunior, expQ }: { isJunior: boolean; expQ: string }) {
+  const mode = isJunior ? "junior" : "senior";
+  const boards = parentForumBoards(mode);
+  const base = `/roditeljski-kutak/forum${expQ}`;
+  const [latest, setLatest] = useState<{ id: number; title: string; category: string }[]>([]);
+
+  useEffect(() => {
+    let cancel = false;
+    apiGet<unknown>(`/api/forum/conversations?audience=${parentForumAudience(mode)}`).then((res) => {
+      if (cancel || !res.success) return;
+      const raw = (res as { data?: unknown }).data;
+      const rows = Array.isArray(raw) ? raw : [];
+      const mapped = rows.slice(0, 3).flatMap((row) => {
+        const item = row as { id?: unknown; title?: unknown; category?: unknown };
+        const id = Number(item.id);
+        if (!Number.isFinite(id)) return [];
+        return [{ id, title: String(item.title || "Objava"), category: String(item.category || "opce") }];
+      });
+      setLatest(mapped);
+    });
+    return () => {
+      cancel = true;
+    };
+  }, [mode]);
+
+  return (
+    <section
+      aria-labelledby="forum-spotlight-heading"
+      className="overflow-hidden rounded-3xl border-2 border-primary/30 bg-gradient-to-br from-primary/[0.13] via-card to-card shadow-card"
+    >
+      <div className="grid gap-5 p-4 sm:p-6 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)] lg:items-center lg:p-7">
+        <div>
+          <p className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.14em] text-primary">
+            <MessageSquare className="h-4 w-4" aria-hidden />
+            Istaknuto
+          </p>
+          <h2 id="forum-spotlight-heading" className="mt-2 text-balance text-2xl font-bold tracking-tight sm:text-3xl">
+            Forum za roditelje
+          </h2>
+          <p className="mt-2 max-w-xl text-pretty text-sm leading-relaxed text-muted-foreground sm:text-base">
+            {isJunior
+              ? "Razgovori o srednjoj školi, upisu i pritisku kod kuće. Svaki prijavljeni MojPut račun može otvoriti objavu i odgovoriti."
+              : "Razgovori o studiju, upisu i stresu mature. Svaki prijavljeni MojPut račun može otvoriti objavu i odgovoriti."}
+          </p>
+          <div className="mt-4 flex flex-wrap gap-2">
+            <Button asChild className="h-11 rounded-xl px-5">
+              <Link to={base}>Otvori forum</Link>
+            </Button>
+            <Button asChild variant="outline" className="h-11 rounded-xl border-2 px-5">
+              <Link to={`${base}${expQ ? "&" : "?"}nova=1`}>Nova objava</Link>
+            </Button>
+          </div>
+        </div>
+        <div className="grid grid-cols-2 gap-2">
+          {boards.map((board) => (
+            <Link
+              key={board.id}
+              to={`${base}${expQ ? "&" : "?"}rubrika=${board.id}`}
+              className="rounded-2xl border border-primary/15 bg-background/80 px-3 py-3 transition-colors hover:border-primary/40 hover:bg-background"
+            >
+              <p className="text-sm font-semibold leading-snug">{board.title}</p>
+              <p className="mt-1 text-[11px] leading-snug text-muted-foreground">{board.blurb}</p>
+            </Link>
+          ))}
+        </div>
+      </div>
+      {latest.length > 0 ? (
+        <div className="border-t border-primary/15 bg-background/50 px-4 py-3 sm:px-6">
+          <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">Zadnje objave</p>
+          <ul className="mt-2 divide-y divide-border/70">
+            {latest.map((item) => (
+              <li key={item.id}>
+                <Link
+                  to={`${base}${expQ ? "&" : "?"}tema=${item.id}`}
+                  className="flex items-center justify-between gap-3 py-2 text-sm hover:text-primary"
+                >
+                  <span className="min-w-0">
+                    <span className="mr-2 text-[11px] font-semibold uppercase text-primary">
+                      {parentForumBoardTitle(mode, item.category)}
+                    </span>
+                    <span className="font-medium">{item.title}</span>
+                  </span>
+                  <ArrowRight className="h-4 w-4 shrink-0" />
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </div>
+      ) : null}
+    </section>
+  );
+}
+
 const Roditelji = () => {
   const [searchParams] = useSearchParams();
   const audience = resolveExperienceMode(searchParams);
@@ -328,14 +369,19 @@ const Roditelji = () => {
   const expQ = experienceQuery(isJunior);
 
   const articles = useMemo(() => parentArticlesFor(audience), [audience]);
-  const recommended = useMemo(() => articles.slice(0, 3), [articles]);
+  const recommended = useMemo(() => {
+    const fresh = articles.filter((a) => a.isNew);
+    if (fresh.length >= 3) return fresh.slice(0, 3);
+    const rest = articles.filter((a) => !a.isNew);
+    return [...fresh, ...rest].slice(0, 3);
+  }, [articles]);
   const mainSections = isJunior ? juniorMainSections : seniorMainSections;
   const recommendedInsights = isJunior ? juniorRecommendedInsights : seniorRecommendedInsights;
 
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState<"sve" | "vodic" | "mentalno" | "procjena">("sve");
   const [state, setState] = useState(readParentHubState());
-  const [selectedTopic, setSelectedTopic] = useState<typeof juniorQuickTopics[number] | null>(null);
+  const [selectedTopic, setSelectedTopic] = useState<JuniorQuickTopic | null>(null);
 
   const filtered = useMemo(() => {
     const term = query.trim().toLowerCase();
@@ -425,8 +471,10 @@ const Roditelji = () => {
               </div>
             </motion.div>
 
+            <ParentForumSpotlight isJunior={isJunior} expQ={expQ} />
+
             {/* Action cards */}
-            <div className="grid gap-3 sm:grid-cols-2">
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
               <div className="rounded-2xl border border-primary/20 bg-primary/[0.04] px-4 py-3 text-sm">
                 <p className="font-semibold">Dijete je riješilo kviz?</p>
                 <p className="mt-1 text-muted-foreground">
@@ -445,9 +493,20 @@ const Roditelji = () => {
                   <Link to="/razred">Otvori ploču razreda</Link>
                 </Button>
               </div>
+              <div className="rounded-2xl border border-amber-500/25 bg-amber-500/[0.06] px-4 py-3 text-sm sm:col-span-2 lg:col-span-1">
+                <p className="font-semibold">Dnevnik razgovora</p>
+                <p className="mt-1 text-muted-foreground">
+                  Zapišite ukratko što ste pričali s djetetom o srednjoj — korisno kad idete kod pedagoga.
+                </p>
+                <Button asChild size="sm" variant="outline" className="mt-3 rounded-xl">
+                  <Link to={`/roditeljski-kutak/vodic-za-roditelje${expQ}#dnevnik`}>Otvori dnevnik</Link>
+                </Button>
+              </div>
             </div>
           </>
-        ) : null}
+        ) : (
+          <ParentForumSpotlight isJunior={isJunior} expQ={expQ} />
+        )}
 
         {/* Toolbar: pretraga + favoriti + kategorije + nastavi */}
         <motion.div
@@ -531,6 +590,90 @@ const Roditelji = () => {
             </Button>
           )}
         </motion.div>
+
+        {/* Kalendar upisa (samo Junior) */}
+        {isJunior && (
+          <motion.section
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3, delay: 0.1 }}
+            aria-labelledby="kalendar-upisa-heading"
+            className="rounded-2xl border-2 border-sky-500/20 bg-gradient-to-br from-sky-500/[0.07] via-sky-500/[0.02] to-card p-4 shadow-sm sm:p-5"
+          >
+            <div className="flex items-start justify-between gap-3">
+              <div className="flex items-center gap-3">
+                <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-sky-500/15 text-sky-700 shadow-sm dark:text-sky-300 sm:h-10 sm:w-10">
+                  <Calendar className="h-4 w-4 sm:h-5 sm:w-5" aria-hidden />
+                </div>
+                <div className="min-w-0">
+                  <h2 id="kalendar-upisa-heading" className="text-lg font-semibold leading-tight sm:text-xl">
+                    Kalendar upisa u srednju
+                  </h2>
+                  <p className="text-xs text-muted-foreground sm:text-sm">
+                    Ključni rokovi u NISpuSŠ sustavu i oko njega — provjerite službeni raspored.
+                  </p>
+                </div>
+              </div>
+              <a
+                href="https://www.upisi.hr"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hidden shrink-0 items-center gap-1 rounded-full border border-sky-500/30 bg-sky-500/10 px-3 py-1.5 text-xs font-semibold text-sky-700 hover:bg-sky-500/15 dark:text-sky-300 sm:inline-flex"
+              >
+                upisi.hr <ExternalLink className="h-3 w-3" />
+              </a>
+            </div>
+
+            <ul className="mt-4 divide-y divide-border/60 rounded-xl border border-border/60 bg-background/60">
+              {(() => {
+                const next = nextUpcomingUpisDate();
+                return juniorUpisKalendar.map((item) => {
+                  const isNext = next?.id === item.id;
+                  return (
+                    <li key={item.id} className="flex flex-col gap-1 px-3 py-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-2">
+                          <span className="truncate text-sm font-semibold text-foreground">{item.title}</span>
+                          {isNext && (
+                            <span className="shrink-0 rounded-full bg-sky-500/15 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-sky-700 dark:text-sky-300">
+                              Sljedeće
+                            </span>
+                          )}
+                        </div>
+                        {item.note && <p className="mt-0.5 text-xs text-muted-foreground">{item.note}</p>}
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <span className="shrink-0 text-xs font-semibold tabular-nums text-muted-foreground">
+                          {item.dateLabel}
+                        </span>
+                        {item.href && (
+                          <a
+                            href={item.href}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex shrink-0 items-center gap-1 rounded-full border border-border bg-background px-2.5 py-1 text-[11px] font-medium text-muted-foreground hover:border-primary/40 hover:text-foreground"
+                            aria-label={`Više: ${item.title}`}
+                          >
+                            Više <ExternalLink className="h-3 w-3" />
+                          </a>
+                        )}
+                      </div>
+                    </li>
+                  );
+                });
+              })()}
+            </ul>
+
+            <a
+              href="https://www.upisi.hr"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-3 inline-flex items-center gap-1 rounded-full border border-sky-500/30 bg-sky-500/10 px-3 py-1.5 text-xs font-semibold text-sky-700 hover:bg-sky-500/15 dark:text-sky-300 sm:hidden"
+            >
+              Više na upisi.hr <ExternalLink className="h-3 w-3" />
+            </a>
+          </motion.section>
+        )}
 
         {/* Preporučeno za vas */}
         <section aria-labelledby="preporuceno-heading" className="space-y-3 sm:space-y-4">
@@ -640,8 +783,8 @@ const Roditelji = () => {
               </h2>
               <p className="text-xs text-muted-foreground sm:text-sm">
                 {isJunior
-                  ? "Četiri brzo dostupna kutka za roditelje djece koja biraju srednju školu."
-                  : "Četiri brzo dostupna kutka za roditelje maturanata."}
+                  ? "Vodič, stres i procjena interesa."
+                  : "Vodič, mentalno zdravlje i zajednička procjena."}
               </p>
             </div>
           </div>
@@ -812,6 +955,61 @@ const Roditelji = () => {
                 <p className="text-sm leading-relaxed text-muted-foreground">
                   {selectedTopic.detail}
                 </p>
+
+                <div className="flex flex-col gap-2 pt-1 sm:flex-row sm:flex-wrap">
+                  <Button
+                    asChild
+                    size="sm"
+                    className="rounded-xl"
+                    onClick={() => {
+                      const href = `/roditeljski-kutak/preporuceni-clanak/${selectedTopic.articleSlug}${expQ}`;
+                      setLastVisited(href);
+                      setSelectedTopic(null);
+                    }}
+                  >
+                    <Link to={`/roditeljski-kutak/preporuceni-clanak/${selectedTopic.articleSlug}${expQ}`}>
+                      Pročitaj cijeli članak
+                      <ArrowRight className="ml-1 h-4 w-4" />
+                    </Link>
+                  </Button>
+
+                  {selectedTopic.cta && (
+                    selectedTopic.cta.href.startsWith("http") ? (
+                      <Button
+                        asChild
+                        size="sm"
+                        variant="outline"
+                        className="rounded-xl"
+                      >
+                        <a
+                          href={selectedTopic.cta.href}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          onClick={() => setSelectedTopic(null)}
+                        >
+                          {selectedTopic.cta.label}
+                          <ExternalLink className="ml-1 h-4 w-4" />
+                        </a>
+                      </Button>
+                    ) : (
+                      <Button
+                        asChild
+                        size="sm"
+                        variant="outline"
+                        className="rounded-xl"
+                        onClick={() => {
+                          setLastVisited(selectedTopic.cta!.href);
+                          setSelectedTopic(null);
+                        }}
+                      >
+                        <Link to={selectedTopic.cta.href}>
+                          {selectedTopic.cta.label}
+                          <ArrowRight className="ml-1 h-4 w-4" />
+                        </Link>
+                      </Button>
+                    )
+                  )}
+                </div>
               </div>
             </>
           )}

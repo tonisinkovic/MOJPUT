@@ -4,6 +4,7 @@
  */
 
 import {
+  analyzeJuniorQuiz,
   calculateQuizProfile,
   juniorQuestions,
   type JuniorAnswers,
@@ -116,15 +117,15 @@ export const peopleDayOptionIds = (profile: JuniorStudentProfile): string[] => {
   const push = (id: string) => {
     if (!ids.includes(id)) ids.push(id);
   };
-  const health = (profile.signals.health_medicine ?? 0) >= 4 || (profile.signals.helping_people ?? 0) >= 4;
+  const health = (profile.signals.health_medicine ?? 0) >= 4;
   const animals = (profile.signals.animals_nature ?? 0) >= 4;
-  const lab = (profile.signals.science_experiments ?? 0) >= 4;
+  const lab = (profile.signals.science_experiments ?? 0) >= 4 && (profile.peopleFocus === "lab" || health);
   const guests = (profile.signals.languages_travel ?? 0) >= 4;
   const dance = (profile.signals.music_performance ?? 0) >= 4;
   const sport = (profile.signals.sport_active ?? 0) >= 4 && !dance;
   if (health) {
-    push("doctor");
     push("care");
+    push("doctor");
   }
   if (lab) push("lab");
   if (animals) push("animals");
@@ -132,10 +133,6 @@ export const peopleDayOptionIds = (profile: JuniorStudentProfile): string[] => {
   if (dance) push("dance");
   if (sport) push("sport");
   if (profile.interests.people >= 58 && ids.length < 3) push("class");
-  for (const id of ["care", "doctor", "guests", "class"]) {
-    if (ids.length >= 4) break;
-    push(id);
-  }
   return [...ids.slice(0, 4), "none"];
 };
 
@@ -176,13 +173,20 @@ export const pickBranchQuestionIds = (profile: JuniorStudentProfile): number[] =
 
 export const buildMainSequence = (answers: JuniorAnswers, existing?: number[]): number[] => {
   const coreIds = CORE_QUESTIONS.map((q) => q.id);
-  const contextIds = CONTEXT_QUESTIONS.map((q) => q.id);
+  const mathAnswer = answers[6];
+  const handsScale = answers[11];
+  const learnStyle = answers[16];
+  const mathClear = mathAnswer === "interest_math" || mathAnswer === "avoid_math";
+  const handsClear =
+    typeof handsScale === "number" &&
+    ((handsScale >= 5 && learnStyle === "make") || (handsScale <= 2 && learnStyle !== "make" && learnStyle !== undefined));
+  const contextIds = CONTEXT_QUESTIONS.map((q) => q.id).filter((id) => !(id === 71 && handsClear));
   if (existing && existing.length > coreIds.length) {
     const preserved = existing.filter((id) => !coreIds.includes(id) && !contextIds.includes(id));
     return uniqueIds([...coreIds, ...preserved, ...contextIds]);
   }
   const profile = calculateQuizProfile(answers);
-  const branchIds = pickBranchQuestionIds(profile);
+  const branchIds = pickBranchQuestionIds(profile).filter((id) => !(id === 32 && mathClear));
   const peopleFork =
     profile.interests.people >= 58 ||
     (profile.signals.helping_people ?? 0) >= 4 ||
@@ -204,15 +208,8 @@ export const expandSequenceIfNeeded = (
   return buildMainSequence(answers);
 };
 
-/** Drugo pitanje o poslu ne ponavlja hranu ili sport ako je dijete to već reklo. */
-export const jobOptionIds = (answers: JuniorAnswers): string[] => {
-  const prior = answers[36];
-  const ids = ["plan", "serve", "sportjob", "kitchen"];
-  if (prior === "sport") return ids.filter((id) => id !== "sportjob");
-  if (prior === "food" || prior === "bake") return ids.filter((id) => id !== "kitchen");
-  if (prior === "talk") return ids.filter((id) => id !== "serve");
-  return ids;
-};
+/** Posao u ovom bloku je plan ili gosti. Sport i kuhinja imaju svoja pitanja. */
+export const jobOptionIds = (_answers: JuniorAnswers): string[] => ["plan", "serve"];
 
 const CHECK_IDS = [98, 99] as const;
 
@@ -305,13 +302,55 @@ const cardCheckQuestion = (id: number, left: JuniorProgramMatch, right: JuniorPr
   ],
 });
 
-/** Najviše dva pitanja. Svako imenuje dva smjera s kartice i može jedan zadržati, a drugi maknuti. */
+const ideaConfirmQuestion = (answers: JuniorAnswers): JuniorQuestion | null => {
+  if (answers[89] !== undefined) return null;
+  const written = answers[76];
+  if (typeof written !== "string" || written.trim().length < 4 || written === "skip") return null;
+  const preview = analyzeJuniorQuiz(answers);
+  const note = preview.consideringNote ?? "";
+  const named = /Zato je (.+) prvi prijedlog/.exec(note)?.[1];
+  if (!named || !preview.profile.considering) return null;
+  return {
+    id: 89,
+    format: "choice",
+    pool: "followup",
+    section: "context",
+    prompt: `Napisao/la si „${preview.profile.considering}”. Je li ti blizu: ${named}?`,
+    options: [
+      { id: "yes", label: "Da, to mi je blizu" },
+      { id: "no", label: "Ne, bila je samo ideja" },
+    ],
+  };
+};
+
+const clarifyingQuestions = (profile: JuniorStudentProfile, answers: JuniorAnswers): JuniorQuestion[] => {
+  const out: JuniorQuestion[] = [];
+  const add = (id: number) => {
+    if (answers[id] !== undefined) return;
+    const question = juniorQuestions.find((item) => item.id === id);
+    if (question) out.push(question);
+  };
+  const tech = profile.signals.tech_computers ?? 0;
+  const health = profile.signals.health_medicine ?? 0;
+  const art = profile.signals.art_visual ?? 0;
+  const music = profile.signals.music_performance ?? 0;
+  const plants = profile.signals.plants_outdoor ?? 0;
+  const animals = profile.signals.animals_nature ?? 0;
+  if (tech >= 4 && !profile.techChoice) add(91);
+  if (health >= 4 && !profile.peopleFocus) add(92);
+  if (art >= 4 && music >= 4) add(93);
+  if (plants >= 4 && animals >= 4) add(95);
+  if (profile.postSchool.faculty >= 55 && profile.postSchool.work >= 55 && answers[70] === undefined) add(94);
+  if ((health >= 4 || tech >= 4) && answers[96] === undefined) add(96);
+  return out.slice(0, 2);
+};
+
+/** Najviše dva pitanja. Bliski par s kartice, provjera iz kataloga, ili potvrda napisane ideje. */
 export const selectFollowupQuestions = (
   answers: JuniorAnswers,
   matches: JuniorProgramMatch[],
 ): JuniorQuestion[] => {
   const cards = matches.slice(0, 3).filter((card) => card?.program);
-  if (cards.length < 2) return [];
   const profile = calculateQuizProfile(answers);
   const pairs: Array<[JuniorProgramMatch, JuniorProgramMatch]> = [];
   const consider = (left?: JuniorProgramMatch, right?: JuniorProgramMatch) => {
@@ -320,9 +359,17 @@ export const selectFollowupQuestions = (
     if (!pairNeedsCheck(left, right, answers, profile)) return;
     pairs.push([left, right]);
   };
-  consider(cards[0], cards[1]);
-  consider(cards[1], cards[2]);
-  consider(cards[0], cards[2]);
+  if (cards.length >= 2) {
+    consider(cards[0], cards[1]);
+    consider(cards[1], cards[2]);
+    consider(cards[0], cards[2]);
+  }
   const freeIds = CHECK_IDS.filter((id) => answers[id] === undefined);
-  return pairs.slice(0, freeIds.length).map((pair, index) => cardCheckQuestion(freeIds[index], pair[0], pair[1]));
+  const cardQuestions = pairs.slice(0, freeIds.length).map((pair, index) => cardCheckQuestion(freeIds[index], pair[0], pair[1]));
+  const idea = ideaConfirmQuestion(answers);
+  const familyPair = pairs.some(
+    ([left, right]) => sameFamily(left.program.name, right.program.name) || explicitFork(left.program.name, right.program.name),
+  );
+  const clarify = familyPair ? [] : clarifyingQuestions(profile, answers);
+  return [...(idea ? [idea] : []), ...clarify, ...cardQuestions].slice(0, 2);
 };

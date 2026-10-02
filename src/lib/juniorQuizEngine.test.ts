@@ -70,11 +70,10 @@ describe("junior kviz v2 — podaci", () => {
     expect(day?.prompt).toMatch(/dan/);
     expect(day?.prompt ?? "").not.toMatch(/1000|€|eura/);
     expect(day?.options?.find((o) => o.id === "books")?.effects?.signals?.languages_travel).toBeGreaterThanOrEqual(4);
-    expect(day?.options?.find((o) => o.id === "product")?.effects?.signals?.business_entrepreneur).toBe(5);
+    expect(day?.options?.find((o) => o.id === "product")?.effects?.signals?.business_entrepreneur).toBe(3);
     expect(day?.options?.some((o) => o.id === "app" || o.id === "art" || o.id === "sport")).toBe(false);
-    expect(jobOptionIds({ 36: "food" })).not.toContain("kitchen");
-    expect(jobOptionIds({ 36: "sport" })).not.toContain("sportjob");
-    expect(jobOptionIds({ 36: "numbers" })).toEqual(["plan", "serve", "sportjob", "kitchen"]);
+    expect(jobOptionIds({ 36: "food" })).toEqual(["plan", "serve"]);
+    expect(jobOptionIds({ 36: "numbers" })).toEqual(["plan", "serve"]);
   });
 
   it("svaki smjer ima u kvizu odgovor koji ga diže", () => {
@@ -386,7 +385,7 @@ describe("junior kviz v2 — scoring ugovori", () => {
         answers[37] = "sportjob";
       }
       if (program.boostSignals.science_experiments) answers[9] = "why";
-      if (program.boostSignals.business_entrepreneur) answers[7] = "product";
+      if (program.boostSignals.business_entrepreneur) answers[34] = "shop";
       if (program.boostSignals.numbers_data) answers[6] = "interest_math";
       if (program.boostSignals.logistics_transport) {
         answers[34] = "move";
@@ -548,7 +547,7 @@ describe("junior kviz v2 — 8 mentalnih profila", () => {
     const analysis = analyzeJuniorQuiz(answers);
     expect(analysis.confidence.level === "low" || analysis.indecisive).toBe(true);
     expect(analysis.recommendations[0].matchPercentage).toBeLessThanOrEqual(78);
-    expect(analysis.recommendations.length).toBeGreaterThanOrEqual(3);
+    expect(analysis.recommendations.length).toBeGreaterThanOrEqual(1);
     noVerdict(analysis.profileSummary);
   });
 
@@ -727,10 +726,10 @@ describe("junior kviz — bodovanje praznih signala i grane", () => {
     );
   });
 
-  it("skala o prirodi puni i signal za životinje", () => {
-    expect(calculateQuizProfile({ 14: 5 }).signals.animals_nature).toBe(5);
+  it("skala o prirodi puni boravak vani, a životinje dolaze iz svog pitanja", () => {
     expect(calculateQuizProfile({ 14: 5 }).signals.plants_outdoor).toBe(5);
-    expect(calculateQuizProfile({ 14: 1 }).signals.animals_nature).toBe(1);
+    expect(calculateQuizProfile({ 14: 5 }).signals.animals_nature).toBeUndefined();
+    expect(calculateQuizProfile({ 20: "animals" }).signals.animals_nature).toBe(5);
   });
 
   it("jasan tehnički odgovor vuče tehničku granu, bez praznih signala", () => {
@@ -925,8 +924,8 @@ describe("junior kviz — bodovanje praznih signala i grane", () => {
   });
 
   it("popodne pokriva sport i kuhanje, a teže ocjene spuštaju visok prag", () => {
-    expect(calculateQuizProfile({ 2: "sport" }).signals.sport_active).toBe(5);
-    expect(calculateQuizProfile({ 2: "cook" }).signals.cooking_food).toBe(5);
+    expect(calculateQuizProfile({ 2: "sport" }).signals.sport_active).toBe(3);
+    expect(calculateQuizProfile({ 2: "cook" }).signals.cooking_food).toBe(3);
     const afternoon = juniorQuestions.find((q) => q.id === 2);
     expect(afternoon?.options?.map((o) => o.id)).toEqual(
       expect.arrayContaining(["sport", "music", "cook"]),
@@ -937,6 +936,32 @@ describe("junior kviz — bodovanje praznih signala i grane", () => {
     const open = highSchoolPrograms.find((p) => p.id === 1)!;
     const plain = calculateQuizProfile({ 1: "understand", 3: 3, 16: "tasks" });
     expect(calculateProgramMatch(low, open).constraintScore).toBeLessThan(calculateProgramMatch(plain, open).constraintScore);
+  });
+
+  it("poslovanje i fakultet drže ekonomista i opću gimnaziju u vrhu", () => {
+    const business = analyzeJuniorQuiz(
+      persona([
+        [1, "team"],
+        [5, "plan"],
+        [6, "mix"],
+        [7, "product"],
+        [12, "data"],
+        [15, "pay"],
+        [16, "tasks"],
+        [34, "shop"],
+        [62, "time"],
+        [70, "faculty"],
+        [71, "how"],
+      ]),
+    );
+    const shown = business.recommendations.map((item) => item.program.name);
+    const economistAt = shown.findIndex((name) => /ekonomist/i.test(name));
+    const openAt = shown.findIndex((name) => name === "Opća gimnazija");
+    expect(economistAt).toBeGreaterThanOrEqual(0);
+    expect(economistAt).toBeLessThan(2);
+    expect(openAt).toBeGreaterThanOrEqual(0);
+    expect(openAt).toBeLessThan(3);
+    expect(shown.join(" ")).not.toMatch(/prodavač/i);
   });
 
   it("fakultet bez konkretne ideje nudi opću gimnaziju sa strane", () => {

@@ -53,6 +53,7 @@ import competenciesJson from "@/data/career-quiz/questions-competencies.json";
 import careersJson from "@/data/career-quiz/careers-database.json";
 import type { CareerRow } from "@/lib/careerQuizEngine";
 import { labelForUserType, USER_TYPE_OPTIONS } from "@/components/profile/userTypes";
+import ParentDnevnikProfile from "@/components/profile/ParentDnevnikProfile";
 import { getStoredExperience, onExperienceChange } from "@/lib/experience";
 import { cn } from "@/lib/utils";
 import JuniorProfilHome from "@/components/junior/JuniorProfilHome";
@@ -478,6 +479,7 @@ export default function ProfilDashboard() {
                   className="space-y-8"
                 >
                   {tab === "pregled" && isJunior && <JuniorProfilHome />}
+                  {tab === "pregled" && dash.user.user_type === "roditelj" && <ParentDnevnikProfile />}
 
                   {tab === "pregled" && !isJunior && (
                     <>

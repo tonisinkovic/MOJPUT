@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useRef, useState, type ChangeEvent } from "react";
 import { useSearchParams } from "react-router-dom";
 import {
+  ArrowLeft,
   BookOpen,
-  Calculator,
   CheckCircle2,
   ChevronsUpDown,
   GraduationCap,
@@ -428,6 +428,11 @@ export default function SrednjaKalkulator() {
   const [razred8, setRazred8] = useState<SevenEightGrades>(savedGrades?.razred8 ?? emptySevenEight());
   const [dodatniBodovi, setDodatniBodovi] = useState(savedGrades?.dodatniBodovi ?? "");
   const [rezultatIzracunat, setRezultatIzracunat] = useState(Boolean(savedGrades));
+  const [step, setStep] = useState<0 | 1 | 2>(() => {
+    const urlSchool = Number(searchParams.get("skola"));
+    if (Number.isFinite(urlSchool) && urlSchool > 0) return 0;
+    return savedGrades ? 1 : 0;
+  });
 
   // Odabir škole i programa (baza: srednja.hr kalkulator)
   const [selCounty, setSelCounty] = useState("");
@@ -545,12 +550,10 @@ export default function SrednjaKalkulator() {
 
   return (
     <div className="mx-auto w-full max-w-7xl">
-      <header className="relative mb-6 overflow-hidden rounded-[2rem] border border-primary/20 bg-gradient-to-br from-primary/10 via-card to-amber-500/10 p-5 shadow-card sm:p-8">
-        <div className="pointer-events-none absolute -right-16 -top-16 h-44 w-44 rounded-full bg-primary/15 blur-3xl" />
-
+      <header className="relative mb-4 overflow-hidden rounded-2xl border border-primary/20 bg-gradient-to-br from-primary/10 via-card to-card p-4 shadow-card sm:p-5">
         <HeaderHero
           decor={
-            <HeaderDecor className="opacity-[0.42] sm:opacity-[0.16] md:opacity-[0.14]">
+            <HeaderDecor className="opacity-[0.28] sm:opacity-[0.14]">
               <CalculatorAnimation />
             </HeaderDecor>
           }
@@ -559,18 +562,48 @@ export default function SrednjaKalkulator() {
             <School className="h-3.5 w-3.5" />
             Upis u srednju školu
           </span>
-          <h1 className="mt-2.5 text-balance text-2xl font-extrabold tracking-tight sm:mt-3 sm:text-5xl">
+          <h1 className="mt-2 text-balance text-2xl font-extrabold tracking-tight sm:text-3xl">
             Kalkulator bodova
           </h1>
-          <p className="mt-2 max-w-3xl text-pretty text-sm leading-relaxed text-muted-foreground sm:mt-3 sm:text-base">
-            Odaberi školu i program, unesi ocjene iz osnovne škole i saznaj lanjski prag te svoje šanse za
-            upis.
+          <p className="mt-1.5 max-w-2xl text-pretty text-sm leading-relaxed text-muted-foreground">
+            Tri koraka: škola, ocjene, pa usporedba s lanjskim pragom.
           </p>
-          <JuniorNumbersNote counts className="mt-3 max-w-2xl" />
-          <JuniorNumbersNote className="mt-2 max-w-2xl" />
         </HeaderHero>
       </header>
 
+      <nav aria-label="Koraci kalkulatora" className="mb-4 grid grid-cols-3 gap-2">
+        {(
+          [
+            { id: 0 as const, label: "1. Škola" },
+            { id: 1 as const, label: "2. Ocjene" },
+            { id: 2 as const, label: "3. Rezultat" },
+          ]
+        ).map((item) => {
+          const locked = item.id === 2 && !rezultatIzracunat;
+          const active = step === item.id;
+          return (
+            <button
+              key={item.id}
+              type="button"
+              disabled={locked}
+              onClick={() => setStep(item.id)}
+              className={cn(
+                "min-h-11 rounded-xl border px-2 py-2 text-center text-xs font-semibold transition sm:text-sm",
+                active
+                  ? "border-primary bg-primary text-primary-foreground shadow-sm"
+                  : locked
+                    ? "cursor-not-allowed border-border bg-muted/40 text-muted-foreground/50"
+                    : "border-border bg-card text-foreground hover:border-primary/40",
+              )}
+            >
+              {item.label}
+            </button>
+          );
+        })}
+      </nav>
+
+      {step === 0 && (
+      <>
       {/* Odabir škole i programa */}
       <section className="mb-5 rounded-2xl border bg-card p-4 shadow-card sm:p-5">
         <div className="mb-4 flex items-start gap-3">
@@ -715,39 +748,33 @@ export default function SrednjaKalkulator() {
           </div>
         )}
       </section>
+      </>
+      )}
 
-      <section className="mb-5 rounded-2xl border bg-card p-4 shadow-card sm:p-5">
-        <div className="mb-4 flex items-center justify-between gap-4">
-          <div>
-            <p className="text-xs font-bold uppercase tracking-wide text-muted-foreground">Trenutni rezultat</p>
-            <p className="mt-1 text-3xl font-extrabold tabular-nums text-primary">
-              {rezultat.zajednicki.toFixed(2)}
-              <span className="ml-1 text-base font-semibold text-muted-foreground">/ {rezultat.max}</span>
-            </p>
-          </div>
-          <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10 text-primary">
-            <Calculator className="h-7 w-7" />
-          </div>
-        </div>
-        <div className="relative h-4 overflow-hidden rounded-full bg-muted">
-          <div
-            className="h-full rounded-full bg-gradient-to-r from-emerald-500 to-primary transition-all duration-500"
-            style={{ width: `${rezultat.postotak}%` }}
-          />
-          {selPrag?.min != null && (
-            <div
-              className="absolute top-0 h-full w-0.5 bg-foreground/70"
-              style={{ left: `${clamp((selPrag.min / rezultat.max) * 100, 0, 100)}%` }}
-              title={`Prošlogodišnji prag: ${fmt(selPrag.min)}`}
-            />
-          )}
-        </div>
-        {selPrag?.min != null && (
-          <p className="mt-2 text-xs text-muted-foreground">
-            Crna crtica označava prošlogodišnji prag ({fmt(selPrag.min)} bodova) za odabrani program.
-          </p>
-        )}
-      </section>
+      {step === 1 && (
+      <>
+      {(selSchool || selProgram) && (
+        <button
+          type="button"
+          onClick={() => setStep(0)}
+          className="mb-4 flex w-full items-center justify-between gap-3 rounded-2xl border bg-card px-4 py-3 text-left shadow-card"
+        >
+          <span className="min-w-0">
+            <span className="block text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+              Odabrano
+            </span>
+            <span className="mt-0.5 block truncate text-sm font-bold">
+              {selProgram?.name || selSchool?.name}
+            </span>
+            {selSchool && (
+              <span className="mt-0.5 block truncate text-xs text-muted-foreground">
+                {selSchool.name}, {selSchool.city}
+              </span>
+            )}
+          </span>
+          <span className="shrink-0 text-xs font-semibold text-primary">Promijeni</span>
+        </button>
+      )}
 
       <section className="mb-5 rounded-2xl border bg-card p-4 shadow-card sm:p-5">
         <h2 className="mb-3 text-lg font-bold">Tip programa</h2>
@@ -805,41 +832,46 @@ export default function SrednjaKalkulator() {
         <NumberField label="Dodatni bodovi" value={dodatniBodovi} onChange={setDodatniBodovi} placeholder="0" />
       </section>
 
-      <button
-        type="button"
-        onClick={() => setRezultatIzracunat(true)}
-        className="mb-5 flex min-h-14 w-full items-center justify-center gap-2 rounded-2xl bg-primary px-5 py-4 text-base font-bold text-primary-foreground shadow-card transition hover:bg-primary/90"
-      >
-        <GraduationCap className="h-5 w-5" />
-        Izračunaj svoje bodove
-      </button>
+      <div className="mb-5 flex items-center justify-between gap-3 rounded-2xl border bg-card px-4 py-3 shadow-card">
+        <div className="min-w-0">
+          <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">Zajednički element</p>
+          <p className="mt-0.5 text-xs text-muted-foreground">Mijenja se dok upisuješ ocjene.</p>
+        </div>
+        <p className="text-2xl font-extrabold tabular-nums text-primary">
+          {rezultat.zajednicki.toFixed(2)}
+          <span className="ml-1 text-sm font-semibold text-muted-foreground">/ {rezultat.max}</span>
+        </p>
+      </div>
+      </>
+      )}
 
-      {rezultatIzracunat && (
-        <section className="mb-5 rounded-2xl border border-primary/30 bg-primary/5 p-4 shadow-card sm:p-5">
-          <h2 className="mb-3 text-xl font-extrabold">Pregled bodova</h2>
-          <ResultRow label="Opći uspjeh (5.-8. razred)" value={`${rezultat.opciUspjeh.toFixed(2)} / 20`} />
-          {(program === "gimnazija4" || program === "trogodisnji") && (
-            <ResultRow label="Hrvatski, Matematika, Strani jezik (7.-8.)" value={`${rezultat.kljucniPredmeti.toFixed(2)} / 30`} />
-          )}
-          {program === "gimnazija4" && (
-            <ResultRow label="Predmeti značajni za upis (7.-8.)" value={`${rezultat.posebniPredmeti.toFixed(2)} / 30`} />
-          )}
-          <ResultRow label="Dodatni bodovi" value={rezultat.dodatni.toFixed(2)} />
-          <div className="mt-4 rounded-2xl bg-background p-4">
-            <div className="flex items-center justify-between gap-4 text-sm text-muted-foreground">
-              <span>Zajednički element</span>
-              <strong className="text-foreground">{rezultat.zajednicki.toFixed(2)}</strong>
-            </div>
-            <div className="mt-2 flex items-center justify-between gap-4 text-lg font-bold">
-              <span>Ukupno bodova</span>
-              <strong className="text-2xl text-primary">{rezultat.ukupno.toFixed(2)}</strong>
-            </div>
+      {step === 2 && rezultatIzracunat && (
+        <section className="mb-5 rounded-2xl border border-primary/30 bg-primary/5 p-4 shadow-card sm:p-6">
+          <p className="text-center text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+            Ukupno bodova
+          </p>
+          <p className="mt-1 text-center text-5xl font-extrabold tabular-nums tracking-tight text-primary sm:text-6xl">
+            {rezultat.ukupno.toFixed(2)}
+          </p>
+          <p className="mt-1 text-center text-sm text-muted-foreground">
+            Zajednički element {rezultat.zajednicki.toFixed(2)} od {rezultat.max}
+          </p>
+          <div className="mt-5 border-t border-primary/15 pt-4">
+            <h2 className="mb-3 text-base font-bold">Od čega se sastoji</h2>
+            <ResultRow label="Opći uspjeh (5.-8. razred)" value={`${rezultat.opciUspjeh.toFixed(2)} / 20`} />
+            {(program === "gimnazija4" || program === "trogodisnji") && (
+              <ResultRow label="Hrvatski, Matematika, Strani jezik (7.-8.)" value={`${rezultat.kljucniPredmeti.toFixed(2)} / 30`} />
+            )}
+            {program === "gimnazija4" && (
+              <ResultRow label="Predmeti značajni za upis (7.-8.)" value={`${rezultat.posebniPredmeti.toFixed(2)} / 30`} />
+            )}
+            <ResultRow label="Dodatni bodovi" value={rezultat.dodatni.toFixed(2)} />
           </div>
         </section>
       )}
 
       {/* Usporedba s prošlogodišnjim pragom i procjena šansi */}
-      {rezultatIzracunat && selProgram && selSchool && selPrag?.min != null && chance && (
+      {step === 2 && rezultatIzracunat && selProgram && selSchool && selPrag?.min != null && chance && (
         <section className={`mb-5 rounded-2xl border-2 p-4 shadow-card sm:p-5 ${CHANCE_TONE[chance.tone].box}`}>
           <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
             <div className="flex items-start gap-3">
@@ -925,11 +957,75 @@ export default function SrednjaKalkulator() {
         </section>
       )}
 
-      {rezultatIzracunat && !selProgram && (
-        <section className="mb-5 rounded-2xl border border-dashed bg-muted/30 p-4 text-center text-sm text-muted-foreground sm:p-5">
-          Odaberi školu i program na vrhu stranice da vidiš prošlogodišnji prag i svoje šanse za upis.
+      {step === 2 && rezultatIzracunat && !selProgram && (
+        <section className="mb-5 rounded-2xl border border-dashed bg-muted/30 p-4 text-center sm:p-5">
+          <p className="text-sm text-muted-foreground">
+            Bodovi su izračunati. Odaberi školu i program da ih usporediš s lanjskim pragom.
+          </p>
+          <button
+            type="button"
+            onClick={() => setStep(0)}
+            className="mt-3 inline-flex min-h-11 items-center justify-center rounded-xl bg-primary px-4 text-sm font-semibold text-primary-foreground"
+          >
+            Odaberi školu
+          </button>
         </section>
       )}
+
+      {step === 2 && <JuniorNumbersNote className="mb-4 max-w-2xl" />}
+
+      <div className="sticky bottom-[max(0.75rem,env(safe-area-inset-bottom))] z-20 flex gap-2 rounded-2xl border bg-card/95 p-2 shadow-lg backdrop-blur">
+        {step === 0 && (
+          <button
+            type="button"
+            onClick={() => setStep(1)}
+            className="flex min-h-12 flex-1 items-center justify-center gap-2 rounded-xl bg-primary px-4 text-sm font-bold text-primary-foreground"
+          >
+            Dalje: ocjene
+          </button>
+        )}
+        {step === 1 && (
+          <>
+            <button
+              type="button"
+              onClick={() => setStep(0)}
+              className="inline-flex min-h-12 items-center justify-center gap-1.5 rounded-xl border px-3 text-sm font-semibold"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              Škola
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setRezultatIzracunat(true);
+                setStep(2);
+              }}
+              className="flex min-h-12 flex-1 items-center justify-center gap-2 rounded-xl bg-primary px-4 text-sm font-bold text-primary-foreground"
+            >
+              <GraduationCap className="h-4 w-4" />
+              Izračunaj
+            </button>
+          </>
+        )}
+        {step === 2 && (
+          <>
+            <button
+              type="button"
+              onClick={() => setStep(0)}
+              className="inline-flex min-h-12 flex-1 items-center justify-center rounded-xl border px-3 text-sm font-semibold"
+            >
+              Škola
+            </button>
+            <button
+              type="button"
+              onClick={() => setStep(1)}
+              className="inline-flex min-h-12 flex-1 items-center justify-center rounded-xl bg-primary px-3 text-sm font-bold text-primary-foreground"
+            >
+              Ocjene
+            </button>
+          </>
+        )}
+      </div>
     </div>
   );
 }

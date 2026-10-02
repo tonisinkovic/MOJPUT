@@ -1930,6 +1930,83 @@ async function main() {
     }
   });
 
+  const mapParentNote = (row) => ({
+    id: String(row.id),
+    dateIso: row.date_iso,
+    teme: row.teme || "",
+    djeteKaze: row.dijete_kaze || "",
+    sljedeciKorak: row.sljedeci_korak || "",
+  });
+
+  const requireParentAccount = (req, res) => {
+    if (req.user?.user_type !== "roditelj") {
+      res.status(403).json({ success: false, message: "Dnevnik razgovora dostupan je samo računu tipa Roditelj." });
+      return false;
+    }
+    return true;
+  };
+
+  app.get("/api/me/parent-dnevnik", authMiddleware(db), async (req, res) => {
+    try {
+      if (!requireParentAccount(req, res)) return;
+      const rows = await db
+        .prepare(
+          "SELECT id, date_iso, teme, dijete_kaze, sljedeci_korak FROM parent_conversation_notes WHERE user_id = ? ORDER BY date_iso DESC, id DESC LIMIT 50",
+        )
+        .all(req.user.id);
+      return res.json({ success: true, data: rows.map(mapParentNote) });
+    } catch (err) {
+      console.error("[parent-dnevnik get]", err?.message || err);
+      return res.status(500).json({ success: false, message: "Ne mogu učitati dnevnik." });
+    }
+  });
+
+  app.post("/api/me/parent-dnevnik", authMiddleware(db), async (req, res) => {
+    try {
+      if (!requireParentAccount(req, res)) return;
+      const dateIso = String(req.body?.dateIso || "").trim().slice(0, 10);
+      const teme = String(req.body?.teme || "").trim().slice(0, 2000);
+      const djeteKaze = String(req.body?.djeteKaze || "").trim().slice(0, 2000);
+      const sljedeciKorak = String(req.body?.sljedeciKorak || "").trim().slice(0, 500);
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(dateIso)) {
+        return res.status(400).json({ success: false, message: "Datum nije ispravan." });
+      }
+      if (!teme && !djeteKaze && !sljedeciKorak) {
+        return res.status(400).json({ success: false, message: "Upišite barem jedno polje." });
+      }
+      const info = await db
+        .prepare(
+          "INSERT INTO parent_conversation_notes (user_id, date_iso, teme, dijete_kaze, sljedeci_korak) VALUES (?, ?, ?, ?, ?)",
+        )
+        .run(req.user.id, dateIso, teme, djeteKaze, sljedeciKorak);
+      const row = await db
+        .prepare(
+          "SELECT id, date_iso, teme, dijete_kaze, sljedeci_korak FROM parent_conversation_notes WHERE id = ?",
+        )
+        .get(info.lastInsertRowid);
+      return res.json({ success: true, data: mapParentNote(row) });
+    } catch (err) {
+      console.error("[parent-dnevnik post]", err?.message || err);
+      return res.status(500).json({ success: false, message: "Zapis nije spremljen." });
+    }
+  });
+
+  app.delete("/api/me/parent-dnevnik/:id", authMiddleware(db), async (req, res) => {
+    try {
+      if (!requireParentAccount(req, res)) return;
+      const id = Number(req.params.id);
+      if (!Number.isFinite(id)) return res.status(400).json({ success: false, message: "Neispravan zapis." });
+      const r = await db
+        .prepare("DELETE FROM parent_conversation_notes WHERE id = ? AND user_id = ?")
+        .run(id, req.user.id);
+      if (r.changes === 0) return res.status(404).json({ success: false, message: "Zapis nije pronađen." });
+      return res.json({ success: true });
+    } catch (err) {
+      console.error("[parent-dnevnik del]", err?.message || err);
+      return res.status(500).json({ success: false, message: "Brisanje nije uspjelo." });
+    }
+  });
+
   /** Sažetak za tim održavanja (samo ADMIN_EMAILS). */
   app.get("/api/admin/stats", adminMiddleware(db), async (_req, res) => {
     try {
@@ -2185,14 +2262,27 @@ async function main() {
     }
   });
 
+  const FORUM_AUDIENCES = new Set(["junior", "senior", "parent-junior", "parent-senior"]);
+  const FORUM_CATEGORIES = new Set(["opce", "razgovor", "upis", "smjer", "stres", "fakultet", "odluka"]);
+
+  function normalizeForumAudience(raw) {
+    const audience = String(raw || "senior").trim().toLowerCase();
+    return FORUM_AUDIENCES.has(audience) ? audience : "senior";
+  }
+
+  function normalizeForumCategory(raw) {
+    const category = String(raw || "opce").trim().toLowerCase();
+    return FORUM_CATEGORIES.has(category) ? category : "opce";
+  }
+
   // Forum
   app.get("/api/forum/conversations", async (req, res) => {
-    const audienceRaw = String(req.query.audience || "senior").trim().toLowerCase();
-    const audience = audienceRaw === "junior" ? "junior" : "senior";
+    const audience = normalizeForumAudience(req.query.audience);
     const rows = await db
       .prepare(
         `
-        SELECT c.id, c.title, c.description, c.created_at, u.username as creator_username,
+        SELECT c.id, c.title, c.description, c.created_at, COALESCE(c.category, 'opce') as category,
+               u.username as creator_username,
                (SELECT COUNT(*) FROM forum_messages m WHERE m.conversation_id = c.id) as message_count
         FROM forum_conversations c
         JOIN users u ON u.id = c.creator_user_id
@@ -2205,22 +2295,24 @@ async function main() {
   });
 
   app.post("/api/forum/conversations", authMiddleware(db), async (req, res) => {
-    const { title, description, audience: audienceRaw } = req.body || {};
-    const cleanTitle = String(title || "").trim();
-    const cleanDescription = String(description || "").trim();
-    const audience = String(audienceRaw || "senior").trim().toLowerCase() === "junior" ? "junior" : "senior";
+    const { title, description, audience: audienceRaw, category: categoryRaw } = req.body || {};
+    const cleanTitle = String(title || "").trim().slice(0, 160);
+    const cleanDescription = String(description || "").trim().slice(0, 500);
+    const audience = normalizeForumAudience(audienceRaw);
+    const category = normalizeForumCategory(categoryRaw);
     if (!cleanTitle) return res.status(400).json({ success: false, message: "Unesi naziv razgovora!" });
 
     const info = await db
       .prepare(
-        "INSERT INTO forum_conversations (title, description, creator_user_id, audience) VALUES (?, ?, ?, ?)",
+        "INSERT INTO forum_conversations (title, description, creator_user_id, audience, category) VALUES (?, ?, ?, ?, ?)",
       )
-      .run(cleanTitle, cleanDescription, req.user.id, audience);
+      .run(cleanTitle, cleanDescription, req.user.id, audience, category);
 
     const conv = await db
       .prepare(
         `
-        SELECT c.id, c.title, c.description, c.created_at, u.username as creator_username,
+        SELECT c.id, c.title, c.description, c.created_at, COALESCE(c.category, 'opce') as category,
+               u.username as creator_username,
                (SELECT COUNT(*) FROM forum_messages m WHERE m.conversation_id = c.id) as message_count
         FROM forum_conversations c
         JOIN users u ON u.id = c.creator_user_id
@@ -2286,7 +2378,7 @@ async function main() {
   app.post("/api/forum/conversations/:id/messages", authMiddleware(db), async (req, res) => {
     const convId = Number(req.params.id);
     const { text, reply_to_id: replyToRaw } = req.body || {};
-    const cleanText = String(text || "").trim();
+    const cleanText = String(text || "").trim().slice(0, 4000);
     const replyToId =
       replyToRaw === undefined || replyToRaw === null || replyToRaw === ""
         ? null

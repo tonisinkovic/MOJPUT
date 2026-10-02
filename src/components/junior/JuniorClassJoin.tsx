@@ -75,7 +75,7 @@ export default function JuniorClassJoin({
           Si na ploči razreda
         </p>
         <p className="mt-1 text-sm text-muted-foreground">
-          Stigao je tvoj smjer: <span className="font-semibold text-foreground">{programName}</span>. Ime nije na ploči.
+          Stigla su tri smjera: <span className="font-semibold text-foreground">{programName}</span>. Ime nije na ploči.
         </p>
       </div>
     );
@@ -97,13 +97,13 @@ export default function JuniorClassJoin({
         <>
           <h3 className="mt-2 text-lg font-extrabold">Potvrdi kviz i pošalji na ploču</h3>
           <p className="mt-1 text-sm text-muted-foreground">
-            Na ploči ide samo ovaj smjer, ne tvoje ime. Kad stisneš potvrdi, razrednik te vidi redom.
+            Na ploču idu tri smjera koja vrijedi pogledati, ne tvoje ime.
           </p>
           <p className="mt-3 rounded-2xl bg-background/70 px-3.5 py-2.5 text-sm font-semibold">{programName}</p>
         </>
       ) : (
         <p className="mt-1 text-xs text-muted-foreground">
-          Ako si u školi dobio kod, pošalji samo prvi program. Ime nije obavezno.
+          Ako si u školi dobio kod, na ploču idu tri smjera. Ime nije obavezno.
         </p>
       )}
       <div className="mt-3 flex flex-col gap-2 sm:flex-row">

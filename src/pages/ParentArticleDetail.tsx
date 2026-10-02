@@ -1,9 +1,9 @@
 import Layout from "@/components/Layout";
 import { Button } from "@/components/ui/button";
-import { parentArticlesFor } from "@/data/parentHub";
+import { parentArticlesFor, sourcesFor } from "@/data/parentHub";
 import { resolveExperienceMode } from "@/lib/experience";
 import { getTotalViews, incrementViewDeduped, readParentHubState, setLastVisited, toggleFavorite } from "@/lib/parentHubStore";
-import { ArrowLeft, Bookmark, ChevronRight, FileText, Lightbulb, Link2, Share2 } from "lucide-react";
+import { ArrowLeft, Bookmark, Check, ChevronRight, Lightbulb, Link2, Share2, X } from "lucide-react";
 import { motion } from "framer-motion";
 import { useEffect, useMemo, useState } from "react";
 import { Link, useParams, useSearchParams } from "react-router-dom";
@@ -38,6 +38,7 @@ const ParentArticleDetail = () => {
   }
 
   const related = articles.filter((item) => article.relatedSlugs.includes(item.slug));
+  const sources = sourcesFor(article.slug);
 
   const totalViews = getTotalViews(article.slug, article.views);
 
@@ -87,70 +88,124 @@ const ParentArticleDetail = () => {
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.25 }}
-          className="group mt-8 rounded-2xl border-2 bg-card p-5 shadow-card transition-all duration-300 hover:border-primary/25 hover:shadow-card-hover sm:p-7"
+          className="mt-8 border-l-2 border-primary/30 pl-4 sm:pl-6"
         >
-          <div className="flex items-center gap-2 border-b border-border/60 pb-3">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10 text-primary">
-              <FileText className="h-4 w-4" />
-            </div>
-            <h2 className="font-semibold">Glavni tekst</h2>
-          </div>
-          <div className="mt-4 space-y-4 text-sm leading-relaxed text-muted-foreground sm:text-base">
-            {article.content.map((paragraph) => (
-              <p key={paragraph} className="text-pretty">
+          <div className="max-w-prose space-y-5 text-[15px] leading-7 text-foreground/90 sm:text-base sm:leading-8">
+            {article.content.map((paragraph, index) => (
+              <p key={paragraph} className={index === 0 ? "text-pretty text-lg leading-8 text-foreground" : "text-pretty"}>
                 {paragraph}
               </p>
             ))}
           </div>
         </motion.article>
 
-        <motion.article
+        <motion.section
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.25, delay: 0.05 }}
-          className="group mt-5 rounded-2xl border-2 bg-card p-5 shadow-card transition-all duration-300 hover:border-primary/25 hover:shadow-card-hover sm:p-7"
+          className="mt-10"
+          aria-label="Praktični savjeti"
         >
-          <div className="flex items-center gap-2 border-b border-border/60 pb-3">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10 text-primary">
-              <Lightbulb className="h-4 w-4" />
-            </div>
-            <h2 className="font-semibold">Praktični savjeti</h2>
-          </div>
-          <ul className="mt-4 space-y-2.5 text-sm text-muted-foreground sm:text-base">
-            {article.practicalTips.map((tip) => (
-              <li key={tip} className="flex gap-2.5 text-pretty">
-                <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-primary/70" aria-hidden />
-                <span>{tip}</span>
+          <h2 className="flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-primary">
+            <Lightbulb className="h-4 w-4" />
+            Praktični savjeti
+          </h2>
+          <ol className="mt-3 grid gap-2 sm:grid-cols-2">
+            {article.practicalTips.map((tip, index) => (
+              <li key={tip} className="flex gap-3 rounded-xl bg-primary/[0.06] px-3 py-3 text-sm leading-relaxed">
+                <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary text-[11px] font-bold text-primary-foreground">
+                  {index + 1}
+                </span>
+                <span className="text-pretty text-foreground/90">{tip}</span>
               </li>
             ))}
-          </ul>
-        </motion.article>
+          </ol>
+        </motion.section>
 
-        <motion.article
-          initial={{ opacity: 0, y: 8 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.25, delay: 0.1 }}
-          className="group mt-5 rounded-2xl border-2 bg-card p-5 shadow-card transition-all duration-300 hover:border-primary/25 hover:shadow-card-hover sm:p-7"
-        >
-          <div className="flex items-center gap-2 border-b border-border/60 pb-3">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10 text-primary">
-              <Link2 className="h-4 w-4" />
+        {article.sayDont && article.sayDont.length > 0 && (
+          <motion.section
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.25, delay: 0.08 }}
+            className="mt-10"
+            aria-label="Što recite i što ne recite"
+          >
+            <h2 className="text-sm font-semibold uppercase tracking-wide text-foreground/80">Što recite / što ne recite</h2>
+            <div className="mt-3 grid gap-3 sm:grid-cols-2">
+              <div className="rounded-2xl bg-emerald-500/[0.08] px-4 py-4">
+                <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-wide text-emerald-700 dark:text-emerald-400">
+                  <Check className="h-3.5 w-3.5" />
+                  Recite
+                </p>
+                <ul className="mt-3 space-y-3 text-sm leading-relaxed text-foreground/90">
+                  {article.sayDont.map((pair, i) => (
+                    <li key={`say-${i}`} className="text-pretty">„{pair.say}"</li>
+                  ))}
+                </ul>
+              </div>
+              <div className="rounded-2xl bg-red-500/[0.07] px-4 py-4">
+                <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-wide text-red-700 dark:text-red-400">
+                  <X className="h-3.5 w-3.5" />
+                  Ne recite
+                </p>
+                <ul className="mt-3 space-y-3 text-sm leading-relaxed text-foreground/90">
+                  {article.sayDont.map((pair, i) => (
+                    <li key={`dont-${i}`} className="text-pretty">„{pair.dont}"</li>
+                  ))}
+                </ul>
+              </div>
             </div>
-            <h2 className="font-semibold">Povezani sadržaj</h2>
-          </div>
-          <div className="mt-4 grid gap-2 sm:gap-3">
-            {related.map((item) => (
-              <Link
-                key={item.id}
-                to={`/roditeljski-kutak/preporuceni-clanak/${item.slug}${expQ}`}
-                className="flex min-h-12 items-center justify-between gap-3 rounded-xl border-2 border-border/80 bg-background/80 px-4 py-3 text-sm font-medium transition-all hover:border-primary/35 hover:bg-muted/50 hover:shadow-sm active:scale-[0.99]"
-              >
-                <span className="text-pretty">{item.title}</span>
-                <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" aria-hidden />
-              </Link>
-            ))}
-          </div>
-        </motion.article>
+          </motion.section>
+        )}
+
+        {related.length > 0 && (
+          <motion.section
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.25, delay: 0.1 }}
+            className="mt-10"
+            aria-label="Povezani sadržaj"
+          >
+            <h2 className="flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+              <Link2 className="h-4 w-4" />
+              Dalje
+            </h2>
+            <div className="mt-3 flex flex-col gap-1">
+              {related.map((item) => (
+                <Link
+                  key={item.id}
+                  to={`/roditeljski-kutak/preporuceni-clanak/${item.slug}${expQ}`}
+                  className="group flex items-center justify-between gap-3 border-b border-border/60 py-3 text-sm font-medium last:border-0 hover:text-primary"
+                >
+                  <span className="text-pretty">{item.title}</span>
+                  <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5 group-hover:text-primary" aria-hidden />
+                </Link>
+              ))}
+            </div>
+          </motion.section>
+        )}
+
+        <p className="mt-6 text-xs leading-relaxed text-muted-foreground">
+          <span className="font-medium text-foreground/80">Izvori (parafraza): </span>
+          {sources.map((source, i) => (
+            <span key={source.label}>
+              {i > 0 ? " · " : null}
+              {source.href ? (
+                <a
+                  href={source.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="underline-offset-2 hover:text-foreground hover:underline"
+                >
+                  {source.label}
+                </a>
+              ) : (
+                source.label
+              )}
+            </span>
+          ))}
+          . Nije dijagnoza.
+        </p>
       </section>
     </Layout>
   );

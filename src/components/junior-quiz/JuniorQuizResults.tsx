@@ -2,7 +2,6 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
-  ArrowRight,
   Award,
   BookOpen,
   Calculator,
@@ -22,7 +21,6 @@ import {
   Wrench,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
 import { cn } from "@/lib/utils";
@@ -71,14 +69,6 @@ const CONFIDENCE_STYLES = {
   low: { label: "Još istražuješ", cls: "bg-orange-500/15 text-orange-600 dark:text-orange-300" },
 } as const;
 
-const MATCH_TONE = (score: number, leader: number, tied = false) => {
-  if (tied) return "Podjednako blizu";
-  const gap = leader - score;
-  if (gap <= 2) return "Jako blizu";
-  if (gap <= 6) return "Blizu";
-  return "Dalje";
-};
-
 function optionDifference(rec: JuniorProgramMatch): string {
   const program = rec.program;
   if (program.type === "gimnazija") return `${program.name} ostavlja fakultet otvoren.`;
@@ -86,6 +76,34 @@ function optionDifference(rec: JuniorProgramMatch): string {
   if (program.duration <= 3) return `${program.name} traje ${program.duration} godine i vodi na posao. Fakultet kasnije traži još škole.`;
   if (program.type === "tehnicka") return `${program.name} uči posao i ima maturu.`;
   return `${program.name} vrijedi usporediti s ostalima.`;
+}
+
+function subjectClash(analysis: JuniorQuizAnalysis): string | null {
+  const { favoriteSubjects, hardSubjects } = analysis.profile.schoolContext;
+  const both = favoriteSubjects.filter((subject) => hardSubjects.includes(subject));
+  const wantsMath = analysis.profile.tolerance.math >= 62 && hardSubjects.includes("matematika");
+  const names = [
+    ...both.map((subject) => juniorSubjectLabel(subject)),
+    ...(wantsMath && !both.includes("matematika") ? ["matematika"] : []),
+  ];
+  if (!names.length) return null;
+  return `${names.join(" i ")} ti je i zanimljiv i težak. Zato je to upozorenje na kartici, ne zabrana.`;
+}
+
+function juniorSubjectLabel(subject: string): string {
+  const labels: Record<string, string> = {
+    matematika: "Matematika",
+    hrvatski: "Hrvatski",
+    jezici: "Strani jezici",
+    biologija: "Biologija",
+    kemija_fizika: "Kemija i fizika",
+    informatika: "Informatika",
+    likovni: "Likovni",
+    glazbeni: "Glazbeni",
+    tjelesni: "Tjelesni",
+    drustveni: "Povijest i geografija",
+  };
+  return labels[subject] ?? subject;
 }
 
 function compareLead(recommendations: JuniorProgramMatch[]): string {
@@ -174,7 +192,7 @@ function orientationPitch(analysis: JuniorQuizAnalysis): { title: string; text: 
   if (pathway.direction === "gimnazija" || top?.type === "gimnazija") {
     return {
       title: "Više si za učenje",
-      text: "Više ti leži širi program i vrijeme da odluka o fakultetu dođe kasnije. Zato je gimnazija prva stvar za pogledati.",
+      text: "Više ti leži širi program i vrijeme da odluka o fakultetu dođe kasnije. Gimnazija je među smjerovima koje vrijedi pogledati.",
     };
   }
   if (pathway.direction === "strukovna" || top?.type === "tehnicka") {
@@ -189,11 +207,10 @@ function orientationPitch(analysis: JuniorQuizAnalysis): { title: string; text: 
   };
 }
 
-function MatchScore({ score, leader, tied = false }: { score: number; leader: number; tied?: boolean }) {
+function MatchScore({ label }: { label: string }) {
   return (
     <div className="text-right">
-      <div className="text-sm font-extrabold leading-snug text-primary sm:text-base">{MATCH_TONE(score, leader, tied)}</div>
-      <div className="text-[11px] text-muted-foreground">nije ocjena</div>
+      <div className="text-sm font-extrabold leading-snug text-primary sm:text-base">{label}</div>
     </div>
   );
 }
@@ -205,10 +222,8 @@ function ProgramCard({
   nearby,
   recommendations,
   points,
-  highlight,
-  variant = "full",
+  variant,
   tied = false,
-  hideRank = false,
 }: {
   rec: JuniorProgramMatch;
   rank: number;
@@ -216,17 +231,13 @@ function ProgramCard({
   nearby: NearbyAnalysis | null;
   recommendations: JuniorProgramMatch[];
   points: number | null;
-  highlight?: boolean;
   variant?: "hero" | "compact" | "full";
   tied?: boolean;
-  hideRank?: boolean;
 }) {
   const style = TYPE_STYLES[rec.program.type];
   const Icon = style.Icon;
   const official = officialProgramExample(rec.program);
-  const why = rec.answerReasons[0] ?? rec.positiveReasons[0];
   const compact = variant === "compact";
-  const hero = variant === "hero";
   const full = variant === "full";
   return (
     <motion.div
@@ -248,12 +259,9 @@ function ProgramCard({
                   className="hover:underline"
                   onClick={() => trackProgram(rec.program.id, rec.program.name)}
                 >
-                  {hideRank ? rec.program.name : `${rank}. ${rec.program.name}`}
+                  {rec.program.name}
                 </Link>
               </h4>
-              {rank === 1 && !hideRank ? (
-                <Badge className="bg-primary text-primary-foreground hover:bg-primary">Vrijedi pogledati</Badge>
-              ) : null}
             </div>
             <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
               <span className={cn("rounded-full px-2 py-0.5 font-semibold", style.badge)}>
@@ -272,10 +280,12 @@ function ProgramCard({
             ) : null}
           </div>
         </div>
-        <MatchScore score={rec.rankScore} leader={recommendations[0]?.rankScore ?? rec.rankScore} tied={tied} />
+        {tied ? <MatchScore label="Vrijedi pogledati" /> : null}
       </div>
 
-      {why ? <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{why}</p> : null}
+      {(rec.answerReasons.length ? rec.answerReasons : rec.positiveReasons).slice(0, 2).map((reason) => (
+        <p key={reason} className="mt-2 text-sm leading-relaxed text-muted-foreground">{reason}</p>
+      ))}
 
       <details className="group mt-3 border-t border-border/50 pt-2">
         <summary className="cursor-pointer list-none text-sm font-medium text-foreground/80 [&::-webkit-details-marker]:hidden">
@@ -437,9 +447,6 @@ export default function JuniorQuizResults({
   const { pathway } = analysis;
   const top = analysis.recommendations[0];
   const overviewRecs = analysis.recommendations.slice(0, 3);
-  const closeTop =
-    analysis.recommendations.length >= 3 &&
-    analysis.recommendations[0].rankScore - analysis.recommendations[2].rankScore <= 3;
   const left = analysis.recommendations.find((r) => r.program.id === compareA) ?? top;
   const right =
     analysis.recommendations.find((r) => r.program.id === compareB) ??
@@ -460,15 +467,18 @@ export default function JuniorQuizResults({
         {!analysis.insufficientData ? (
           <p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted-foreground">{orientationPitch(analysis).text}</p>
         ) : null}
+        {analysis.consideringNote ? (
+          <p className="mt-2 max-w-2xl text-sm leading-relaxed">{analysis.consideringNote}</p>
+        ) : null}
         <p className="mt-2 text-sm text-muted-foreground">{conf.label}. {analysis.confidence.explanation}</p>
       </header>
 
       <div className="flex flex-wrap items-center gap-2">
         {city ? (
           <>
-            <span className="text-sm text-muted-foreground">Grad: {city}</span>
+            <span className="text-sm text-muted-foreground">Grad iz kviza: {city}</span>
             <Button variant="ghost" size="sm" className="h-8 text-muted-foreground" onClick={() => onCity(null)}>
-              Promijeni
+              Ispravi grad
             </Button>
           </>
         ) : (
@@ -501,15 +511,25 @@ export default function JuniorQuizResults({
       </div>
 
       <section>
-        <h3 className="text-base font-semibold">Smjerovi</h3>
+        <h3 className="text-base font-semibold">Tri smjera koja vrijedi pogledati</h3>
         <p className="mt-1 mb-4 text-sm text-muted-foreground">{compareLead(analysis.recommendations)}</p>
+        {analysis.specialNotes.map((note) => (
+          <p key={note} className="mb-4 rounded-2xl border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-sm leading-relaxed">
+            {note}
+          </p>
+        ))}
+        {subjectClash(analysis) ? (
+          <p className="mb-4 rounded-2xl border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-sm leading-relaxed">
+            {subjectClash(analysis)}
+          </p>
+        ) : null}
         {computerFacultyNote(analysis) ? (
           <p className="mb-4 rounded-2xl border border-primary/20 bg-primary/5 px-4 py-3 text-sm leading-relaxed">
             {computerFacultyNote(analysis)}
           </p>
         ) : null}
         <div className="grid gap-4">
-          {(showDetails ? analysis.recommendations : overviewRecs).map((rec, i) => (
+          {overviewRecs.map((rec, i) => (
             <ProgramCard
               key={rec.program.id}
               rec={rec}
@@ -518,13 +538,31 @@ export default function JuniorQuizResults({
               nearby={nearby}
               recommendations={analysis.recommendations}
               points={points}
-              highlight={i === 0}
-              tied={closeTop && i < 3}
-              hideRank={i < 3}
-              variant={showDetails ? "full" : i === 0 ? "hero" : "compact"}
+              tied
+              variant={showDetails ? "full" : undefined}
             />
           ))}
         </div>
+        {showDetails && analysis.recommendations.length > 3 ? (
+          <div className="mt-6">
+            <h3 className="text-base font-semibold">Još smjerova</h3>
+            <p className="mt-1 mb-4 text-sm text-muted-foreground">Možeš ih usporediti s tri smjera iznad.</p>
+            <div className="grid gap-4">
+              {analysis.recommendations.slice(3).map((rec, i) => (
+                <ProgramCard
+                  key={rec.program.id}
+                  rec={rec}
+                  rank={i + 4}
+                  city={city}
+                  nearby={nearby}
+                  recommendations={analysis.recommendations}
+                  points={points}
+                  variant="full"
+                />
+              ))}
+            </div>
+          </div>
+        ) : null}
         {resultSchools.length > 0 ? (
           <div className="mt-8">
             <h3 className="text-base font-semibold">Škole u blizini</h3>
@@ -558,7 +596,7 @@ export default function JuniorQuizResults({
           <div className="mt-6">
             <JuniorClassJoin
               programId={top.program.id}
-              programName={top.program.name}
+              programName={overviewRecs.map((item) => item.program.name).join(" · ")}
               pathway={analysis.pathway.title}
               city={city}
               initialCode={classCodeFromUrl}
@@ -578,7 +616,7 @@ export default function JuniorQuizResults({
                 );
               }}
             >
-              Usporedi 1. i 2.
+              Usporedi dva smjera
             </Button>
           </div>
         ) : null}
@@ -622,19 +660,11 @@ export default function JuniorQuizResults({
           </div>
         ) : null}
         <div className="mt-4 flex flex-wrap gap-2">
-          {top ? (
-            <Button asChild>
-              <Link to={programHref(top.program)} onClick={() => trackProgram(top.program.id, top.program.name)}>
-                Pogledaj ovaj program
-                <ArrowRight className="ml-1.5 h-4 w-4" />
-              </Link>
-            </Button>
-          ) : null}
           <Button variant="outline" onClick={() => setShowDetails((v) => !v)}>
             {showDetails ? "Sakrij detalje" : "Pogledaj detaljnije"}
           </Button>
         </div>
-      </div>
+      </section>
 
       {showDetails && analysis.lessAligned.length > 0 ? (
         <div className="rounded-3xl border border-border/70 bg-card/80 p-5 shadow-lg sm:p-6">
@@ -656,7 +686,7 @@ export default function JuniorQuizResults({
       {showDetails ? (
       <div className="rounded-3xl border border-border/70 bg-card/80 p-5 shadow-lg sm:p-6">
         <h3 className="text-base font-bold">A što ako se predomisliš?</h3>
-        <p className="mt-1.5 text-sm text-muted-foreground">Klikni što ti je sad važnije — redoslijed se prilagodi, bez ponovnog kviza.</p>
+        <p className="mt-1.5 text-sm text-muted-foreground">Klikni što ti je sad važnije — tri smjera se prilagode, bez ponovnog kviza.</p>
         <div className="mt-3 flex flex-wrap gap-2">
           {JUNIOR_PRIORITIES.map((p) => (
             <Button
@@ -680,8 +710,8 @@ export default function JuniorQuizResults({
           <h3 className="text-base font-bold">Što sada?</h3>
         </div>
         <ol className="mt-3 list-decimal space-y-1.5 pl-5 text-sm text-muted-foreground">
-          <li>Pogledaj prvi program i zašto ti se slaže.</li>
-          <li>Usporedi ga s još jednim koji ti je blizak.</li>
+          <li>Pogledaj tri smjera i zašto ti se slažu.</li>
+          <li>Usporedi dva koja te zanimaju.</li>
           <li>Razgovaraj s roditeljem ili nastavnikom.</li>
         </ol>
         {analysis.specialNotes.map((note) => (
@@ -690,14 +720,6 @@ export default function JuniorQuizResults({
           </p>
         ))}
         <div className="mt-4 flex flex-wrap gap-2">
-          {top ? (
-            <Button asChild>
-              <Link to={programHref(top.program)} onClick={() => trackProgram(top.program.id, top.program.name)}>
-                Pogledaj ovaj program
-                <ArrowRight className="ml-1.5 h-4 w-4" />
-              </Link>
-            </Button>
-          ) : null}
           {canFollowUp ? (
             <Button variant="outline" onClick={onFollowup}>
               Još par pitanja za jasniji rezultat

@@ -55,7 +55,7 @@ const primaryNavSenior: NavEntry[] = [
 // U Junior modu karta vodi na srednje škole, kviz na 8. razred, kalkulator na srednju.
 const primaryNavJunior: NavEntry[] = [
   { label: "Srednje škole", path: "/srednje-skole", icon: Map },
-  { label: "Profili", path: "/srednje-skole/profili", icon: School },
+  { label: "Profili škola", path: "/srednje-skole/profili", icon: School },
   { label: "Kviz", path: "/kviz-srednja", icon: HelpCircle },
   { label: "Pedagog", path: "/razred", icon: Users },
   { label: "Kalkulator", path: "/kalkulator", icon: Calculator },

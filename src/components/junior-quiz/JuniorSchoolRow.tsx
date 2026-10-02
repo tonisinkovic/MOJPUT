@@ -145,6 +145,7 @@ export default function JuniorSchoolRow({
           ) : null}
         </div>
       </details>
+      <div className="mt-2 flex flex-wrap gap-2">
         <Button asChild size="sm" variant="outline" className="h-8 rounded-lg px-2.5 text-xs">
           <Link
             to={mapSchoolHref(school.mapSchoolId, school.name, school.city)}

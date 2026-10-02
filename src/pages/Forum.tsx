@@ -11,11 +11,9 @@ import {
   Reply,
   Search,
   Send,
-  Sparkles,
   ThumbsUp,
   Trash2,
   TrendingUp,
-  Users,
   X,
 } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -771,87 +769,60 @@ const Forum = () => {
 
   return (
     <Layout>
-      <section className="container py-4 sm:py-8 md:py-12 max-w-6xl mx-auto px-3 sm:px-4 pb-[max(1rem,env(safe-area-inset-bottom))]">
-        {/* Back button */}
+      <section className="container mx-auto max-w-6xl px-3 pb-[max(1rem,env(safe-area-inset-bottom))] pt-3 sm:px-4 sm:py-8">
         <button
           type="button"
           onClick={() => window.history.back()}
-          className="mb-4 inline-flex items-center gap-1.5 text-sm font-medium text-slate-500 transition-colors hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100"
+          className="mb-2 inline-flex items-center gap-1.5 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground md:mb-4"
         >
           <ArrowLeft className="h-4 w-4" />
           <span>Natrag</span>
         </button>
 
-        <motion.div
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.3 }}
+        <div
           className={cn(
-            "relative mb-4 overflow-hidden rounded-2xl border-2 border-primary/20 bg-gradient-to-br from-primary/[0.12] via-primary/[0.04] to-card p-4 shadow-card sm:p-5 md:mb-6 md:p-6",
+            "mb-3 flex items-center gap-3 rounded-2xl border border-primary/20 bg-gradient-to-r from-primary/10 via-card to-card px-3 py-2.5 shadow-card md:mb-5 md:items-start md:p-5",
             selectedConversation && "max-md:hidden",
           )}
         >
-          <div
-            aria-hidden
-            className="pointer-events-none absolute -right-10 -top-10 h-40 w-40 rounded-full bg-primary/15 blur-3xl sm:h-52 sm:w-52"
-          />
-          <div
-            aria-hidden
-            className="pointer-events-none absolute -bottom-14 -left-10 h-36 w-36 rounded-full bg-primary/10 blur-3xl sm:h-48 sm:w-48"
-          />
-
-          <div className="relative flex flex-col gap-4 sm:flex-row sm:items-start sm:gap-5">
-            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl gradient-hero text-primary-foreground shadow-md sm:h-14 sm:w-14">
-              <MessagesSquare className="h-6 w-6 sm:h-7 sm:w-7" />
-            </div>
-            <div className="min-w-0 flex-1">
-              <div className="flex flex-wrap items-center gap-2">
-                <span className="inline-flex items-center gap-1 rounded-full border border-primary/25 bg-primary/10 px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-primary">
-                  <Sparkles className="h-3 w-3" />
-                  Zajednica
-                </span>
-              </div>
-              <h1 className="mt-2 text-balance text-2xl font-bold tracking-tight text-foreground sm:text-3xl md:text-4xl">
-                {isJunior ? "Forum o srednjoj školi" : "Forum za učenike"}
-              </h1>
-              <p className="mt-1.5 max-w-2xl text-pretty text-sm leading-relaxed text-muted-foreground sm:text-base">
-                {isJunior
-                  ? "Razmijeni iskustva i postavi pitanja o odabiru srednje škole, smjerovima i upisu — sve jasno poredano, brzo za pronalazak."
-                  : "Razmijeni iskustva i postavi pitanja o maturi, fakultetima i studentskom životu — sve jasno poredano, brzo za pronalazak."}
-              </p>
-
-              <div className="mt-4 grid grid-cols-3 gap-2 sm:max-w-lg sm:gap-3">
-                <div className="rounded-xl border border-border/60 bg-background/70 px-3 py-2 backdrop-blur-sm">
-                  <div className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
-                    <MessageCircle className="h-3.5 w-3.5 text-primary" />
-                    Teme
-                  </div>
-                  <p className="mt-0.5 text-lg font-bold leading-none text-foreground sm:text-xl">
-                    {forumStats.totalConversations}
-                  </p>
-                </div>
-                <div className="rounded-xl border border-border/60 bg-background/70 px-3 py-2 backdrop-blur-sm">
-                  <div className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
-                    <TrendingUp className="h-3.5 w-3.5 text-primary" />
-                    Poruke
-                  </div>
-                  <p className="mt-0.5 text-lg font-bold leading-none text-foreground sm:text-xl">
-                    {forumStats.totalMessages}
-                  </p>
-                </div>
-                <div className="rounded-xl border border-border/60 bg-background/70 px-3 py-2 backdrop-blur-sm">
-                  <div className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
-                    <Users className="h-3.5 w-3.5 text-primary" />
-                    Članovi
-                  </div>
-                  <p className="mt-0.5 text-lg font-bold leading-none text-foreground sm:text-xl">
-                    {forumStats.uniqueAuthors}
-                  </p>
-                </div>
-              </div>
-            </div>
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary text-primary-foreground md:h-12 md:w-12">
+            <MessagesSquare className="h-5 w-5" />
           </div>
-        </motion.div>
+          <div className="min-w-0 flex-1">
+            <h1 className="truncate text-lg font-bold tracking-tight text-foreground md:text-3xl">
+              {isJunior ? "Forum o srednjoj školi" : "Forum za učenike"}
+            </h1>
+            <p className="mt-1 hidden max-w-2xl text-sm leading-relaxed text-muted-foreground md:block">
+              {isJunior
+                ? "Pitaj o smjerovima, bodovima i upisu. Teme su odmah ispod."
+                : "Pitaj o maturi, fakultetima i studentskom životu. Teme su odmah ispod."}
+            </p>
+            {(forumStats.totalConversations > 0 ||
+              forumStats.totalMessages > 0 ||
+              forumStats.uniqueAuthors > 0) && (
+              <div className="mt-3 hidden flex-wrap gap-2 sm:flex">
+                {forumStats.totalConversations > 0 && (
+                  <div className="rounded-xl border border-border/60 bg-background/70 px-3 py-2">
+                    <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">Teme</p>
+                    <p className="mt-0.5 text-lg font-bold leading-none">{forumStats.totalConversations}</p>
+                  </div>
+                )}
+                {forumStats.totalMessages > 0 && (
+                  <div className="rounded-xl border border-border/60 bg-background/70 px-3 py-2">
+                    <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">Poruke</p>
+                    <p className="mt-0.5 text-lg font-bold leading-none">{forumStats.totalMessages}</p>
+                  </div>
+                )}
+                {forumStats.uniqueAuthors > 0 && (
+                  <div className="rounded-xl border border-border/60 bg-background/70 px-3 py-2">
+                    <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">Članovi</p>
+                    <p className="mt-0.5 text-lg font-bold leading-none">{forumStats.uniqueAuthors}</p>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
 
         {authChecked && !canUseForum && (
           <motion.div
@@ -1009,10 +980,19 @@ const Forum = () => {
                     <p className="mt-3 text-xs text-muted-foreground">Učitavam razgovore…</p>
                   </div>
                 ) : sortedConversations.length === 0 ? (
-                  <div className="p-8 text-center">
-                    <MessageCircle className="mx-auto mb-3 h-12 w-12 text-muted-foreground/40" />
-                    <p className="text-sm text-muted-foreground">
-                      {canUseForum ? "Nema razgovora. Kreiraj prvi!" : "Trenutno nema razgovora."}
+                  <div className="px-5 py-10 text-center">
+                    <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+                      <MessageCircle className="h-6 w-6" />
+                    </div>
+                    <p className="text-sm font-semibold text-foreground">
+                      {isJunior ? "Još nema tema o srednjoj" : "Još nema tema"}
+                    </p>
+                    <p className="mx-auto mt-1 max-w-[16rem] text-xs leading-relaxed text-muted-foreground">
+                      {canUseForum
+                        ? isJunior
+                          ? "Otvori prvu: gimnazija ili struka, bodovi, upis, grad."
+                          : "Otvori prvu temu i pitaj ono što te muči."
+                        : "Teme će se pojaviti čim netko napiše."}
                     </p>
                   </div>
                 ) : (
@@ -1049,21 +1029,29 @@ const Forum = () => {
                             <p className="line-clamp-2 text-sm font-semibold leading-snug text-foreground">
                               {conv.title}
                             </p>
-                            <p className="mt-0.5 line-clamp-1 text-xs text-muted-foreground">
-                              {conv.description || "Bez opisa"}
-                            </p>
+                            {conv.description ? (
+                              <p className="mt-0.5 line-clamp-1 text-xs text-muted-foreground">
+                                {conv.description}
+                              </p>
+                            ) : null}
                             <div className="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-[11px] text-muted-foreground">
-                              <span
-                                className={cn(
-                                  "inline-flex items-center gap-1 rounded-full px-2 py-0.5 font-semibold",
-                                  isActive
-                                    ? "bg-primary text-primary-foreground"
-                                    : "bg-primary/15 text-primary",
-                                )}
-                              >
-                                <MessageCircle className="h-3 w-3" />
-                                {conv.messageCount}
-                              </span>
+                              {conv.messageCount > 0 ? (
+                                <span
+                                  className={cn(
+                                    "inline-flex items-center gap-1 rounded-full px-2 py-0.5 font-semibold",
+                                    isActive
+                                      ? "bg-primary text-primary-foreground"
+                                      : "bg-primary/15 text-primary",
+                                  )}
+                                >
+                                  <MessageCircle className="h-3 w-3" />
+                                  {conv.messageCount}
+                                </span>
+                              ) : (
+                                <span className="rounded-full bg-muted px-2 py-0.5 font-semibold text-muted-foreground">
+                                  Nova tema
+                                </span>
+                              )}
                               <span className="truncate">
                                 {conv.createdAt.toLocaleDateString("hr-HR", {
                                   day: "numeric",
@@ -1350,12 +1338,16 @@ const Forum = () => {
                     className="hidden flex-1 items-center justify-center md:flex"
                   >
                     <div className="max-w-xs text-center">
-                      <MessageCircle className="mx-auto mb-4 h-16 w-16 text-muted-foreground/35" />
-                      <p className="text-base font-medium text-muted-foreground">Odaberi razgovor</p>
-                      <p className="mt-1 text-sm text-muted-foreground/80">
+                      <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+                        <MessageCircle className="h-7 w-7" />
+                      </div>
+                      <p className="text-base font-semibold text-foreground">
+                        {isJunior ? "Odaberi temu" : "Odaberi razgovor"}
+                      </p>
+                      <p className="mt-1 text-sm text-muted-foreground">
                         {canUseForum
-                          ? "ili kreiraj novi za početak."
-                          : "da pročitaš što drugi pišu. Za vlastite poruke treba ti prijava."}
+                          ? "Ili otvori novu temu s lijeve strane."
+                          : "Poruke su otvorene za čitanje. Za pisanje treba prijava."}
                       </p>
                     </div>
                   </motion.div>

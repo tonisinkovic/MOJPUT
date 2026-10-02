@@ -86,11 +86,16 @@ export function aggregateBoard(
   label: string | null,
   entries: JuniorClassEntry[],
 ): JuniorClassBoard {
-  const counts = new Map<number, JuniorClassTrack>();
+  const counts = new Map<string, JuniorClassTrack>();
   for (const entry of entries) {
-    const prev = counts.get(entry.programId);
-    if (prev) prev.count += 1;
-    else counts.set(entry.programId, { programId: entry.programId, name: entry.programName, count: 1 });
+    const parts = entry.programName.split(" · ").map((part) => part.trim()).filter(Boolean);
+    const rows = parts.length > 1 ? parts : [entry.programName];
+    rows.forEach((name, index) => {
+      const key = parts.length > 1 ? name : String(entry.programId);
+      const prev = counts.get(key);
+      if (prev) prev.count += 1;
+      else counts.set(key, { programId: parts.length > 1 ? index : entry.programId, name, count: 1 });
+    });
   }
   const tracks = [...counts.values()].sort((a, b) => b.count - a.count || a.name.localeCompare(b.name, "hr"));
   return { code, label, doneCount: entries.length, tracks, entries };

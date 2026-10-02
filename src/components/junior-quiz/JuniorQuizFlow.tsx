@@ -54,6 +54,13 @@ const SECTION_ICONS: Record<JuniorSectionKey, typeof Sparkles> = {
 
 const SCALE_VALUES = [1, 2, 3, 4, 5] as const;
 const BRANCH_POOLS = new Set(["health", "tech", "creative", "practical", "academic", "peoplebiz"]);
+const CRAFT_FAMILIES: { id: string; label: string; ids: string[] }[] = [
+  { id: "meal", label: "Hrana", ids: ["food", "bake"] },
+  { id: "machine", label: "Alat, strojevi i popravci", ids: ["cars", "metal", "wood"] },
+  { id: "look", label: "Izgled i njega", ids: ["beauty"] },
+  { id: "outdoor", label: "Vani, biljke ili more", ids: ["plants", "sea"] },
+];
+
 const BRANCH_CHOICE_IDS = new Set(
   juniorQuestions.filter((q) => q.format === "choice" && BRANCH_POOLS.has(q.pool)).map((q) => q.id),
 );
@@ -115,6 +122,7 @@ const JuniorQuizFlow = () => {
   const [corePause, setCorePause] = useState(false);
   const [confirmRound, setConfirmRound] = useState(false);
   const [checkQuestions, setCheckQuestions] = useState<JuniorQuestion[]>([]);
+  const [craftFamily, setCraftFamily] = useState<string | null>(null);
   const startedRef = useRef(false);
   const completedRef = useRef(phase === "results");
   const confirmOfferedRef = useRef(false);
@@ -180,6 +188,10 @@ const JuniorQuizFlow = () => {
     : undefined;
   const section = juniorSections.find((s) => s.key === question?.section);
 
+  useEffect(() => {
+    setCraftFamily(null);
+  }, [question?.id]);
+
   const analysis = useMemo(
     () => (phase === "results" ? analyzeJuniorQuiz(answers, { priority }) : null),
     [phase, answers, priority],
@@ -196,14 +208,7 @@ const JuniorQuizFlow = () => {
     return allCities.filter((c) => c.toLowerCase().startsWith(q)).slice(0, 8);
   }, [cityQuery, allCities]);
 
-  const schoolRecs = useMemo(() => {
-    if (!analysis) return [];
-    const offer = analysis.gymnasiumOffer;
-    if (!offer || analysis.recommendations.some((rec) => rec.program.id === offer.program.id)) {
-      return analysis.recommendations;
-    }
-    return [offer, ...analysis.recommendations];
-  }, [analysis]);
+  const schoolRecs = useMemo(() => (analysis ? analysis.recommendations.slice(0, 3) : []), [analysis]);
 
   const nearby = useMemo(
     () => (analysis && city ? analyzeNearby(schoolRecs, city) : null),
@@ -213,24 +218,7 @@ const JuniorQuizFlow = () => {
   const resultSchools = useMemo(() => {
     if (!analysis) return [];
     const nearbyMap = nearby?.byProgram ?? null;
-    const offer = analysis.gymnasiumOffer;
-    if (!offer) return pickQuizResultSchools(analysis.recommendations, nearbyMap, 3);
-    const gym = pickQuizResultSchools([offer], nearbyMap, 1);
-    const rest = pickQuizResultSchools(
-      analysis.recommendations.filter((rec) => rec.program.id !== offer.program.id),
-      nearbyMap,
-      2,
-    );
-    const seen = new Set<string>();
-    const out = [];
-    for (const item of [...gym, ...rest]) {
-      const key = `${item.school.name}|${item.school.city}`;
-      if (seen.has(key)) continue;
-      seen.add(key);
-      out.push(item);
-      if (out.length >= 3) break;
-    }
-    return out;
+    return pickQuizResultSchools(analysis.recommendations.slice(0, 3), nearbyMap, 3);
   }, [analysis, nearby]);
 
   useEffect(() => {
@@ -272,7 +260,7 @@ const JuniorQuizFlow = () => {
       if (fromIndex + 1 >= sequence.length) {
         const preview = analyzeJuniorQuiz(nextAnswers, { priority });
         const extra = selectFollowupQuestions(nextAnswers, preview.recommendations);
-        const asked = [98, 99].filter((id) => nextAnswers[id] !== undefined).length;
+        const asked = [89, 90, 91, 92, 93, 94, 95, 96, 98, 99].filter((id) => nextAnswers[id] !== undefined).length;
         if (asked < 2 && extra.length) {
           setCheckQuestions(extra.slice(0, 1));
           setSequence([extra[0].id]);
@@ -570,8 +558,38 @@ const JuniorQuizFlow = () => {
               </div>
             ) : null}
 
-            {question.format === "choice" ? (
+            {question.format === "choice" && question.id === 50 && !craftFamily ? (
               <div className="mt-6 grid gap-3">
+                {CRAFT_FAMILIES.map((family) => (
+                  <button
+                    key={family.id}
+                    type="button"
+                    onClick={() => {
+                      if (family.ids.length === 1) {
+                        commitAnswer(family.ids[0]);
+                        return;
+                      }
+                      setCraftFamily(family.id);
+                    }}
+                    className="min-h-14 rounded-2xl border-2 border-border/60 bg-background/70 px-4 py-3.5 text-left text-[15px] font-semibold leading-snug transition-all hover:border-primary/40 active:scale-[0.98]"
+                  >
+                    {family.label}
+                  </button>
+                ))}
+              </div>
+            ) : null}
+
+            {question.format === "choice" && !(question.id === 50 && !craftFamily) ? (
+              <div className="mt-6 grid gap-3">
+                {question.id === 50 && craftFamily ? (
+                  <button
+                    type="button"
+                    onClick={() => setCraftFamily(null)}
+                    className="text-left text-sm font-medium text-muted-foreground hover:text-foreground"
+                  >
+                    Natrag na skupine
+                  </button>
+                ) : null}
                 {(question.id === 97
                   ? peopleDayOptionIds(calculateQuizProfile(answers))
                       .map((id) => question.options?.find((opt) => opt.id === id))
@@ -580,7 +598,13 @@ const JuniorQuizFlow = () => {
                     ? jobOptionIds(answers)
                         .map((id) => question.options?.find((opt) => opt.id === id))
                         .filter((opt): opt is NonNullable<typeof opt> => Boolean(opt))
-                    : question.options
+                    : question.id === 36
+                      ? question.options?.filter((opt) => opt.id === "numbers" || opt.id === "talk")
+                      : question.id === 50
+                        ? question.options?.filter((opt) =>
+                            CRAFT_FAMILIES.find((family) => family.id === craftFamily)?.ids.includes(opt.id),
+                          )
+                        : question.options
                 )?.map((opt) => (
                   <button
                     key={opt.id}

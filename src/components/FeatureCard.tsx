@@ -1,140 +1,116 @@
-import { motion } from "framer-motion";
-import { ArrowUpRight, Lock, Sparkles } from "lucide-react";
-import { ReactNode } from "react";
+import { ArrowUpRight, Lock } from "lucide-react";
+import { CSSProperties, ReactNode } from "react";
 import { cn } from "@/lib/utils";
 
 interface FeatureCardProps {
   icon: ReactNode;
   title: string;
   description: string;
-  color?: string;
-  delay?: number;
-  /** Kartica nije klikabilna — u izradi */
+  /** "H S% L%" — boja alata, ne cijele sekcije */
+  tone?: string;
+  variant?: "lead" | "compact";
+  /** Jedna oznaka na kartici s koje korisnik kreće */
+  kicker?: string;
   locked?: boolean;
-  /** Vizualno istaknuta kartica (npr. "Popularno") — isključivo dekorativno, ne mijenja ponašanje */
-  highlighted?: boolean;
 }
 
 const FeatureCard = ({
   icon,
   title,
   description,
-  delay = 0,
+  tone = "174 62% 42%",
+  variant = "lead",
+  kicker,
   locked = false,
-  highlighted = false,
 }: FeatureCardProps) => {
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 26, scale: 0.96, filter: "blur(8px)" }}
-      whileInView={{ opacity: 1, y: 0, scale: 1, filter: "blur(0px)" }}
-      viewport={{ once: false, margin: "-70px", amount: 0.24 }}
-      transition={{ duration: 0.62, delay, ease: [0.22, 1, 0.36, 1] }}
-      className={cn(
-        "group relative flex h-full flex-col overflow-hidden rounded-2xl border bg-card/95 p-5 shadow-soft backdrop-blur-[2px] transition-all duration-300 sm:p-6",
-        locked
-          ? "cursor-not-allowed border-dashed border-muted-foreground/40 opacity-95"
-          : "border-border/60 hover:-translate-y-[3px] hover:border-primary/35 hover:shadow-elevated hover:bg-card",
-        highlighted && !locked && "border-primary/35 shadow-elevated ring-1 ring-primary/15",
-      )}
-    >
-      {/* Highlighted background wash */}
-      {highlighted && !locked && (
-        <div
-          className="pointer-events-none absolute inset-0 bg-gradient-to-br from-primary/[0.08] via-transparent to-[hsl(232_68%_60%/0.06)]"
-          aria-hidden
-        />
-      )}
+  const color = `hsl(${tone})`;
+  const wash = `hsl(${tone} / 0.12)`;
+  const edge = `hsl(${tone} / 0.9)`;
+
+  if (variant === "compact") {
+    return (
       <div
         className={cn(
-          "absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-primary/0 via-primary/80 to-primary/0 transition-all duration-300",
-          highlighted && !locked
-            ? "scale-x-100 opacity-100"
-            : "scale-x-0 opacity-0 group-hover:scale-x-100 group-hover:opacity-100",
+          "group flex h-full min-h-[4.75rem] items-center gap-3 rounded-2xl border bg-card p-3.5 sm:min-h-[10.5rem] sm:flex-col sm:items-stretch sm:gap-0 sm:p-5",
+          !locked && "shadow-[inset_3px_0_0_var(--feature-edge)] sm:shadow-[inset_0_3px_0_var(--feature-edge)]",
+          locked
+            ? "cursor-not-allowed border-dashed border-muted-foreground/35"
+            : "border-border/80 active:bg-muted/40 sm:hover:-translate-y-0.5",
         )}
-        aria-hidden
-      />
-      <div
-        className={cn(
-          "pointer-events-none absolute -right-20 -top-20 h-48 w-48 rounded-full bg-primary/[0.08] blur-3xl transition-opacity duration-500",
-          highlighted && !locked ? "opacity-100" : "opacity-0 group-hover:opacity-100",
-        )}
-        aria-hidden
-      />
-      <div
-        className="pointer-events-none absolute -left-24 -bottom-24 h-44 w-44 rounded-full bg-accent/[0.05] opacity-0 blur-3xl transition-opacity duration-500 group-hover:opacity-100"
-        aria-hidden
-      />
-      <div className="relative mb-4 flex items-start justify-between gap-3">
-        <div
+        style={locked ? undefined : ({ "--feature-edge": edge } as CSSProperties)}
+      >
+        <span
           className={cn(
-            "relative flex h-12 w-12 items-center justify-center rounded-2xl shadow-inner ring-1 transition-all duration-300 [&_svg]:h-6 [&_svg]:w-6",
-            locked
-              ? "bg-muted/50 ring-muted/20 grayscale-[0.2]"
-              : highlighted
-                ? "bg-gradient-to-br from-primary/25 to-primary/10 ring-primary/30 group-hover:scale-[1.06]"
-                : "bg-gradient-to-br from-primary/15 to-primary/5 ring-primary/15 group-hover:scale-[1.06] group-hover:from-primary/20 group-hover:to-primary/10 group-hover:ring-primary/35",
+            "flex h-11 w-11 shrink-0 items-center justify-center rounded-xl sm:mb-3 sm:h-12 sm:w-12 sm:rounded-2xl [&_svg]:h-5 [&_svg]:w-5 sm:[&_svg]:h-6 sm:[&_svg]:w-6 [&_svg]:!text-current",
+            locked && "bg-muted text-muted-foreground grayscale",
           )}
+          style={locked ? undefined : { backgroundColor: wash, color }}
         >
-          {!locked && (
-            <span
-              className={cn(
-                "pointer-events-none absolute inset-0 rounded-2xl ring-1 ring-inset ring-white/20 transition-opacity duration-300",
-                highlighted ? "opacity-100" : "opacity-0 group-hover:opacity-100",
-              )}
-              aria-hidden
-            />
+          {locked ? <Lock className="h-5 w-5" /> : icon}
+        </span>
+        <span className="min-w-0 flex-1">
+          <span className="block text-base font-bold leading-snug tracking-[-0.02em] text-foreground sm:text-lg">
+            {title}
+          </span>
+          <span className="mt-1 line-clamp-2 block text-sm leading-snug text-muted-foreground sm:line-clamp-3 sm:leading-relaxed">
+            {locked ? "Uskoro dostupno" : description}
+          </span>
+        </span>
+        {locked ? null : <ArrowUpRight className="h-4 w-4 shrink-0 text-muted-foreground sm:hidden" />}
+      </div>
+    );
+  }
+
+  return (
+    <div
+      className={cn(
+        "group relative flex h-full flex-col overflow-hidden rounded-2xl border bg-card p-4 transition-transform duration-300 sm:rounded-3xl sm:p-6",
+        locked
+          ? "cursor-not-allowed border-dashed border-muted-foreground/40"
+          : "border-border/70 active:bg-muted/30 sm:hover:-translate-y-0.5",
+        kicker && !locked && "bg-gradient-to-br from-card to-card",
+      )}
+      style={
+        locked
+          ? undefined
+          : {
+              boxShadow: `inset 0 3px 0 ${edge}, 0 10px 28px -18px hsl(${tone} / 0.55)`,
+              backgroundImage: kicker ? `linear-gradient(160deg, hsl(${tone} / 0.1), transparent 55%)` : undefined,
+            }
+      }
+    >
+      <div className="mb-3 flex items-start justify-between gap-3 sm:mb-5">
+        <span
+          className={cn(
+            "flex h-12 w-12 items-center justify-center rounded-2xl [&_svg]:h-6 [&_svg]:w-6 [&_svg]:!text-current",
+            locked && "bg-muted text-muted-foreground",
           )}
-          {icon}
-        </div>
+          style={locked ? undefined : { backgroundColor: wash, color }}
+        >
+          {locked ? <Lock className="h-5 w-5" /> : icon}
+        </span>
         {locked ? (
-          <span className="inline-flex h-9 shrink-0 items-center gap-1 rounded-xl border border-muted-foreground/30 bg-muted/50 px-2 text-[10px] font-bold uppercase tracking-wide text-muted-foreground">
-            <Lock className="h-3 w-3" aria-hidden />
+          <span className="rounded-full border border-muted-foreground/30 px-2 py-1 text-[10px] font-bold uppercase tracking-wide text-muted-foreground">
             U izradi
           </span>
-        ) : highlighted ? (
-          <span className="badge-popular shrink-0">
-            <Sparkles className="h-2.5 w-2.5" aria-hidden />
-            Popularno
+        ) : kicker ? (
+          <span
+            className="rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.14em] text-white"
+            style={{ backgroundColor: color }}
+          >
+            {kicker}
           </span>
-        ) : (
-          <span className="hidden h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-border/80 bg-muted/40 text-muted-foreground transition-all duration-300 group-hover:border-primary/30 group-hover:bg-primary/5 group-hover:text-primary sm:flex sm:opacity-0 sm:group-hover:opacity-100">
-            <ArrowUpRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" aria-hidden />
-          </span>
-        )}
+        ) : null}
       </div>
-      <h3
-        className={cn(
-          "relative mb-2 text-balance text-[15px] font-semibold leading-snug tracking-[-0.01em] transition-colors duration-300 sm:text-lg",
-          !locked && "group-hover:text-primary",
-          highlighted && !locked && "text-primary",
-        )}
-      >
-        {title}
-      </h3>
-      <p className="relative flex-1 text-pretty text-[13.5px] leading-[1.55] text-muted-foreground sm:text-sm sm:leading-relaxed">{description}</p>
-      <p
-        className={cn(
-          "relative mt-4 flex items-center gap-1 text-xs font-semibold transition-opacity duration-300",
-          locked
-            ? "text-muted-foreground"
-            : highlighted
-              ? "text-primary opacity-100"
-              : "text-primary sm:opacity-0 sm:group-hover:opacity-100",
-        )}
-      >
-        {locked ? (
-          <>
-            Uskoro dostupno
-            <Lock className="h-3 w-3" aria-hidden />
-          </>
-        ) : (
-          <>
-            Otvori
-            <ArrowUpRight className="h-3 w-3 transition-transform duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" aria-hidden />
-          </>
-        )}
+      <h3 className="text-balance text-lg font-extrabold leading-snug tracking-[-0.03em] text-foreground sm:text-2xl">{title}</h3>
+      <p className="mt-1.5 flex-1 text-pretty text-sm leading-relaxed text-muted-foreground sm:mt-2">
+        {locked ? "Uskoro dostupno." : description}
       </p>
-    </motion.div>
+      <p className="mt-3 inline-flex items-center gap-1 text-sm font-semibold sm:mt-5" style={{ color: locked ? undefined : color }}>
+        {locked ? "Uskoro" : "Otvori"}
+        {locked ? null : <ArrowUpRight className="h-4 w-4 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />}
+      </p>
+    </div>
   );
 };
 

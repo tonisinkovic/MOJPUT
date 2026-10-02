@@ -143,10 +143,12 @@
     },
     {
       "id": 2,
-      "format": "choice",
+      "format": "multi",
+      "maxSelect": 2,
       "pool": "core",
       "section": "interests",
       "prompt": "Što bi ti cijelo popodne najradije?",
+      "hint": "Možeš odabrati dva. Nije škola, samo što te vuče.",
       "options": [
         {
           "id": "app",
@@ -164,7 +166,7 @@
               "computer": 2
             },
             "signals": {
-              "tech_computers": 5
+              "tech_computers": 3
             }
           }
         },
@@ -183,7 +185,7 @@
               "studio": 2
             },
             "signals": {
-              "art_visual": 5
+              "art_visual": 3
             }
           }
         },
@@ -201,23 +203,20 @@
               "helping": 2
             },
             "signals": {
-              "helping_people": 5
+              "helping_people": 3
             }
           }
         },
         {
           "id": "why",
-          "label": "Saznati zašto se nešto događa u prirodi",
+          "label": "Saznati zašto se nešto događa",
           "effects": {
             "interests": {
-              "science": 3
+              "science": 1
             },
             "thinking": {
               "investigative": 3,
               "analytical": 1
-            },
-            "signals": {
-              "science_experiments": 5
             }
           }
         },
@@ -233,7 +232,7 @@
               "field": 1
             },
             "signals": {
-              "sport_active": 5
+              "sport_active": 3
             }
           }
         },
@@ -249,7 +248,7 @@
               "creative": 2
             },
             "signals": {
-              "music_performance": 5
+              "music_performance": 3
             }
           }
         },
@@ -261,7 +260,7 @@
               "practical": 3
             },
             "signals": {
-              "cooking_food": 5
+              "cooking_food": 3
             }
           }
         }
@@ -371,7 +370,6 @@
               "organizational": 3
             },
             "interests": {
-              "economy": 1,
               "society": 1
             },
             "environment": {
@@ -497,10 +495,12 @@
     },
     {
       "id": 7,
-      "format": "choice",
+      "format": "multi",
+      "maxSelect": 2,
       "pool": "core",
       "section": "interests",
       "prompt": "Razred smije jedan dan raditi što hoće. Što biraš?",
+      "hint": "Možeš odabrati dva.",
       "options": [
         {
           "id": "event",
@@ -527,7 +527,7 @@
               "entrepreneurship": 3
             },
             "signals": {
-              "business_entrepreneur": 5
+              "business_entrepreneur": 3
             }
           }
         },
@@ -547,7 +547,7 @@
               "experiment": 1
             },
             "signals": {
-              "science_experiments": 4
+              "science_experiments": 3
             }
           }
         },
@@ -631,7 +631,7 @@
               "lab": 2
             },
             "signals": {
-              "science_experiments": 5
+              "science_experiments": 3
             }
           }
         },
@@ -803,11 +803,7 @@
               "analytical": 2
             },
             "interests": {
-              "economy": 1,
-              "mathematics": 1
-            },
-            "signals": {
-              "numbers_data": 4
+              "society": 1
             }
           }
         },
@@ -898,11 +894,11 @@
       "format": "scale",
       "pool": "core",
       "section": "interests",
-      "prompt": "Koliko ti odgovara rad vani, u prirodi ili sa životinjama?",
+      "prompt": "Koliko ti odgovara rad vani, u prirodi?",
+      "hint": "Ovo je boravak vani. Životinje pita drugo pitanje, ako do njega dođeš.",
       "scaleMinLabel": "Više volim unutra",
       "scaleMaxLabel": "To mi jako odgovara",
       "signalKey": "plants_outdoor",
-      "signalKeys": ["animals_nature"],
       "effects": {
         "interests": {
           "nature": 3,
@@ -1139,7 +1135,7 @@
         },
         {
           "id": "class",
-          "label": "Učionica i laboratorij — najprije dobro naučiti biologiju i kemiju",
+          "label": "Prvo naučiti kako tijelo radi, pa tek onda rad s ljudima",
           "effects": {
             "environment": {
               "classroom": 2,
@@ -1614,16 +1610,14 @@
           "label": "Brod, luka ili more",
           "effects": {
             "interests": {
-              "practical": 1,
-              "languages": 1
+              "practical": 1
             },
             "environment": {
               "field": 2,
               "dynamic": 2
             },
             "signals": {
-              "logistics_transport": 4,
-              "languages_travel": 4
+              "logistics_transport": 4
             }
           }
         }
@@ -1705,7 +1699,7 @@
       "format": "choice",
       "pool": "peoplebiz",
       "section": "subjects",
-      "prompt": "Sport, kuhinja, pecivo ili brojke — što ti je bliže?",
+      "prompt": "Brojke i novac, ili jezici i dogovor?",
       "options": [
         {
           "id": "sport",
@@ -2033,6 +2027,7 @@
       "pool": "practical",
       "section": "subjects",
       "prompt": "Ako radiš rukama, što ti je najzanimljivije?",
+      "hint": "Prvo skupina, pa točan posao.",
       "options": [
         {
           "id": "food",
@@ -2665,7 +2660,7 @@
       "options": [
         {
           "id": "gym",
-          "label": "Više predmeta, više učenja, kasnije fakultet",
+          "label": "Više predmeta i više učenja",
           "effects": {
             "postSchool": {
               "faculty": 3
@@ -2816,7 +2811,7 @@
       "options": [
         {
           "id": "art",
-          "label": "Crtanje, dizajn, umjetnička škola",
+          "label": "Crtanje i dizajn",
           "effects": {
             "interests": {
               "art_design": 3
@@ -2944,7 +2939,7 @@
       "options": [
         {
           "id": "care",
-          "label": "Bolnica već u srednjoj, kao sestra ili tehničar",
+          "label": "Brinuti se o osobi kojoj nije dobro",
           "effects": {
             "interests": { "people": 2 },
             "signals": { "health_medicine": 5, "helping_people": 5 }
@@ -2952,17 +2947,17 @@
         },
         {
           "id": "doctor",
-          "label": "Gimnazija sada, medicinski fakultet kasnije",
+          "label": "Učiti kako tijelo radi",
           "effects": {
             "interests": { "science": 2, "people": 1 },
             "learning": { "theory": 2 },
-            "postSchool": { "faculty": 2 },
-            "signals": { "health_medicine": 4, "science_experiments": 4 }
+            "postSchool": { "faculty": 1 },
+            "signals": { "health_medicine": 3, "science_experiments": 3 }
           }
         },
         {
           "id": "lab",
-          "label": "Laboratorij, lijekovi i točnost",
+          "label": "Raditi s uzorcima, mjerenjima ili lijekovima",
           "effects": {
             "interests": { "science": 3 },
             "environment": { "lab": 2 },
@@ -2972,7 +2967,7 @@
         },
         {
           "id": "animals",
-          "label": "Životinje i briga o njima",
+          "label": "Brinuti se o životinjama",
           "effects": {
             "interests": { "nature": 3, "science": 1 },
             "signals": { "animals_nature": 5 }
@@ -2980,7 +2975,7 @@
         },
         {
           "id": "guests",
-          "label": "Gosti, hotel ili putovanje",
+          "label": "Biti s gostima ili na putu",
           "effects": {
             "interests": { "people": 2, "languages": 2, "economy": 1 },
             "signals": { "languages_travel": 5 }
@@ -2988,7 +2983,7 @@
         },
         {
           "id": "sport",
-          "label": "Sport, trening i kretanje",
+          "label": "Trening, sport i kretanje",
           "effects": {
             "interests": { "sport": 3 },
             "signals": { "sport_active": 5 }
@@ -2996,7 +2991,7 @@
         },
         {
           "id": "dance",
-          "label": "Ples, nastup ili glazba",
+          "label": "Ples ili nastup",
           "effects": {
             "interests": { "art_design": 2, "sport": 1 },
             "signals": { "music_performance": 5 }
@@ -3004,7 +2999,7 @@
         },
         {
           "id": "class",
-          "label": "Objašnjavati drugima, u razredu",
+          "label": "Objašnjavati drugima",
           "effects": {
             "interests": { "people": 1, "society": 1 },
             "learning": { "group": 1 }

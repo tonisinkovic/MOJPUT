@@ -535,7 +535,8 @@ const applyEffects = (effects: JuniorEffects | undefined, score: number, acc: Pr
     for (const [key, value] of Object.entries(effects.signals)) {
       if (typeof value !== "number") continue;
       const prev = acc.signals[key as JuniorSignalKey];
-      acc.signals[key as JuniorSignalKey] = typeof prev === "number" ? Math.max(prev, value) : value;
+      const next = typeof prev === "number" ? Math.min(5, prev + Math.max(1, value - 2)) : value;
+      acc.signals[key as JuniorSignalKey] = Math.min(5, next);
     }
   }
   if (typeof effects.theoryPractice === "number") {
@@ -591,7 +592,7 @@ export const calculateQuizProfile = (answers: JuniorAnswers): JuniorStudentProfi
       continue;
     }
 
-    if (q.format === "choice" && typeof raw === "string") {
+    if ((q.format === "choice" || q.format === "multi") && typeof raw === "string") {
       const option = q.options?.find((o) => o.id === raw);
       applyEffects(option?.effects, 100, acc);
       if (
@@ -632,6 +633,9 @@ export const calculateQuizProfile = (answers: JuniorAnswers): JuniorStudentProfi
       if (q.id === 20 && raw === "animals") animalLean = true;
       if (q.id === 20 && raw === "lab") labLean = true;
       if (q.id === 21 && raw === "class") healthClass = true;
+      if ((q.id === 34 && raw === "guest") || (q.id === 35 && raw === "hotel")) {
+        if (!peopleFocus) peopleFocus = "guests";
+      }
       if (q.id === 70 && (raw === "faculty" || raw === "both")) wantsFaculty = true;
       if (q.id === 72) schoolContext.grade = raw;
       if (q.id === 73) schoolContext.averageBand = raw;
@@ -640,6 +644,12 @@ export const calculateQuizProfile = (answers: JuniorAnswers): JuniorStudentProfi
 
     if (q.format === "multi" && Array.isArray(raw)) {
       const selected = raw.filter((id) => typeof id === "string") as string[];
+      if (q.id !== 74 && q.id !== 75) {
+        for (const id of selected) {
+          const option = q.options?.find((item) => item.id === id);
+          applyEffects(option?.effects, 100, acc);
+        }
+      }
       if (q.id === 74) {
         schoolContext.favoriteSubjects = selected.filter((id): id is JuniorSubjectCategory =>
           SUBJECT_KEYS.includes(id as JuniorSubjectCategory),
@@ -660,6 +670,8 @@ export const calculateQuizProfile = (answers: JuniorAnswers): JuniorStudentProfi
       else considering = raw.trim().slice(0, 180);
     }
   }
+
+  if (answers[89] === "no") considering = null;
 
   if (!declinedPeopleDay) {
     if (!peopleFocus && healthClass && wantsFaculty) peopleFocus = "doctor";
