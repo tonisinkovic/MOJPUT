@@ -1,5 +1,11 @@
 import Layout from "@/components/Layout";
 import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { parentArticlesFor, type ParentArticle } from "@/data/parentHub";
 import { resolveExperienceMode } from "@/lib/experience";
 import { getTotalViews, readParentHubState, setLastVisited, toggleFavorite } from "@/lib/parentHubStore";
@@ -185,16 +191,66 @@ const juniorMainSections = [
 
 /** Brze teme za Junior roditelje — kratke i direktne */
 const juniorQuickTopics = [
-  { emoji: "🎯", title: "Gimnazija ili strukovna?", tip: "Ovisi o stilu učenja, ne o 'prestiž'" },
-  { emoji: "📅", title: "Rokovi za upis", tip: "Veljača-lipanj, ovisno o školi" },
-  { emoji: "🏫", title: "Dan otvorenih vrata", tip: "Obavezno posjetite barem 2-3 škole" },
-  { emoji: "📝", title: "Prijemni ispit?", tip: "Samo neke škole traže — provjerite!" },
-  { emoji: "🚌", title: "Putovanje do škole", tip: "Dnevno 2h+ može biti previše" },
-  { emoji: "💰", title: "Troškovi školovanja", tip: "Udžbenici, oprema, izleti — planirajte" },
-  { emoji: "👥", title: "Novo društvo", tip: "Normalno je da dijete brine o prijateljima" },
-  { emoji: "📊", title: "Bodovi za upis", tip: "Koristite kalkulator na MojPut" },
-  { emoji: "🎨", title: "Umjetnički smjer?", tip: "Portfolio i prijemni — počnite rano" },
-  { emoji: "⚠️", title: "Ne pritiskajte", tip: "Vaš stres = djetetov stres" },
+  {
+    emoji: "🎯",
+    title: "Gimnazija ili strukovna?",
+    tip: "Ovisi o stilu učenja, ne o 'prestiž'",
+    detail: "Gimnazija je za učenike koji vole teoriju, čitanje i apstraktno razmišljanje. Strukovna škola je za praktičare koji uče kroz rad. Nema 'bolje' opcije — samo ona koja odgovara vašem djetetu. Pitajte dijete: 'Voliš li više čitati i učiti iz knjiga ili raditi rukama i vidjeti rezultat odmah?'"
+  },
+  {
+    emoji: "📅",
+    title: "Rokovi za upis",
+    tip: "Veljača-lipanj, ovisno o školi",
+    detail: "Upisi u srednje škole traju od veljače do srpnja. Ljetni rok je glavni (lipanj-srpanj), ali neke škole imaju i ranije prijave za posebne programe. Pratite NISpuSŠ sustav i web stranice škola. Koristite MojPut kalendar za sve važne datume!"
+  },
+  {
+    emoji: "🏫",
+    title: "Dan otvorenih vrata",
+    tip: "Obavezno posjetite barem 2-3 škole",
+    detail: "Dani otvorenih vrata su najbolji način da dijete 'osjeti' školu. Posjetite barem 2-3 škole koje razmatrate. Pripremite pitanja: Kakvi su učitelji? Koje su izvannastavne aktivnosti? Kako izgleda tipičan dan? Pitajte i sadašnje učenike — oni daju najiskrenije odgovore."
+  },
+  {
+    emoji: "📝",
+    title: "Prijemni ispit?",
+    tip: "Samo neke škole traže — provjerite!",
+    detail: "Većina srednjih škola nema prijemni ispit — upis ide po bodovima iz osnovne. Ali neke škole (umjetničke, sportske, IT smjerovi) imaju dodatne provjere: test, portfolio, audicija, razgovor. Provjerite na vrijeme jer priprema može trajati mjesecima!"
+  },
+  {
+    emoji: "🚌",
+    title: "Putovanje do škole",
+    tip: "Dnevno 2h+ može biti previše",
+    detail: "Računajte ukupno vrijeme putovanja — ako je više od 2 sata dnevno, dijete će biti umorno i neće imati vremena za aktivnosti i učenje. Razmislite o domu ili stanu ako je škola daleko. Ili — potražite sličan program bliže domu."
+  },
+  {
+    emoji: "💰",
+    title: "Troškovi školovanja",
+    tip: "Udžbenici, oprema, izleti — planirajte",
+    detail: "Osim udžbenika (koji mogu koštati 500-2000 kn), računajte na: školsku opremu (lab mantili, alati), izlete, prijevoz, možda i dom. Strukovne škole često imaju veće troškove opreme. Pitajte školu za procjenu godišnjih troškova prije upisa."
+  },
+  {
+    emoji: "👥",
+    title: "Novo društvo",
+    tip: "Normalno je da dijete brine o prijateljima",
+    detail: "Strah od gubitka prijatelja je čest razlog zašto djeca biraju školu. To je normalno, ali ne bi trebao biti jedini kriterij. Prijateljstva se održavaju i na daljinu, a nova se stvaraju. Razgovarajte o tome otvoreno — priznajte da je strah razumljiv, ali da će naći nove prijatelje."
+  },
+  {
+    emoji: "📊",
+    title: "Bodovi za upis",
+    tip: "Koristite kalkulator na MojPut",
+    detail: "Bodovi za upis = ocjene iz 7. i 8. razreda + dodatni bodovi (natjecanja, posebne okolnosti). Svaka škola ima svoj 'prag' — minimalan broj bodova za upis. Koristite MojPut kalkulator da vidite koliko bodova dijete ima i koje škole može upisati!"
+  },
+  {
+    emoji: "🎨",
+    title: "Umjetnički smjer?",
+    tip: "Portfolio i prijemni — počnite rano",
+    detail: "Umjetničke škole (likovna, glazbena, plesna) traže portfolio radova i/ili audiciju. Priprema traje mjesecima — počnite u 7. razredu! Neka dijete pohađa pripremne tečajeve ili radionice. Važno: talent nije sve — traži se i rad i motivacija."
+  },
+  {
+    emoji: "⚠️",
+    title: "Ne pritiskajte",
+    tip: "Vaš stres = djetetov stres",
+    detail: "Ako ste vi nervozni oko upisa, dijete to osjeća i postaje još anksioznije. Vaša uloga je biti mirna podrška, ne dodatni izvor pritiska. Izbjegavajte usporedbe s drugom djecom. Jedna loša odluka se može ispraviti — promjena škole je moguća."
+  },
 ] as const;
 
 const categoryLabels: Record<ParentArticle["category"], string> = {
@@ -279,6 +335,7 @@ const Roditelji = () => {
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState<"sve" | "vodic" | "mentalno" | "procjena">("sve");
   const [state, setState] = useState(readParentHubState());
+  const [selectedTopic, setSelectedTopic] = useState<typeof juniorQuickTopics[number] | null>(null);
 
   const filtered = useMemo(() => {
     const term = query.trim().toLowerCase();
@@ -350,16 +407,20 @@ const Roditelji = () => {
               </p>
               <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-5">
                 {juniorQuickTopics.map((topic) => (
-                  <div
+                  <button
                     key={topic.title}
-                    className="group rounded-xl border border-border/60 bg-card/80 px-3 py-2.5 transition-all hover:border-emerald-500/40 hover:bg-emerald-500/[0.04]"
+                    onClick={() => setSelectedTopic(topic)}
+                    className="group cursor-pointer rounded-xl border border-border/60 bg-card/80 px-3 py-2.5 text-left transition-all hover:border-emerald-500/40 hover:bg-emerald-500/[0.04] hover:shadow-md active:scale-[0.98]"
                   >
                     <div className="flex items-center gap-2">
                       <span className="text-lg">{topic.emoji}</span>
                       <span className="text-xs font-semibold text-foreground">{topic.title}</span>
                     </div>
                     <p className="mt-1 text-[11px] leading-snug text-muted-foreground">{topic.tip}</p>
-                  </div>
+                    <span className="mt-1.5 inline-flex items-center gap-1 text-[10px] font-medium text-emerald-600 opacity-0 transition-opacity group-hover:opacity-100 dark:text-emerald-400">
+                      Saznaj više <ChevronRight className="h-3 w-3" />
+                    </span>
+                  </button>
                 ))}
               </div>
             </motion.div>
@@ -730,6 +791,32 @@ const Roditelji = () => {
           </div>
         </section>
       </section>
+
+      {/* Dialog za brze savjete - Junior */}
+      <Dialog open={!!selectedTopic} onOpenChange={(open) => !open && setSelectedTopic(null)}>
+        <DialogContent className="max-w-md">
+          {selectedTopic && (
+            <>
+              <DialogHeader>
+                <DialogTitle className="flex items-center gap-3 text-lg">
+                  <span className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-500/10 text-2xl">
+                    {selectedTopic.emoji}
+                  </span>
+                  {selectedTopic.title}
+                </DialogTitle>
+              </DialogHeader>
+              <div className="space-y-3 pt-2">
+                <p className="rounded-lg border border-emerald-500/20 bg-emerald-500/5 px-3 py-2 text-sm font-medium text-emerald-700 dark:text-emerald-400">
+                  💡 {selectedTopic.tip}
+                </p>
+                <p className="text-sm leading-relaxed text-muted-foreground">
+                  {selectedTopic.detail}
+                </p>
+              </div>
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
     </Layout>
   );
 };
