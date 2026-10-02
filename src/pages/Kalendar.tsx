@@ -78,6 +78,25 @@ const juniorEvents: CalendarEvent[] = [
   // --- Naknadni upisni rok 2026 ---
   { year: 2026, month: 8, day: 3, title: "Naknadni upisni rok (3. – 30. 9., samo gdje ostane slobodnih mjesta)", type: "Upisi", urgent: true },
   { year: 2026, month: 8, day: 30, title: "Naknadni upisni rok – završetak", type: "Upisi", urgent: true },
+
+  // --- Školski kalendar 2026./2027. ---
+  { year: 2026, month: 8, day: 7, title: "Početak nastave", type: "Škola", urgent: true },
+  { year: 2026, month: 10, day: 1, title: "Svi sveti — neradni dan", type: "Praznik", urgent: false },
+  { year: 2026, month: 10, day: 18, title: "Dan sjećanja", type: "Praznik", urgent: false },
+  { year: 2026, month: 11, day: 24, title: "Početak zimskih praznika", type: "Praznik", urgent: true },
+  { year: 2026, month: 11, day: 25, title: "Božić", type: "Praznik", urgent: false },
+  { year: 2026, month: 11, day: 26, title: "Sv. Stjepan", type: "Praznik", urgent: false },
+  { year: 2027, month: 0, day: 1, title: "Nova godina", type: "Praznik", urgent: false },
+  { year: 2027, month: 0, day: 6, title: "Sveta tri kralja — kraj zimskih praznika", type: "Praznik", urgent: true },
+  { year: 2027, month: 1, day: 20, title: "Drugi dio zimskih praznika (20. – 28. 2.)", type: "Praznik", urgent: true },
+  { year: 2027, month: 2, day: 25, title: "Proljetni praznici (25. 3. – 4. 4.)", type: "Praznik", urgent: true },
+  { year: 2027, month: 2, day: 28, title: "Uskrs", type: "Praznik", urgent: false },
+  { year: 2027, month: 2, day: 29, title: "Uskrsni ponedjeljak", type: "Praznik", urgent: false },
+  { year: 2027, month: 4, day: 1, title: "Praznik rada", type: "Praznik", urgent: false },
+  { year: 2027, month: 4, day: 21, title: "Kraj nastave za maturante + norijada", type: "Škola", urgent: true },
+  { year: 2027, month: 4, day: 27, title: "Tijelovo", type: "Praznik", urgent: false },
+  { year: 2027, month: 4, day: 30, title: "Dan državnosti", type: "Praznik", urgent: false },
+  { year: 2027, month: 5, day: 15, title: "Zadnji dan nastave", type: "Škola", urgent: true },
 ];
 
 const croatianMonths = [
@@ -92,6 +111,8 @@ const typeColors: Record<string, string> = {
   Priprema: "bg-blue-50 text-blue-700 border-blue-200",
   Rezultati: "bg-green-50 text-green-700 border-green-200",
   Upisi: "bg-orange-50 text-orange-700 border-orange-200",
+  Škola: "bg-emerald-50 text-emerald-700 border-emerald-200",
+  Praznik: "bg-rose-50 text-rose-700 border-rose-200",
 };
 
 const typeDots: Record<string, string> = {
@@ -100,6 +121,8 @@ const typeDots: Record<string, string> = {
   Priprema: "bg-blue-500",
   Rezultati: "bg-green-500",
   Upisi: "bg-orange-500",
+  Škola: "bg-emerald-500",
+  Praznik: "bg-rose-500",
 };
 
 function getEventBounds(eventList: CalendarEvent[]) {
