@@ -149,38 +149,52 @@ const juniorMainSections = [
     id: "vodic",
     emoji: "📘",
     title: "Vodič za roditelje",
-    description: "Savjeti i koraci za razgovor o odabiru srednje škole, smjerovima i upisu bez pritiska.",
-    advice: "Krenite od jednog kratkog tjednog razgovora o interesima djeteta i jedne škole koju zajedno istražite.",
+    description: "Kako razgovarati o srednjoj školi bez pritiska i svađa.",
+    advice: "Jedan tjedni razgovor od 20 min + jedna škola koju zajedno istražite = početak.",
     href: "/roditeljski-kutak/vodic-za-roditelje",
     icon: BookOpen,
   },
   {
     id: "mentalno",
     emoji: "💚",
-    title: "Mentalno zdravlje",
-    description: "Stres oko upisa u srednju, anksioznost i podrška kad dijete osjeća pritisak oko odluke.",
-    advice: "Prvo primijetite promjenu u ponašanju oko rokova za upis, zatim otvorite miran razgovor bez usporedbe s drugima.",
+    title: "Stres i pritisak",
+    description: "Prepoznajte znakove stresa i reagirajte na vrijeme.",
+    advice: "Promjena sna, razdražljivost ili povlačenje? Smiren razgovor, ne kritika.",
     href: "/roditeljski-kutak/mentalno-zdravlje",
     icon: Heart,
   },
   {
     id: "forum",
     emoji: "💬",
-    title: "Forum za roditelje",
-    description: "Razgovori o srednjoj školi — gimnazija ili strukovna, smjerovi, iskustva i savjeti drugih roditelja.",
-    advice: "Forum je za ideje o upisu u srednju; konačnu odluku prilagodite interesima i tempu vašeg djeteta.",
+    title: "Forum roditelja",
+    description: "Pitanja i iskustva drugih roditelja o upisu u srednju.",
+    advice: "Tuđa iskustva su korisna, ali konačna odluka mora odgovarati vašem djetetu.",
     href: "/roditeljski-kutak/forum",
     icon: MessageSquare,
   },
   {
     id: "procjena",
     emoji: "📊",
-    title: "Zajednička procjena",
-    description: "Kratak alat prije upisa u srednju — uskladite očekivanja, interese i sljedeće korake.",
-    advice: "Najkorisnije je kada roditelj i dijete najprije razmisle odvojeno, pa usporede odgovore o smjeru i školi.",
+    title: "Procjena interesa",
+    description: "Kratki test koji otkriva smjer koji odgovara djetetu.",
+    advice: "Roditelj i dijete odvojeno odgovore, pa usporede — bez rasprave tko je u pravu.",
     href: "/roditeljski-kutak/zajednicka-procjena",
     icon: BarChart3,
   },
+] as const;
+
+/** Brze teme za Junior roditelje — kratke i direktne */
+const juniorQuickTopics = [
+  { emoji: "🎯", title: "Gimnazija ili strukovna?", tip: "Ovisi o stilu učenja, ne o 'prestiž'" },
+  { emoji: "📅", title: "Rokovi za upis", tip: "Veljača-lipanj, ovisno o školi" },
+  { emoji: "🏫", title: "Dan otvorenih vrata", tip: "Obavezno posjetite barem 2-3 škole" },
+  { emoji: "📝", title: "Prijemni ispit?", tip: "Samo neke škole traže — provjerite!" },
+  { emoji: "🚌", title: "Putovanje do škole", tip: "Dnevno 2h+ može biti previše" },
+  { emoji: "💰", title: "Troškovi školovanja", tip: "Udžbenici, oprema, izleti — planirajte" },
+  { emoji: "👥", title: "Novo društvo", tip: "Normalno je da dijete brine o prijateljima" },
+  { emoji: "📊", title: "Bodovi za upis", tip: "Koristite kalkulator na MojPut" },
+  { emoji: "🎨", title: "Umjetnički smjer?", tip: "Portfolio i prijemni — počnite rano" },
+  { emoji: "⚠️", title: "Ne pritiskajte", tip: "Vaš stres = djetetov stres" },
 ] as const;
 
 const categoryLabels: Record<ParentArticle["category"], string> = {
@@ -315,34 +329,63 @@ const Roditelji = () => {
               </h1>
               <p className="mt-1.5 max-w-2xl text-pretty text-sm leading-relaxed text-muted-foreground sm:text-base">
                 {isJunior
-                  ? "Vodiči, mentalno zdravlje, forum i procjena — sve za podršku pri odabiru srednje škole."
+                  ? "Praktični savjeti, podrška i alati — kako pomoći djetetu da odabere pravu srednju školu bez stresa."
                   : "Vodiči, mentalno zdravlje, forum i zajednička procjena — sve na jednom mjestu."}
               </p>
           </HeaderHero>
         </motion.div>
 
         {isJunior ? (
-          <div className="grid gap-3 sm:grid-cols-2">
-            <div className="rounded-2xl border border-primary/20 bg-primary/[0.04] px-4 py-3 text-sm">
-              <p className="font-semibold">Dijete je riješilo kviz?</p>
-              <p className="mt-1 text-muted-foreground">
-                Pogledajte isti rezultat drugim jezikom — programi, škole u blizini i 4 pitanja za razgovor.
-                Vi ne rješavate kviz umjesto djeteta.
+          <>
+            {/* Quick topics grid */}
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3, delay: 0.08 }}
+              className="rounded-2xl border-2 border-emerald-500/20 bg-gradient-to-br from-emerald-500/[0.08] via-emerald-500/[0.02] to-card p-4 shadow-sm"
+            >
+              <p className="mb-3 flex items-center gap-2 text-sm font-semibold text-emerald-700 dark:text-emerald-400">
+                <Sparkles className="h-4 w-4" />
+                Brzi savjeti za roditelje
               </p>
-              <Button asChild size="sm" className="mt-3 rounded-xl">
-                <Link to="/roditeljski-rezultat">Otvori rezultat za roditelje</Link>
-              </Button>
+              <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-5">
+                {juniorQuickTopics.map((topic) => (
+                  <div
+                    key={topic.title}
+                    className="group rounded-xl border border-border/60 bg-card/80 px-3 py-2.5 transition-all hover:border-emerald-500/40 hover:bg-emerald-500/[0.04]"
+                  >
+                    <div className="flex items-center gap-2">
+                      <span className="text-lg">{topic.emoji}</span>
+                      <span className="text-xs font-semibold text-foreground">{topic.title}</span>
+                    </div>
+                    <p className="mt-1 text-[11px] leading-snug text-muted-foreground">{topic.tip}</p>
+                  </div>
+                ))}
+              </div>
+            </motion.div>
+
+            {/* Action cards */}
+            <div className="grid gap-3 sm:grid-cols-2">
+              <div className="rounded-2xl border border-primary/20 bg-primary/[0.04] px-4 py-3 text-sm">
+                <p className="font-semibold">Dijete je riješilo kviz?</p>
+                <p className="mt-1 text-muted-foreground">
+                  Pogledajte isti rezultat drugim jezikom — programi, škole u blizini i 4 pitanja za razgovor.
+                </p>
+                <Button asChild size="sm" className="mt-3 rounded-xl">
+                  <Link to="/roditeljski-rezultat">Otvori rezultat za roditelje</Link>
+                </Button>
+              </div>
+              <div className="rounded-2xl border border-sky-500/25 bg-sky-500/[0.06] px-4 py-3 text-sm">
+                <p className="font-semibold">Pedagog / razrednik?</p>
+                <p className="mt-1 text-muted-foreground">
+                  Jedan kod za cijeli 8. razred: tko je riješio kviz i koji smjerovi iskaču.
+                </p>
+                <Button asChild size="sm" className="mt-3 rounded-xl">
+                  <Link to="/razred">Otvori ploču razreda</Link>
+                </Button>
+              </div>
             </div>
-            <div className="rounded-2xl border border-sky-500/25 bg-sky-500/[0.06] px-4 py-3 text-sm">
-              <p className="font-semibold">Pedagog / razrednik?</p>
-              <p className="mt-1 text-muted-foreground">
-                Jedan kod za cijeli 8. razred: tko je riješio kviz i koji smjerovi iskaču, bez imena na ploči.
-              </p>
-              <Button asChild size="sm" className="mt-3 rounded-xl">
-                <Link to="/razred">Otvori ploču razreda</Link>
-              </Button>
-            </div>
-          </div>
+          </>
         ) : null}
 
         {/* Toolbar: pretraga + favoriti + kategorije + nastavi */}
