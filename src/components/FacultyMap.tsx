@@ -205,8 +205,13 @@ export default function FacultyMap({
 
   const clusters = useMemo(() => clusterFaculties(faculties, zoom), [faculties, zoom]);
 
+  const openDetail = (id: string) => {
+    mapRef.current?.closePopup();
+    onOpenDetail(id);
+  };
+
   return (
-    <div className={cn("relative overflow-hidden rounded-2xl", className)}>
+    <div className={cn("relative z-0 isolate overflow-hidden rounded-2xl", className)}>
       <MapContainer
         center={[44.8, 16.0]}
         zoom={7}
@@ -268,7 +273,7 @@ export default function FacultyMap({
                         <li
                           key={f.id}
                           className="cursor-pointer truncate rounded px-1.5 py-1 hover:bg-muted"
-                          onClick={() => onOpenDetail(f.id)}
+                          onClick={() => openDetail(f.id)}
                         >
                           {f.name}
                         </li>
@@ -336,7 +341,7 @@ export default function FacultyMap({
                   <div className="mt-3 flex gap-2">
                     <button
                       type="button"
-                      onClick={() => onOpenDetail(faculty.id)}
+                      onClick={() => openDetail(faculty.id)}
                       className="flex-1 rounded-lg bg-primary px-3 py-1.5 text-xs font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
                     >
                       Detalji
@@ -359,7 +364,7 @@ export default function FacultyMap({
       </MapContainer>
 
       {/* Legend */}
-      <div className="absolute bottom-14 left-3 z-[1000] rounded-xl border border-border/80 bg-card/95 p-2.5 shadow-lg backdrop-blur-sm sm:bottom-4 sm:left-4 sm:p-3">
+      <div className="absolute bottom-14 left-3 z-10 rounded-xl border border-border/80 bg-card/95 p-2.5 shadow-lg backdrop-blur-sm sm:bottom-4 sm:left-4 sm:p-3">
         <p className="mb-1.5 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
           Vrsta ustanove
         </p>

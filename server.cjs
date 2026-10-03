@@ -784,6 +784,79 @@ function normalizeUserType(raw) {
   return "srednjoskolac";
 }
 
+function displayNameFromGoogle(name, email) {
+  const cleaned = String(name || "")
+    .replace(/[^\p{L}\p{N} .'-]/gu, "")
+    .replace(/\s+/g, " ")
+    .trim()
+    .slice(0, 40);
+  if (cleaned.length >= 2) return cleaned;
+  const local = String(email || "")
+    .split("@")[0]
+    .replace(/[^\p{L}\p{N}._-]/gu, "")
+    .slice(0, 40);
+  return local.length >= 2 ? local : "Korisnik";
+}
+
+function isUniqueViolation(err) {
+  const code = String(err?.code || "");
+  if (code === "23505" || code === "SQLITE_CONSTRAINT_UNIQUE") return true;
+  return /UNIQUE constraint failed|duplicate key/i.test(String(err?.message || ""));
+}
+
+/** Provjera Google ID tokena. Client ID je javan; tajna se ne sprema. */
+async function verifyGoogleIdToken(credential, clientId) {
+  const url = `https://oauth2.googleapis.com/tokeninfo?id_token=${encodeURIComponent(credential)}`;
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), 8000);
+  let response;
+  try {
+    response = await fetch(url, { signal: ctrl.signal });
+  } catch (err) {
+    console.error("[auth/google] tokeninfo:", err?.message || err);
+    return null;
+  } finally {
+    clearTimeout(timer);
+  }
+  if (!response.ok) return null;
+  let data;
+  try {
+    data = await response.json();
+  } catch {
+    return null;
+  }
+  const aud = String(data.aud || "");
+  const iss = String(data.iss || "");
+  const exp = Number(data.exp || 0);
+  const emailVerified = data.email_verified === true || data.email_verified === "true";
+  const email = String(data.email || "").trim().toLowerCase();
+  const sub = String(data.sub || "").trim();
+  if (!clientId || aud !== clientId) return null;
+  if (iss !== "accounts.google.com" && iss !== "https://accounts.google.com") return null;
+  if (!emailVerified || !isValidEmail(email) || !sub || sub.length > 255) return null;
+  if (!Number.isFinite(exp) || exp * 1000 < Date.now()) return null;
+  return { email, sub, name: String(data.name || data.given_name || "").trim() };
+}
+
+async function issueUserSession(db, req, res, userId) {
+  await db.prepare("UPDATE users SET last_login_at = datetime('now') WHERE id = ?").run(userId);
+  const fresh = await db
+    .prepare(
+      "SELECT id, username, email, created_at, email_verified, user_type, last_login_at FROM users WHERE id = ?",
+    )
+    .get(userId);
+  if (!fresh) {
+    return res.status(500).json({ success: false, message: "Račun nije pronađen nakon prijave." });
+  }
+  const user = await enrichUserWithSchool(db, userPayloadWithAdminFlag(fresh));
+  if (user.school && !user.school.is_active) {
+    return res.status(403).json({ success: false, message: "Račun trenutno nije aktivan." });
+  }
+  const token = signToken({ sub: user.id });
+  setAuthCookie(res, token, req);
+  return res.json({ success: true, user, token });
+}
+
 function escapeHtml(s) {
   return String(s ?? "")
     .replace(/&/g, "&amp;")
@@ -1676,7 +1749,7 @@ async function main() {
 
       const row = await db
         .prepare(
-          "SELECT id, username, email, password_hash, created_at, email_verified, user_type, last_login_at FROM users WHERE email = ?",
+          "SELECT id, username, email, password_hash, created_at, email_verified, user_type, last_login_at, google_sub FROM users WHERE email = ?",
         )
         .get(cleanEmail);
       if (!row) {
@@ -1707,24 +1780,97 @@ async function main() {
       }
 
       const ok = bcrypt.compareSync(cleanPassword, row.password_hash);
-      if (!ok) return res.status(401).json({ success: false, message: "Neispravan email ili lozinka." });
-
-      await db.prepare("UPDATE users SET last_login_at = datetime('now') WHERE id = ?").run(row.id);
-      const fresh = await db
-        .prepare(
-          "SELECT id, username, email, created_at, email_verified, user_type, last_login_at FROM users WHERE id = ?",
-        )
-        .get(row.id);
-      const user = await enrichUserWithSchool(db, userPayloadWithAdminFlag(fresh));
-      if (user.school && !user.school.is_active) {
-        return res.status(403).json({ success: false, message: "Račun trenutno nije aktivan." });
+      if (!ok) {
+        if (row.google_sub) {
+          return res.status(401).json({
+            success: false,
+            message: "Neispravan email ili lozinka. Ako si račun otvorio putem Googlea, nastavi s Googleom.",
+            code: "USE_GOOGLE",
+          });
+        }
+        return res.status(401).json({ success: false, message: "Neispravan email ili lozinka." });
       }
-      const token = signToken({ sub: user.id });
-      setAuthCookie(res, token, req);
-      /** Isti JWT i u JSON-u — cross-site kolačić često nije moguć; klijent šalje Authorization. */
-      return res.json({ success: true, user, token });
+
+      return issueUserSession(db, req, res, row.id);
     } catch (err) {
       console.error("[auth/login] greška:", err?.message || err);
+      return res.status(500).json({ success: false, message: "Interna greška servera." });
+    }
+  });
+
+  app.get("/api/auth/google/config", (_req, res) => {
+    const clientId = String(process.env.GOOGLE_CLIENT_ID || "").trim();
+    return res.json({ success: true, clientId: clientId || null });
+  });
+
+  app.post("/api/auth/google", async (req, res) => {
+    try {
+      const clientId = String(process.env.GOOGLE_CLIENT_ID || "").trim();
+      if (!clientId) {
+        return res.status(503).json({
+          success: false,
+          message: "Prijava putem Googlea još nije uključena na serveru.",
+          code: "GOOGLE_NOT_CONFIGURED",
+        });
+      }
+      const credential = String(req.body?.credential || "").trim();
+      if (!credential || credential.length > 8192) {
+        return res.status(400).json({ success: false, message: "Google potvrda nije valjana." });
+      }
+      const profile = await verifyGoogleIdToken(credential, clientId);
+      if (!profile) {
+        return res.status(401).json({
+          success: false,
+          message: "Google prijava nije prihvaćena. Pokušaj ponovno.",
+        });
+      }
+
+      let row = await db.prepare("SELECT id FROM users WHERE google_sub = ?").get(profile.sub);
+      if (!row) {
+        const byEmail = await db
+          .prepare("SELECT id, google_sub FROM users WHERE email = ?")
+          .get(profile.email);
+        if (byEmail) {
+          if (byEmail.google_sub && byEmail.google_sub !== profile.sub) {
+            return res.status(409).json({
+              success: false,
+              message: "Ovaj email je već povezan s drugim Google računom.",
+            });
+          }
+          await db
+            .prepare("UPDATE users SET google_sub = ?, email_verified = 1 WHERE id = ?")
+            .run(profile.sub, byEmail.id);
+          row = { id: byEmail.id };
+        }
+      }
+
+      if (!row) {
+        const passwordHash = bcrypt.hashSync(crypto.randomBytes(32).toString("hex"), 12);
+        const username = displayNameFromGoogle(profile.name, profile.email);
+        try {
+          const info = await db
+            .prepare(
+              "INSERT INTO users (username, email, password_hash, email_verified, user_type, google_sub) VALUES (?, ?, ?, 1, 'srednjoskolac', ?)",
+            )
+            .run(username, profile.email, passwordHash, profile.sub);
+          row = { id: Number(info.lastInsertRowid) };
+        } catch (err) {
+          if (!isUniqueViolation(err)) throw err;
+          const again = await db
+            .prepare("SELECT id FROM users WHERE google_sub = ? OR email = ?")
+            .get(profile.sub, profile.email);
+          if (!again) throw err;
+          row = again;
+        }
+      }
+
+      if (!row?.id) {
+        return res.status(500).json({ success: false, message: "Račun nije moguće otvoriti." });
+      }
+      await db.prepare("DELETE FROM pending_registrations WHERE email = ?").run(profile.email);
+      return issueUserSession(db, req, res, row.id);
+    } catch (err) {
+      console.error("[auth/google]", err?.message || err);
       return res.status(500).json({ success: false, message: "Interna greška servera." });
     }
   });

@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Copy, Expand, Link2, QrCode, RefreshCw, Volume2, VolumeX, Users } from "lucide-react";
+import { Copy, Expand, Link2, RefreshCw, Volume2, VolumeX, Users } from "lucide-react";
 import { toast } from "sonner";
 import Layout from "@/components/Layout";
 import PageSeo from "@/components/seo/PageSeo";
@@ -22,6 +22,16 @@ import {
   type JuniorClassBoard,
 } from "@/lib/juniorClass";
 import { programHref } from "@/lib/juniorProgramGuide";
+
+function potvrdaWord(count: number): string {
+  const mod10 = count % 10;
+  const mod100 = count % 100;
+  if (mod10 === 1 && mod100 !== 11) return "potvrda";
+  if (mod10 >= 2 && mod10 <= 4 && (mod100 < 12 || mod100 > 14)) return "potvrde";
+  return "potvrda";
+}
+
+const RANK_BAR = ["bg-primary", "bg-primary/75", "bg-primary/50"];
 
 function playDing() {
   try {
@@ -128,26 +138,37 @@ export default function Razred() {
   const newestId = board?.entries.length ? board.entries[board.entries.length - 1]?.id ?? board.entries.length : null;
   const lead = board?.tracks[0];
 
+  const qrSize = projector ? 320 : 220;
+
   return (
-    <Layout>
+    <Layout hideChrome={projector}>
       <PageSeo
         title="Razred — kod za kviz | MojPut"
         description="Jedan kod za 8. razred. Učenici riješe kviz, potvrde rezultat, a na ploči se redom vide smjerovi — bez imena."
         canonical="/razred"
       />
-      <section className={cn("container mx-auto max-w-3xl px-3 py-8 sm:px-4 md:py-12", projector && "max-w-5xl")}>
-        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-primary">Za pedagoga i razrednika</p>
-        <h1 className="mt-1 flex items-center gap-2 text-3xl font-bold tracking-tight">
-          <Users className="h-7 w-7 text-primary" />
-          Razred — jedan kod
-        </h1>
-        <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-          Učenici riješe kviz na svom mobitelu. Kad potvrde, ovdje se redom pojavi njihov smjer. Imena nisu na
-          ploči — osim ako to sam uključiš.
-        </p>
+      <section
+        className={cn(
+          "mx-auto w-full px-3 py-6 sm:px-5",
+          projector ? "max-w-none px-4 py-4 sm:px-8" : "container max-w-6xl md:py-10",
+        )}
+      >
+        {!(projector && board) && (
+          <>
+            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-primary">Za pedagoga i razrednika</p>
+            <h1 className="mt-1 flex items-center gap-2 text-3xl font-bold tracking-tight">
+              <Users className="h-7 w-7 text-primary" />
+              Razred — jedan kod
+            </h1>
+            <p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted-foreground">
+              Učenici riješe kviz na svom mobitelu. Kad potvrde, ovdje se redom pojavi njihov smjer. Imena nisu na
+              ploči — osim ako to sam uključiš.
+            </p>
+          </>
+        )}
 
         {!board ? (
-          <div className="mt-8 space-y-4 rounded-3xl border border-border/70 bg-card p-5 shadow-sm">
+          <div className="mx-auto mt-8 max-w-3xl space-y-4 rounded-3xl border border-border/70 bg-card p-5 shadow-sm">
             <ol className="grid gap-2 text-sm text-muted-foreground sm:grid-cols-3">
               <li className="rounded-2xl bg-background/70 px-3 py-2.5">
                 <span className="font-bold text-foreground">1.</span> Napravi kod
@@ -214,112 +235,104 @@ export default function Razred() {
             </div>
           </div>
         ) : (
-          <div className="mt-8 space-y-5">
-            <div className="rounded-3xl border border-primary/25 bg-primary/[0.05] p-5 text-center">
-              <div className="flex items-center justify-center gap-2">
-                <span className="relative flex h-2.5 w-2.5">
-                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-70" />
-                  <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-emerald-500" />
-                </span>
-                <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                  {board.label || "Kod razreda"} · uživo
-                </p>
-              </div>
-              <p className={cn("mt-1 font-mono font-extrabold tracking-[0.28em]", projector ? "text-6xl" : "text-4xl")}>
-                {board.code}
-              </p>
-              <p className={cn("mt-2 font-semibold", projector ? "text-xl" : "text-sm text-muted-foreground")}>
-                {board.doneCount === 0
-                  ? "Čekamo prvu potvrdu"
-                  : `${board.doneCount} ${board.doneCount === 1 ? "potvrda" : "potvrda"}`}
-                {goal ? ` · od ${goal}` : ""}
-              </p>
-              {goal ? (
-                <div className="mx-auto mt-3 h-2.5 max-w-sm overflow-hidden rounded-full bg-muted">
-                  <div
-                    className="h-full rounded-full bg-primary transition-all"
-                    style={{ width: `${Math.min(100, (board.doneCount / goal) * 100)}%` }}
-                  />
+          <div className={cn("space-y-5", projector ? "mt-0" : "mt-8")}>
+            <div className="grid items-stretch gap-4 lg:grid-cols-[minmax(0,1.15fr)_minmax(18rem,0.85fr)]">
+              <div className="rounded-3xl border border-primary/25 bg-primary/[0.06] p-5 sm:p-7">
+                <div className="flex items-center gap-2">
+                  <span className="relative flex h-2.5 w-2.5">
+                    <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-70" />
+                    <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-emerald-500" />
+                  </span>
+                  <p className={cn("font-semibold uppercase tracking-wide text-muted-foreground", projector ? "text-sm" : "text-xs")}>
+                    {board.label || "Kod razreda"} · uživo
+                  </p>
                 </div>
-              ) : null}
-              {lead && board.doneCount > 0 ? (
-                <p className="mt-3 text-sm">
-                  Najčešće zasad: <span className="font-bold">{lead.name}</span> ({lead.count})
-                </p>
-              ) : null}
-              <div className="mt-4 flex flex-wrap justify-center gap-2">
-                <Button size="sm" variant="outline" className="rounded-xl" onClick={() => void copyText(board.code, "Kod kopiran.")}>
-                  <Copy className="mr-1.5 h-3.5 w-3.5" />
-                  Kopiraj kod
-                </Button>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  className="rounded-xl"
-                  onClick={() => void copyText(studentLink, "Link za učenike je kopiran.")}
+                <p
+                  className={cn(
+                    "mt-3 font-mono font-extrabold leading-none tracking-[0.18em] text-foreground",
+                    projector ? "text-7xl sm:text-8xl" : "text-5xl sm:text-7xl",
+                  )}
                 >
-                  <Link2 className="mr-1.5 h-3.5 w-3.5" />
-                  Kopiraj link
-                </Button>
-                <Button size="sm" variant="outline" className="rounded-xl" onClick={() => void load(board.code)}>
-                  <RefreshCw className="mr-1.5 h-3.5 w-3.5" />
-                  Osvježi
-                </Button>
-                <Button asChild size="sm" className="rounded-xl">
-                  <Link to={studentQuizPath(board.code)}>Otvori kviz</Link>
-                </Button>
+                  {board.code}
+                </p>
+                <div className="mt-6 flex flex-col items-center gap-4 sm:flex-row sm:items-center">
+                  <img
+                    src={qrImageSrc(studentLink, qrSize)}
+                    alt={`QR za kviz razreda ${board.code}`}
+                    width={qrSize}
+                    height={qrSize}
+                    className={cn("shrink-0 rounded-2xl bg-white p-2", projector ? "h-72 w-72" : "h-52 w-52")}
+                  />
+                  <p className={cn("text-center font-semibold sm:text-left", projector ? "text-2xl" : "text-lg")}>
+                    Skeniraj i kreni.
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex flex-col justify-center rounded-3xl border border-border/70 bg-card p-5 sm:p-7">
+                <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Potvrde</p>
+                <p className={cn("mt-2 font-extrabold tabular-nums leading-none", projector ? "text-7xl" : "text-6xl")}>
+                  {board.doneCount}
+                  {goal ? <span className="text-muted-foreground"> / {goal}</span> : null}
+                </p>
+                <p className={cn("mt-2 font-semibold text-muted-foreground", projector ? "text-xl" : "text-sm")}>
+                  {board.doneCount === 0 ? "Čekamo prvu potvrdu" : potvrdaWord(board.doneCount)}
+                </p>
+                {goal ? (
+                  <div className="mt-5 h-3 overflow-hidden rounded-full bg-muted">
+                    <div
+                      className="h-full rounded-full bg-primary transition-all"
+                      style={{ width: `${Math.min(100, (board.doneCount / goal) * 100)}%` }}
+                    />
+                  </div>
+                ) : null}
+                {lead && board.doneCount > 0 ? (
+                  <p className={cn("mt-5", projector ? "text-xl" : "text-base")}>
+                    Najčešće: <span className="font-bold">{lead.name}</span>
+                    <span className="ml-2 tabular-nums text-muted-foreground">({lead.count})</span>
+                  </p>
+                ) : null}
               </div>
             </div>
 
-            <div className="grid gap-4 sm:grid-cols-[180px_1fr]">
-              <div className="rounded-3xl border border-border/70 bg-card p-4 text-center">
-                <p className="flex items-center justify-center gap-1.5 text-xs font-bold uppercase tracking-wide text-muted-foreground">
-                  <QrCode className="h-3.5 w-3.5" />
-                  Skeniraj
-                </p>
-                <img
-                  src={qrImageSrc(studentLink, 200)}
-                  alt={`QR za kviz razreda ${board.code}`}
-                  width={160}
-                  height={160}
-                  className="mx-auto mt-2 rounded-xl bg-white p-2"
-                />
-                <p className="mt-2 text-[11px] text-muted-foreground">Učenik skenira i odmah krene u kviz.</p>
-              </div>
-              <article className="rounded-3xl border border-border/70 bg-card p-5">
-                <h2 className="text-base font-bold">Kako ide sat</h2>
-                <ol className="mt-3 list-decimal space-y-1.5 pl-5 text-sm text-muted-foreground">
-                  <li>Napiši kod ili pokaži QR.</li>
-                  <li>Učenici riješe kviz na svom telefonu.</li>
-                  <li>Na kraju stisnu <span className="font-semibold text-foreground">Potvrdi kviz</span>.</li>
-                  <li>Ovdje se redom pojavi smjer — bez imena.</li>
-                </ol>
-                <p className="mt-3 text-xs text-muted-foreground">
-                  Ploča se sama osvježava. Link za ovu ploču:{" "}
-                  <Link to={classBoardPath(board.code)} className="font-semibold text-primary underline-offset-2 hover:underline">
-                    {classBoardPath(board.code)}
-                  </Link>
-                </p>
-              </article>
-            </div>
-
-            <article className="rounded-3xl border border-border/70 bg-card p-5">
-              <h2 className="text-base font-bold">Koji smjerovi iskaču</h2>
+            <article className="rounded-3xl border border-border/70 bg-card p-5 sm:p-6">
+              <h2 className={cn("font-bold", projector ? "text-2xl" : "text-lg")}>Koji smjerovi iskaču</h2>
               {board.tracks.length === 0 ? (
-                <p className="mt-3 text-sm text-muted-foreground">Još prazno. Prva potvrda otvori listu.</p>
+                <p className={cn("mt-4 text-muted-foreground", projector ? "text-xl" : "text-sm")}>
+                  Još prazno. Prva potvrda otvori listu.
+                </p>
               ) : (
-                <ul className="mt-4 space-y-3">
-                  {board.tracks.map((track) => (
-                    <li key={track.programId}>
-                      <div className="mb-1 flex items-center justify-between gap-2 text-sm">
-                        <Link to={programHref({ name: track.name })} className="font-semibold hover:underline">
-                          {track.name}
-                        </Link>
-                        <span className="tabular-nums text-muted-foreground">{track.count}</span>
+                <ul className={cn("mt-5 grid gap-4", projector && board.tracks.length > 1 && "md:grid-cols-2")}>
+                  {board.tracks.map((track, index) => (
+                    <li key={track.programId} className={cn(index < 3 && "rounded-2xl bg-background/70 p-3")}>
+                      <div className="mb-2 flex items-center justify-between gap-3">
+                        <span className="flex min-w-0 items-center gap-3">
+                          <span
+                            className={cn(
+                              "flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-sm font-bold",
+                              index < 3 ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground",
+                              projector && "h-10 w-10 text-base",
+                            )}
+                          >
+                            {index + 1}
+                          </span>
+                          <Link
+                            to={programHref({ name: track.name })}
+                            className={cn(
+                              "truncate font-bold hover:underline",
+                              projector ? "text-2xl" : "text-lg",
+                            )}
+                          >
+                            {track.name}
+                          </Link>
+                        </span>
+                        <span className={cn("shrink-0 font-bold tabular-nums", projector ? "text-2xl" : "text-lg")}>
+                          {track.count}
+                        </span>
                       </div>
-                      <div className="h-2 overflow-hidden rounded-full bg-muted">
+                      <div className={cn("overflow-hidden rounded-full bg-muted", projector ? "h-4" : "h-3")}>
                         <div
-                          className="h-full rounded-full bg-primary transition-all"
+                          className={cn("h-full rounded-full transition-all", RANK_BAR[index] ?? "bg-primary/35")}
                           style={{ width: `${Math.max(8, (track.count / maxTrack) * 100)}%` }}
                         />
                       </div>
@@ -329,18 +342,20 @@ export default function Razred() {
               )}
             </article>
 
-            <article className="rounded-3xl border border-border/70 bg-card p-5">
+            <article className="rounded-3xl border border-border/70 bg-card p-5 sm:p-6">
               <div className="flex flex-wrap items-center justify-between gap-2">
-                <h2 className="text-base font-bold">Redom, kako potvrde</h2>
+                <h2 className={cn("font-bold", projector ? "text-2xl" : "text-lg")}>Redom, kako potvrde</h2>
                 <span className="text-xs text-muted-foreground">najnovije dolje</span>
               </div>
               {board.entries.length === 0 ? (
-                <div className="mt-4 rounded-2xl border border-dashed border-border/70 px-4 py-8 text-center">
-                  <p className={cn("font-semibold", projector && "text-2xl")}>Čekamo prvu potvrdu…</p>
-                  <p className="mt-1 text-sm text-muted-foreground">Kad netko stisne Potvrdi kviz, ovdje se pojavi smjer.</p>
+                <div className="mt-4 rounded-2xl border border-dashed border-border/70 px-4 py-10 text-center">
+                  <p className={cn("font-semibold", projector ? "text-3xl" : "text-lg")}>Čekamo prvu potvrdu…</p>
+                  <p className={cn("mt-2 text-muted-foreground", projector ? "text-lg" : "text-sm")}>
+                    Kad netko stisne Potvrdi kviz, ovdje se pojavi smjer.
+                  </p>
                 </div>
               ) : (
-                <ol className="mt-4 space-y-2" data-tick={tick}>
+                <ol className="mt-4 space-y-3" data-tick={tick}>
                   {board.entries.map((entry, i) => {
                     const key = entry.id ?? `${entry.programId}-${i}`;
                     const fresh = newestId != null && entry.id === newestId;
@@ -350,17 +365,19 @@ export default function Razred() {
                         initial={fresh ? { opacity: 0, y: 10 } : false}
                         animate={{ opacity: 1, y: 0 }}
                         className={cn(
-                          "flex items-center justify-between gap-3 rounded-2xl px-3 py-2.5 text-sm",
-                          fresh ? "bg-primary/10 ring-1 ring-primary/30" : "bg-background/60",
+                          "flex items-center justify-between gap-4 rounded-2xl px-4 py-4",
+                          fresh ? "bg-primary/10 ring-1 ring-primary/30" : "bg-background/70",
                         )}
                       >
                         <span className="flex min-w-0 items-center gap-3">
-                          <span className="w-7 shrink-0 font-mono text-xs font-bold text-muted-foreground">{i + 1}.</span>
-                          <span className={cn("truncate font-semibold", projector && "text-lg")}>
+                          <span className={cn("w-8 shrink-0 font-mono font-bold text-muted-foreground", projector ? "text-lg" : "text-sm")}>
+                            {i + 1}.
+                          </span>
+                          <span className={cn("truncate font-bold", projector ? "text-2xl" : "text-base")}>
                             {showNames && entry.alias ? `${entry.alias} · ${entry.programName}` : entry.programName}
                           </span>
                         </span>
-                        <span className="shrink-0 text-xs text-muted-foreground">
+                        <span className={cn("shrink-0 text-muted-foreground", projector ? "text-base" : "text-xs")}>
                           {arrivalLabel(entry.createdAt)}
                         </span>
                       </motion.li>
@@ -370,16 +387,27 @@ export default function Razred() {
               )}
             </article>
 
-            <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm">
-              <label className="flex items-center gap-2">
-                <input
-                  type="checkbox"
-                  checked={showNames}
-                  onChange={(e) => setShowNames(e.target.checked)}
-                  className="h-4 w-4 rounded border-border"
-                />
-                Prikaži nadimke
-              </label>
+            <div className="flex flex-wrap items-center gap-2 rounded-2xl border border-border/70 bg-card/80 px-3 py-3 text-sm">
+              <Button size="sm" variant="outline" className="rounded-xl" onClick={() => void copyText(board.code, "Kod kopiran.")}>
+                <Copy className="mr-1.5 h-3.5 w-3.5" />
+                Kopiraj kod
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                className="rounded-xl"
+                onClick={() => void copyText(studentLink, "Link za učenike je kopiran.")}
+              >
+                <Link2 className="mr-1.5 h-3.5 w-3.5" />
+                Kopiraj link
+              </Button>
+              <Button size="sm" variant="outline" className="rounded-xl" onClick={() => void load(board.code)}>
+                <RefreshCw className="mr-1.5 h-3.5 w-3.5" />
+                Osvježi
+              </Button>
+              <Button asChild size="sm" className="rounded-xl">
+                <Link to={studentQuizPath(board.code)}>Otvori kviz</Link>
+              </Button>
               <Button
                 type="button"
                 size="sm"
@@ -399,11 +427,25 @@ export default function Razred() {
                 {sound ? <Volume2 className="mr-1.5 h-3.5 w-3.5" /> : <VolumeX className="mr-1.5 h-3.5 w-3.5" />}
                 {sound ? "Zvuk uključen" : "Bez zvuka"}
               </Button>
+              <label className="flex items-center gap-2 px-1">
+                <input
+                  type="checkbox"
+                  checked={showNames}
+                  onChange={(e) => setShowNames(e.target.checked)}
+                  className="h-4 w-4 rounded border-border"
+                />
+                Prikaži nadimke
+              </label>
+              <Button variant="ghost" size="sm" className="rounded-xl" onClick={() => setBoard(null)}>
+                Novi razred
+              </Button>
+              <Link
+                to={classBoardPath(board.code)}
+                className="ml-auto text-xs font-semibold text-primary underline-offset-2 hover:underline"
+              >
+                Link ploče
+              </Link>
             </div>
-
-            <Button variant="ghost" size="sm" className="rounded-xl" onClick={() => setBoard(null)}>
-              Novi razred
-            </Button>
           </div>
         )}
       </section>

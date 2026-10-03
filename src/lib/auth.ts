@@ -59,18 +59,41 @@ export async function authMe(): Promise<ApiResponse<{ user: AuthUser }>> {
   return apiGet<{ user: AuthUser }>("/api/auth/me", { timeoutMs: API_SESSION_CHECK_TIMEOUT_MS });
 }
 
+function rememberAuthResponse(
+  res: ApiResponse<{ user: AuthUser; token?: string }>,
+  fallbackEmail?: string,
+): void {
+  if (!res.success) return;
+  const t = typeof (res as { token?: string }).token === "string" ? (res as { token?: string }).token : "";
+  if (t) setStoredAuthToken(t);
+  const fromUser = String((res as { user?: AuthUser }).user?.email || "").trim().toLowerCase();
+  const em = fromUser || String(fallbackEmail || "").trim().toLowerCase();
+  if (em) setStoredLastLoginEmail(em);
+  notifyAuthChanged();
+}
+
 export async function authLogin(params: {
   email: string;
   password: string;
 }): Promise<ApiResponse<{ user: AuthUser; token?: string }>> {
   const res = await apiPost<{ user: AuthUser; token?: string }>("/api/auth/login", params);
-  if (res.success) {
-    const t = typeof (res as { token?: string }).token === "string" ? (res as { token?: string }).token : "";
-    if (t) setStoredAuthToken(t);
-    const em = String(params.email || "").trim().toLowerCase();
-    if (em) setStoredLastLoginEmail(em);
-    notifyAuthChanged();
-  }
+  rememberAuthResponse(res, params.email);
+  return res;
+}
+
+/** Javni Google OAuth client ID. Prazno dok GOOGLE_CLIENT_ID nije u API .env. */
+export async function authGoogleClientId(): Promise<string | null> {
+  const res = await apiGet<{ clientId?: string | null }>("/api/auth/google/config");
+  if (!res.success) return null;
+  const id = (res as { clientId?: string | null }).clientId;
+  return typeof id === "string" && id.trim() ? id.trim() : null;
+}
+
+export async function authGoogle(
+  credential: string,
+): Promise<ApiResponse<{ user: AuthUser; token?: string }>> {
+  const res = await apiPost<{ user: AuthUser; token?: string }>("/api/auth/google", { credential });
+  rememberAuthResponse(res);
   return res;
 }
 

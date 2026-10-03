@@ -232,6 +232,353 @@ export function programTypeFromPrag(prag: KalkulatorPrag | null): SrednjaProgram
   return "kraci";
 }
 
+export type ScoringProfileId =
+  | "standard"
+  | "glazba"
+  | "glazba-pripremno"
+  | "glazba-paralelno"
+  | "likovna"
+  | "ples"
+  | "ples-pripremno"
+  | "sport"
+  | "provjera";
+
+export type ScoringExtra = {
+  id: string;
+  label: string;
+  hint: string;
+  max: number;
+  /** Eliminacijski prag. Ispod njega nema upisa. */
+  floor?: number;
+  /** Prazno polje blokira usporedbu s pragom. */
+  required?: boolean;
+};
+
+export type ScoringProfile = {
+  id: ScoringProfileId;
+  /** null = zadrži tip koji je učenik sam odabrao */
+  schoolProgram: SrednjaProgramType | null;
+  includeSchool: boolean;
+  extras: ScoringExtra[];
+  scaleMax: number;
+  note: string;
+};
+
+export type ExtraInputs = Record<string, string>;
+
+export type ProgramPointsExtra = {
+  id: string;
+  label: string;
+  points: number;
+  max: number;
+  entered: boolean;
+  floor?: number;
+};
+
+export type ProgramPoints = {
+  opciUspjeh: number;
+  kljucniPredmeti: number;
+  posebniPredmeti: number;
+  dodatni: number;
+  zajednicki: number;
+  schoolMax: number;
+  includeSchool: boolean;
+  schoolProgram: SrednjaProgramType | null;
+  extras: ProgramPointsExtra[];
+  ukupno: number;
+  scaleMax: number;
+  examPending: boolean;
+  examFailed: boolean;
+  failedFloor: number | null;
+  /** Standardni program, a objavljeni min/max nisu na školskoj skali. */
+  scaleMismatch: boolean;
+  profileId: ScoringProfileId;
+};
+
+const STANDARD_PROFILE: ScoringProfile = {
+  id: "standard",
+  schoolProgram: null,
+  includeSchool: true,
+  extras: [],
+  scaleMax: 0,
+  note: "",
+};
+
+function pragScale(prag: KalkulatorPrag | null | undefined): number {
+  return Math.max(prag?.min ?? 0, prag?.max ?? 0);
+}
+
+export function scoringProfileFor(
+  program:
+    | { name: string; sector?: string | null; schoolName?: string | null; prag?: KalkulatorPrag | null }
+    | null
+    | undefined,
+): ScoringProfile {
+  if (!program) return STANDARD_PROFILE;
+  const name = normalizeJuniorText(program.name);
+  const schoolName = normalizeJuniorText(program.schoolName ?? "");
+  const scale = pragScale(program.prag);
+
+  if (/pripremno/.test(name) && /glazb/.test(name)) {
+    return {
+      id: "glazba-pripremno",
+      schoolProgram: null,
+      includeSchool: false,
+      scaleMax: 180,
+      note: "Pripremno glazbeno obrazovanje boduje se samo prijemnim. Ocjene osnovne škole ne ulaze u zbroj. Maksimum je 180, a ispod 100 prijemni nije položen.",
+      extras: [
+        {
+          id: "prijemni",
+          label: "Prijemni ispit (sluh, pamćenje, ritam)",
+          hint: "Najviše 180 bodova. Ispod 100 nema upisa.",
+          max: 180,
+          floor: 100,
+          required: true,
+        },
+      ],
+    };
+  }
+
+  if (/pripremno/.test(name) && /ples|balet/.test(name)) {
+    return {
+      id: "ples-pripremno",
+      schoolProgram: null,
+      includeSchool: false,
+      scaleMax: 120,
+      note: "Pripremni plesni razred boduje se samo prijemnim. Maksimum je 120, a ispod 70 prijemni nije položen.",
+      extras: [
+        {
+          id: "prijemni",
+          label: "Prijemni ispit plesne darovitosti",
+          hint: "Najviše 120 bodova. Ispod 70 nema upisa.",
+          max: 120,
+          floor: 70,
+          required: true,
+        },
+      ],
+    };
+  }
+
+  if (/glazbenik|restaurator glazbala/.test(name)) {
+    const parallel = /program srednje skole/.test(name) && scale <= 180;
+    if (parallel) {
+      return {
+        id: "glazba-paralelno",
+        schoolProgram: null,
+        includeSchool: false,
+        scaleMax: 180,
+        note: "Paralelni upis uz drugi program broji uspjeh u glazbenoj školi i prijemni, ne ocjene osnovne. Maksimum je 180.",
+        extras: [
+          {
+            id: "strucniUspjeh",
+            label: "Uspjeh u glazbenoj školi (5. i 6. razred)",
+            hint: "Zbroj prosjeka petog i šestog razreda. Svaki je najviše 5, ukupno 10.",
+            max: 10,
+          },
+          {
+            id: "prijemni",
+            label: "Prijemni ispit glazbene darovitosti",
+            hint: "Najviše 170 bodova. Ispod 70 prijemni nije položen.",
+            max: 170,
+            floor: 70,
+            required: true,
+          },
+        ],
+      };
+    }
+    return {
+      id: "glazba",
+      schoolProgram: "gimnazija4",
+      includeSchool: true,
+      scaleMax: 260,
+      note: "Lanjski prag već uključuje školske bodove, uspjeh u glazbenoj školi i prijemni. Školskih 80 nije cijela skala — maksimum je 260.",
+      extras: [
+        {
+          id: "strucniUspjeh",
+          label: "Uspjeh u glazbenoj školi (5. i 6. razred)",
+          hint: "Zbroj prosjeka petog i šestog razreda glazbene škole ili pripremnog obrazovanja. Svaki je najviše 5, ukupno 10.",
+          max: 10,
+        },
+        {
+          id: "prijemni",
+          label: "Prijemni ispit glazbene darovitosti",
+          hint: "Najviše 170 bodova. Ispod 70 prijemni nije položen.",
+          max: 170,
+          floor: 70,
+          required: true,
+        },
+      ],
+    };
+  }
+
+  if (/plesac|balet|plesn/.test(name)) {
+    return {
+      id: "ples",
+      schoolProgram: "gimnazija4",
+      includeSchool: true,
+      scaleMax: 200,
+      note: "Lanjski prag uključuje školske bodove, uspjeh plesne škole i prijemni. Maksimum je 200, a prijemni ispod 70 nije položen.",
+      extras: [
+        {
+          id: "plesniUspjeh",
+          label: "Opći uspjeh 4. razreda plesne škole",
+          hint: "Prosjek četvrtog razreda plesne ili baletne škole, najviše 5.",
+          max: 5,
+        },
+        {
+          id: "prijemni",
+          label: "Prijemni ispit plesne darovitosti",
+          hint: "Najviše 115 bodova. Ispod 70 prijemni nije položen.",
+          max: 115,
+          floor: 70,
+          required: true,
+        },
+      ],
+    };
+  }
+
+  if (/odjel za sporta|sportska gimnazija/.test(`${name} ${schoolName}`)) {
+    return {
+      id: "sport",
+      schoolProgram: "gimnazija4",
+      includeSchool: true,
+      scaleMax: 160,
+      note: "Odjel za sportaše zbraja školske bodove (do 80) i sportsku uspješnost (do 80). Lanjski prag je na toj skali do 160.",
+      extras: [
+        {
+          id: "sport",
+          label: "Sportska uspješnost",
+          hint: "Bodovi s rang-liste nacionalnog saveza, najviše 80.",
+          max: 80,
+          required: true,
+        },
+      ],
+    };
+  }
+
+  const artTalent =
+    /likovn|slikar|kipar|dizajner odjece|grafickih proizvoda|graficki urednik|unutrasnje arhitekture/.test(name);
+  const artSector = /umjetnost/.test(normalizeJuniorText(program.sector ?? ""));
+  if ((artTalent && (scale > 100 || scale === 0)) || (artSector && scale > 100 && scale <= 210)) {
+    return {
+      id: "likovna",
+      schoolProgram: "gimnazija4",
+      includeSchool: true,
+      scaleMax: 200,
+      note: "Lanjski prag uključuje školske bodove i provjeru darovitosti. Školskih 80 nije cijela skala — maksimum je 200, a provjera ispod 70 nije položena.",
+      extras: [
+        {
+          id: "provjera",
+          label: "Provjera darovitosti",
+          hint: "Crtanje i slikanje, najviše 120 bodova. Ispod 70 provjera nije položena.",
+          max: 120,
+          floor: 70,
+          required: true,
+        },
+      ],
+    };
+  }
+
+  if (scale > 210) {
+    const examMax = Math.max(1, Math.ceil(scale - 80));
+    return {
+      id: "provjera",
+      schoolProgram: "gimnazija4",
+      includeSchool: true,
+      scaleMax: 80 + examMax,
+      note: "Ovaj program ima prag iznad školskih 80 bodova. Upiši bodove provjere da usporedba bude na istoj skali.",
+      extras: [
+        {
+          id: "provjera",
+          label: "Bodovi provjere posebnih sklonosti",
+          hint: `Upiši bodove provjere, najviše ${examMax}.`,
+          max: examMax,
+          required: true,
+        },
+      ],
+    };
+  }
+
+  return STANDARD_PROFILE;
+}
+
+export function computeProgramPoints(
+  draft: JuniorGradeDraft,
+  profile: ScoringProfile,
+  extraInputs: ExtraInputs = {},
+  prag?: KalkulatorPrag | null,
+): ProgramPoints {
+  const schoolProgram = profile.includeSchool ? (profile.schoolProgram ?? draft.program) : null;
+  const school = schoolProgram
+    ? computeSrednjaPoints({ ...draft, program: schoolProgram })
+    : {
+        opciUspjeh: 0,
+        kljucniPredmeti: 0,
+        posebniPredmeti: 0,
+        dodatni: Math.max(0, toNum(draft.dodatniBodovi)),
+        zajednicki: 0,
+        ukupno: Math.max(0, toNum(draft.dodatniBodovi)),
+        max: 0,
+      };
+
+  const extras: ProgramPointsExtra[] = profile.extras.map((extra) => {
+    const raw = extraInputs[extra.id];
+    const entered = raw != null && raw.trim() !== "";
+    const points = entered ? clamp(toNum(raw), 0, extra.max) : 0;
+    return {
+      id: extra.id,
+      label: extra.label,
+      points,
+      max: extra.max,
+      entered,
+      floor: extra.floor,
+    };
+  });
+
+  const extraSum = extras.reduce((sum, extra) => sum + extra.points, 0);
+  const ukupno = (schoolProgram ? school.zajednicki + school.dodatni : school.dodatni) + extraSum;
+  const scaleMismatch = profile.id === "standard" && pragScale(prag) > 100;
+  const nominal = profile.scaleMax > 0 ? profile.scaleMax : school.max;
+  const publishedMax = scaleMismatch ? 0 : (prag?.max ?? 0);
+  const failed = extras.find((extra) => extra.entered && extra.floor != null && extra.points < extra.floor);
+
+  return {
+    opciUspjeh: school.opciUspjeh,
+    kljucniPredmeti: school.kljucniPredmeti,
+    posebniPredmeti: school.posebniPredmeti,
+    dodatni: school.dodatni,
+    zajednicki: school.zajednicki,
+    schoolMax: school.max,
+    includeSchool: profile.includeSchool,
+    schoolProgram,
+    extras,
+    ukupno,
+    scaleMax: Math.max(nominal, publishedMax, ukupno),
+    examPending: profile.extras.some((extra, index) => extra.required && !extras[index]?.entered),
+    examFailed: Boolean(failed),
+    failedFloor: failed?.floor ?? null,
+    scaleMismatch,
+    profileId: profile.id,
+  };
+}
+
+export function chanceForProgram(
+  points: number,
+  pragMin: number,
+  gate: { pending: boolean; failed: boolean; floor: number | null },
+): Chance | null {
+  if (gate.pending) return null;
+  if (gate.failed) {
+    const floor = gate.floor ?? 0;
+    return {
+      label: "Ne prolazi prijemni",
+      desc: `Prijemni je ispod eliminacijskog praga od ${floor} bodova. Bez položenog prijemnog nema upisa, čak i ako je ostali zbroj visok.`,
+      tone: "rose",
+    };
+  }
+  return chanceFor(points, pragMin);
+}
+
 export function computeSrednjaPoints(draft: JuniorGradeDraft): {
   opciUspjeh: number;
   kljucniPredmeti: number;

@@ -396,12 +396,19 @@ const JuniorQuizFlow = () => {
     return (
       <motion.div initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }} className="mx-auto max-w-3xl">
         <div className="rounded-3xl border border-border/70 bg-card/80 p-6 text-center shadow-xl backdrop-blur sm:p-10">
-          <Badge className="mx-auto mb-4 bg-primary/10 text-primary hover:bg-primary/10">KVIZ ZA 8. RAZRED</Badge>
           {classCodeFromUrl ? (
-            <p className="mx-auto mb-3 max-w-md rounded-2xl bg-primary/10 px-3 py-2 text-sm font-semibold">
-              Rješavaš za razred {classCodeFromUrl}. Na kraju potvrdi rezultat — na ploči ide samo smjer, ne ime.
-            </p>
-          ) : null}
+            <div className="mx-auto mb-6 max-w-md">
+              <p className="text-xs font-bold uppercase tracking-[0.18em] text-primary">Razred</p>
+              <p className="mt-1 font-mono text-5xl font-extrabold tracking-[0.22em] text-foreground sm:text-6xl">
+                {classCodeFromUrl}
+              </p>
+              <p className="mt-2 text-sm text-muted-foreground">
+                Na kraju potvrdi rezultat — na ploči ide samo smjer, ne ime.
+              </p>
+            </div>
+          ) : (
+            <Badge className="mx-auto mb-4 bg-primary/10 text-primary hover:bg-primary/10">KVIZ ZA 8. RAZRED</Badge>
+          )}
           <h1 className="text-balance text-3xl font-extrabold tracking-tight sm:text-4xl">Koja je srednja škola za mene?</h1>
           <p className="mx-auto mt-3 max-w-xl text-pretty text-muted-foreground">
             Kratak kviz, oko 8 minuta. Nema točnih i netočnih odgovora. Odgovori iskreno — želimo vidjeti što tebi
@@ -436,12 +443,14 @@ const JuniorQuizFlow = () => {
                 ? "Imaš spremljen kviz. Možeš zatvoriti i sutra nastaviti."
                 : "Možeš zatvoriti i sutra nastaviti — kviz ostaje na ovom uređaju."}
             </p>
-            <p className="text-xs text-muted-foreground">
-              Pedagog ili razrednik?{" "}
-              <Link to="/razred" className="font-semibold text-primary underline-offset-2 hover:underline">
-                Napravi kod za razred
-              </Link>
-            </p>
+            {classCodeFromUrl ? null : (
+              <p className="text-xs text-muted-foreground">
+                Pedagog ili razrednik?{" "}
+                <Link to="/razred" className="font-semibold text-primary underline-offset-2 hover:underline">
+                  Napravi kod za razred
+                </Link>
+              </p>
+            )}
           </div>
         </div>
       </motion.div>

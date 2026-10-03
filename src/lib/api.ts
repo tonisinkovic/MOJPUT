@@ -63,7 +63,7 @@ function withAuthHeaders(headers: Record<string, string>): Record<string, string
 
 /** Ne briši spremljeni JWT na 401 od prijave (pogrešna lozinka itd.). */
 function shouldClearStoredTokenOn401(reqPath: string): boolean {
-  const skip = ["/api/auth/login", "/api/auth/register", "/api/schools/login"];
+  const skip = ["/api/auth/login", "/api/auth/register", "/api/auth/google", "/api/schools/login"];
   return !skip.some((p) => reqPath.startsWith(p));
 }
 

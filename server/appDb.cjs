@@ -265,6 +265,12 @@ function migrateSqlite(db) {
   if (!userCols.includes("password_reset_expires_at")) {
     db.exec("ALTER TABLE users ADD COLUMN password_reset_expires_at TEXT");
   }
+  if (!userCols.includes("google_sub")) {
+    db.exec("ALTER TABLE users ADD COLUMN google_sub TEXT");
+  }
+  db.exec(
+    "CREATE UNIQUE INDEX IF NOT EXISTS idx_users_google_sub ON users(google_sub) WHERE google_sub IS NOT NULL",
+  );
 
   const forumMsgCols = db.prepare("PRAGMA table_info(forum_messages)").all().map((c) => c.name);
   if (!forumMsgCols.includes("reply_to_id")) {
@@ -603,6 +609,10 @@ async function migratePg(pool) {
   await run("CREATE INDEX IF NOT EXISTS idx_school_posts_published ON school_posts(published_at)");
   await run("CREATE INDEX IF NOT EXISTS idx_school_post_images_post ON school_post_images(post_id)");
   await run("ALTER TABLE users ADD COLUMN IF NOT EXISTS user_type TEXT DEFAULT 'srednjoskolac'");
+  await run("ALTER TABLE users ADD COLUMN IF NOT EXISTS google_sub TEXT");
+  await run(
+    "CREATE UNIQUE INDEX IF NOT EXISTS idx_users_google_sub ON users (google_sub) WHERE google_sub IS NOT NULL",
+  );
   await run("ALTER TABLE pending_registrations ADD COLUMN IF NOT EXISTS user_type TEXT DEFAULT 'srednjoskolac'");
   await run(
     "ALTER TABLE forum_conversations ADD COLUMN IF NOT EXISTS audience TEXT NOT NULL DEFAULT 'senior'",

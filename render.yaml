@@ -19,7 +19,7 @@ services:
       # Javni frontend mojput.com (linkovi u mailu, CORS, redirecti)
       - key: APP_ORIGIN
         value: https://mojput.com
-      # U dashboardu još: JWT_SECRET + RESEND_API_KEY (+ opcionalno RESEND_FROM; prazno = onboarding@resend.dev) ili SMTP_*
+      # U dashboardu još: JWT_SECRET + GOOGLE_CLIENT_ID (Web OAuth, origins https://mojput.com i https://www.mojput.com) + RESEND_API_KEY (+ opcionalno RESEND_FROM; prazno = onboarding@resend.dev) ili SMTP_*
       # Ako mijenjaš URL servisa, prilagodi API_PUBLIC_URL i VITE_API_URL u buildu.
       # Trajni korisnici: na Renderu (besplatno) dodaj MOJPUT_DATABASE_URL = Neon ili Supabase PostgreSQL connection string.
       # Alternativa: plaćeni Persistent Disk + MOJPUT_DATA_DIR (SQLite datoteka).

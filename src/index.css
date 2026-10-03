@@ -1124,6 +1124,9 @@
 
   /* Leaflet map customizations */
   .leaflet-container {
+    position: relative;
+    z-index: 0;
+    isolation: isolate;
     font-family: inherit;
     background: hsl(var(--muted) / 0.3);
   }

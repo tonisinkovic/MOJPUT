@@ -22,6 +22,7 @@ import {
   LogOut,
 } from "lucide-react";
 import {
+  authGoogle,
   authLogin,
   authLogout,
   authMe,
@@ -29,6 +30,7 @@ import {
   userFromAuthMe,
   type AuthUser,
 } from "@/lib/auth";
+import GoogleSignInButton from "@/components/GoogleSignInButton";
 import { getStoredLastLoginEmail, warmupApiHealth } from "@/lib/api";
 import {
   Dialog,
@@ -59,6 +61,7 @@ const Prijava = () => {
   const [loggedUser, setLoggedUser] = useState<AuthUser | null>(null);
   const [checkingSession, setCheckingSession] = useState(true);
   const [loginSubmitting, setLoginSubmitting] = useState(false);
+  const [googleSubmitting, setGoogleSubmitting] = useState(false);
   const [info, setInfo] = useState("");
   const [emailVerifyUi, setEmailVerifyUi] = useState<EmailVerifyUi>({ kind: "closed" });
   const [needsVerification, setNeedsVerification] = useState(false);
@@ -137,6 +140,55 @@ const Prijava = () => {
     }
   };
 
+  const finishAuth = (user: AuthUser, method: "email" | "google") => {
+    trackEvent("login_completed", {
+      method,
+      page_path: window.location.pathname,
+    });
+    setLoggedUser(user);
+    setLoginData({ email: "", password: "" });
+    const nextPath = searchParams.get("next");
+    if (user.user_type === "skola" || user.school) {
+      navigate("/skola/dashboard");
+    } else if (nextPath && nextPath.startsWith("/") && !nextPath.startsWith("//")) {
+      navigate(nextPath);
+    } else {
+      navigate("/");
+    }
+  };
+
+  const handleGoogleCredential = async (credential: string) => {
+    setLoginError("");
+    setInfo("");
+    setNeedsVerification(false);
+    trackEvent("login_started", {
+      method: "google",
+      page_path: window.location.pathname,
+    });
+    setGoogleSubmitting(true);
+    let res;
+    try {
+      res = await authGoogle(credential);
+    } finally {
+      setGoogleSubmitting(false);
+    }
+    if (!res.success) {
+      trackEvent("login_failed", {
+        method: "google",
+        page_path: window.location.pathname,
+        error_type: String(res.code || "google_failed"),
+      });
+      setLoginError(res.message || "Prijava putem Googlea nije uspjela.");
+      return;
+    }
+    const user = userFromAuthMe(res);
+    if (!user) {
+      setLoginError("Server je odgovorio bez podataka o korisniku. Osvježi stranicu i pokušaj ponovno.");
+      return;
+    }
+    finishAuth(user, "google");
+  };
+
   const handleLoginSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setLoginError("");
@@ -191,20 +243,7 @@ const Prijava = () => {
       );
       return;
     }
-    trackEvent("login_completed", {
-      method: "email",
-      page_path: window.location.pathname,
-    });
-    setLoggedUser(user);
-    setLoginData({ email: "", password: "" });
-    const nextPath = searchParams.get("next");
-    if (user.user_type === "skola" || user.school) {
-      navigate("/skola/dashboard");
-    } else if (nextPath && nextPath.startsWith("/") && !nextPath.startsWith("//")) {
-      navigate(nextPath);
-    } else {
-      navigate("/");
-    }
+    finishAuth(user, "email");
   };
 
   const handleResend = async () => {
@@ -407,6 +446,12 @@ const Prijava = () => {
                     <span>{info}</span>
                   </motion.div>
                 )}
+
+                <GoogleSignInButton
+                  disabled={googleSubmitting || loginSubmitting}
+                  onCredential={handleGoogleCredential}
+                  onError={setLoginError}
+                />
 
                 <form onSubmit={handleLoginSubmit} className="space-y-4">
                   {/* Email */}

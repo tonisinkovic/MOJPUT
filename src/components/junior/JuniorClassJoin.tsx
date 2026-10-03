@@ -3,6 +3,7 @@ import { CheckCircle2, Users } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { cn } from "@/lib/utils";
 import {
   joinJuniorClass,
   loadLastClassCode,
@@ -67,6 +68,11 @@ export default function JuniorClassJoin({
     toast.success(res.already ? "Već si na ploči ovog razreda." : "Potvrđeno — razred te vidi kao smjer.");
   };
 
+  const tracks = programName
+    .split("·")
+    .map((part) => part.trim())
+    .filter(Boolean);
+
   if (done) {
     return (
       <div className="rounded-3xl border border-emerald-400/40 bg-emerald-500/10 px-4 py-4 sm:px-5">
@@ -74,9 +80,14 @@ export default function JuniorClassJoin({
           <CheckCircle2 className="h-4 w-4" />
           Si na ploči razreda
         </p>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Stigla su tri smjera: <span className="font-semibold text-foreground">{programName}</span>. Ime nije na ploči.
-        </p>
+        <ul className="mt-3 space-y-2">
+          {tracks.map((name, index) => (
+            <li key={`${name}-${index}`} className="rounded-2xl bg-background/70 px-3.5 py-2.5 text-sm font-semibold">
+              {name}
+            </li>
+          ))}
+        </ul>
+        <p className="mt-2 text-sm text-muted-foreground">Ime nije na ploči.</p>
       </div>
     );
   }
@@ -95,18 +106,27 @@ export default function JuniorClassJoin({
       </p>
       {prominent ? (
         <>
-          <h3 className="mt-2 text-lg font-extrabold">Potvrdi kviz i pošalji na ploču</h3>
+          <h3 className="mt-2 text-xl font-extrabold">Potvrdi kviz i pošalji na ploču</h3>
           <p className="mt-1 text-sm text-muted-foreground">
             Na ploču idu tri smjera koja vrijedi pogledati, ne tvoje ime.
           </p>
-          <p className="mt-3 rounded-2xl bg-background/70 px-3.5 py-2.5 text-sm font-semibold">{programName}</p>
+          <ul className="mt-4 space-y-2">
+            {tracks.map((name, index) => (
+              <li
+                key={`${name}-${index}`}
+                className="rounded-2xl bg-background/80 px-4 py-3 text-base font-bold"
+              >
+                {name}
+              </li>
+            ))}
+          </ul>
         </>
       ) : (
         <p className="mt-1 text-xs text-muted-foreground">
           Ako si u školi dobio kod, na ploču idu tri smjera. Ime nije obavezno.
         </p>
       )}
-      <div className="mt-3 flex flex-col gap-2 sm:flex-row">
+      <div className={cn("mt-3 flex flex-col gap-2", prominent ? "" : "sm:flex-row")}>
         <Input
           value={code}
           onChange={(e) => setCode(e.target.value.toUpperCase())}
@@ -123,10 +143,22 @@ export default function JuniorClassJoin({
           className="h-11 rounded-xl sm:flex-1"
           aria-label="Nadimak"
         />
-        <Button type="button" className="h-11 rounded-xl" disabled={busy} onClick={() => void submit()}>
+        {!prominent ? (
+          <Button type="button" className="h-11 rounded-xl" disabled={busy} onClick={() => void submit()}>
+            {busy ? "Šaljem…" : "Potvrdi kviz"}
+          </Button>
+        ) : null}
+      </div>
+      {prominent ? (
+        <Button
+          type="button"
+          className="mt-3 min-h-14 w-full rounded-2xl text-base font-bold"
+          disabled={busy}
+          onClick={() => void submit()}
+        >
           {busy ? "Šaljem…" : "Potvrdi kviz"}
         </Button>
-      </div>
+      ) : null}
     </div>
   );
 }

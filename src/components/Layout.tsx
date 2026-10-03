@@ -10,9 +10,11 @@ import { getStoredExperience, onExperienceChange } from "@/lib/experience";
 interface LayoutProps {
   children: ReactNode;
   hideFooter?: boolean;
+  /** Projektor: bez navigacije, podnožja i chatbota. */
+  hideChrome?: boolean;
 }
 
-const Layout = ({ children, hideFooter }: LayoutProps) => {
+const Layout = ({ children, hideFooter, hideChrome }: LayoutProps) => {
   const [isJunior, setIsJunior] = useState(false);
   useEffect(() => {
     const sync = () => setIsJunior(getStoredExperience() === "junior");
@@ -25,17 +27,18 @@ const Layout = ({ children, hideFooter }: LayoutProps) => {
 
   return (
     <div className="min-h-screen flex flex-col">
-      <Navbar />
-      <main className="flex-1 pt-16">{children}</main>
-      {!hideFooter && (
+      {hideChrome ? null : <Navbar />}
+      <main className={hideChrome ? "flex-1" : "flex-1 pt-16"}>{children}</main>
+      {!hideFooter && !hideChrome && (
         <>
           <SiteFeedback />
           <Footer />
         </>
       )}
 
-      {isJunior ? null : <MojPutPremiumTeaser />}
+      {isJunior || hideChrome ? null : <MojPutPremiumTeaser />}
 
+      {hideChrome ? null : (
       <div
         className="fixed z-50 right-4 sm:right-6"
         style={{ bottom: "calc(1rem + env(safe-area-inset-bottom))" }}
@@ -59,6 +62,7 @@ const Layout = ({ children, hideFooter }: LayoutProps) => {
           </span>
         </Link>
       </div>
+      )}
     </div>
   );
 };

@@ -866,7 +866,7 @@ const Index = () => {
                     </div>
                     <div className="flex items-center gap-1.5 rounded-full border border-border/60 bg-background/70 px-2.5 py-1 text-[10px] font-semibold text-muted-foreground backdrop-blur-sm">
                       <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-                      mojput.hr
+                      mojput.com
                     </div>
                   </div>
 

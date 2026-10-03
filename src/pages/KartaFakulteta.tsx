@@ -488,11 +488,11 @@ const KartaFakulteta = () => {
           {/* Main: Map + List */}
           <div className="flex-1 min-w-0 flex flex-col gap-5 sm:gap-6">
             {/* Interactive Map */}
-            <motion.div
-              initial={{ opacity: 0, scale: 0.98 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.3, delay: 0.05 }}
-              className="rounded-2xl overflow-hidden border-2 border-border bg-card shadow-card"
+            <div
+              className={cn(
+                "rounded-2xl overflow-hidden border-2 border-border bg-card shadow-card",
+                detailFacultyId && "pointer-events-none",
+              )}
             >
               <div className="relative">
                 <div className="pointer-events-none absolute inset-x-0 top-0 z-10 bg-gradient-to-b from-black/50 via-black/25 to-transparent px-4 py-3 sm:px-5 sm:py-4">
@@ -537,7 +537,7 @@ const KartaFakulteta = () => {
                   {filtered.length} {filtered.length === 1 ? "ustanova" : "ustanova"} na karti
                 </span>
               </div>
-            </motion.div>
+            </div>
 
             {/* Faculty list */}
             <motion.div
