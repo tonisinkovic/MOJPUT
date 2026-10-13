@@ -33,6 +33,7 @@ import {
   ShieldCheck,
   Home,
   User,
+  School,
 } from "lucide-react";
 import type { LucideIcon, ReactNode } from "react";
 import { cn } from "@/lib/utils";

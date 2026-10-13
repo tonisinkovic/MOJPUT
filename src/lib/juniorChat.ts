@@ -7,7 +7,7 @@ import { juniorEvents, nextUpcomingEvent, formatEventDate } from "@/data/calenda
 import { highSchools } from "@/data/highSchools";
 import { srednjaProgramCounties } from "@/data/srednjaPrograms";
 import { findCutoff, findKalkulatorSchool, normalizeJuniorText } from "@/lib/juniorPath";
-import { JUNIOR_SCHOOL_COUNT_NOTE } from "@/lib/juniorHonesty";
+import { JUNIOR_NUMBERS_NOTE_SHORT, JUNIOR_SCHOOL_COUNT_NOTE } from "@/lib/juniorHonesty";
 import { programHref } from "@/lib/juniorProgramGuide";
 import { highSchoolPrograms } from "@/lib/juniorQuizEngine";
 
