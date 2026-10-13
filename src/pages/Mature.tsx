@@ -1,4 +1,5 @@
 import Layout from "@/components/Layout";
+import { MaturaBotBrand, MaturaBotFrame } from "@/components/matura/MaturaBotEmbedDialog";
 import MaturaHrvatskiCitankaKviz from "@/components/matura/MaturaHrvatskiCitankaKviz";
 import MaturaHrvatskiPismenoReadOnly from "@/components/matura/MaturaHrvatskiPismenoReadOnly";
 import MaturaMatematikaKviz from "@/components/matura/MaturaMatematikaKviz";
@@ -19,7 +20,6 @@ import {
   GraduationCap,
   Languages,
   Library,
-  Lock,
   PenLine,
   Puzzle,
   Search,
@@ -400,29 +400,23 @@ function DocumentCard({ doc, index }: { doc: MatureDocument; index: number }) {
   );
 }
 
-function MatureLockedPlaceholder() {
+function MatureBotPage() {
   return (
     <Layout>
-      <section className="container relative py-20 md:py-28">
-        <div
-          className="mx-auto max-w-md rounded-2xl border border-dashed border-muted-foreground/35 bg-muted/25 px-6 py-10 text-center"
-          role="status"
-          aria-live="polite"
-        >
-          <div
-            className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full border border-muted-foreground/25 bg-background"
-            aria-hidden
+      <section className="bg-background">
+        <div className="flex items-center gap-3 px-3 py-2.5 sm:px-4">
+          <button
+            type="button"
+            onClick={() => window.history.back()}
+            className="inline-flex items-center gap-1.5 text-sm font-medium text-slate-500 transition-colors hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100"
           >
-            <Lock className="h-6 w-6 text-muted-foreground" strokeWidth={2} />
-          </div>
-          <h1 className="text-2xl font-bold tracking-tight">Matura</h1>
-          <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
-            Ova sekcija još nije dostupna — pripremamo kvizove i materijale. Uskoro ovdje.
-          </p>
-          <Button className="mt-6" asChild>
-            <Link to="/">Natrag na početnu</Link>
-          </Button>
+            <ArrowLeft className="h-4 w-4" />
+            <span>Natrag</span>
+          </button>
+          <span className="h-4 w-px bg-border" aria-hidden />
+          <MaturaBotBrand className="origin-left scale-90" />
         </div>
+        <MaturaBotFrame className="block h-[calc(100dvh-4rem-2.75rem)] w-full" />
       </section>
     </Layout>
   );
@@ -430,7 +424,7 @@ function MatureLockedPlaceholder() {
 
 export default function Mature() {
   if (!MATURE_SECTION_ENABLED) {
-    return <MatureLockedPlaceholder />;
+    return <MatureBotPage />;
   }
   return <MatureInner />;
 }

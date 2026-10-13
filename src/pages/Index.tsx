@@ -33,7 +33,6 @@ import {
   ShieldCheck,
   Home,
   User,
-  School,
 } from "lucide-react";
 import type { LucideIcon, ReactNode } from "react";
 import { cn } from "@/lib/utils";
@@ -216,7 +215,7 @@ const features: HomeFeature[] = [
   {
     icon: <ScrollText className="h-6 w-6 text-primary" />,
     title: "Matura",
-    description: "Kvizovi i PDF materijali za šk. god. 2024/2025. (matematika; ostali predmeti uskoro).",
+    description: "Priprema za državnu maturu uz MaturaBOT — zadaci, AI pomoć i napredak.",
     path: "/mature",
   },
   {
