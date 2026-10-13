@@ -28,6 +28,7 @@ import Kontakt from "./pages/Kontakt";
 import UvjetiKoristenja from "./pages/UvjetiKoristenja";
 import Privatnost from "./pages/Privatnost";
 import About from "./pages/About";
+import Partneri from "./pages/Partneri";
 import Chatbot from "./pages/Chatbot";
 import NotFound from "./pages/NotFound";
 import Registracija from "./pages/Registracija";
@@ -151,6 +152,7 @@ const App = () => (
             <Route path="/roditeljski-kutak/preporuceni-clanak/:slug" element={<ParentArticleDetail />} />
             <Route path="/kontakt" element={<Kontakt />} />
             <Route path="/o-nama" element={<About />} />
+            <Route path="/partneri" element={<Partneri />} />
             <Route path="/uvjeti" element={<UvjetiKoristenja />} />
             <Route path="/privatnost" element={<Privatnost />} />
             <Route path="/chatbot" element={<Chatbot />} />

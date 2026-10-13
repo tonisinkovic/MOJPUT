@@ -1,4 +1,4 @@
-import { ArrowUpRight, Lock } from "lucide-react";
+import { ArrowUpRight, ExternalLink, Lock } from "lucide-react";
 import { CSSProperties, ReactNode } from "react";
 import { cn } from "@/lib/utils";
 
@@ -12,6 +12,8 @@ interface FeatureCardProps {
   /** Jedna oznaka na kartici s koje korisnik kreće */
   kicker?: string;
   locked?: boolean;
+  /** Isti gabarit kao ostale kartice, ali cijeli okvir naglašen (npr. vanjski alat). */
+  badge?: string;
 }
 
 const FeatureCard = ({
@@ -22,41 +24,92 @@ const FeatureCard = ({
   variant = "lead",
   kicker,
   locked = false,
+  badge,
 }: FeatureCardProps) => {
   const color = `hsl(${tone})`;
   const wash = `hsl(${tone} / 0.12)`;
   const edge = `hsl(${tone} / 0.9)`;
+  const spotlight = Boolean(badge) && !locked;
 
   if (variant === "compact") {
     return (
       <div
         className={cn(
-          "group flex h-full min-h-[4.75rem] items-center gap-3 rounded-2xl border bg-card p-3.5 sm:min-h-[10.5rem] sm:flex-col sm:items-stretch sm:gap-0 sm:p-5",
-          !locked && "shadow-[inset_3px_0_0_var(--feature-edge)] sm:shadow-[inset_0_3px_0_var(--feature-edge)]",
+          "group relative flex h-full min-h-[4.75rem] items-center gap-3 rounded-2xl border bg-card p-3.5 sm:min-h-[10.5rem] sm:flex-col sm:items-stretch sm:gap-0 sm:p-5",
+          spotlight && "feature-spotlight",
+          !locked && !spotlight && "shadow-[inset_3px_0_0_var(--feature-edge)] sm:shadow-[inset_0_3px_0_var(--feature-edge)]",
           locked
             ? "cursor-not-allowed border-dashed border-muted-foreground/35"
             : "border-border/80 active:bg-muted/40 sm:hover:-translate-y-0.5",
         )}
-        style={locked ? undefined : ({ "--feature-edge": edge } as CSSProperties)}
+        style={
+          locked
+            ? undefined
+            : ({
+                "--feature-edge": edge,
+                ...(spotlight
+                  ? {
+                      "--feature-tone": tone,
+                      borderColor: edge,
+                      backgroundImage: `linear-gradient(165deg, hsl(${tone} / 0.16), hsl(${tone} / 0.05) 48%, transparent 74%)`,
+                    }
+                  : {}),
+              } as CSSProperties)
+        }
       >
+        {spotlight ? (
+          <>
+            <span aria-hidden className="feature-spotlight-orb" />
+            <span aria-hidden className="feature-spotlight-shine" />
+          </>
+        ) : null}
         <span
           className={cn(
             "flex h-11 w-11 shrink-0 items-center justify-center rounded-xl sm:mb-3 sm:h-12 sm:w-12 sm:rounded-2xl [&_svg]:h-5 [&_svg]:w-5 sm:[&_svg]:h-6 sm:[&_svg]:w-6 [&_svg]:!text-current",
             locked && "bg-muted text-muted-foreground grayscale",
+            spotlight && "relative z-10 bg-white ring-1 ring-black/10",
           )}
-          style={locked ? undefined : { backgroundColor: wash, color }}
+          style={locked || spotlight ? undefined : { backgroundColor: wash, color }}
         >
           {locked ? <Lock className="h-5 w-5" /> : icon}
         </span>
-        <span className="min-w-0 flex-1">
-          <span className="block text-base font-bold leading-snug tracking-[-0.02em] text-foreground sm:text-lg">
-            {title}
+        <span className={cn("min-w-0 flex-1", spotlight && "relative z-10")}>
+          <span className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1">
+            <span
+              className={cn(
+                "block text-base font-bold leading-snug tracking-[-0.02em] sm:text-lg",
+                spotlight ? "" : "text-foreground",
+              )}
+              style={spotlight ? { color } : undefined}
+            >
+              {title}
+            </span>
+            {spotlight ? (
+              <span
+                className="inline-flex shrink-0 items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-bold tracking-wide text-white sm:hidden"
+                style={{ backgroundColor: color }}
+              >
+                {badge}
+                <ExternalLink className="h-3 w-3" />
+              </span>
+            ) : null}
           </span>
           <span className="mt-1 line-clamp-2 block text-sm leading-snug text-muted-foreground sm:line-clamp-3 sm:leading-relaxed">
             {locked ? "Uskoro dostupno" : description}
           </span>
         </span>
-        {locked ? null : <ArrowUpRight className="h-4 w-4 shrink-0 text-muted-foreground sm:hidden" />}
+        {locked || spotlight ? null : (
+          <ArrowUpRight className="h-4 w-4 shrink-0 text-muted-foreground sm:hidden" />
+        )}
+        {spotlight ? (
+          <span
+            className="pointer-events-none absolute right-3 top-3 z-10 hidden items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-bold tracking-wide text-white sm:inline-flex"
+            style={{ backgroundColor: color }}
+          >
+            {badge}
+            <ExternalLink className="h-3 w-3" />
+          </span>
+        ) : null}
       </div>
     );
   }

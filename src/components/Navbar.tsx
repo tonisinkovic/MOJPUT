@@ -64,7 +64,6 @@ const primaryNavJunior: NavEntry[] = [
 
 // Sekundarne - u "Više" padajućem na desktopu, lista na mobitelu.
 const secondaryNavSenior: NavEntry[] = [
-  { label: "Pedagog / razred", path: "/razred", icon: Users },
   { label: "Samoprocjena", path: "/samoprocjena", icon: Target },
   { label: "Domovi", path: "/kalkulator-doma", icon: Home },
   { label: "Video", path: "/video", icon: Video },

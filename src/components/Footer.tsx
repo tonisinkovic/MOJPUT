@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Compass, ArrowUpRight } from "lucide-react";
+import { MATURABOT_LOGO_URL } from "@/components/matura/MaturaBotEmbedDialog";
 import { experienceHomePath, getStoredExperience, onExperienceChange } from "@/lib/experience";
 
 const footerLinks = [
@@ -48,7 +49,7 @@ const Footer = () => {
   }, []);
 
   const juniorHidden = new Set(["/video", "/kalkulator-doma", "/fakulteti", "/fakulteti/prijava"]);
-  const seniorHidden = new Set(["/srednje-skole/profili", "/srednje-skole/prijava"]);
+  const seniorHidden = new Set(["/srednje-skole/profili", "/srednje-skole/prijava", "/razred"]);
 
   /** U Junior modu kviz i karta vode na verzije za srednju školu. */
   const resolveLink = (link: { label: string; path: string }) => {
@@ -79,7 +80,7 @@ const Footer = () => {
       />
 
       <div className="container relative py-12">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+        <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-5">
           <div>
             <Link
               to={experienceHomePath()}
@@ -129,6 +130,34 @@ const Footer = () => {
               </ul>
             </div>
           ))}
+
+          <div>
+            <h4 className="relative mb-4 pb-2 text-sm font-semibold after:absolute after:bottom-0 after:left-0 after:h-[2px] after:w-8 after:rounded-full after:bg-gradient-to-r after:from-primary after:to-primary/40">
+              <Link to="/partneri" className="transition-colors duration-200 hover:text-primary">
+                Partneri
+              </Link>
+            </h4>
+            <Link
+              to="/partneri"
+              className="group flex items-center gap-3 rounded-2xl border border-border/80 bg-background/70 p-3 transition-colors duration-200 hover:border-primary/40"
+            >
+              <img
+                src={MATURABOT_LOGO_URL}
+                alt=""
+                width={40}
+                height={40}
+                className="h-10 w-10 shrink-0 rounded-lg bg-white object-cover ring-1 ring-black/10"
+              />
+              <span className="min-w-0">
+                <span className="block text-sm font-semibold text-foreground">MaturaBOT</span>
+                <span className="block text-xs text-muted-foreground">maturabot.hr</span>
+              </span>
+              <ArrowUpRight
+                className="ml-auto h-3.5 w-3.5 shrink-0 text-muted-foreground opacity-0 transition-all duration-200 group-hover:translate-x-0.5 group-hover:opacity-100 group-hover:-translate-y-0.5"
+                aria-hidden
+              />
+            </Link>
+          </div>
         </div>
 
         <div className="relative mt-10 pt-6">

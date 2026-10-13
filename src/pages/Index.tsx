@@ -15,6 +15,7 @@ import {
 } from "@/lib/experience";
 import { authMe, userFromAuthMe, type AuthUser } from "@/lib/auth";
 import FeatureCard from "@/components/FeatureCard";
+import { MATURABOT_LOGO_URL } from "@/components/matura/MaturaBotEmbedDialog";
 import MojPutEntryIntro from "@/components/MojPutEntryIntro";
 import {
   Map,
@@ -22,7 +23,6 @@ import {
   Video,
   MessageSquare,
   Calendar,
-  ScrollText,
   Users,
   Bot,
   Target,
@@ -140,6 +140,8 @@ type HomeFeature = {
   path: string;
   locked?: boolean;
   highlighted?: boolean;
+  /** Oznaka na kartici; isti gabarit, ali cijeli okvir istaknut. */
+  badge?: string;
 };
 
 const features: HomeFeature[] = [
@@ -190,6 +192,19 @@ const features: HomeFeature[] = [
     path: "/kalkulator-doma",
   },
   {
+    icon: (
+      <img
+        src={MATURABOT_LOGO_URL}
+        alt=""
+        className="h-8 w-8 rounded-lg object-cover sm:h-9 sm:w-9"
+      />
+    ),
+    title: "MaturaBOT",
+    description: "Klik otvara maturabot.hr — zadaci, AI pomoć i napredak.",
+    path: "/mature",
+    badge: "maturabot.hr",
+  },
+  {
     icon: <Video className="h-6 w-6 text-primary" />,
     title: "Video sadržaji",
     description: "Predavanja, iskustva studenata i edukativni video materijali.",
@@ -212,12 +227,6 @@ const features: HomeFeature[] = [
     title: "Kalendar datuma",
     description: "Svi važni rokovi za maturu, prijave i upise na jednom mjestu.",
     path: "/kalendar",
-  },
-  {
-    icon: <ScrollText className="h-6 w-6 text-primary" />,
-    title: "Matura",
-    description: "Priprema za državnu maturu uz MaturaBOT — zadaci, AI pomoć i napredak.",
-    path: "/mature",
   },
   {
     icon: <Users className="h-6 w-6 text-primary" />,
@@ -253,6 +262,7 @@ const JUNIOR_EXCLUDED_FEATURE_PATHS = new Set([
 const SENIOR_EXCLUDED_FEATURE_PATHS = new Set([
   "/video-srednje",
   "/srednje-skole/profili",
+  "/razred",
 ]);
 
 const LEAD_RANK: Record<string, number> = {
@@ -285,7 +295,7 @@ function featureTone(path: string): string {
   if (name.startsWith("/chatbot")) return "199 72% 38%";
   if (name.startsWith("/razred")) return "330 48% 48%";
   if (name.startsWith("/samoprocjena")) return "250 42% 50%";
-  if (name.startsWith("/mature")) return "210 52% 42%";
+  if (name.startsWith("/mature")) return "221 83% 53%";
   return "174 62% 42%";
 }
 
@@ -1214,6 +1224,7 @@ const Index = () => {
                         tone={featureTone(feature.path)}
                         variant="compact"
                         locked={feature.locked}
+                        badge={feature.badge}
                       />
                     );
                     return feature.locked ? (
@@ -1224,6 +1235,8 @@ const Index = () => {
                       <Link
                         key={feature.path}
                         to={feature.path}
+                        title={feature.badge ? `Otvori ${feature.badge}` : undefined}
+                        aria-label={feature.badge ? `${feature.title}, klik otvara ${feature.badge}` : undefined}
                         className="block touch-manipulation rounded-2xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 focus-visible:ring-offset-2 focus-visible:ring-offset-background"
                       >
                         {card}
