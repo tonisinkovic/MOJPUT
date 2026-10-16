@@ -1,10 +1,12 @@
 import { useCallback, useEffect, useState } from "react";
 import { Link, Navigate } from "react-router-dom";
 import {
+  BadgeCheck,
   ImagePlus,
   LayoutDashboard,
   Loader2,
   Lock,
+  MessageSquare,
   Newspaper,
   Settings,
   Trash2,
@@ -24,12 +26,22 @@ import {
   fetchSchoolPosts,
   patchSchoolPost,
   patchSchoolProfile,
+  sendSchoolAdminMessage,
   schoolMediaUrl,
   uploadSchoolFile,
   type SchoolMePayload,
   type SchoolPost,
   type SchoolPostStatus,
 } from "@/lib/schoolCmsApi";
+import { findKalkulatorSchool } from "@/lib/juniorPath";
+import { getSchoolPrograms } from "@/lib/schoolPrograms";
+
+function programsOnPublicProfile(name: string, city: string): string[] {
+  const kalk = findKalkulatorSchool(name, city);
+  const named = (kalk?.programs || []).map((program) => program.name).filter(Boolean);
+  if (named.length) return named;
+  return getSchoolPrograms(name, city);
+}
 
 const STATUS_FILTERS: { id: string; label: string }[] = [
   { id: "sve", label: "Sve" },
@@ -50,6 +62,11 @@ export default function SchoolDashboard() {
   const [saving, setSaving] = useState(false);
   const [aboutText, setAboutText] = useState("");
   const [extraWebsite, setExtraWebsite] = useState("");
+  const [principal, setPrincipal] = useState("");
+  const [contactEmail, setContactEmail] = useState("");
+  const [contactPhone, setContactPhone] = useState("");
+  const [contactAddress, setContactAddress] = useState("");
+  const [adminMessage, setAdminMessage] = useState("");
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [category, setCategory] = useState("obavijest");
@@ -67,6 +84,11 @@ export default function SchoolDashboard() {
     setMe(res.data);
     setAboutText(res.data.account.aboutText || "");
     setExtraWebsite(res.data.account.extraWebsite || "");
+    const catalog = res.data.catalog;
+    setPrincipal(catalog?.principal || "");
+    setContactEmail(catalog?.emails?.[0] || "");
+    setContactPhone(catalog?.phones?.[0] || "");
+    setContactAddress(catalog?.address || "");
   }, []);
 
   const loadPosts = useCallback(async (status: string) => {
@@ -98,12 +120,27 @@ export default function SchoolDashboard() {
   }
 
   const mustChange = Boolean(me?.account.mustChangePassword);
+  const schoolPrograms = me?.catalog ? programsOnPublicProfile(me.catalog.name, me.catalog.city) : [];
+  const confirmedLabel = me?.account.programsConfirmedAt
+    ? new Date(me.account.programsConfirmedAt).toLocaleDateString("hr-HR", {
+        day: "numeric",
+        month: "long",
+        year: "numeric",
+      })
+    : "";
 
   const handleProfileSave = async (e: React.FormEvent) => {
     e.preventDefault();
     setSaving(true);
     setError("");
-    const res = await patchSchoolProfile({ aboutText, extraWebsite });
+    const res = await patchSchoolProfile({
+      aboutText,
+      extraWebsite,
+      principal,
+      email: contactEmail,
+      phone: contactPhone,
+      address: contactAddress,
+    });
     setSaving(false);
     if (!res.success) {
       setError(res.message || "Spremanje nije uspjelo.");
@@ -111,6 +148,41 @@ export default function SchoolDashboard() {
     }
     setInfo("Profil je spremljen.");
     loadMe();
+  };
+
+  const handleConfirmPrograms = async () => {
+    setSaving(true);
+    setError("");
+    const res = await patchSchoolProfile({
+      aboutText,
+      extraWebsite,
+      principal,
+      email: contactEmail,
+      phone: contactPhone,
+      address: contactAddress,
+      confirmPrograms: true,
+    });
+    setSaving(false);
+    if (!res.success) {
+      setError(res.message || "Potvrda programa nije uspjela.");
+      return;
+    }
+    setInfo("Programi su potvrđeni. To se vidi na javnom profilu.");
+    loadMe();
+  };
+
+  const handleAdminMessage = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSaving(true);
+    setError("");
+    const res = await sendSchoolAdminMessage(adminMessage);
+    setSaving(false);
+    if (!res.success) {
+      setError(res.message || "Poruka nije poslana.");
+      return;
+    }
+    setAdminMessage("");
+    setInfo("Poruka je poslana MojPut adminu.");
   };
 
   const handleUpload = async (kind: "logo" | "cover" | "post", file: File, postId?: number) => {
@@ -251,6 +323,19 @@ export default function SchoolDashboard() {
                 <p className="text-2xl font-bold">{me?.stats.draft ?? 0}</p>
               </div>
             </div>
+            <div className="mt-3 rounded-2xl border bg-card p-4">
+              <p className="text-xs uppercase text-muted-foreground">Programi na javnom profilu</p>
+              {me?.account.programsConfirmed ? (
+                <p className="mt-1 inline-flex items-center gap-1.5 font-semibold text-primary">
+                  <BadgeCheck className="h-4 w-4" />
+                  Škola je potvrdila programe {confirmedLabel}
+                </p>
+              ) : (
+                <p className="mt-1 text-sm text-muted-foreground">
+                  Popis još nije potvrđen. Otvori karticu Profil, provjeri smjerove i potvrdi ih. Tek tada javni profil piše da je škola potvrdila programe.
+                </p>
+              )}
+            </div>
             <h2 className="mt-6 text-lg font-semibold">Zadnje objave</h2>
             {me?.recentPosts?.length ? (
               <ul className="mt-3 space-y-2">
@@ -268,11 +353,51 @@ export default function SchoolDashboard() {
             )}
           </TabsContent>
 
-          <TabsContent value="profil">
+          <TabsContent value="profil" className="space-y-4">
             <form className="space-y-4 rounded-2xl border bg-card p-5" onSubmit={handleProfileSave}>
-              <p className="text-sm text-muted-foreground">
-                Naziv, adresa i programi dolaze iz MojPut kataloga i ovdje se ne mijenjaju.
-              </p>
+              <div>
+                <h2 className="font-semibold">Kontakt na javnom profilu</h2>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  Ovo vidi učenik. Naziv škole ostaje iz kataloga. Prazno polje vraća podatak iz kataloga.
+                </p>
+              </div>
+              <label className="block text-sm font-medium">
+                Ravnatelj/ica
+                <Input className="mt-1.5" value={principal} onChange={(e) => setPrincipal(e.target.value)} placeholder="Ime i prezime" />
+              </label>
+              <div className="grid gap-3 sm:grid-cols-2">
+                <label className="block text-sm font-medium">
+                  Email
+                  <Input
+                    className="mt-1.5"
+                    type="email"
+                    value={contactEmail}
+                    onChange={(e) => setContactEmail(e.target.value)}
+                    placeholder="skola@skole.hr"
+                  />
+                </label>
+                <label className="block text-sm font-medium">
+                  Telefon
+                  <Input
+                    className="mt-1.5"
+                    value={contactPhone}
+                    onChange={(e) => setContactPhone(e.target.value)}
+                    placeholder="+385 1 000 0000"
+                  />
+                </label>
+              </div>
+              <label className="block text-sm font-medium">
+                Adresa
+                <Input
+                  className="mt-1.5"
+                  value={contactAddress}
+                  onChange={(e) => setContactAddress(e.target.value)}
+                  placeholder="Ulica i broj"
+                />
+                <span className="mt-1 block text-xs font-normal text-muted-foreground">
+                  Ulica i broj. Grad i poštanski broj ostaju iz kataloga.
+                </span>
+              </label>
               <Textarea
                 value={aboutText}
                 onChange={(e) => setAboutText(e.target.value)}
@@ -315,6 +440,59 @@ export default function SchoolDashboard() {
               </div>
               <Button type="submit" disabled={saving}>
                 {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : "Spremi profil"}
+              </Button>
+            </form>
+
+            <div className="rounded-2xl border bg-card p-5">
+              <div className="flex flex-wrap items-start justify-between gap-3">
+                <div>
+                  <h2 className="font-semibold">Programi</h2>
+                  <p className="mt-1 text-sm text-muted-foreground">
+                    Popis dolazi iz kataloga upisa. Potvrdi ga tek kad provjeriš da je točan — tada javni profil piše da je škola potvrdila programe.
+                  </p>
+                </div>
+                {me?.account.programsConfirmed ? (
+                  <p className="inline-flex items-center gap-1.5 text-sm font-semibold text-primary">
+                    <BadgeCheck className="h-4 w-4" />
+                    Potvrđeno {confirmedLabel}
+                  </p>
+                ) : (
+                  <p className="text-sm text-muted-foreground">Još nije potvrđeno</p>
+                )}
+              </div>
+              {schoolPrograms.length ? (
+                <ul className="mt-4 max-h-64 space-y-1 overflow-y-auto text-sm">
+                  {schoolPrograms.map((name, index) => (
+                    <li key={`${index}-${name}`} className="rounded-lg bg-muted/40 px-3 py-2">
+                      {name}
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="mt-4 text-sm text-muted-foreground">Za ovu školu u katalogu još nema programa.</p>
+              )}
+              <Button type="button" className="mt-4" variant="outline" disabled={saving || schoolPrograms.length === 0} onClick={() => void handleConfirmPrograms()}>
+                {me?.account.programsConfirmed ? "Potvrdi programe ponovno" : "Potvrdi da su programi točni"}
+              </Button>
+            </div>
+
+            <form className="space-y-3 rounded-2xl border bg-card p-5" onSubmit={handleAdminMessage}>
+              <h2 className="flex items-center gap-2 font-semibold">
+                <MessageSquare className="h-4 w-4" /> Poruka MojPut adminu
+              </h2>
+              <p className="text-sm text-muted-foreground">
+                Ako vidiš pogrešan program, prag ili podatak koji sam ne možeš ispraviti, javi nam.
+              </p>
+              <Textarea
+                value={adminMessage}
+                onChange={(e) => setAdminMessage(e.target.value)}
+                placeholder="Npr. na profilu nedostaje smjer tehničar za računalstvo…"
+                className="min-h-28"
+                required
+                minLength={8}
+              />
+              <Button type="submit" disabled={saving || adminMessage.trim().length < 8}>
+                Pošalji poruku
               </Button>
             </form>
           </TabsContent>

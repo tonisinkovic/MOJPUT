@@ -55,6 +55,9 @@ export type SchoolPublicPayload = {
     coverUrl: string | null;
     extraWebsite: string | null;
     isActive: boolean;
+    hasAccount: boolean;
+    programsConfirmed: boolean;
+    programsConfirmedAt: string | null;
   };
   posts: SchoolPost[];
 };
@@ -69,6 +72,8 @@ export type SchoolMePayload = {
     extraWebsite: string | null;
     mustChangePassword: boolean;
     isActive: boolean;
+    programsConfirmed: boolean;
+    programsConfirmedAt: string | null;
   };
   stats: { published: number; draft: number; archived: number; hidden: number; total: number };
   recentPosts: SchoolPost[];
@@ -239,7 +244,15 @@ export async function fetchSchoolMe(): Promise<ApiResponse<SchoolMePayload>> {
   return parseRes<SchoolMePayload>(res, "/api/schools/me");
 }
 
-export async function patchSchoolProfile(body: { aboutText?: string; extraWebsite?: string }) {
+export async function patchSchoolProfile(body: {
+  aboutText?: string;
+  extraWebsite?: string;
+  principal?: string;
+  email?: string;
+  phone?: string;
+  address?: string;
+  confirmPrograms?: boolean;
+}) {
   const res = await fetch(`${API_BASE_URL}/api/schools/me`, {
     method: "PATCH",
     credentials: "include",
@@ -247,6 +260,33 @@ export async function patchSchoolProfile(body: { aboutText?: string; extraWebsit
     body: JSON.stringify(body),
   });
   return parseRes(res, "/api/schools/me");
+}
+
+export async function sendSchoolAdminMessage(message: string) {
+  const res = await fetch(`${API_BASE_URL}/api/schools/me/message`, {
+    method: "POST",
+    credentials: "include",
+    headers: authHeaders(),
+    body: JSON.stringify({ message }),
+  });
+  return parseRes(res, "/api/schools/me/message");
+}
+
+export type SchoolAdminMessage = {
+  id: number;
+  message: string;
+  createdAt: string;
+  slug: string;
+  schoolName: string;
+  city: string;
+};
+
+export async function fetchAdminSchoolMessages(): Promise<ApiResponse<SchoolAdminMessage[]>> {
+  const res = await fetch(`${API_BASE_URL}/api/admin/schools/messages`, {
+    credentials: "include",
+    headers: authHeaders(false),
+  });
+  return parseRes<SchoolAdminMessage[]>(res, "/api/admin/schools/messages");
 }
 
 export async function changeSchoolPassword(body: { currentPassword: string; newPassword: string }) {

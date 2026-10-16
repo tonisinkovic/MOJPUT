@@ -442,7 +442,25 @@ function migrateSchoolCmsSqlite(db) {
     CREATE INDEX IF NOT EXISTS idx_school_posts_published ON school_posts(published_at);
     CREATE INDEX IF NOT EXISTS idx_school_posts_slug ON school_posts(school_account_id, slug);
     CREATE INDEX IF NOT EXISTS idx_school_post_images_post ON school_post_images(post_id);
+
+    CREATE TABLE IF NOT EXISTS school_admin_messages (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      school_account_id INTEGER NOT NULL,
+      message TEXT NOT NULL,
+      created_at TEXT NOT NULL DEFAULT (datetime('now')),
+      FOREIGN KEY (school_account_id) REFERENCES school_accounts(id)
+    );
+    CREATE INDEX IF NOT EXISTS idx_school_admin_messages_school ON school_admin_messages(school_account_id);
   `);
+  const cols = db.prepare("PRAGMA table_info(school_accounts)").all().map((c) => c.name);
+  const add = (name, ddl) => {
+    if (!cols.includes(name)) db.exec(`ALTER TABLE school_accounts ADD COLUMN ${name} ${ddl}`);
+  };
+  add("contact_principal", "TEXT");
+  add("contact_email", "TEXT");
+  add("contact_phone", "TEXT");
+  add("contact_address", "TEXT");
+  add("programs_confirmed_at", "TEXT");
 }
 
 async function migratePg(pool) {
@@ -608,6 +626,18 @@ async function migratePg(pool) {
   await run("CREATE INDEX IF NOT EXISTS idx_school_posts_status ON school_posts(status)");
   await run("CREATE INDEX IF NOT EXISTS idx_school_posts_published ON school_posts(published_at)");
   await run("CREATE INDEX IF NOT EXISTS idx_school_post_images_post ON school_post_images(post_id)");
+  await run(`CREATE TABLE IF NOT EXISTS school_admin_messages (
+      id SERIAL PRIMARY KEY,
+      school_account_id INTEGER NOT NULL REFERENCES school_accounts(id),
+      message TEXT NOT NULL,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
+    )`);
+  await run("CREATE INDEX IF NOT EXISTS idx_school_admin_messages_school ON school_admin_messages(school_account_id)");
+  await run("ALTER TABLE school_accounts ADD COLUMN IF NOT EXISTS contact_principal TEXT");
+  await run("ALTER TABLE school_accounts ADD COLUMN IF NOT EXISTS contact_email TEXT");
+  await run("ALTER TABLE school_accounts ADD COLUMN IF NOT EXISTS contact_phone TEXT");
+  await run("ALTER TABLE school_accounts ADD COLUMN IF NOT EXISTS contact_address TEXT");
+  await run("ALTER TABLE school_accounts ADD COLUMN IF NOT EXISTS programs_confirmed_at TEXT");
   await run("ALTER TABLE users ADD COLUMN IF NOT EXISTS user_type TEXT DEFAULT 'srednjoskolac'");
   await run("ALTER TABLE users ADD COLUMN IF NOT EXISTS google_sub TEXT");
   await run(

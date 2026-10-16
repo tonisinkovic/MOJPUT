@@ -229,8 +229,20 @@ export default function HighSchoolProfile() {
   const cover = schoolMediaUrl(remote?.profile.coverUrl);
   const about = remote?.profile.aboutText?.trim() || "";
   const extraWeb = remote?.profile.extraWebsite || school.website;
+  const shownAddress = remote?.catalog?.address || school.address;
+  const shownPhones = remote?.catalog?.phones?.length ? remote.catalog.phones : school.phones;
+  const shownEmails = remote?.catalog?.emails?.length ? remote.catalog.emails : school.emails;
+  const shownPrincipal = remote?.catalog?.principal || school.principal;
+  const programsConfirmed = Boolean(remote?.profile.programsConfirmed);
+  const programsConfirmedLabel = remote?.profile.programsConfirmedAt
+    ? new Date(remote.profile.programsConfirmedAt).toLocaleDateString("hr-HR", {
+        day: "numeric",
+        month: "long",
+        year: "numeric",
+      })
+    : "";
   const canonical = `https://mojput.com/srednje-skole/${slugForSchool(school, highSchools)}`;
-  const description = `${school.name} u mjestu ${school.city}. ${school.category}. Adresa: ${school.address}. Programi, kontakti i novosti škole na MojPutu.`;
+  const description = `${school.name} u mjestu ${school.city}. ${school.category}. Adresa: ${shownAddress}. Programi, kontakti i novosti škole na MojPutu.`;
   const programGroups = kalk?.programs?.length ? groupPrograms(kalk.programs) : [];
   const isThisSchool = Boolean(
     user?.school &&
@@ -252,14 +264,14 @@ export default function HighSchoolProfile() {
           name: school.name,
           address: {
             "@type": "PostalAddress",
-            streetAddress: school.address,
+            streetAddress: shownAddress,
             addressLocality: school.city,
             postalCode: school.postalCode,
             addressCountry: "HR",
           },
           url: extraWeb || canonical,
-          telephone: school.phones[0] || undefined,
-          email: school.emails[0] || undefined,
+          telephone: shownPhones[0] || undefined,
+          email: shownEmails[0] || undefined,
         }}
       />
       <section className="container space-y-6 py-10 md:space-y-8 md:py-14">
@@ -335,32 +347,32 @@ export default function HighSchoolProfile() {
           ) : null}
           <div className="mt-5 grid gap-3 sm:grid-cols-2">
             <InfoTile icon={<MapPin className="h-4 w-4" />} label="Adresa">
-              {school.address}, {school.postalCode} {school.city}
+              {shownAddress}, {school.postalCode} {school.city}
             </InfoTile>
             <InfoTile icon={<Building2 className="h-4 w-4" />} label="Županija">
               {school.county}
             </InfoTile>
-            {school.phones.length > 0 && (
+            {shownPhones.length > 0 && (
               <InfoTile icon={<Phone className="h-4 w-4" />} label="Telefon">
-                {school.phones.map((p) => (
+                {shownPhones.map((p) => (
                   <a key={p} href={`tel:${p.replace(/\s/g, "")}`} className="block hover:text-primary">
                     {p}
                   </a>
                 ))}
               </InfoTile>
             )}
-            {school.emails.length > 0 && (
+            {shownEmails.length > 0 && (
               <InfoTile icon={<Mail className="h-4 w-4" />} label="Email">
-                {school.emails.map((e) => (
+                {shownEmails.map((e) => (
                   <a key={e} href={`mailto:${e}`} className="block break-all text-primary hover:underline">
                     {e}
                   </a>
                 ))}
               </InfoTile>
             )}
-            {school.principal && (
+            {shownPrincipal && (
               <InfoTile icon={<User className="h-4 w-4" />} label="Ravnatelj/ica">
-                {school.principal}
+                {shownPrincipal}
               </InfoTile>
             )}
             {school.founder && (
@@ -376,6 +388,21 @@ export default function HighSchoolProfile() {
             <div>
               <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-primary">Upis</p>
               <h2 className="mt-1 text-xl font-extrabold tracking-tight md:text-2xl">Obrazovni programi</h2>
+              {!loading ? (
+                <p
+                  className={
+                    programsConfirmed
+                      ? "mt-2 text-sm font-medium text-primary"
+                      : "mt-2 text-sm text-muted-foreground"
+                  }
+                >
+                  {programsConfirmed
+                    ? `Škola je potvrdila programe${programsConfirmedLabel ? ` ${programsConfirmedLabel}` : ""}.`
+                    : remote?.profile.hasAccount
+                      ? "Škola ima profil na MojPutu, ali još nije potvrdila popis programa."
+                      : "Popis programa dolazi iz MojPut kataloga. Škola ga još nije potvrdila."}
+                </p>
+              ) : null}
             </div>
             {kalk?.programs?.length ? (
               <p className="text-sm font-medium text-muted-foreground">

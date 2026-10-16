@@ -7,8 +7,10 @@ import {
   adminCredentialsCsvUrl,
   adminCredentialsHtmlUrl,
   deleteAdminSchoolPost,
+  fetchAdminSchoolMessages,
   fetchAdminSchoolPosts,
   fetchAdminSchools,
+  type SchoolAdminMessage,
   moderateAdminSchoolPost,
   patchAdminSchool,
   resetAdminSchoolAccess,
@@ -20,15 +22,17 @@ export default function SchoolAdminPanel() {
   const [q, setQ] = useState("");
   const [schools, setSchools] = useState<AdminSchoolRow[]>([]);
   const [posts, setPosts] = useState<SchoolPost[]>([]);
+  const [messages, setMessages] = useState<SchoolAdminMessage[]>([]);
   const [error, setError] = useState("");
   const [info, setInfo] = useState("");
   const [resetRow, setResetRow] = useState<{ name: string; username: string; password: string } | null>(null);
 
   const load = async () => {
-    const [s, p] = await Promise.all([fetchAdminSchools(q), fetchAdminSchoolPosts()]);
+    const [s, p, m] = await Promise.all([fetchAdminSchools(q), fetchAdminSchoolPosts(), fetchAdminSchoolMessages()]);
     if (!s.success) setError(s.message || "Nema pristupa školama.");
     else setSchools(s.data || []);
     if (p.success) setPosts(p.data || []);
+    if (m.success) setMessages(m.data || []);
   };
 
   useEffect(() => {
@@ -91,6 +95,29 @@ export default function SchoolAdminPanel() {
             <code className="font-semibold">{resetRow.password}</code>
             <p className="mt-1 text-xs text-muted-foreground">Pokaži ovo školi jednom. Nakon osvježavanja stranice više nije vidljivo.</p>
           </div>
+        )}
+      </div>
+
+      <div className="rounded-2xl border bg-card p-4">
+        <h3 className="font-semibold">Poruke škola</h3>
+        <p className="mt-1 text-sm text-muted-foreground">Škole javljaju pogreške koje same ne mogu ispraviti.</p>
+        {messages.length === 0 ? (
+          <p className="mt-3 text-sm text-muted-foreground">Nema novih poruka.</p>
+        ) : (
+          <ul className="mt-3 space-y-2">
+            {messages.map((item) => (
+              <li key={item.id} className="rounded-xl border px-3 py-2 text-sm">
+                <p className="font-medium">
+                  <Link to={`/srednje-skole/${item.slug}`} className="hover:underline">
+                    {item.schoolName}
+                  </Link>
+                  {item.city ? <span className="font-normal text-muted-foreground"> · {item.city}</span> : null}
+                </p>
+                <p className="mt-1 whitespace-pre-wrap">{item.message}</p>
+                <p className="mt-1 text-xs text-muted-foreground">{item.createdAt}</p>
+              </li>
+            ))}
+          </ul>
         )}
       </div>
 

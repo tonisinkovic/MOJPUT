@@ -22,6 +22,74 @@ function truthyFlag(v) {
   return v === true || v === 1 || v === "1";
 }
 
+function overlaySchoolContact(catalog, account) {
+  if (!catalog) return null;
+  if (!account) return catalog;
+  const next = { ...catalog };
+  const principal = String(account.contact_principal || "").trim();
+  const email = String(account.contact_email || "").trim();
+  const phone = String(account.contact_phone || "").trim();
+  const address = String(account.contact_address || "").trim();
+  if (principal) next.principal = principal;
+  if (email) next.emails = [email];
+  if (phone) next.phones = [phone];
+  if (address) next.address = address;
+  return next;
+}
+
+function schoolProfileFields(account) {
+  return {
+    aboutText: account?.about_text || "",
+    logoUrl: account?.logo_url || null,
+    coverUrl: account?.cover_url || null,
+    extraWebsite: account?.extra_website || null,
+    isActive: account ? truthyFlag(account.is_active) : true,
+    hasAccount: Boolean(account),
+    programsConfirmed: Boolean(account?.programs_confirmed_at),
+    programsConfirmedAt: account?.programs_confirmed_at || null,
+  };
+}
+
+function optionalContact(value, max) {
+  if (value === undefined) return undefined;
+  return String(value ?? "").trim().slice(0, max);
+}
+
+function validEmail(value) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+}
+
+function validPhone(value) {
+  const digits = value.replace(/\D/g, "");
+  return digits.length >= 6 && digits.length <= 20 && value.length <= 40;
+}
+
+function contactOverride(submitted, catalogValue) {
+  if (submitted === undefined) return undefined;
+  const next = String(submitted || "").trim();
+  const base = String(catalogValue || "").trim();
+  if (!next || next === base) return null;
+  return next;
+}
+
+function emailOverride(submitted, catalogEmail) {
+  if (submitted === undefined) return undefined;
+  const next = String(submitted || "").trim();
+  if (!next) return null;
+  const base = String(catalogEmail || "").trim();
+  if (base && next.toLowerCase() === base.toLowerCase()) return null;
+  return next;
+}
+
+function phoneOverride(submitted, catalogPhone) {
+  if (submitted === undefined) return undefined;
+  const next = String(submitted || "").trim();
+  if (!next) return null;
+  const digits = (value) => String(value || "").replace(/\D/g, "");
+  if (digits(next) && digits(next) === digits(catalogPhone)) return null;
+  return next;
+}
+
 function uploadsRoot() {
   const dir = path.join(resolveSqliteDataDir(), "uploads", "schools");
   fs.mkdirSync(dir, { recursive: true });
@@ -311,14 +379,8 @@ function registerSchoolCms(app, ctx) {
       return res.json({
         success: true,
         data: {
-          catalog: publicCatalogFields(catalog),
-          profile: {
-            aboutText: account?.about_text || "",
-            logoUrl: account?.logo_url || null,
-            coverUrl: account?.cover_url || null,
-            extraWebsite: account?.extra_website || null,
-            isActive: account ? truthyFlag(account.is_active) : true,
-          },
+          catalog: overlaySchoolContact(publicCatalogFields(catalog), account),
+          profile: schoolProfileFields(account),
           posts: feed,
         },
       });
@@ -441,7 +503,7 @@ function registerSchoolCms(app, ctx) {
       return res.json({
         success: true,
         data: {
-          catalog: publicCatalogFields(catalog),
+          catalog: overlaySchoolContact(publicCatalogFields(catalog), req.schoolAccount),
           account: {
             slug: req.schoolAccount.slug,
             aboutText: req.schoolAccount.about_text || "",
@@ -450,6 +512,8 @@ function registerSchoolCms(app, ctx) {
             extraWebsite: req.schoolAccount.extra_website || null,
             mustChangePassword: truthyFlag(req.schoolAccount.must_change_password),
             isActive: truthyFlag(req.schoolAccount.is_active),
+            programsConfirmed: Boolean(req.schoolAccount.programs_confirmed_at),
+            programsConfirmedAt: req.schoolAccount.programs_confirmed_at || null,
           },
           stats: {
             published: Number(counts?.published || 0),
@@ -471,15 +535,67 @@ function registerSchoolCms(app, ctx) {
     try {
       const aboutText = String(req.body?.aboutText ?? req.schoolAccount.about_text ?? "").slice(0, 8000);
       const extraWebsite = isHttpUrl(req.body?.extraWebsite);
+      const principal = optionalContact(req.body?.principal, 120);
+      const email = optionalContact(req.body?.email, 160);
+      const phone = optionalContact(req.body?.phone, 40);
+      const address = optionalContact(req.body?.address, 180);
+      const base = publicCatalogFields(getSchoolById(req.schoolAccount.high_school_id)) || {};
+      const principalStored = contactOverride(principal, base.principal);
+      const emailStored = emailOverride(email, base.emails?.[0]);
+      const phoneStored = phoneOverride(phone, base.phones?.[0]);
+      const addressStored = contactOverride(address, base.address);
+      if (emailStored && !validEmail(emailStored)) {
+        return res.status(400).json({ success: false, message: "Email nije ispravan." });
+      }
+      if (phoneStored && !validPhone(phoneStored)) {
+        return res.status(400).json({ success: false, message: "Telefon nije ispravan." });
+      }
+      if (principalStored && principalStored.length < 2) {
+        return res.status(400).json({ success: false, message: "Ime ravnatelja je prekratko." });
+      }
+      if (addressStored && addressStored.length < 4) {
+        return res.status(400).json({ success: false, message: "Adresa je prekratka." });
+      }
+      const confirm = req.body?.confirmPrograms === true;
+      const confirmedAt = confirm ? new Date().toISOString() : req.schoolAccount.programs_confirmed_at || null;
       await db
         .prepare(
-          "UPDATE school_accounts SET about_text = ?, extra_website = ?, updated_at = datetime('now') WHERE id = ?",
+          `UPDATE school_accounts
+           SET about_text = ?, extra_website = ?,
+               contact_principal = ?, contact_email = ?, contact_phone = ?, contact_address = ?,
+               programs_confirmed_at = ?, updated_at = datetime('now')
+           WHERE id = ?`,
         )
-        .run(aboutText, extraWebsite || null, req.schoolAccount.id);
-      return res.json({ success: true });
+        .run(
+          aboutText,
+          extraWebsite || null,
+          principalStored === undefined ? req.schoolAccount.contact_principal || null : principalStored,
+          emailStored === undefined ? req.schoolAccount.contact_email || null : emailStored,
+          phoneStored === undefined ? req.schoolAccount.contact_phone || null : phoneStored,
+          addressStored === undefined ? req.schoolAccount.contact_address || null : addressStored,
+          confirmedAt,
+          req.schoolAccount.id,
+        );
+      return res.json({ success: true, programsConfirmed: Boolean(confirmedAt) });
     } catch (err) {
       console.error("[schools/me-patch]", err?.message || err);
       return res.status(500).json({ success: false, message: "Spremanje profila nije uspjelo." });
+    }
+  });
+
+  app.post("/api/schools/me/message", schoolAuth, async (req, res) => {
+    try {
+      const message = String(req.body?.message || "").trim().slice(0, 2000);
+      if (message.length < 8) {
+        return res.status(400).json({ success: false, message: "Poruka je prekratka." });
+      }
+      await db
+        .prepare("INSERT INTO school_admin_messages (school_account_id, message) VALUES (?, ?)")
+        .run(req.schoolAccount.id, message);
+      return res.json({ success: true });
+    } catch (err) {
+      console.error("[schools/me-message]", err?.message || err);
+      return res.status(500).json({ success: false, message: "Poruka nije poslana." });
     }
   });
 
@@ -718,6 +834,35 @@ function registerSchoolCms(app, ctx) {
     } catch (err) {
       console.error("[schools/images-delete]", err?.message || err);
       return res.status(500).json({ success: false, message: "Brisanje fotografije nije uspjelo." });
+    }
+  });
+
+  app.get("/api/admin/schools/messages", adminMiddleware, async (_req, res) => {
+    try {
+      const rows = await db
+        .prepare(
+          `SELECT m.id, m.message, m.created_at, sa.slug, sa.high_school_id
+           FROM school_admin_messages m
+           JOIN school_accounts sa ON sa.id = m.school_account_id
+           ORDER BY m.id DESC
+           LIMIT 80`,
+        )
+        .all();
+      const catalog = loadHighSchools().byId;
+      return res.json({
+        success: true,
+        data: rows.map((row) => ({
+          id: row.id,
+          message: row.message,
+          createdAt: row.created_at,
+          slug: row.slug,
+          schoolName: catalog.get(row.high_school_id)?.name || row.high_school_id,
+          city: catalog.get(row.high_school_id)?.city || "",
+        })),
+      });
+    } catch (err) {
+      console.error("[admin/schools/messages]", err?.message || err);
+      return res.status(500).json({ success: false, message: "Poruke škola nisu učitane." });
     }
   });
 

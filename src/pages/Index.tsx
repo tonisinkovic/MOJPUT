@@ -15,7 +15,7 @@ import {
 } from "@/lib/experience";
 import { authMe, userFromAuthMe, type AuthUser } from "@/lib/auth";
 import FeatureCard from "@/components/FeatureCard";
-import { MATURABOT_LOGO_URL } from "@/components/matura/MaturaBotEmbedDialog";
+import { MATURABOT_LOGO_URL, MATURABOT_URL } from "@/components/matura/MaturaBotEmbedDialog";
 import MojPutEntryIntro from "@/components/MojPutEntryIntro";
 import {
   Map,
@@ -201,7 +201,7 @@ const features: HomeFeature[] = [
     ),
     title: "MaturaBOT",
     description: "Klik otvara maturabot.hr — zadaci, AI pomoć i napredak.",
-    path: "/mature",
+    path: MATURABOT_URL,
     badge: "maturabot.hr",
   },
   {
@@ -253,6 +253,7 @@ const features: HomeFeature[] = [
 const JUNIOR_EXCLUDED_FEATURE_PATHS = new Set([
   "/kalkulator-doma",
   "/mature",
+  MATURABOT_URL,
   "/samoprocjena",
   "/video",
   "/fakulteti",
@@ -295,7 +296,7 @@ function featureTone(path: string): string {
   if (name.startsWith("/chatbot")) return "199 72% 38%";
   if (name.startsWith("/razred")) return "330 48% 48%";
   if (name.startsWith("/samoprocjena")) return "250 42% 50%";
-  if (name.startsWith("/mature")) return "221 83% 53%";
+  if (name.startsWith("/mature") || name.includes("maturabot.hr")) return "221 83% 53%";
   return "174 62% 42%";
 }
 
@@ -1227,17 +1228,34 @@ const Index = () => {
                         badge={feature.badge}
                       />
                     );
+                    const linkClass =
+                      "block touch-manipulation rounded-2xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 focus-visible:ring-offset-2 focus-visible:ring-offset-background";
+                    const linkTitle = feature.badge ? `Otvori ${feature.badge}` : undefined;
+                    const linkAria = feature.badge ? `${feature.title}, klik otvara ${feature.badge}` : undefined;
+                    const isExternal = /^https?:\/\//i.test(feature.path);
                     return feature.locked ? (
                       <div key={feature.path} aria-disabled title="Još nije aktivno — uskoro dostupno.">
                         {card}
                       </div>
+                    ) : isExternal ? (
+                      <a
+                        key={feature.path}
+                        href={feature.path}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        title={linkTitle}
+                        aria-label={linkAria}
+                        className={linkClass}
+                      >
+                        {card}
+                      </a>
                     ) : (
                       <Link
                         key={feature.path}
                         to={feature.path}
-                        title={feature.badge ? `Otvori ${feature.badge}` : undefined}
-                        aria-label={feature.badge ? `${feature.title}, klik otvara ${feature.badge}` : undefined}
-                        className="block touch-manipulation rounded-2xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+                        title={linkTitle}
+                        aria-label={linkAria}
+                        className={linkClass}
                       >
                         {card}
                       </Link>
