@@ -322,11 +322,11 @@ const KartaFakulteta = () => {
                         "flex h-8 w-8 items-center justify-center rounded-lg transition-colors",
                         filtersOpen ? "bg-primary/10 text-primary" : "text-muted-foreground"
                       )}>
-                        {filtersOpen ? (
+                      {filtersOpen ? (
                           <ChevronUp className="h-5 w-5" />
-                        ) : (
+                      ) : (
                           <ChevronDown className="h-5 w-5" />
-                        )}
+                      )}
                       </span>
                     </span>
                   </button>
@@ -496,19 +496,19 @@ const KartaFakulteta = () => {
             >
               <div className="relative">
                 <div className="pointer-events-none absolute inset-x-0 top-0 z-10 bg-gradient-to-b from-black/50 via-black/25 to-transparent px-4 py-3 sm:px-5 sm:py-4">
-                  <div className="flex items-center gap-2 text-white/90">
-                    <span className="inline-flex h-7 w-7 items-center justify-center rounded-lg bg-white/15 backdrop-blur-sm">
-                      <MapPin className="h-4 w-4" />
-                    </span>
+                    <div className="flex items-center gap-2 text-white/90">
+                      <span className="inline-flex h-7 w-7 items-center justify-center rounded-lg bg-white/15 backdrop-blur-sm">
+                        <MapPin className="h-4 w-4" />
+                      </span>
                     <div>
                       <p className="text-[11px] font-semibold uppercase tracking-wider drop-shadow">
                         Interaktivna karta
                       </p>
                       <h2 className="text-sm font-bold text-white drop-shadow-lg sm:text-base">
-                        Istraži fakultete na karti
-                      </h2>
-                    </div>
+                      Istraži fakultete na karti
+                    </h2>
                   </div>
+                </div>
                 </div>
                 <Suspense
                   fallback={
@@ -552,9 +552,9 @@ const KartaFakulteta = () => {
                   <h3 className="flex items-center gap-2.5 text-lg font-bold text-foreground sm:text-xl">
                     <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-primary/80 text-primary-foreground shadow-sm">
                       <GraduationCap className="h-5 w-5" />
-                    </span>
+                  </span>
                     Popis ustanova
-                  </h3>
+                </h3>
                   <p className="mt-1 text-sm text-muted-foreground">
                     Pregledaj i pronađi svoj idealni fakultet
                   </p>
@@ -622,7 +622,7 @@ const KartaFakulteta = () => {
                     </button>
                   );
                 })}
-              </div>
+                  </div>
 
               {/* Results count */}
               <div className="mb-4 flex items-center justify-between">
@@ -632,16 +632,16 @@ const KartaFakulteta = () => {
                     <span> od ukupno {faculties.length}</span>
                   )}
                 </span>
-                {activeFilterCount > 0 && (
-                  <button
-                    type="button"
-                    onClick={resetAllFilters}
+                  {activeFilterCount > 0 && (
+                    <button
+                      type="button"
+                      onClick={resetAllFilters}
                     className="inline-flex items-center gap-1 text-xs font-semibold text-primary hover:underline"
-                  >
+                    >
                     <X className="h-3 w-3" />
-                    Očisti filtre
-                  </button>
-                )}
+                      Očisti filtre
+                    </button>
+                  )}
               </div>
 
               {filtered.length === 0 ? (
@@ -692,11 +692,11 @@ const KartaFakulteta = () => {
                               faculty.institutionType === "Veleučilište" && "bg-sky-500",
                               faculty.institutionType === "Ostalo" && "bg-violet-500",
                             )}>
-                              {initial}
-                            </div>
-                            <div className="min-w-0 flex-1">
+                            {initial}
+                          </div>
+                          <div className="min-w-0 flex-1">
                               <h4 className="line-clamp-2 text-sm font-semibold leading-snug text-foreground">
-                                {faculty.name}
+                              {faculty.name}
                               </h4>
                               <p className="mt-0.5 flex items-center gap-1 text-xs text-muted-foreground">
                                 <MapPin className="h-3 w-3" />
@@ -707,16 +707,16 @@ const KartaFakulteta = () => {
 
                           {/* Type badge */}
                           <div className="mb-3">
-                            <Badge
+                              <Badge
                               variant="outline"
                               className={cn(
                                 "rounded-md border px-2 py-0.5 text-[10px] font-semibold",
                                 TYPE_STYLE[faculty.institutionType],
                               )}
-                            >
-                              {faculty.institutionType}
-                            </Badge>
-                          </div>
+                              >
+                                {faculty.institutionType}
+                              </Badge>
+                            </div>
 
                           {/* Info rows */}
                           <div className="flex-1 space-y-1.5 text-xs text-muted-foreground">
@@ -732,8 +732,8 @@ const KartaFakulteta = () => {
                                 {faculty.programs.length}{" "}
                                 {faculty.programs.length === 1 ? "studijski program" : "studijskih programa"}
                               </span>
-                            </div>
                           </div>
+                        </div>
 
                           {/* Footer */}
                           <div className="mt-3 flex items-center justify-between border-t border-border/40 pt-3">
@@ -747,8 +747,8 @@ const KartaFakulteta = () => {
                               faculty.institutionType === "Ostalo" && "bg-violet-500",
                             )}>
                               →
-                            </span>
-                          </div>
+                                  </span>
+                        </div>
                         </div>
                       </motion.div>
                     );
@@ -756,8 +756,8 @@ const KartaFakulteta = () => {
                 </div>
               )}
             </motion.div>
+            </div>
           </div>
-        </div>
       </section>
 
       {/* Detalji ustanove */}
@@ -765,7 +765,7 @@ const KartaFakulteta = () => {
         <DialogContent className="max-h-[85vh] overflow-y-auto rounded-2xl sm:max-w-lg">
           {detailFaculty && (
             <>
-              <DialogHeader>
+            <DialogHeader>
                 <div className="flex items-start gap-3">
                   <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-base font-bold text-primary">
                     {detailFaculty.name.trim().charAt(0).toUpperCase()}
@@ -775,11 +775,11 @@ const KartaFakulteta = () => {
                       {detailFaculty.name}
                     </DialogTitle>
                     <DialogDescription className="mt-1 flex flex-wrap items-center gap-1.5">
-                      <span className="inline-flex items-center gap-1">
+                    <span className="inline-flex items-center gap-1">
                         <MapPin className="h-3.5 w-3.5 text-primary/70" />
                         {detailFaculty.city}
-                      </span>
-                    </DialogDescription>
+                </span>
+              </DialogDescription>
                     <div className="mt-2 flex flex-wrap gap-1.5">
                       <Badge
                         variant="outline"
@@ -794,9 +794,9 @@ const KartaFakulteta = () => {
                         {detailFaculty.programs.length}{" "}
                         {detailFaculty.programs.length === 1 ? "program" : "programa"}
                       </Badge>
-                    </div>
                   </div>
-                </div>
+                  </div>
+                  </div>
               </DialogHeader>
 
               <div className="space-y-2.5">
@@ -808,9 +808,9 @@ const KartaFakulteta = () => {
                         Institucija
                       </p>
                       <p className="text-sm font-medium text-foreground">{detailFaculty.provider}</p>
-                    </div>
-                  </div>
-                )}
+            </div>
+          </div>
+        )}
 
                 <div className="flex items-start gap-3 rounded-xl border border-border/70 bg-muted/30 p-3">
                   <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
@@ -819,15 +819,15 @@ const KartaFakulteta = () => {
                     <p className="text-sm font-medium text-foreground">{detailFaculty.city}</p>
                     <a
                       href={mapsUrl(detailFaculty)}
-                      target="_blank"
-                      rel="noopener noreferrer"
+                        target="_blank"
+                        rel="noopener noreferrer"
                       className="mt-1 inline-flex items-center gap-1 text-xs font-semibold text-primary hover:underline"
-                    >
+                      >
                       Prikaži na karti
-                      <ExternalLink className="h-3 w-3" />
-                    </a>
+                        <ExternalLink className="h-3 w-3" />
+                      </a>
                   </div>
-                </div>
+                  </div>
 
                 <div className="rounded-xl border border-border/70 bg-muted/30 p-3">
                   <p className="mb-2 flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
@@ -849,14 +849,14 @@ const KartaFakulteta = () => {
                           <span className="shrink-0 text-xs font-semibold tabular-nums text-primary">
                             {cutoff !== null && latestYear ? `${cutoff.toFixed(1)} (${latestYear})` : "—"}
                           </span>
-                        </li>
+                    </li>
                       ))}
-                    </ul>
+                  </ul>
                   )}
-                </div>
-              </div>
+                  </div>
+                  </div>
             </>
-          )}
+        )}
         </DialogContent>
       </Dialog>
     </Layout>

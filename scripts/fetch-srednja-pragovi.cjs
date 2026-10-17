@@ -91,7 +91,15 @@ function parsePragHtml(htmlStr) {
   if (rows.length === 0) return { sector, prag: null };
   // Najnovija školska godina
   rows.sort((a, b) => b.year.localeCompare(a.year));
-  return { sector, prag: rows[0] };
+  return { sector, prag: normalizePrag(rows[0]) };
+}
+
+/** srednja.hr upisuje 0 / 0 / 0 kad nema podataka o pragu; to nije stvarni prag. */
+function normalizePrag(prag) {
+  if (prag && prag.min === 0 && (prag.max ?? 0) === 0) {
+    return { ...prag, min: null, avg: null, max: null };
+  }
+  return prag;
 }
 
 async function fetchPrag(programId, schoolId, attempt = 0) {

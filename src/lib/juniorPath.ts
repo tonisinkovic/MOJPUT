@@ -224,12 +224,34 @@ function clamp(value: number, min: number, max: number): number {
   return Math.min(max, Math.max(min, value));
 }
 
+/** Pravilnik: zbroj natjecanja (najviše 4 boda, vrednuje se jedno postignuće) i provjere posebnih znanja (najviše 10). */
+export const MAX_DODATNI_BODOVI = 14;
+
+const FOUR_YEAR_NAME = /gimnazij|tehnicar|medicinska sestra|primalja|fizioterapeut|ibmyp/;
+
 export function programTypeFromPrag(prag: KalkulatorPrag | null): SrednjaProgramType | null {
   const reference = prag?.max ?? prag?.min ?? null;
-  if (reference == null) return null;
+  if (reference == null || reference <= 0) return null;
   if (reference > 50) return "gimnazija4";
   if (reference > 20) return "trogodisnji";
   return "kraci";
+}
+
+/** Naziv programa je pouzdaniji od lanjskog maksimuma, koji kod slabo traženih programa zna biti nizak. */
+export function programTypeFor(
+  program: { name: string; prag?: KalkulatorPrag | null } | null | undefined,
+): SrednjaProgramType | null {
+  if (!program) return null;
+  if (FOUR_YEAR_NAME.test(normalizeJuniorText(program.name))) return "gimnazija4";
+  return programTypeFromPrag(program.prag ?? null);
+}
+
+/** srednja.hr kod nekih programa objavljuje prosjek bez prijemnog ili dodatnih bodova, pa nije na skali praga. */
+export function comparablePragAvg(prag: KalkulatorPrag | null | undefined): number | null {
+  if (prag?.avg == null || prag.min == null) return null;
+  if (prag.avg < prag.min - 0.01) return null;
+  if (prag.max != null && prag.avg > prag.max + 0.01) return null;
+  return prag.avg;
 }
 
 export type ScoringProfileId =
@@ -515,9 +537,9 @@ export function computeProgramPoints(
         opciUspjeh: 0,
         kljucniPredmeti: 0,
         posebniPredmeti: 0,
-        dodatni: Math.max(0, toNum(draft.dodatniBodovi)),
+        dodatni: clamp(toNum(draft.dodatniBodovi), 0, MAX_DODATNI_BODOVI),
         zajednicki: 0,
-        ukupno: Math.max(0, toNum(draft.dodatniBodovi)),
+        ukupno: clamp(toNum(draft.dodatniBodovi), 0, MAX_DODATNI_BODOVI),
         max: 0,
       };
 
@@ -620,7 +642,7 @@ export function computeSrednjaPoints(draft: JuniorGradeDraft): {
   let zajednicki = opciUspjeh;
   if (program === "gimnazija4" || program === "trogodisnji") zajednicki += kljucniPredmeti;
   if (program === "gimnazija4") zajednicki += posebniPredmeti;
-  const dodatni = Math.max(0, toNum(draft.dodatniBodovi));
+  const dodatni = clamp(toNum(draft.dodatniBodovi), 0, MAX_DODATNI_BODOVI);
   const max = MAX_BY_PROGRAM[program];
   return {
     opciUspjeh,
@@ -779,7 +801,7 @@ export function findCutoff(name: string, city: string, program: HighSchoolProgra
     programId: prog.id,
     programName: prog.name,
     min: prog.prag?.min ?? null,
-    avg: prog.prag?.avg ?? null,
+    avg: comparablePragAvg(prog.prag),
     year: prog.prag?.year ?? null,
     kvota: prog.prag?.kvota ?? null,
   };

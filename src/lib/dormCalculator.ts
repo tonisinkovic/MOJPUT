@@ -1,15 +1,20 @@
 /**
- * Kalkulator bodova za subvencionirano stanovanje (natječajni sustav MZO-a).
+ * Kalkulator bodova za subvencionirano stanovanje prema Pravilniku MZOM-a (NN 68/2023, 77/2024).
  * Udaljenost u km se ne boduje; bitno je imaš li pravo prijave (prebivalište ≠ mjesto studija).
  */
 
 import rawDorms from "@/data/dorms.json";
 import { validateDormsArray } from "./dormValidation";
+import { resolveCohortReference, type StudyLevel } from "./dormCohortAverages";
 
-/** Iz natječaja SCZG za ak. 2025./2026. (obavijest o rezultatima) */
-export const PRORACUNSKA_OSNOVICA_EUR_2025 = 441.44;
-/** 60 % proračunske osnovice (referentno za natječaj 2025.) */
-export const PCT_60_PO_EUR_2025 = 264.86;
+/** Proračunska osnovica (natječaji 2025./2026. i 2026./2027.) */
+export const PRORACUNSKA_OSNOVICA_EUR = 441.44;
+/** 60 % proračunske osnovice */
+export const PCT_60_PO_EUR = 264.86;
+/** @deprecated koristi PRORACUNSKA_OSNOVICA_EUR */
+export const PRORACUNSKA_OSNOVICA_EUR_2025 = PRORACUNSKA_OSNOVICA_EUR;
+/** @deprecated koristi PCT_60_PO_EUR */
+export const PCT_60_PO_EUR_2025 = PCT_60_PO_EUR;
 
 export type PublishedCutoff = {
   academic_year: string;
@@ -57,7 +62,9 @@ export function getDormById(id: string): Dorm | undefined {
   return dorms.find((d) => d.id === id);
 }
 
-/** Mjesečni prihod po članu kućanstva (EUR), prethodna kalendarska godina. */
+const fmtEur = (n: number) => n.toFixed(2).replace(".", ",");
+
+/** Mjesečni prihod po članu kućanstva (EUR), prethodna kalendarska godina — čl. 15. st. 11. */
 export const INCOME_BANDS = [
   { id: "le120", label: "do 120,00 EUR", maxEur: 120, points: 750 },
   { id: "120_160", label: "120,01 – 160,00 EUR", maxEur: 160, points: 600 },
@@ -69,9 +76,15 @@ export const INCOME_BANDS = [
   { id: "360_400", label: "360,01 – 400,00 EUR", maxEur: 400, points: 150 },
   {
     id: "400_po",
-    label: `400,01 EUR do 100 % proračunske osnovice (npr. ${PRORACUNSKA_OSNOVICA_EUR_2025.toFixed(2).replace(".", ",")} € u 2025.)`,
-    maxEur: null,
+    label: `400,01 – ${fmtEur(PRORACUNSKA_OSNOVICA_EUR)} EUR (do 100 % proračunske osnovice)`,
+    maxEur: PRORACUNSKA_OSNOVICA_EUR,
     points: 75,
+  },
+  {
+    id: "iznad_po",
+    label: `više od ${fmtEur(PRORACUNSKA_OSNOVICA_EUR)} EUR (iznad proračunske osnovice)`,
+    maxEur: null,
+    points: 0,
   },
 ] as const;
 
@@ -107,7 +120,7 @@ export const DISTANCE_OPTIONS: {
   },
 ];
 
-/** Bodovi prema godini studija (uz oznaku dovoljno ECTS-a u prethodnim godinama gdje to vrijedi). */
+/** Čl. 12. st. 1.–5.: bodovi prema godini studija uz prosječno barem 55 ECTS u prethodnim godinama. */
 const STUDY_YEAR_POINTS: Partial<Record<StudyYearOption, number>> = {
   g2: 100,
   g3: 150,
@@ -116,17 +129,23 @@ const STUDY_YEAR_POINTS: Partial<Record<StudyYearOption, number>> = {
   g6: 300,
 };
 
+const isHigherYear = (y: StudyYearOption) => y !== "maturant" && y !== "g1";
+
 export type SpecialOptionId =
   | "invaliditet2"
   | "branitelj_child_1"
   | "branitelj_child_2"
-  | "civil_invalid_parent"
   | "minimalna_naknada"
   | "medjunarodna_zastita"
   | "jedan_roditelj"
+  | "razvedeni_roditelji"
   | "oba_roditelja_izravno"
-  | "roditelj_dijete"
-  | "deficitarni_studij";
+  | "skrbnistvo_izravno"
+  | "deficitarni_studij"
+  /** @deprecated zamijenjeno brojem u `parentsDisabled100` */
+  | "civil_invalid_parent"
+  /** @deprecated zamijenjeno brojem u `children` */
+  | "roditelj_dijete";
 
 export const SPECIAL_OPTIONS: {
   id: SpecialOptionId;
@@ -135,24 +154,56 @@ export const SPECIAL_OPTIONS: {
   izravnoPravo?: boolean;
 }[] = [
   { id: "invaliditet2", label: "Invaliditet 2. grupe", points: 400 },
-  { id: "branitelj_child_1", label: "Djete branitelja / HVO — jedan roditelj (200 bod.)", points: 200 },
-  { id: "branitelj_child_2", label: "Djete branitelja / HVO — oba roditelja (400 bod.)", points: 400 },
-  { id: "civil_invalid_parent", label: "Roditelj civilni invalid s potpunim invaliditetom (100 %)", points: 200 },
-  { id: "minimalna_naknada", label: "Zajamčena minimalna naknada ili slične novčane potpore", points: 750 },
-  { id: "medjunarodna_zastita", label: "Međunarodna ili privremena zaštita", points: 750 },
+  { id: "branitelj_child_1", label: "Dijete branitelja / HVO — jedan roditelj (200 bod.)", points: 200 },
+  { id: "branitelj_child_2", label: "Dijete branitelja / HVO — oba roditelja (400 bod.)", points: 400 },
   {
-    id: "jedan_roditelj",
-    label: "Jedan roditelj umro, nestao ili nepoznat (600 bod.)",
-    points: 600,
+    id: "minimalna_naknada",
+    label: "Zajamčena minimalna naknada ili slične novčane potpore (zamjenjuje bodove za prihod)",
+    points: 750,
+  },
+  { id: "medjunarodna_zastita", label: "Međunarodna ili privremena zaštita", points: 750 },
+  { id: "jedan_roditelj", label: "Jedan roditelj umro, nestao ili nepoznat (600 bod.)", points: 600 },
+  {
+    id: "razvedeni_roditelji",
+    label: "Razvedeni roditelji — živim samo s jednim roditeljem (150 bod.)",
+    points: 150,
   },
   {
     id: "oba_roditelja_izravno",
-    label: "Oba roditelja umrla, nestala ili nepoznata — posebno pravo (kontaktiraj studentski centar)",
+    label: "Oba roditelja umrla, nestala ili nepoznata",
     points: 0,
     izravnoPravo: true,
   },
-  { id: "roditelj_dijete", label: "Student roditelj — jedno dijete", points: 500 },
-  { id: "deficitarni_studij", label: "Deficitarni studij — među prvima na službenoj listi", points: 200 },
+  {
+    id: "skrbnistvo_izravno",
+    label: "Pod skrbništvom sam ili sam bio kao dijete / socijalna usluga smještaja",
+    points: 0,
+    izravnoPravo: true,
+  },
+  { id: "deficitarni_studij", label: "Deficitarni studij — među prvih 10 na listi HZZ-a", points: 200 },
+];
+
+export type MaturaResult = "none" | "80_90" | "gt90";
+export type CompetitionAward = "none" | "drzavna" | "medjunarodna";
+export type StudentAward = "none" | "rektor" | "dekan" | "procelnik";
+
+export const MATURA_OPTIONS: { id: MaturaResult; label: string; points: number }[] = [
+  { id: "none", label: "Ništa od navedenog", points: 0 },
+  { id: "80_90", label: "Obvezni dio mature na višoj razini, 80–90 %", points: 200 },
+  { id: "gt90", label: "Obvezni dio mature na višoj razini, više od 90 %", points: 300 },
+];
+
+export const COMPETITION_OPTIONS: { id: CompetitionAward; label: string; points: number }[] = [
+  { id: "none", label: "Bez nagrade", points: 0 },
+  { id: "drzavna", label: "Državna nagrada (1.–3. mjesto) u srednjoj školi", points: 300 },
+  { id: "medjunarodna", label: "Međunarodna nagrada (1.–3. mjesto) u srednjoj školi", points: 400 },
+];
+
+export const STUDENT_AWARD_OPTIONS: { id: StudentAward; label: string; points: number }[] = [
+  { id: "none", label: "Bez nagrade", points: 0 },
+  { id: "rektor", label: "Rektorova nagrada", points: 300 },
+  { id: "dekan", label: "Dekanova nagrada", points: 200 },
+  { id: "procelnik", label: "Pročelnikova nagrada", points: 200 },
 ];
 
 export type DormCalculatorInput = {
@@ -165,6 +216,26 @@ export type DormCalculatorInput = {
   avgEctsPreviousYears: number | null;
   ectsCurrentYear: number | null;
   invaliditet1: boolean;
+  /** Ručno upisan prosjek skupine; ima prednost pred službenim podacima iz baze. */
+  referenceAverage?: number | null;
+  /** Visoko učilište iz `dormCohortAverages.json`; šifre vrijede samo unutar svog centra. */
+  institution?: { dormId: string; code: string } | null;
+  studyLevel?: StudyLevel | null;
+  /** Braća/sestre u sustavu obrazovanja ili predškolske dobi (150 bod. svaki). */
+  siblings?: number;
+  /** Braća/sestre s doplatkom za pomoć i njegu ili osobnom invalidninom (200 bod. svaki). */
+  siblingsWithCare?: number;
+  /** Roditelji sa 100 % tjelesnim oštećenjem (200 bod. po roditelju). */
+  parentsDisabled100?: number;
+  /** Student roditelj — broj djece (500 bod. po djetetu). */
+  children?: number;
+  maturaResult?: MaturaResult;
+  competitionAward?: CompetitionAward;
+  studentAward?: StudentAward;
+  /** Čl. 12. st. 9.: 58+ ECTS u tekućoj godini uz prosječno 55 u prethodnim (100 bod.). */
+  ects58CurrentYear?: boolean;
+  /** Čl. 18. st. 1.: opomena pred gubitak prava (−200 bod.). */
+  opomena?: boolean;
 };
 
 export type BreakdownLine = { key: string; label: string; points: number; article?: string };
@@ -173,8 +244,10 @@ export type DormScoreResult = {
   total: number;
   breakdown: BreakdownLine[];
   warnings: string[];
-  /** Nema smisla uspoređivati s natječajem (npr. prebivalište u mjestu studija). */
+  /** Nema smisla uspoređivati s natječajem (npr. prebivalište u mjestu studija, premalo ECTS-a). */
   competitiveInvalid: boolean;
+  /** Razlozi za izravno pravo (čl. 7.–9.) — tada se ne natječeš bodovima. */
+  izravnoPravo: string[];
 };
 
 const w = (rule: number, value: number) => {
@@ -183,9 +256,14 @@ const w = (rule: number, value: number) => {
   return (r / 100) * v;
 };
 
+const round1 = (n: number) => Math.round(n * 10) / 10;
+const round3 = (n: number) => Math.round(n * 1000) / 1000;
+const count = (n: number | undefined, max: number) =>
+  Number.isFinite(n) ? Math.min(max, Math.max(0, Math.floor(n as number))) : 0;
+
 export function safeRound1(n: number): number {
   if (!Number.isFinite(n)) return 0;
-  return Math.round(n * 10) / 10;
+  return round1(n);
 }
 
 /** Teoretski strop za sanity check (nije striktni matematički maksimum). */
@@ -207,7 +285,7 @@ export function aggregateScoreFromBreakdown(breakdown: BreakdownLine[]): ScoreAg
     if (row.key === "grade") z.grade += p;
     else if (row.key === "income") z.income += p;
     else if (row.key === "distance_info") z.distance += p;
-    else if (row.key === "study") z.study += p;
+    else if (row.key === "study" || row.key.startsWith("study_")) z.study += p;
     else z.special += p;
   }
   return {
@@ -234,11 +312,16 @@ export function explainCalculation(dorm: Dorm, input: DormCalculatorInput): Expl
     income: "Prihod po članu kućanstva",
     distance_info: "Prebivalište (kilometri se ne boduju)",
     study: "Godina studija i ECTS",
+    study_ects58: "58 i više ECTS u tekućoj godini",
+    awards_matura: "Državna matura",
+    awards_competition: "Nagrada na natjecanju",
+    awards_student: "Nagrada na studiju",
+    opomena: "Opomena pred gubitak prava",
   };
   return res.breakdown.map((b) => ({
     id: b.key,
     title_hr: titles[b.key] ?? "Posebni uvjeti",
-    detail_hr: b.label,
+    detail_hr: b.article ? `${b.label} (${b.article})` : b.label,
     points: safeRound1(Number.isFinite(b.points) ? b.points : 0),
   }));
 }
@@ -253,33 +336,57 @@ export function pointsBelowCutoff(
   return Math.max(0, safeRound1(cutoff - total));
 }
 
+export type ReferenceSource = "manual" | "brucosi" | "institution" | "center_level" | "estimate";
+
+/** Prosjek skupine: ručni unos → službeni prosjek (brucoši / učilište / razina) → procjena iz dorms.json. */
+export function effectiveReference(
+  dorm: Dorm,
+  input: DormCalculatorInput,
+): { value: number; source: ReferenceSource; label_hr: string } {
+  const own = input.referenceAverage;
+  if (own != null && Number.isFinite(own) && own >= 2 && own <= 5) {
+    return { value: own, source: "manual", label_hr: `tvoj unos ${own.toFixed(3).replace(".", ",")}` };
+  }
+  const official = resolveCohortReference(dorm.id, input);
+  if (official) {
+    return {
+      value: official.value,
+      source: official.source,
+      label_hr: `${official.value.toFixed(3).replace(".", ",")} — ${official.label_hr}`,
+    };
+  }
+  const est = dorm.scoring_rules.reference_cohort_grade;
+  return { value: est, source: "estimate", label_hr: `procjena ${est.toFixed(2).replace(".", ",")}` };
+}
+
+/** Čl. 11.: osobni prosjek / prosjek skupine × 1000, bez gornje granice; umanjenja prema ECTS-u. */
 function computeGradeBlock(
-  grade: number,
+  input: DormCalculatorInput,
   refAvg: number,
-  avgEctsPrevious: number | null,
-  ectsCurrent: number | null,
   rules: DormScoringRules,
 ): { points: number; warnings: string[] } {
   const warnings: string[] = [];
-  const g = Math.min(5, Math.max(1, grade));
-  const ref = Math.max(2.5, refAvg);
-  let base = (g / ref) * 1000;
-  if (base > 1000) base = 1000;
+  const g = round3(Math.min(5, Math.max(2, input.gradeAverage)));
+  const ref = round3(Math.max(2, refAvg));
+  const base = (g / ref) * 1000;
 
   let factor = 1;
-  if (avgEctsPrevious != null && Number.isFinite(avgEctsPrevious)) {
-    const a = avgEctsPrevious;
-    if (a >= 49.01 && a <= 54) factor *= 0.9;
-    else if (a >= 44.01 && a <= 49) factor *= 0.8;
-    else if (a >= 40 && a <= 44) factor *= 0.7;
+  const prev = input.avgEctsPreviousYears;
+  if (isHigherYear(input.studyYear) && prev != null && Number.isFinite(prev)) {
+    if (prev >= 49.01 && prev <= 54) factor *= 0.9;
+    else if (prev >= 44.01 && prev <= 49) factor *= 0.8;
+    else if (prev >= 40 && prev <= 44) factor *= 0.7;
   }
-  if (ectsCurrent != null && Number.isFinite(ectsCurrent)) {
-    if (ectsCurrent >= 18 && ectsCurrent <= 30) factor *= 0.9;
+  const cur = input.ectsCurrentYear;
+  if (input.studyYear !== "maturant" && cur != null && Number.isFinite(cur) && cur >= 18 && cur <= 30) {
+    factor *= 0.9;
   }
 
   const points = w(rules.grade_weight, base * factor);
   if (factor < 1) {
-    warnings.push("Zbog unesenih ECTS-a primijenjeno je umanjenje bodova za prosjek.");
+    warnings.push(
+      `Zbog unesenih ECTS-a bodovi za prosjek umanjeni su za ${Math.round((1 - factor) * 100)} % (čl. 11. st. 9. i 10.).`,
+    );
   }
   return { points, warnings };
 }
@@ -294,32 +401,101 @@ function studyYearPoints(year: StudyYearOption, meets: boolean): number {
   return STUDY_YEAR_POINTS[year] ?? 0;
 }
 
-function specialPointsSum(ids: SpecialOptionId[]): { sum: number; lines: BreakdownLine[]; izravno: boolean } {
+function specialLines(input: DormCalculatorInput): { lines: BreakdownLine[]; izravno: string[] } {
   const lines: BreakdownLine[] = [];
-  let sum = 0;
-  let izravno = false;
-  const seen = new Set<SpecialOptionId>();
-  for (const id of ids) {
-    if (seen.has(id)) continue;
-    seen.add(id);
-    const opt = SPECIAL_OPTIONS.find((o) => o.id === id);
-    if (!opt) continue;
+  const izravno: string[] = [];
+  const ids = new Set(input.specialIds);
+
+  for (const opt of SPECIAL_OPTIONS) {
+    if (!ids.has(opt.id)) continue;
     if (opt.izravnoPravo) {
-      izravno = true;
+      izravno.push(opt.label);
+      continue;
     }
-    sum += opt.points;
+    if (opt.id === "razvedeni_roditelji" && ids.has("jedan_roditelj")) continue;
+    if (opt.id === "branitelj_child_1" && ids.has("branitelj_child_2")) continue;
+    lines.push({ key: opt.id, label: opt.label, points: opt.points });
+  }
+
+  const siblingsPts = count(input.siblings, 10) * 150;
+  const carePts = count(input.siblingsWithCare, 10) * 200;
+  if (siblingsPts > 0 || carePts > 0) {
+    const care = carePts >= siblingsPts;
     lines.push({
-      key: id,
-      label: opt.label,
-      points: opt.points,
+      key: care ? "siblings_care" : "siblings",
+      label: care
+        ? `Braća/sestre s doplatkom za pomoć i njegu ili invalidninom (${count(input.siblingsWithCare, 10)} × 200)`
+        : `Braća/sestre u sustavu obrazovanja (${count(input.siblings, 10)} × 150)`,
+      points: care ? carePts : siblingsPts,
+      article: "čl. 15. st. 3.–5., boduje se samo jedna osnova",
     });
   }
-  return { sum, lines, izravno };
+
+  const parents = count(input.parentsDisabled100, 2);
+  if (parents > 0) {
+    lines.push({
+      key: "parents_disabled",
+      label: `Roditelj sa 100 % tjelesnim oštećenjem (${parents} × 200)`,
+      points: parents * 200,
+      article: "čl. 15. st. 6.",
+    });
+  }
+
+  let kids = count(input.children, 10);
+  if (kids === 0 && ids.has("roditelj_dijete")) kids = 1;
+  if (kids > 0) {
+    lines.push({
+      key: "children",
+      label: `Student roditelj (${kids} × 500)`,
+      points: kids * 500,
+      article: "čl. 15. st. 10.",
+    });
+  }
+  if (parents === 0 && ids.has("civil_invalid_parent")) {
+    lines.push({ key: "parents_disabled", label: "Roditelj sa 100 % tjelesnim oštećenjem", points: 200 });
+  }
+
+  return { lines, izravno };
+}
+
+function awardLines(input: DormCalculatorInput): BreakdownLine[] {
+  const lines: BreakdownLine[] = [];
+  const firstYear = input.studyYear === "maturant";
+  if (firstYear) {
+    const m = MATURA_OPTIONS.find((o) => o.id === input.maturaResult);
+    if (m && m.points > 0) lines.push({ key: "awards_matura", label: m.label, points: m.points, article: "čl. 13. st. 1." });
+    const c = COMPETITION_OPTIONS.find((o) => o.id === input.competitionAward);
+    if (c && c.points > 0) {
+      lines.push({ key: "awards_competition", label: c.label, points: c.points, article: "čl. 13. st. 2.–3." });
+    }
+  } else {
+    const s = STUDENT_AWARD_OPTIONS.find((o) => o.id === input.studentAward);
+    if (s && s.points > 0) lines.push({ key: "awards_student", label: s.label, points: s.points, article: "čl. 13. st. 4.–6." });
+  }
+  return lines;
+}
+
+/** Čl. 7.: izravno pravo prema izvrsnosti (uz prihod do 100 % proračunske osnovice). */
+function excellenceReason(input: DormCalculatorInput): string | null {
+  if (input.incomeBandId === "iznad_po") return null;
+  const avg = input.gradeAverage;
+  const cur = input.ectsCurrentYear ?? 0;
+  if (input.studyYear === "maturant") {
+    return avg >= 5 ? "Opći uspjeh 5,0 u svim razredima srednje škole (čl. 7. st. 1.)" : null;
+  }
+  if (avg < 4.5 || cur < 55) return null;
+  if (input.studyYear === "g1") return "Prosjek najmanje 4,5 i 55 ECTS na prvoj godini (čl. 7. st. 2.)";
+  if (input.meetsEcts55Average) {
+    return "Prosjek najmanje 4,5, 55 ECTS u tekućoj i prosječno 55 ECTS u prethodnim godinama (čl. 7. st. 3.)";
+  }
+  return null;
 }
 
 export function calculateDormScore(dorm: Dorm, input: DormCalculatorInput): DormScoreResult {
   const warnings: string[] = [];
   let competitiveInvalid = false;
+  const ids = new Set(input.specialIds);
+  const specialStatus = input.invaliditet1 || ids.has("oba_roditelja_izravno") || ids.has("skrbnistvo_izravno");
 
   if (input.distance === "ineligible_same_city") {
     competitiveInvalid = true;
@@ -328,45 +504,69 @@ export function calculateDormScore(dorm: Dorm, input: DormCalculatorInput): Dorm
     );
   }
 
-  if (input.invaliditet1) {
+  const cur = input.ectsCurrentYear;
+  if (input.studyYear !== "maturant" && cur != null && Number.isFinite(cur) && cur < 18 && !specialStatus) {
+    competitiveInvalid = true;
+    warnings.push("S manje od 18 ECTS u tekućoj godini nemaš pravo na subvencionirano stanovanje (čl. 6. st. 2.).");
+  }
+  const prev = input.avgEctsPreviousYears;
+  if (isHigherYear(input.studyYear) && prev != null && Number.isFinite(prev) && prev < 40 && !specialStatus) {
+    competitiveInvalid = true;
     warnings.push(
-      "Invaliditet 1. grupe često znači posebno pravo na smještaj — obrati se studentskom centru; ovaj zbroj bodova nije glavna informacija.",
+      "S prosječno manje od 40 ECTS u prethodnim godinama nemaš pravo na subvencionirano stanovanje (čl. 6. st. 3.).",
     );
   }
 
-  const { points: gradePts, warnings: gw } = computeGradeBlock(
-    input.gradeAverage,
-    dorm.scoring_rules.reference_cohort_grade,
-    input.avgEctsPreviousYears,
-    input.ectsCurrentYear,
-    dorm.scoring_rules,
-  );
+  const izravnoPravo: string[] = [];
+  if (input.invaliditet1) izravnoPravo.push("Invaliditet 1. grupe (čl. 9. st. 4.)");
+
+  const reference = effectiveReference(dorm, input);
+  const { points: gradePts, warnings: gw } = computeGradeBlock(input, reference.value, dorm.scoring_rules);
   warnings.push(...gw);
 
-  const incRaw = incomePointsForBand(input.incomeBandId);
+  const zmn = ids.has("minimalna_naknada");
+  const incRaw = zmn ? 0 : incomePointsForBand(input.incomeBandId);
   const incPts = w(dorm.scoring_rules.income_weight, incRaw);
 
-  const studyRaw = studyYearPoints(input.studyYear, input.meetsEcts55Average);
-  const studyPts = studyRaw;
+  const studyPts = studyYearPoints(input.studyYear, input.meetsEcts55Average);
+  const ects58 =
+    Boolean(input.ects58CurrentYear) && isHigherYear(input.studyYear) && input.meetsEcts55Average ? 100 : 0;
 
-  const spec = specialPointsSum(input.specialIds);
-  if (spec.izravno) {
+  const spec = specialLines(input);
+  izravnoPravo.push(...spec.izravno);
+  const excellence = excellenceReason(input);
+  if (excellence) izravnoPravo.push(excellence);
+
+  if (izravnoPravo.length > 0) {
     warnings.push(
-      "Označeno je posebno pravo — postupak i dokazi idu drugačije nego za običan bodovni natječaj. Provjeri s centrom.",
+      "Ispunjavaš uvjete za izravno pravo na smještaj — ne natječeš se bodovima, ali moraš priložiti dokaze. Provjeri s centrom.",
     );
   }
-  const specPts = w(dorm.scoring_rules.special_points, spec.sum);
+
+  const awards = awardLines(input);
+  const opomena = input.opomena ? -200 : 0;
+
+  const sourceRef = reference.label_hr;
+  if (reference.source === "estimate" || reference.source === "center_level") {
+    warnings.push(
+      "Bodovi za prosjek su približni jer nije odabrano tvoje visoko učilište. Odaberi ga ili upiši prosjek skupine iz PDF-a centra.",
+    );
+  }
 
   const breakdown: BreakdownLine[] = [
     {
       key: "grade",
-      label: `Prosjek ocjena u odnosu na referentni prosjek ${dorm.scoring_rules.reference_cohort_grade.toFixed(2)} (procjena; stvarno se uspoređuješ s prosjekom s istog učilišta i razine)`,
-      points: Math.round(gradePts * 10) / 10,
+      label: `Prosjek ${Math.min(5, Math.max(2, input.gradeAverage)).toFixed(2)} podijeljen s prosjekom skupine — ${sourceRef} — × 1000`,
+      points: round1(gradePts),
+      article: "čl. 11.",
     },
     {
       key: "income",
-      label: "Prihod po članu kućanstva (prethodna godina)",
-      points: Math.round(incPts * 10) / 10,
+      label: zmn
+        ? "Zajamčena minimalna naknada zamjenjuje bodove za prihod (0 bod.)"
+        : "Prihod po članu kućanstva (prethodna godina)",
+      points: round1(incPts),
+      article: "čl. 15. st. 11.",
     },
     {
       key: "distance_info",
@@ -375,21 +575,29 @@ export function calculateDormScore(dorm: Dorm, input: DormCalculatorInput): Dorm
     },
     {
       key: "study",
-      label: "Godina studija i ostvareni ECTS",
+      label: "Godina studija uz prosječno 55 ECTS u prethodnim godinama",
       points: studyPts,
+      article: "čl. 12. st. 1.–5.",
     },
-    ...spec.lines.map((l) => ({
-      ...l,
-      points: Math.round(w(dorm.scoring_rules.special_points, l.points) * 10) / 10,
-    })),
   ];
+  if (ects58 > 0) {
+    breakdown.push({ key: "study_ects58", label: "58 i više ECTS u tekućoj godini", points: ects58, article: "čl. 12. st. 9." });
+  }
+  breakdown.push(
+    ...spec.lines.map((l) => ({ ...l, points: round1(w(dorm.scoring_rules.special_points, l.points)) })),
+    ...awards,
+  );
+  if (opomena) {
+    breakdown.push({ key: "opomena", label: "Opomena pred gubitak prava", points: opomena, article: "čl. 18. st. 1." });
+  }
 
-  let total = gradePts + incPts + studyPts + specPts;
-  total = safeRound1(total);
-  if (!Number.isFinite(total) || total < 0) {
+  const rest = breakdown.filter((l) => l.key !== "grade").reduce((sum, l) => sum + l.points, 0);
+  let total = gradePts + rest;
+  if (!Number.isFinite(total)) {
     total = 0;
     warnings.push("Izračun je doveo do nevaljanog rezultata — provjerite unesene brojeve.");
   }
+  total = Math.max(0, safeRound1(total));
   if (total > MAX_SCORE_ROUGH) {
     warnings.push("Neobično visok zbroj — provjerite jesu li označene međusobno isključive opcije.");
   }
@@ -399,6 +607,7 @@ export function calculateDormScore(dorm: Dorm, input: DormCalculatorInput): Dorm
     breakdown,
     warnings,
     competitiveInvalid,
+    izravnoPravo,
   };
 }
 
@@ -413,13 +622,13 @@ export function chanceFromCutoff(total: number, cutoff: number | null): ChanceLe
 }
 
 /**
- * Kad nema službenog praga u bazi: gruba procjena „koliko si jak“ prema ukupnom zbroju
- * (ne predviđa stvarni upis — ovisi o konkurenciji i godini).
+ * Kad nema službenog praga u bazi: gruba procjena prema ukupnom zbroju.
+ * Granice prate objavljene pragove 2026./2027. (Zagreb 1335, Split oko 1630) — ne predviđaju upis.
  */
 export function estimateChanceWithoutCutoff(total: number): ChanceLevel {
   if (!Number.isFinite(total) || total < 0) return "low";
-  if (total >= 2600) return "high";
-  if (total >= 1750) return "medium";
+  if (total >= 1900) return "high";
+  if (total >= 1400) return "medium";
   return "low";
 }
 
@@ -428,8 +637,10 @@ export function displayChance(
   total: number,
   cutoff: number | null,
   competitiveInvalid: boolean,
+  izravnoPravo = false,
 ): ChanceLevel {
   if (competitiveInvalid) return "low";
+  if (izravnoPravo) return "high";
   if (cutoff != null) return chanceFromCutoff(total, cutoff);
   return estimateChanceWithoutCutoff(total);
 }
@@ -455,10 +666,10 @@ export type DormRecommendation = {
 
 export function rankDormsByFit(input: DormCalculatorInput): DormRecommendation[] {
   const list: DormRecommendation[] = dorms.map((dorm) => {
-    const { total, competitiveInvalid } = calculateDormScore(dorm, input);
+    const { total, competitiveInvalid, izravnoPravo } = calculateDormScore(dorm, input);
     const cutoff = latestCutoff(dorm);
     const delta = cutoff != null ? total - cutoff : null;
-    const chance = displayChance(total, cutoff, competitiveInvalid);
+    const chance = displayChance(total, cutoff, competitiveInvalid, izravnoPravo.length > 0);
     return { dorm, total, cutoff, delta, chance };
   });
   list.sort((a, b) => {

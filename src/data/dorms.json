@@ -11,18 +11,18 @@
       "income_weight": 100,
       "distance_weight": 0,
       "special_points": 100,
-      "reference_cohort_grade": 3.92,
-      "notes_hr": "Referentni prosjek s tvog učilišta objavljuje SCZG u PDF-u uz natječaj. Ako ostaviš zadani broj, to je samo procjena."
+      "reference_cohort_grade": 3.8,
+      "notes_hr": "Službeni prosjeci po učilištima (2026./2027.) ugrađeni su u kalkulator. Zadani broj (3,80, neponderirani prosjek učilišta) koristi se samo ako učilište nije odabrano."
     },
     "published_cutoff": {
-      "academic_year": "2025./2026.",
-      "scope_hr": "Službeno objavljena bodna granica (zadnji rang s pravom na smještaj u domu).",
-      "points": 1324,
-      "source_url": "https://www.sczg.unizg.hr/obavijesti/rezultati-natjecaja-za-subvencionirani-smjestaj-studenata-u-studentske-domove-za-akademsku-godinu-2025-2026",
-      "source_label_hr": "SCZG — obavijest o rezultatima natječaja"
+      "academic_year": "2026./2027.",
+      "scope_hr": "Bodna granica nakon spuštanja (listopad 2026.). Na konačnoj rang-listi bila je 1375, a godinu ranije 1324.",
+      "points": 1335,
+      "source_url": "https://www.sczg.unizg.hr/obavijesti/spustanje-bodne-granice-za-subvencionirani-smjestaj-studenata-u-studentske-domove-3",
+      "source_label_hr": "SCZG — spuštanje bodne granice 2026./2027."
     },
     "last_year_cutoff": {},
-    "provider_notes_hr": "Referentni iznosi za prihod: 100 % proračunske osnovice i 60 % — točne brojeve uvijek provjeri u tekstu natječaja na sczg.hr."
+    "provider_notes_hr": "Odaberi svoje učilište i razinu studija — kalkulator koristi službeni prosjek skupine iz PDF-a SCZG-a za 2026./2027."
   },
   {
     "id": "split",
@@ -30,21 +30,21 @@
     "name": "Studentski centar u Splitu",
     "shortName": "SCST",
     "website": "https://www.scst.unist.hr/",
-    "natječaj_info_url": "https://www.scst.unist.hr/novosti/opcenito/2164-raspisan-je-natjecaj-za-raspodjelu-mjesta-u-studentskim-domovima-u-splitu-i-ucenickim-domovima-u-splitu-te-smjestajnim-kapacitetima-u-makarskoj-i-subvenciju-kod-privatnih-stanodavaca-za-akademsku-2025-2026-g",
+    "natječaj_info_url": "https://www.scst.unist.hr/novosti/opcenito/2236-privremeni-rezultati-natjecaja-za-subvencionirano-stanovanje-akad-2026-27-god",
     "scoring_rules": {
       "grade_weight": 100,
       "income_weight": 100,
       "distance_weight": 0,
       "special_points": 100,
-      "reference_cohort_grade": 3.85,
-      "notes_hr": "Prosjeke po učilištima vidi u PDF-u na stranici SCST-a uz natječaj."
+      "reference_cohort_grade": 3.503,
+      "notes_hr": "Službeni prosjeci po učilištima (2026./2027.) ugrađeni su u kalkulator; zadani broj je prosjek svih studenata prijediplomske razine."
     },
     "published_cutoff": {
-      "academic_year": "—",
-      "scope_hr": "Javni brojčani prag nije u aplikaciji — rezultat ispod je procjena snage prijave (ukupni bodovi), ne usporedba s pragom.",
-      "points": null,
-      "source_url": "https://www.scst.unist.hr/",
-      "source_label_hr": "SCST — službene obavijesti i rang liste"
+      "academic_year": "2026./2027.",
+      "scope_hr": "Najniži broj bodova sa smještajem u studentskom domu na konačnoj rang-listi (prije spuštanja liste). Za muškarce je prag niži zbog mjesta u Đačkom domu (oko 1399), a subvencija za podstanare išla je od oko 1385.",
+      "points": 1629,
+      "source_url": "https://www.scst.unist.hr/images/documents/2251/Kona%C4%8Dna%20rang%20lista%20za%20subvencionirano%20stanovanje%20po%20prezimenu%20i%20imenu,%20akad.2026.-27.g.pdf",
+      "source_label_hr": "SCST — konačna rang-lista 2026./2027."
     },
     "last_year_cutoff": {}
   },
@@ -60,15 +60,15 @@
       "income_weight": 100,
       "distance_weight": 0,
       "special_points": 100,
-      "reference_cohort_grade": 3.88,
+      "reference_cohort_grade": 3.788,
       "notes_hr": "Smještaj u domu i subvencija kod privatnog stanodavca mogu biti zasebni natječaji — prati objave na scri.uniri.hr."
     },
     "published_cutoff": {
       "academic_year": "—",
-      "scope_hr": "Javni brojčani prag nije u aplikaciji — prikazana je procjena prema ukupnim bodovima.",
+      "scope_hr": "SCR ne objavljuje bodnu granicu kao broj — zadnji primljeni vidi se na konačnoj rang-listi 2026./2027. (kvota 1250 mjesta). Ovdje je procjena prema ukupnim bodovima.",
       "points": null,
-      "source_url": "https://www.scri.uniri.hr/",
-      "source_label_hr": "SCR — službene obavijesti"
+      "source_url": "https://scri.uniri.hr/2026/08/26/obavijest-o-objavi-konacne-rang-liste-natjecaja-za-subvencionirano-stanovanje/",
+      "source_label_hr": "SCR — konačna rang-lista 2026./2027."
     },
     "last_year_cutoff": {}
   },
@@ -84,12 +84,12 @@
       "income_weight": 100,
       "distance_weight": 0,
       "special_points": 100,
-      "reference_cohort_grade": 3.78,
+      "reference_cohort_grade": 3.669,
       "notes_hr": "Rang liste i upute objavljuje SC Osijek na stucos.unios.hr."
     },
     "published_cutoff": {
       "academic_year": "—",
-      "scope_hr": "Javni brojčani prag nije u aplikaciji — procjena šanse temelji se na ukupnom broju bodova.",
+      "scope_hr": "SC Osijek ne objavljuje bodnu granicu kao broj — zadnji primljeni vidi se na konačnoj rang-listi 2026./2027. (kvota 1366 mjesta). U paviljonu Lavoslav Ružička prednost imaju studenti s prihodom do 65 % proračunske osnovice. Ovdje je procjena prema ukupnim bodovima.",
       "points": null,
       "source_url": "https://www.stucos.unios.hr/?page_id=3448",
       "source_label_hr": "SC Osijek — natječaji i rezultati"

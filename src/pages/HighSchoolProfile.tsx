@@ -25,7 +25,7 @@ import { highSchools } from "@/data/highSchools";
 import type { KalkulatorProgram } from "@/data/srednjaKalkulator";
 import { schoolIdFromSlug, slugForSchool } from "@/lib/schoolSlug";
 import { getSchoolPrograms } from "@/lib/schoolPrograms";
-import { calculatorHref, findKalkulatorSchool } from "@/lib/juniorPath";
+import { calculatorHref, comparablePragAvg, findKalkulatorSchool } from "@/lib/juniorPath";
 import { AUTH_CHANGED, authMe, userFromAuthMe, type AuthUser } from "@/lib/auth";
 import { fetchSchoolPublic, schoolMediaUrl, type SchoolPost, type SchoolPublicPayload } from "@/lib/schoolCmsApi";
 import { mergeDemoSchoolPosts } from "@/data/schoolDemoPosts";
@@ -116,7 +116,7 @@ function ProgramRow({
       </span>
       <span className="text-right text-sm font-semibold tabular-nums tracking-tight">{prag?.kvota ?? "—"}</span>
       <span className="text-right text-sm font-semibold tabular-nums tracking-tight">{fmtScore(prag?.min)}</span>
-      <span className="text-right text-sm font-semibold tabular-nums tracking-tight">{fmtScore(prag?.avg)}</span>
+      <span className="text-right text-sm font-semibold tabular-nums tracking-tight">{fmtScore(comparablePragAvg(prag))}</span>
       <ArrowRight className="h-4 w-4 justify-self-end text-muted-foreground/40 transition group-hover:translate-x-0.5 group-hover:text-primary" />
     </button>
   );

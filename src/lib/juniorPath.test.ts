@@ -3,6 +3,7 @@ import { highSchoolPrograms } from "@/lib/juniorQuizEngine";
 import {
   chanceFor,
   chanceForProgram,
+  comparablePragAvg,
   computeProgramPoints,
   computeSrednjaPoints,
   emptyGradeDraft,
@@ -10,8 +11,11 @@ import {
   findKalkulatorSchool,
   findMapSchoolId,
   gradeDraftIsUsable,
+  MAX_DODATNI_BODOVI,
   nextJuniorDeadline,
   officialProgramExample,
+  programTypeFor,
+  programTypeFromPrag,
   scoringProfileFor,
   shortlistItemKey,
   type JuniorGradeDraft,
@@ -235,6 +239,48 @@ describe("programi iznad 80 bodova", () => {
         floor: null,
       }),
     ).toBeNull();
+  });
+});
+
+describe("tip programa, prosjek i dodatni bodovi", () => {
+  it("nijedan program nema lažni prag 0", () => {
+    for (const school of kalkulatorSchools) {
+      for (const program of school.programs) {
+        if (program.prag?.min === 0) expect(program.prag.max, `${school.name} | ${program.name}`).not.toBe(0);
+      }
+    }
+  });
+
+  it("tip se određuje po nazivu prije lanjskog maksimuma", () => {
+    expect(programTypeFor({ name: "Jezična gimnazija", prag: null })).toBe("gimnazija4");
+    expect(
+      programTypeFor({ name: "Agroturistički tehničar / Agroturistička tehničarka", prag: prag(37.74, 46.94) }),
+    ).toBe("gimnazija4");
+    expect(programTypeFor({ name: "Kuhar/Kuharica", prag: prag(30, 48) })).toBe("trogodisnji");
+    expect(programTypeFor({ name: "Konobar/Konobarica", prag: null })).toBeNull();
+    expect(programTypeFromPrag(prag(0, 0))).toBeNull();
+  });
+
+  it("svaki tehničar i gimnazija boduju se kao četverogodišnji", () => {
+    for (const school of kalkulatorSchools) {
+      for (const program of school.programs) {
+        if (scoringProfileFor({ ...program, schoolName: school.name }).id !== "standard") continue;
+        if (!/gimnazij|tehničar/i.test(program.name)) continue;
+        expect(programTypeFor(program), `${school.name} | ${program.name}`).toBe("gimnazija4");
+      }
+    }
+  });
+
+  it("prosjek ispod minimuma nije na skali praga", () => {
+    expect(comparablePragAvg({ ...prag(258.93, 258.93), avg: 88.93 })).toBeNull();
+    expect(comparablePragAvg({ ...prag(60, 75), avg: 66 })).toBe(66);
+  });
+
+  it("dodatni bodovi su ograničeni na 14", () => {
+    const draft = perfectGrades();
+    draft.dodatniBodovi = "30";
+    expect(computeSrednjaPoints(draft).ukupno).toBe(80 + MAX_DODATNI_BODOVI);
+    expect(MAX_DODATNI_BODOVI).toBe(14);
   });
 });
 

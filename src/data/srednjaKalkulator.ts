@@ -169,9 +169,9 @@ export const kalkulatorSchools: KalkulatorSchool[] = [
      "year": "2025/2026",
      "kvota": 12,
      "upisani": null,
-     "min": 0,
-     "avg": 0,
-     "max": 0
+     "min": null,
+     "avg": null,
+     "max": null
     }
    },
    {
@@ -182,9 +182,9 @@ export const kalkulatorSchools: KalkulatorSchool[] = [
      "year": "2025/2026",
      "kvota": 15,
      "upisani": null,
-     "min": 0,
-     "avg": 0,
-     "max": 0
+     "min": null,
+     "avg": null,
+     "max": null
     }
    },
    {
@@ -787,9 +787,9 @@ export const kalkulatorSchools: KalkulatorSchool[] = [
      "year": "2025/2026",
      "kvota": 10,
      "upisani": null,
-     "min": 0,
-     "avg": 0,
-     "max": 0
+     "min": null,
+     "avg": null,
+     "max": null
     }
    },
    {
@@ -800,9 +800,9 @@ export const kalkulatorSchools: KalkulatorSchool[] = [
      "year": "2025/2026",
      "kvota": 10,
      "upisani": null,
-     "min": 0,
-     "avg": 0,
-     "max": 0
+     "min": null,
+     "avg": null,
+     "max": null
     }
    },
    {
@@ -1548,9 +1548,9 @@ export const kalkulatorSchools: KalkulatorSchool[] = [
      "year": "2025/2026",
      "kvota": 12,
      "upisani": null,
-     "min": 0,
-     "avg": 0,
-     "max": 0
+     "min": null,
+     "avg": null,
+     "max": null
     }
    },
    {
@@ -1587,9 +1587,9 @@ export const kalkulatorSchools: KalkulatorSchool[] = [
      "year": "2025/2026",
      "kvota": 2,
      "upisani": null,
-     "min": 0,
-     "avg": 0,
-     "max": 0
+     "min": null,
+     "avg": null,
+     "max": null
     }
    }
   ]
@@ -2794,9 +2794,9 @@ export const kalkulatorSchools: KalkulatorSchool[] = [
      "year": "2025/2026",
      "kvota": 3,
      "upisani": null,
-     "min": 0,
-     "avg": 0,
-     "max": 0
+     "min": null,
+     "avg": null,
+     "max": null
     }
    },
    {
@@ -2807,9 +2807,9 @@ export const kalkulatorSchools: KalkulatorSchool[] = [
      "year": "2025/2026",
      "kvota": 1,
      "upisani": null,
-     "min": 0,
-     "avg": 0,
-     "max": 0
+     "min": null,
+     "avg": null,
+     "max": null
     }
    },
    {
@@ -2820,9 +2820,9 @@ export const kalkulatorSchools: KalkulatorSchool[] = [
      "year": "2025/2026",
      "kvota": 1,
      "upisani": null,
-     "min": 0,
-     "avg": 0,
-     "max": 0
+     "min": null,
+     "avg": null,
+     "max": null
     }
    },
    {
@@ -2833,9 +2833,9 @@ export const kalkulatorSchools: KalkulatorSchool[] = [
      "year": "2025/2026",
      "kvota": 24,
      "upisani": null,
-     "min": 0,
-     "avg": 0,
-     "max": 0
+     "min": null,
+     "avg": null,
+     "max": null
     }
    },
    {
@@ -2885,9 +2885,9 @@ export const kalkulatorSchools: KalkulatorSchool[] = [
      "year": "2025/2026",
      "kvota": 1,
      "upisani": null,
-     "min": 0,
-     "avg": 0,
-     "max": 0
+     "min": null,
+     "avg": null,
+     "max": null
     }
    },
    {
@@ -3315,9 +3315,9 @@ export const kalkulatorSchools: KalkulatorSchool[] = [
      "year": "2025/2026",
      "kvota": 6,
      "upisani": null,
-     "min": 0,
-     "avg": 0,
-     "max": 0
+     "min": null,
+     "avg": null,
+     "max": null
     }
    },
    {
@@ -3422,9 +3422,9 @@ export const kalkulatorSchools: KalkulatorSchool[] = [
      "year": "2025/2026",
      "kvota": 15,
      "upisani": null,
-     "min": 0,
-     "avg": 0,
-     "max": 0
+     "min": null,
+     "avg": null,
+     "max": null
     }
    },
    {
@@ -3435,9 +3435,9 @@ export const kalkulatorSchools: KalkulatorSchool[] = [
      "year": "2025/2026",
      "kvota": 30,
      "upisani": null,
-     "min": 0,
-     "avg": 0,
-     "max": 0
+     "min": null,
+     "avg": null,
+     "max": null
     }
    },
    {
@@ -3448,9 +3448,9 @@ export const kalkulatorSchools: KalkulatorSchool[] = [
      "year": "2025/2026",
      "kvota": 2,
      "upisani": null,
-     "min": 0,
-     "avg": 0,
-     "max": 0
+     "min": null,
+     "avg": null,
+     "max": null
     }
    },
    {
@@ -3461,9 +3461,9 @@ export const kalkulatorSchools: KalkulatorSchool[] = [
      "year": "2025/2026",
      "kvota": 1,
      "upisani": null,
-     "min": 0,
-     "avg": 0,
-     "max": 0
+     "min": null,
+     "avg": null,
+     "max": null
     }
    },
    {
@@ -3474,9 +3474,9 @@ export const kalkulatorSchools: KalkulatorSchool[] = [
      "year": "2025/2026",
      "kvota": 1,
      "upisani": null,
-     "min": 0,
-     "avg": 0,
-     "max": 0
+     "min": null,
+     "avg": null,
+     "max": null
     }
    },
    {
@@ -3680,9 +3680,9 @@ export const kalkulatorSchools: KalkulatorSchool[] = [
      "year": "2025/2026",
      "kvota": 2,
      "upisani": null,
-     "min": 0,
-     "avg": 0,
-     "max": 0
+     "min": null,
+     "avg": null,
+     "max": null
     }
    },
    {
@@ -3706,9 +3706,9 @@ export const kalkulatorSchools: KalkulatorSchool[] = [
      "year": "2025/2026",
      "kvota": 2,
      "upisani": null,
-     "min": 0,
-     "avg": 0,
-     "max": 0
+     "min": null,
+     "avg": null,
+     "max": null
     }
    },
    {
@@ -3779,9 +3779,9 @@ export const kalkulatorSchools: KalkulatorSchool[] = [
      "year": "2025/2026",
      "kvota": 10,
      "upisani": null,
-     "min": 0,
-     "avg": 0,
-     "max": 0
+     "min": null,
+     "avg": null,
+     "max": null
     }
    }
   ]
@@ -4132,9 +4132,9 @@ export const kalkulatorSchools: KalkulatorSchool[] = [
      "year": "2025/2026",
      "kvota": 12,
      "upisani": null,
-     "min": 0,
-     "avg": 0,
-     "max": 0
+     "min": null,
+     "avg": null,
+     "max": null
     }
    },
    {
@@ -4145,9 +4145,9 @@ export const kalkulatorSchools: KalkulatorSchool[] = [
      "year": "2025/2026",
      "kvota": 30,
      "upisani": null,
-     "min": 0,
-     "avg": 0,
-     "max": 0
+     "min": null,
+     "avg": null,
+     "max": null
     }
    },
    {
@@ -4179,9 +4179,9 @@ export const kalkulatorSchools: KalkulatorSchool[] = [
      "year": "2025/2026",
      "kvota": 40,
      "upisani": null,
-     "min": 0,
-     "avg": 0,
-     "max": 0
+     "min": null,
+     "avg": null,
+     "max": null
     }
    },
    {
@@ -4192,9 +4192,9 @@ export const kalkulatorSchools: KalkulatorSchool[] = [
      "year": "2025/2026",
      "kvota": 1,
      "upisani": null,
-     "min": 0,
-     "avg": 0,
-     "max": 0
+     "min": null,
+     "avg": null,
+     "max": null
     }
    },
    {
@@ -4205,9 +4205,9 @@ export const kalkulatorSchools: KalkulatorSchool[] = [
      "year": "2025/2026",
      "kvota": 1,
      "upisani": null,
-     "min": 0,
-     "avg": 0,
-     "max": 0
+     "min": null,
+     "avg": null,
+     "max": null
     }
    },
    {
@@ -4218,9 +4218,9 @@ export const kalkulatorSchools: KalkulatorSchool[] = [
      "year": "2025/2026",
      "kvota": 3,
      "upisani": null,
-     "min": 0,
-     "avg": 0,
-     "max": 0
+     "min": null,
+     "avg": null,
+     "max": null
     }
    },
    {
@@ -4231,9 +4231,9 @@ export const kalkulatorSchools: KalkulatorSchool[] = [
      "year": "2025/2026",
      "kvota": 1,
      "upisani": null,
-     "min": 0,
-     "avg": 0,
-     "max": 0
+     "min": null,
+     "avg": null,
+     "max": null
     }
    },
    {
@@ -4244,9 +4244,9 @@ export const kalkulatorSchools: KalkulatorSchool[] = [
      "year": "2025/2026",
      "kvota": 1,
      "upisani": null,
-     "min": 0,
-     "avg": 0,
-     "max": 0
+     "min": null,
+     "avg": null,
+     "max": null
     }
    },
    {
@@ -4257,9 +4257,9 @@ export const kalkulatorSchools: KalkulatorSchool[] = [
      "year": "2025/2026",
      "kvota": 1,
      "upisani": null,
-     "min": 0,
-     "avg": 0,
-     "max": 0
+     "min": null,
+     "avg": null,
+     "max": null
     }
    },
    {
@@ -4270,9 +4270,9 @@ export const kalkulatorSchools: KalkulatorSchool[] = [
      "year": "2025/2026",
      "kvota": 3,
      "upisani": null,
-     "min": 0,
-     "avg": 0,
-     "max": 0
+     "min": null,
+     "avg": null,
+     "max": null
     }
    },
    {
@@ -4283,9 +4283,9 @@ export const kalkulatorSchools: KalkulatorSchool[] = [
      "year": "2025/2026",
      "kvota": 1,
      "upisani": null,
-     "min": 0,
-     "avg": 0,
-     "max": 0
+     "min": null,
+     "avg": null,
+     "max": null
     }
    },
    {
@@ -4296,9 +4296,9 @@ export const kalkulatorSchools: KalkulatorSchool[] = [
      "year": "2025/2026",
      "kvota": 1,
      "upisani": null,
-     "min": 0,
-     "avg": 0,
-     "max": 0
+     "min": null,
+     "avg": null,
+     "max": null
     }
    },
    {
@@ -4309,9 +4309,9 @@ export const kalkulatorSchools: KalkulatorSchool[] = [
      "year": "2025/2026",
      "kvota": 2,
      "upisani": null,
-     "min": 0,
-     "avg": 0,
-     "max": 0
+     "min": null,
+     "avg": null,
+     "max": null
     }
    },
    {
@@ -4322,9 +4322,9 @@ export const kalkulatorSchools: KalkulatorSchool[] = [
      "year": "2025/2026",
      "kvota": 1,
      "upisani": null,
-     "min": 0,
-     "avg": 0,
-     "max": 0
+     "min": null,
+     "avg": null,
+     "max": null
     }
    },
    {
@@ -4335,9 +4335,9 @@ export const kalkulatorSchools: KalkulatorSchool[] = [
      "year": "2025/2026",
      "kvota": 1,
      "upisani": null,
-     "min": 0,
-     "avg": 0,
-     "max": 0
+     "min": null,
+     "avg": null,
+     "max": null
     }
    },
    {
@@ -4348,9 +4348,9 @@ export const kalkulatorSchools: KalkulatorSchool[] = [
      "year": "2025/2026",
      "kvota": 2,
      "upisani": null,
-     "min": 0,
-     "avg": 0,
-     "max": 0
+     "min": null,
+     "avg": null,
+     "max": null
     }
    },
    {
@@ -4361,9 +4361,9 @@ export const kalkulatorSchools: KalkulatorSchool[] = [
      "year": "2025/2026",
      "kvota": 1,
      "upisani": null,
-     "min": 0,
-     "avg": 0,
-     "max": 0
+     "min": null,
+     "avg": null,
+     "max": null
     }
    },
    {
@@ -4374,9 +4374,9 @@ export const kalkulatorSchools: KalkulatorSchool[] = [
      "year": "2025/2026",
      "kvota": 40,
      "upisani": null,
-     "min": 0,
-     "avg": 0,
-     "max": 0
+     "min": null,
+     "avg": null,
+     "max": null
     }
    },
    {
@@ -4387,9 +4387,9 @@ export const kalkulatorSchools: KalkulatorSchool[] = [
      "year": "2025/2026",
      "kvota": 2,
      "upisani": null,
-     "min": 0,
-     "avg": 0,
-     "max": 0
+     "min": null,
+     "avg": null,
+     "max": null
     }
    },
    {
@@ -4400,9 +4400,9 @@ export const kalkulatorSchools: KalkulatorSchool[] = [
      "year": "2025/2026",
      "kvota": 1,
      "upisani": null,
-     "min": 0,
-     "avg": 0,
-     "max": 0
+     "min": null,
+     "avg": null,
+     "max": null
     }
    },
    {
@@ -4413,9 +4413,9 @@ export const kalkulatorSchools: KalkulatorSchool[] = [
      "year": "2025/2026",
      "kvota": 2,
      "upisani": null,
-     "min": 0,
-     "avg": 0,
-     "max": 0
+     "min": null,
+     "avg": null,
+     "max": null
     }
    },
    {
@@ -4426,9 +4426,9 @@ export const kalkulatorSchools: KalkulatorSchool[] = [
      "year": "2025/2026",
      "kvota": 1,
      "upisani": null,
-     "min": 0,
-     "avg": 0,
-     "max": 0
+     "min": null,
+     "avg": null,
+     "max": null
     }
    },
    {
@@ -4439,9 +4439,9 @@ export const kalkulatorSchools: KalkulatorSchool[] = [
      "year": "2025/2026",
      "kvota": 1,
      "upisani": null,
-     "min": 0,
-     "avg": 0,
-     "max": 0
+     "min": null,
+     "avg": null,
+     "max": null
     }
    },
    {
@@ -4452,9 +4452,9 @@ export const kalkulatorSchools: KalkulatorSchool[] = [
      "year": "2025/2026",
      "kvota": 3,
      "upisani": null,
-     "min": 0,
-     "avg": 0,
-     "max": 0
+     "min": null,
+     "avg": null,
+     "max": null
     }
    },
    {
@@ -4465,9 +4465,9 @@ export const kalkulatorSchools: KalkulatorSchool[] = [
      "year": "2025/2026",
      "kvota": 1,
      "upisani": null,
-     "min": 0,
-     "avg": 0,
-     "max": 0
+     "min": null,
+     "avg": null,
+     "max": null
     }
    },
    {
@@ -4478,9 +4478,9 @@ export const kalkulatorSchools: KalkulatorSchool[] = [
      "year": "2025/2026",
      "kvota": 3,
      "upisani": null,
-     "min": 0,
-     "avg": 0,
-     "max": 0
+     "min": null,
+     "avg": null,
+     "max": null
     }
    },
    {
@@ -4491,9 +4491,9 @@ export const kalkulatorSchools: KalkulatorSchool[] = [
      "year": "2025/2026",
      "kvota": 1,
      "upisani": null,
-     "min": 0,
-     "avg": 0,
-     "max": 0
+     "min": null,
+     "avg": null,
+     "max": null
     }
    },
    {
@@ -4504,9 +4504,9 @@ export const kalkulatorSchools: KalkulatorSchool[] = [
      "year": "2025/2026",
      "kvota": 1,
      "upisani": null,
-     "min": 0,
-     "avg": 0,
-     "max": 0
+     "min": null,
+     "avg": null,
+     "max": null
     }
    },
    {
@@ -4517,9 +4517,9 @@ export const kalkulatorSchools: KalkulatorSchool[] = [
      "year": "2025/2026",
      "kvota": 1,
      "upisani": null,
-     "min": 0,
-     "avg": 0,
-     "max": 0
+     "min": null,
+     "avg": null,
+     "max": null
     }
    },
    {
@@ -4530,9 +4530,9 @@ export const kalkulatorSchools: KalkulatorSchool[] = [
      "year": "2025/2026",
      "kvota": 2,
      "upisani": null,
-     "min": 0,
-     "avg": 0,
-     "max": 0
+     "min": null,
+     "avg": null,
+     "max": null
     }
    },
    {
@@ -4543,9 +4543,9 @@ export const kalkulatorSchools: KalkulatorSchool[] = [
      "year": "2025/2026",
      "kvota": 1,
      "upisani": null,
-     "min": 0,
-     "avg": 0,
-     "max": 0
+     "min": null,
+     "avg": null,
+     "max": null
     }
    }
   ]
@@ -4564,9 +4564,9 @@ export const kalkulatorSchools: KalkulatorSchool[] = [
      "year": "2025/2026",
      "kvota": 40,
      "upisani": null,
-     "min": 0,
-     "avg": 0,
-     "max": 0
+     "min": null,
+     "avg": null,
+     "max": null
     }
    },
    {
@@ -4577,9 +4577,9 @@ export const kalkulatorSchools: KalkulatorSchool[] = [
      "year": "2025/2026",
      "kvota": 1,
      "upisani": null,
-     "min": 0,
-     "avg": 0,
-     "max": 0
+     "min": null,
+     "avg": null,
+     "max": null
     }
    },
    {
@@ -4590,9 +4590,9 @@ export const kalkulatorSchools: KalkulatorSchool[] = [
      "year": "2025/2026",
      "kvota": 2,
      "upisani": null,
-     "min": 0,
-     "avg": 0,
-     "max": 0
+     "min": null,
+     "avg": null,
+     "max": null
     }
    },
    {
@@ -4603,9 +4603,9 @@ export const kalkulatorSchools: KalkulatorSchool[] = [
      "year": "2025/2026",
      "kvota": 2,
      "upisani": null,
-     "min": 0,
-     "avg": 0,
-     "max": 0
+     "min": null,
+     "avg": null,
+     "max": null
     }
    },
    {
@@ -4616,9 +4616,9 @@ export const kalkulatorSchools: KalkulatorSchool[] = [
      "year": "2025/2026",
      "kvota": 3,
      "upisani": null,
-     "min": 0,
-     "avg": 0,
-     "max": 0
+     "min": null,
+     "avg": null,
+     "max": null
     }
    },
    {
@@ -4629,9 +4629,9 @@ export const kalkulatorSchools: KalkulatorSchool[] = [
      "year": "2025/2026",
      "kvota": 1,
      "upisani": null,
-     "min": 0,
-     "avg": 0,
-     "max": 0
+     "min": null,
+     "avg": null,
+     "max": null
     }
    },
    {
@@ -4642,9 +4642,9 @@ export const kalkulatorSchools: KalkulatorSchool[] = [
      "year": "2025/2026",
      "kvota": 1,
      "upisani": null,
-     "min": 0,
-     "avg": 0,
-     "max": 0
+     "min": null,
+     "avg": null,
+     "max": null
     }
    },
    {
@@ -4655,9 +4655,9 @@ export const kalkulatorSchools: KalkulatorSchool[] = [
      "year": "2025/2026",
      "kvota": 2,
      "upisani": null,
-     "min": 0,
-     "avg": 0,
-     "max": 0
+     "min": null,
+     "avg": null,
+     "max": null
     }
    },
    {
@@ -4668,9 +4668,9 @@ export const kalkulatorSchools: KalkulatorSchool[] = [
      "year": "2025/2026",
      "kvota": 1,
      "upisani": null,
-     "min": 0,
-     "avg": 0,
-     "max": 0
+     "min": null,
+     "avg": null,
+     "max": null
     }
    },
    {
@@ -4681,9 +4681,9 @@ export const kalkulatorSchools: KalkulatorSchool[] = [
      "year": "2025/2026",
      "kvota": 1,
      "upisani": null,
-     "min": 0,
-     "avg": 0,
-     "max": 0
+     "min": null,
+     "avg": null,
+     "max": null
     }
    },
    {
@@ -4694,9 +4694,9 @@ export const kalkulatorSchools: KalkulatorSchool[] = [
      "year": "2025/2026",
      "kvota": 1,
      "upisani": null,
-     "min": 0,
-     "avg": 0,
-     "max": 0
+     "min": null,
+     "avg": null,
+     "max": null
     }
    },
    {
@@ -4707,9 +4707,9 @@ export const kalkulatorSchools: KalkulatorSchool[] = [
      "year": "2025/2026",
      "kvota": 1,
      "upisani": null,
-     "min": 0,
-     "avg": 0,
-     "max": 0
+     "min": null,
+     "avg": null,
+     "max": null
     }
    },
    {
@@ -4720,9 +4720,9 @@ export const kalkulatorSchools: KalkulatorSchool[] = [
      "year": "2025/2026",
      "kvota": 1,
      "upisani": null,
-     "min": 0,
-     "avg": 0,
-     "max": 0
+     "min": null,
+     "avg": null,
+     "max": null
     }
    },
    {
@@ -4733,9 +4733,9 @@ export const kalkulatorSchools: KalkulatorSchool[] = [
      "year": "2025/2026",
      "kvota": 1,
      "upisani": null,
-     "min": 0,
-     "avg": 0,
-     "max": 0
+     "min": null,
+     "avg": null,
+     "max": null
     }
    },
    {
@@ -4746,9 +4746,9 @@ export const kalkulatorSchools: KalkulatorSchool[] = [
      "year": "2025/2026",
      "kvota": 1,
      "upisani": null,
-     "min": 0,
-     "avg": 0,
-     "max": 0
+     "min": null,
+     "avg": null,
+     "max": null
     }
    },
    {
@@ -4759,9 +4759,9 @@ export const kalkulatorSchools: KalkulatorSchool[] = [
      "year": "2025/2026",
      "kvota": 1,
      "upisani": null,
-     "min": 0,
-     "avg": 0,
-     "max": 0
+     "min": null,
+     "avg": null,
+     "max": null
     }
    },
    {
@@ -4772,9 +4772,9 @@ export const kalkulatorSchools: KalkulatorSchool[] = [
      "year": "2025/2026",
      "kvota": 60,
      "upisani": null,
-     "min": 0,
-     "avg": 0,
-     "max": 0
+     "min": null,
+     "avg": null,
+     "max": null
     }
    },
    {
@@ -4785,9 +4785,9 @@ export const kalkulatorSchools: KalkulatorSchool[] = [
      "year": "2025/2026",
      "kvota": 2,
      "upisani": null,
-     "min": 0,
-     "avg": 0,
-     "max": 0
+     "min": null,
+     "avg": null,
+     "max": null
     }
    },
    {
@@ -4798,9 +4798,9 @@ export const kalkulatorSchools: KalkulatorSchool[] = [
      "year": "2025/2026",
      "kvota": 1,
      "upisani": null,
-     "min": 0,
-     "avg": 0,
-     "max": 0
+     "min": null,
+     "avg": null,
+     "max": null
     }
    },
    {
@@ -4811,9 +4811,9 @@ export const kalkulatorSchools: KalkulatorSchool[] = [
      "year": "2025/2026",
      "kvota": 4,
      "upisani": null,
-     "min": 0,
-     "avg": 0,
-     "max": 0
+     "min": null,
+     "avg": null,
+     "max": null
     }
    },
    {
@@ -4824,9 +4824,9 @@ export const kalkulatorSchools: KalkulatorSchool[] = [
      "year": "2025/2026",
      "kvota": 4,
      "upisani": null,
-     "min": 0,
-     "avg": 0,
-     "max": 0
+     "min": null,
+     "avg": null,
+     "max": null
     }
    },
    {
@@ -4837,9 +4837,9 @@ export const kalkulatorSchools: KalkulatorSchool[] = [
      "year": "2025/2026",
      "kvota": 1,
      "upisani": null,
-     "min": 0,
-     "avg": 0,
-     "max": 0
+     "min": null,
+     "avg": null,
+     "max": null
     }
    },
    {
@@ -4850,9 +4850,9 @@ export const kalkulatorSchools: KalkulatorSchool[] = [
      "year": "2025/2026",
      "kvota": 1,
      "upisani": null,
-     "min": 0,
-     "avg": 0,
-     "max": 0
+     "min": null,
+     "avg": null,
+     "max": null
     }
    },
    {
@@ -4863,9 +4863,9 @@ export const kalkulatorSchools: KalkulatorSchool[] = [
      "year": "2025/2026",
      "kvota": 2,
      "upisani": null,
-     "min": 0,
-     "avg": 0,
-     "max": 0
+     "min": null,
+     "avg": null,
+     "max": null
     }
    },
    {
@@ -4876,9 +4876,9 @@ export const kalkulatorSchools: KalkulatorSchool[] = [
      "year": "2025/2026",
      "kvota": 1,
      "upisani": null,
-     "min": 0,
-     "avg": 0,
-     "max": 0
+     "min": null,
+     "avg": null,
+     "max": null
     }
    },
    {
@@ -4889,9 +4889,9 @@ export const kalkulatorSchools: KalkulatorSchool[] = [
      "year": "2025/2026",
      "kvota": 1,
      "upisani": null,
-     "min": 0,
-     "avg": 0,
-     "max": 0
+     "min": null,
+     "avg": null,
+     "max": null
     }
    },
    {
@@ -4902,9 +4902,9 @@ export const kalkulatorSchools: KalkulatorSchool[] = [
      "year": "2025/2026",
      "kvota": 4,
      "upisani": null,
-     "min": 0,
-     "avg": 0,
-     "max": 0
+     "min": null,
+     "avg": null,
+     "max": null
     }
    },
    {
@@ -4915,9 +4915,9 @@ export const kalkulatorSchools: KalkulatorSchool[] = [
      "year": "2025/2026",
      "kvota": 1,
      "upisani": null,
-     "min": 0,
-     "avg": 0,
-     "max": 0
+     "min": null,
+     "avg": null,
+     "max": null
     }
    },
    {
@@ -4928,9 +4928,9 @@ export const kalkulatorSchools: KalkulatorSchool[] = [
      "year": "2025/2026",
      "kvota": 2,
      "upisani": null,
-     "min": 0,
-     "avg": 0,
-     "max": 0
+     "min": null,
+     "avg": null,
+     "max": null
     }
    },
    {
@@ -4941,9 +4941,9 @@ export const kalkulatorSchools: KalkulatorSchool[] = [
      "year": "2025/2026",
      "kvota": 1,
      "upisani": null,
-     "min": 0,
-     "avg": 0,
-     "max": 0
+     "min": null,
+     "avg": null,
+     "max": null
     }
    },
    {
@@ -4954,9 +4954,9 @@ export const kalkulatorSchools: KalkulatorSchool[] = [
      "year": "2025/2026",
      "kvota": 1,
      "upisani": null,
-     "min": 0,
-     "avg": 0,
-     "max": 0
+     "min": null,
+     "avg": null,
+     "max": null
     }
    },
    {
@@ -4967,9 +4967,9 @@ export const kalkulatorSchools: KalkulatorSchool[] = [
      "year": "2025/2026",
      "kvota": 1,
      "upisani": null,
-     "min": 0,
-     "avg": 0,
-     "max": 0
+     "min": null,
+     "avg": null,
+     "max": null
     }
    },
    {
@@ -4980,9 +4980,9 @@ export const kalkulatorSchools: KalkulatorSchool[] = [
      "year": "2025/2026",
      "kvota": 1,
      "upisani": null,
-     "min": 0,
-     "avg": 0,
-     "max": 0
+     "min": null,
+     "avg": null,
+     "max": null
     }
    },
    {
@@ -4993,9 +4993,9 @@ export const kalkulatorSchools: KalkulatorSchool[] = [
      "year": "2025/2026",
      "kvota": 1,
      "upisani": null,
-     "min": 0,
-     "avg": 0,
-     "max": 0
+     "min": null,
+     "avg": null,
+     "max": null
     }
    },
    {
@@ -5006,9 +5006,9 @@ export const kalkulatorSchools: KalkulatorSchool[] = [
      "year": "2025/2026",
      "kvota": 1,
      "upisani": null,
-     "min": 0,
-     "avg": 0,
-     "max": 0
+     "min": null,
+     "avg": null,
+     "max": null
     }
    }
   ]
@@ -5027,9 +5027,9 @@ export const kalkulatorSchools: KalkulatorSchool[] = [
      "year": "2025/2026",
      "kvota": 15,
      "upisani": null,
-     "min": 0,
-     "avg": 0,
-     "max": 0
+     "min": null,
+     "avg": null,
+     "max": null
     }
    },
    {
@@ -5040,9 +5040,9 @@ export const kalkulatorSchools: KalkulatorSchool[] = [
      "year": "2025/2026",
      "kvota": 1,
      "upisani": null,
-     "min": 0,
-     "avg": 0,
-     "max": 0
+     "min": null,
+     "avg": null,
+     "max": null
     }
    },
    {
@@ -5053,9 +5053,9 @@ export const kalkulatorSchools: KalkulatorSchool[] = [
      "year": "2025/2026",
      "kvota": 1,
      "upisani": null,
-     "min": 0,
-     "avg": 0,
-     "max": 0
+     "min": null,
+     "avg": null,
+     "max": null
     }
    },
    {
@@ -5066,9 +5066,9 @@ export const kalkulatorSchools: KalkulatorSchool[] = [
      "year": "2025/2026",
      "kvota": 1,
      "upisani": null,
-     "min": 0,
-     "avg": 0,
-     "max": 0
+     "min": null,
+     "avg": null,
+     "max": null
     }
    },
    {
@@ -5079,9 +5079,9 @@ export const kalkulatorSchools: KalkulatorSchool[] = [
      "year": "2025/2026",
      "kvota": 1,
      "upisani": null,
-     "min": 0,
-     "avg": 0,
-     "max": 0
+     "min": null,
+     "avg": null,
+     "max": null
     }
    },
    {
@@ -5092,9 +5092,9 @@ export const kalkulatorSchools: KalkulatorSchool[] = [
      "year": "2025/2026",
      "kvota": 1,
      "upisani": null,
-     "min": 0,
-     "avg": 0,
-     "max": 0
+     "min": null,
+     "avg": null,
+     "max": null
     }
    },
    {
@@ -5105,9 +5105,9 @@ export const kalkulatorSchools: KalkulatorSchool[] = [
      "year": "2025/2026",
      "kvota": 1,
      "upisani": null,
-     "min": 0,
-     "avg": 0,
-     "max": 0
+     "min": null,
+     "avg": null,
+     "max": null
     }
    }
   ]
@@ -5126,9 +5126,9 @@ export const kalkulatorSchools: KalkulatorSchool[] = [
      "year": "2025/2026",
      "kvota": 15,
      "upisani": null,
-     "min": 0,
-     "avg": 0,
-     "max": 0
+     "min": null,
+     "avg": null,
+     "max": null
     }
    },
    {
@@ -5139,9 +5139,9 @@ export const kalkulatorSchools: KalkulatorSchool[] = [
      "year": "2025/2026",
      "kvota": 45,
      "upisani": null,
-     "min": 0,
-     "avg": 0,
-     "max": 0
+     "min": null,
+     "avg": null,
+     "max": null
     }
    },
    {
@@ -5152,9 +5152,9 @@ export const kalkulatorSchools: KalkulatorSchool[] = [
      "year": "2025/2026",
      "kvota": 1,
      "upisani": null,
-     "min": 0,
-     "avg": 0,
-     "max": 0
+     "min": null,
+     "avg": null,
+     "max": null
     }
    },
    {
@@ -5204,9 +5204,9 @@ export const kalkulatorSchools: KalkulatorSchool[] = [
      "year": "2025/2026",
      "kvota": 1,
      "upisani": null,
-     "min": 0,
-     "avg": 0,
-     "max": 0
+     "min": null,
+     "avg": null,
+     "max": null
     }
    },
    {
@@ -5238,9 +5238,9 @@ export const kalkulatorSchools: KalkulatorSchool[] = [
      "year": "2025/2026",
      "kvota": 25,
      "upisani": null,
-     "min": 0,
-     "avg": 0,
-     "max": 0
+     "min": null,
+     "avg": null,
+     "max": null
     }
    },
    {
@@ -5251,9 +5251,9 @@ export const kalkulatorSchools: KalkulatorSchool[] = [
      "year": "2025/2026",
      "kvota": 50,
      "upisani": null,
-     "min": 0,
-     "avg": 0,
-     "max": 0
+     "min": null,
+     "avg": null,
+     "max": null
     }
    },
    {
@@ -5277,9 +5277,9 @@ export const kalkulatorSchools: KalkulatorSchool[] = [
      "year": "2025/2026",
      "kvota": 1,
      "upisani": null,
-     "min": 0,
-     "avg": 0,
-     "max": 0
+     "min": null,
+     "avg": null,
+     "max": null
     }
    },
    {
@@ -5324,9 +5324,9 @@ export const kalkulatorSchools: KalkulatorSchool[] = [
      "year": "2025/2026",
      "kvota": 10,
      "upisani": null,
-     "min": 0,
-     "avg": 0,
-     "max": 0
+     "min": null,
+     "avg": null,
+     "max": null
     }
    },
    {
@@ -5337,9 +5337,9 @@ export const kalkulatorSchools: KalkulatorSchool[] = [
      "year": "2025/2026",
      "kvota": 28,
      "upisani": null,
-     "min": 0,
-     "avg": 0,
-     "max": 0
+     "min": null,
+     "avg": null,
+     "max": null
     }
    }
   ]
@@ -5358,9 +5358,9 @@ export const kalkulatorSchools: KalkulatorSchool[] = [
      "year": "2025/2026",
      "kvota": 42,
      "upisani": null,
-     "min": 0,
-     "avg": 0,
-     "max": 0
+     "min": null,
+     "avg": null,
+     "max": null
     }
    },
    {
@@ -5384,9 +5384,9 @@ export const kalkulatorSchools: KalkulatorSchool[] = [
      "year": "2025/2026",
      "kvota": 1,
      "upisani": null,
-     "min": 0,
-     "avg": 0,
-     "max": 0
+     "min": null,
+     "avg": null,
+     "max": null
     }
    },
    {
@@ -6421,9 +6421,9 @@ export const kalkulatorSchools: KalkulatorSchool[] = [
      "year": "2025/2026",
      "kvota": 20,
      "upisani": null,
-     "min": 0,
-     "avg": 0,
-     "max": 0
+     "min": null,
+     "avg": null,
+     "max": null
     }
    },
    {
@@ -6468,9 +6468,9 @@ export const kalkulatorSchools: KalkulatorSchool[] = [
      "year": "2025/2026",
      "kvota": 6,
      "upisani": null,
-     "min": 0,
-     "avg": 0,
-     "max": 0
+     "min": null,
+     "avg": null,
+     "max": null
     }
    },
    {
@@ -6520,9 +6520,9 @@ export const kalkulatorSchools: KalkulatorSchool[] = [
      "year": "2025/2026",
      "kvota": 6,
      "upisani": null,
-     "min": 0,
-     "avg": 0,
-     "max": 0
+     "min": null,
+     "avg": null,
+     "max": null
     }
    },
    {
@@ -6533,9 +6533,9 @@ export const kalkulatorSchools: KalkulatorSchool[] = [
      "year": "2025/2026",
      "kvota": 20,
      "upisani": null,
-     "min": 0,
-     "avg": 0,
-     "max": 0
+     "min": null,
+     "avg": null,
+     "max": null
     }
    },
    {
@@ -6546,9 +6546,9 @@ export const kalkulatorSchools: KalkulatorSchool[] = [
      "year": "2025/2026",
      "kvota": 20,
      "upisani": null,
-     "min": 0,
-     "avg": 0,
-     "max": 0
+     "min": null,
+     "avg": null,
+     "max": null
     }
    }
   ]
@@ -6601,9 +6601,9 @@ export const kalkulatorSchools: KalkulatorSchool[] = [
      "year": "2025/2026",
      "kvota": 36,
      "upisani": null,
-     "min": 0,
-     "avg": 0,
-     "max": 0
+     "min": null,
+     "avg": null,
+     "max": null
     }
    },
    {
@@ -6614,9 +6614,9 @@ export const kalkulatorSchools: KalkulatorSchool[] = [
      "year": "2025/2026",
      "kvota": 193,
      "upisani": null,
-     "min": 0,
-     "avg": 0,
-     "max": 0
+     "min": null,
+     "avg": null,
+     "max": null
     }
    }
   ]
@@ -8464,9 +8464,9 @@ export const kalkulatorSchools: KalkulatorSchool[] = [
      "year": "2025/2026",
      "kvota": 5,
      "upisani": null,
-     "min": 0,
-     "avg": 0,
-     "max": 0
+     "min": null,
+     "avg": null,
+     "max": null
     }
    },
    {
@@ -9426,9 +9426,9 @@ export const kalkulatorSchools: KalkulatorSchool[] = [
      "year": "2025/2026",
      "kvota": 26,
      "upisani": null,
-     "min": 0,
-     "avg": 0,
-     "max": 0
+     "min": null,
+     "avg": null,
+     "max": null
     }
    },
    {
@@ -9439,9 +9439,9 @@ export const kalkulatorSchools: KalkulatorSchool[] = [
      "year": "2025/2026",
      "kvota": 28,
      "upisani": null,
-     "min": 0,
-     "avg": 0,
-     "max": 0
+     "min": null,
+     "avg": null,
+     "max": null
     }
    },
    {
@@ -9465,9 +9465,9 @@ export const kalkulatorSchools: KalkulatorSchool[] = [
      "year": "2025/2026",
      "kvota": 3,
      "upisani": null,
-     "min": 0,
-     "avg": 0,
-     "max": 0
+     "min": null,
+     "avg": null,
+     "max": null
     }
    },
    {
@@ -9530,9 +9530,9 @@ export const kalkulatorSchools: KalkulatorSchool[] = [
      "year": "2025/2026",
      "kvota": 1,
      "upisani": null,
-     "min": 0,
-     "avg": 0,
-     "max": 0
+     "min": null,
+     "avg": null,
+     "max": null
     }
    }
   ]
@@ -9817,9 +9817,9 @@ export const kalkulatorSchools: KalkulatorSchool[] = [
      "year": "2025/2026",
      "kvota": 3,
      "upisani": null,
-     "min": 0,
-     "avg": 0,
-     "max": 0
+     "min": null,
+     "avg": null,
+     "max": null
     }
    },
    {
@@ -9830,9 +9830,9 @@ export const kalkulatorSchools: KalkulatorSchool[] = [
      "year": "2025/2026",
      "kvota": 3,
      "upisani": null,
-     "min": 0,
-     "avg": 0,
-     "max": 0
+     "min": null,
+     "avg": null,
+     "max": null
     }
    },
    {
@@ -9843,9 +9843,9 @@ export const kalkulatorSchools: KalkulatorSchool[] = [
      "year": "2025/2026",
      "kvota": 2,
      "upisani": null,
-     "min": 0,
-     "avg": 0,
-     "max": 0
+     "min": null,
+     "avg": null,
+     "max": null
     }
    },
    {
@@ -9856,9 +9856,9 @@ export const kalkulatorSchools: KalkulatorSchool[] = [
      "year": "2025/2026",
      "kvota": 7,
      "upisani": null,
-     "min": 0,
-     "avg": 0,
-     "max": 0
+     "min": null,
+     "avg": null,
+     "max": null
     }
    },
    {
@@ -9869,9 +9869,9 @@ export const kalkulatorSchools: KalkulatorSchool[] = [
      "year": "2025/2026",
      "kvota": 4,
      "upisani": null,
-     "min": 0,
-     "avg": 0,
-     "max": 0
+     "min": null,
+     "avg": null,
+     "max": null
     }
    }
   ]
@@ -10586,9 +10586,9 @@ export const kalkulatorSchools: KalkulatorSchool[] = [
      "year": "2025/2026",
      "kvota": 24,
      "upisani": null,
-     "min": 0,
-     "avg": 0,
-     "max": 0
+     "min": null,
+     "avg": null,
+     "max": null
     }
    },
    {
@@ -10599,9 +10599,9 @@ export const kalkulatorSchools: KalkulatorSchool[] = [
      "year": "2025/2026",
      "kvota": 26,
      "upisani": null,
-     "min": 0,
-     "avg": 0,
-     "max": 0
+     "min": null,
+     "avg": null,
+     "max": null
     }
    },
    {
@@ -12235,9 +12235,9 @@ export const kalkulatorSchools: KalkulatorSchool[] = [
      "year": "2025/2026",
      "kvota": 15,
      "upisani": null,
-     "min": 0,
-     "avg": 0,
-     "max": 0
+     "min": null,
+     "avg": null,
+     "max": null
     }
    },
    {
@@ -12248,9 +12248,9 @@ export const kalkulatorSchools: KalkulatorSchool[] = [
      "year": "2025/2026",
      "kvota": 22,
      "upisani": null,
-     "min": 0,
-     "avg": 0,
-     "max": 0
+     "min": null,
+     "avg": null,
+     "max": null
     }
    }
   ]
@@ -12303,9 +12303,9 @@ export const kalkulatorSchools: KalkulatorSchool[] = [
      "year": "2025/2026",
      "kvota": 10,
      "upisani": null,
-     "min": 0,
-     "avg": 0,
-     "max": 0
+     "min": null,
+     "avg": null,
+     "max": null
     }
    },
    {
@@ -12316,9 +12316,9 @@ export const kalkulatorSchools: KalkulatorSchool[] = [
      "year": "2025/2026",
      "kvota": 15,
      "upisani": null,
-     "min": 0,
-     "avg": 0,
-     "max": 0
+     "min": null,
+     "avg": null,
+     "max": null
     }
    },
    {
@@ -12329,9 +12329,9 @@ export const kalkulatorSchools: KalkulatorSchool[] = [
      "year": "2025/2026",
      "kvota": 2,
      "upisani": null,
-     "min": 0,
-     "avg": 0,
-     "max": 0
+     "min": null,
+     "avg": null,
+     "max": null
     }
    }
   ]
@@ -13225,9 +13225,9 @@ export const kalkulatorSchools: KalkulatorSchool[] = [
      "year": "2025/2026",
      "kvota": 15,
      "upisani": null,
-     "min": 0,
-     "avg": 0,
-     "max": 0
+     "min": null,
+     "avg": null,
+     "max": null
     }
    },
    {
@@ -13238,9 +13238,9 @@ export const kalkulatorSchools: KalkulatorSchool[] = [
      "year": "2025/2026",
      "kvota": 15,
      "upisani": null,
-     "min": 0,
-     "avg": 0,
-     "max": 0
+     "min": null,
+     "avg": null,
+     "max": null
     }
    }
   ]
@@ -13517,9 +13517,9 @@ export const kalkulatorSchools: KalkulatorSchool[] = [
      "year": "2025/2026",
      "kvota": 12,
      "upisani": null,
-     "min": 0,
-     "avg": 0,
-     "max": 0
+     "min": null,
+     "avg": null,
+     "max": null
     }
    },
    {
@@ -14583,9 +14583,9 @@ export const kalkulatorSchools: KalkulatorSchool[] = [
      "year": "2025/2026",
      "kvota": 10,
      "upisani": null,
-     "min": 0,
-     "avg": 0,
-     "max": 0
+     "min": null,
+     "avg": null,
+     "max": null
     }
    },
    {
@@ -14596,9 +14596,9 @@ export const kalkulatorSchools: KalkulatorSchool[] = [
      "year": "2025/2026",
      "kvota": 2,
      "upisani": null,
-     "min": 0,
-     "avg": 0,
-     "max": 0
+     "min": null,
+     "avg": null,
+     "max": null
     }
    },
    {
@@ -14622,9 +14622,9 @@ export const kalkulatorSchools: KalkulatorSchool[] = [
      "year": "2025/2026",
      "kvota": 2,
      "upisani": null,
-     "min": 0,
-     "avg": 0,
-     "max": 0
+     "min": null,
+     "avg": null,
+     "max": null
     }
    },
    {
@@ -16110,9 +16110,9 @@ export const kalkulatorSchools: KalkulatorSchool[] = [
      "year": "2025/2026",
      "kvota": 12,
      "upisani": null,
-     "min": 0,
-     "avg": 0,
-     "max": 0
+     "min": null,
+     "avg": null,
+     "max": null
     }
    },
    {
@@ -16123,9 +16123,9 @@ export const kalkulatorSchools: KalkulatorSchool[] = [
      "year": "2025/2026",
      "kvota": 20,
      "upisani": null,
-     "min": 0,
-     "avg": 0,
-     "max": 0
+     "min": null,
+     "avg": null,
+     "max": null
     }
    },
    {
@@ -16201,9 +16201,9 @@ export const kalkulatorSchools: KalkulatorSchool[] = [
      "year": "2025/2026",
      "kvota": 2,
      "upisani": null,
-     "min": 0,
-     "avg": 0,
-     "max": 0
+     "min": null,
+     "avg": null,
+     "max": null
     }
    },
    {
@@ -16227,9 +16227,9 @@ export const kalkulatorSchools: KalkulatorSchool[] = [
      "year": "2025/2026",
      "kvota": 1,
      "upisani": null,
-     "min": 0,
-     "avg": 0,
-     "max": 0
+     "min": null,
+     "avg": null,
+     "max": null
     }
    }
   ]
@@ -17341,9 +17341,9 @@ export const kalkulatorSchools: KalkulatorSchool[] = [
      "year": "2025/2026",
      "kvota": 12,
      "upisani": null,
-     "min": 0,
-     "avg": 0,
-     "max": 0
+     "min": null,
+     "avg": null,
+     "max": null
     }
    },
    {
@@ -17354,9 +17354,9 @@ export const kalkulatorSchools: KalkulatorSchool[] = [
      "year": "2025/2026",
      "kvota": 20,
      "upisani": null,
-     "min": 0,
-     "avg": 0,
-     "max": 0
+     "min": null,
+     "avg": null,
+     "max": null
     }
    },
    {
@@ -17393,9 +17393,9 @@ export const kalkulatorSchools: KalkulatorSchool[] = [
      "year": "2025/2026",
      "kvota": 1,
      "upisani": null,
-     "min": 0,
-     "avg": 0,
-     "max": 0
+     "min": null,
+     "avg": null,
+     "max": null
     }
    },
    {
@@ -17922,9 +17922,9 @@ export const kalkulatorSchools: KalkulatorSchool[] = [
      "year": "2025/2026",
      "kvota": 10,
      "upisani": null,
-     "min": 0,
-     "avg": 0,
-     "max": 0
+     "min": null,
+     "avg": null,
+     "max": null
     }
    },
    {
@@ -18136,9 +18136,9 @@ export const kalkulatorSchools: KalkulatorSchool[] = [
      "year": "2025/2026",
      "kvota": 7,
      "upisani": null,
-     "min": 0,
-     "avg": 0,
-     "max": 0
+     "min": null,
+     "avg": null,
+     "max": null
     }
    },
    {
@@ -18149,9 +18149,9 @@ export const kalkulatorSchools: KalkulatorSchool[] = [
      "year": "2025/2026",
      "kvota": 7,
      "upisani": null,
-     "min": 0,
-     "avg": 0,
-     "max": 0
+     "min": null,
+     "avg": null,
+     "max": null
     }
    },
    {
@@ -18175,9 +18175,9 @@ export const kalkulatorSchools: KalkulatorSchool[] = [
      "year": "2025/2026",
      "kvota": 10,
      "upisani": null,
-     "min": 0,
-     "avg": 0,
-     "max": 0
+     "min": null,
+     "avg": null,
+     "max": null
     }
    },
    {
@@ -18188,9 +18188,9 @@ export const kalkulatorSchools: KalkulatorSchool[] = [
      "year": "2025/2026",
      "kvota": 7,
      "upisani": null,
-     "min": 0,
-     "avg": 0,
-     "max": 0
+     "min": null,
+     "avg": null,
+     "max": null
     }
    }
   ]
@@ -18637,9 +18637,9 @@ export const kalkulatorSchools: KalkulatorSchool[] = [
      "year": "2025/2026",
      "kvota": 4,
      "upisani": null,
-     "min": 0,
-     "avg": 0,
-     "max": 0
+     "min": null,
+     "avg": null,
+     "max": null
     }
    },
    {
@@ -18937,9 +18937,9 @@ export const kalkulatorSchools: KalkulatorSchool[] = [
      "year": "2025/2026",
      "kvota": 22,
      "upisani": null,
-     "min": 0,
-     "avg": 0,
-     "max": 0
+     "min": null,
+     "avg": null,
+     "max": null
     }
    },
    {
@@ -18950,9 +18950,9 @@ export const kalkulatorSchools: KalkulatorSchool[] = [
      "year": "2025/2026",
      "kvota": 34,
      "upisani": null,
-     "min": 0,
-     "avg": 0,
-     "max": 0
+     "min": null,
+     "avg": null,
+     "max": null
     }
    },
    {
@@ -18963,9 +18963,9 @@ export const kalkulatorSchools: KalkulatorSchool[] = [
      "year": "2025/2026",
      "kvota": 2,
      "upisani": null,
-     "min": 0,
-     "avg": 0,
-     "max": 0
+     "min": null,
+     "avg": null,
+     "max": null
     }
    },
    {
@@ -19041,9 +19041,9 @@ export const kalkulatorSchools: KalkulatorSchool[] = [
      "year": "2025/2026",
      "kvota": 0,
      "upisani": null,
-     "min": 0,
-     "avg": 0,
-     "max": 0
+     "min": null,
+     "avg": null,
+     "max": null
     }
    },
    {
@@ -19054,9 +19054,9 @@ export const kalkulatorSchools: KalkulatorSchool[] = [
      "year": "2025/2026",
      "kvota": 0,
      "upisani": null,
-     "min": 0,
-     "avg": 0,
-     "max": 0
+     "min": null,
+     "avg": null,
+     "max": null
     }
    },
    {
@@ -20231,9 +20231,9 @@ export const kalkulatorSchools: KalkulatorSchool[] = [
      "year": "2025/2026",
      "kvota": 10,
      "upisani": null,
-     "min": 0,
-     "avg": 0,
-     "max": 0
+     "min": null,
+     "avg": null,
+     "max": null
     }
    },
    {
@@ -20257,9 +20257,9 @@ export const kalkulatorSchools: KalkulatorSchool[] = [
      "year": "2025/2026",
      "kvota": 1,
      "upisani": null,
-     "min": 0,
-     "avg": 0,
-     "max": 0
+     "min": null,
+     "avg": null,
+     "max": null
     }
    }
   ]
@@ -20565,9 +20565,9 @@ export const kalkulatorSchools: KalkulatorSchool[] = [
      "year": "2025/2026",
      "kvota": 13,
      "upisani": null,
-     "min": 0,
-     "avg": 0,
-     "max": 0
+     "min": null,
+     "avg": null,
+     "max": null
     }
    },
    {
@@ -20578,9 +20578,9 @@ export const kalkulatorSchools: KalkulatorSchool[] = [
      "year": "2025/2026",
      "kvota": 20,
      "upisani": null,
-     "min": 0,
-     "avg": 0,
-     "max": 0
+     "min": null,
+     "avg": null,
+     "max": null
     }
    }
   ]
@@ -21433,9 +21433,9 @@ export const kalkulatorSchools: KalkulatorSchool[] = [
      "year": "2025/2026",
      "kvota": 7,
      "upisani": null,
-     "min": 0,
-     "avg": 0,
-     "max": 0
+     "min": null,
+     "avg": null,
+     "max": null
     }
    },
    {
@@ -21446,9 +21446,9 @@ export const kalkulatorSchools: KalkulatorSchool[] = [
      "year": "2025/2026",
      "kvota": 15,
      "upisani": null,
-     "min": 0,
-     "avg": 0,
-     "max": 0
+     "min": null,
+     "avg": null,
+     "max": null
     }
    },
    {
@@ -21459,9 +21459,9 @@ export const kalkulatorSchools: KalkulatorSchool[] = [
      "year": "2025/2026",
      "kvota": 1,
      "upisani": null,
-     "min": 0,
-     "avg": 0,
-     "max": 0
+     "min": null,
+     "avg": null,
+     "max": null
     }
    },
    {
@@ -21816,9 +21816,9 @@ export const kalkulatorSchools: KalkulatorSchool[] = [
      "year": "2025/2026",
      "kvota": 10,
      "upisani": null,
-     "min": 0,
-     "avg": 0,
-     "max": 0
+     "min": null,
+     "avg": null,
+     "max": null
     }
    },
    {
@@ -21829,9 +21829,9 @@ export const kalkulatorSchools: KalkulatorSchool[] = [
      "year": "2025/2026",
      "kvota": 10,
      "upisani": null,
-     "min": 0,
-     "avg": 0,
-     "max": 0
+     "min": null,
+     "avg": null,
+     "max": null
     }
    }
   ]
@@ -22270,9 +22270,9 @@ export const kalkulatorSchools: KalkulatorSchool[] = [
      "year": "2025/2026",
      "kvota": 12,
      "upisani": null,
-     "min": 0,
-     "avg": 0,
-     "max": 0
+     "min": null,
+     "avg": null,
+     "max": null
     }
    },
    {
@@ -22283,9 +22283,9 @@ export const kalkulatorSchools: KalkulatorSchool[] = [
      "year": "2025/2026",
      "kvota": 13,
      "upisani": null,
-     "min": 0,
-     "avg": 0,
-     "max": 0
+     "min": null,
+     "avg": null,
+     "max": null
     }
    },
    {
@@ -22606,9 +22606,9 @@ export const kalkulatorSchools: KalkulatorSchool[] = [
      "year": "2025/2026",
      "kvota": 2,
      "upisani": null,
-     "min": 0,
-     "avg": 0,
-     "max": 0
+     "min": null,
+     "avg": null,
+     "max": null
     }
    },
    {
@@ -22755,9 +22755,9 @@ export const kalkulatorSchools: KalkulatorSchool[] = [
      "year": "2025/2026",
      "kvota": 26,
      "upisani": null,
-     "min": 0,
-     "avg": 0,
-     "max": 0
+     "min": null,
+     "avg": null,
+     "max": null
     }
    },
    {
@@ -22768,9 +22768,9 @@ export const kalkulatorSchools: KalkulatorSchool[] = [
      "year": "2025/2026",
      "kvota": 44,
      "upisani": null,
-     "min": 0,
-     "avg": 0,
-     "max": 0
+     "min": null,
+     "avg": null,
+     "max": null
     }
    },
    {
@@ -23457,9 +23457,9 @@ export const kalkulatorSchools: KalkulatorSchool[] = [
      "year": "2025/2026",
      "kvota": 20,
      "upisani": null,
-     "min": 0,
-     "avg": 0,
-     "max": 0
+     "min": null,
+     "avg": null,
+     "max": null
     }
    },
    {
@@ -23470,9 +23470,9 @@ export const kalkulatorSchools: KalkulatorSchool[] = [
      "year": "2025/2026",
      "kvota": 20,
      "upisani": null,
-     "min": 0,
-     "avg": 0,
-     "max": 0
+     "min": null,
+     "avg": null,
+     "max": null
     }
    }
   ]
@@ -24474,9 +24474,9 @@ export const kalkulatorSchools: KalkulatorSchool[] = [
      "year": "2025/2026",
      "kvota": 10,
      "upisani": null,
-     "min": 0,
-     "avg": 0,
-     "max": 0
+     "min": null,
+     "avg": null,
+     "max": null
     }
    },
    {
@@ -24672,9 +24672,9 @@ export const kalkulatorSchools: KalkulatorSchool[] = [
      "year": "2025/2026",
      "kvota": 10,
      "upisani": null,
-     "min": 0,
-     "avg": 0,
-     "max": 0
+     "min": null,
+     "avg": null,
+     "max": null
     }
    },
    {
@@ -24959,9 +24959,9 @@ export const kalkulatorSchools: KalkulatorSchool[] = [
      "year": "2025/2026",
      "kvota": 15,
      "upisani": null,
-     "min": 0,
-     "avg": 0,
-     "max": 0
+     "min": null,
+     "avg": null,
+     "max": null
     }
    },
    {
@@ -24972,9 +24972,9 @@ export const kalkulatorSchools: KalkulatorSchool[] = [
      "year": "2025/2026",
      "kvota": 25,
      "upisani": null,
-     "min": 0,
-     "avg": 0,
-     "max": 0
+     "min": null,
+     "avg": null,
+     "max": null
     }
    },
    {
@@ -24985,9 +24985,9 @@ export const kalkulatorSchools: KalkulatorSchool[] = [
      "year": "2025/2026",
      "kvota": 1,
      "upisani": null,
-     "min": 0,
-     "avg": 0,
-     "max": 0
+     "min": null,
+     "avg": null,
+     "max": null
     }
    },
    {
@@ -24998,9 +24998,9 @@ export const kalkulatorSchools: KalkulatorSchool[] = [
      "year": "2025/2026",
      "kvota": 1,
      "upisani": null,
-     "min": 0,
-     "avg": 0,
-     "max": 0
+     "min": null,
+     "avg": null,
+     "max": null
     }
    }
   ]
@@ -25470,9 +25470,9 @@ export const kalkulatorSchools: KalkulatorSchool[] = [
      "year": "2025/2026",
      "kvota": 7,
      "upisani": null,
-     "min": 0,
-     "avg": 0,
-     "max": 0
+     "min": null,
+     "avg": null,
+     "max": null
     }
    }
   ]
@@ -25989,9 +25989,9 @@ export const kalkulatorSchools: KalkulatorSchool[] = [
      "year": "2025/2026",
      "kvota": 25,
      "upisani": null,
-     "min": 0,
-     "avg": 0,
-     "max": 0
+     "min": null,
+     "avg": null,
+     "max": null
     }
    },
    {
@@ -26002,9 +26002,9 @@ export const kalkulatorSchools: KalkulatorSchool[] = [
      "year": "2025/2026",
      "kvota": 51,
      "upisani": null,
-     "min": 0,
-     "avg": 0,
-     "max": 0
+     "min": null,
+     "avg": null,
+     "max": null
     }
    },
    {
@@ -26369,9 +26369,9 @@ export const kalkulatorSchools: KalkulatorSchool[] = [
      "year": "2025/2026",
      "kvota": 6,
      "upisani": null,
-     "min": 0,
-     "avg": 0,
-     "max": 0
+     "min": null,
+     "avg": null,
+     "max": null
     }
    },
    {
@@ -27427,9 +27427,9 @@ export const kalkulatorSchools: KalkulatorSchool[] = [
      "year": "2025/2026",
      "kvota": 15,
      "upisani": null,
-     "min": 0,
-     "avg": 0,
-     "max": 0
+     "min": null,
+     "avg": null,
+     "max": null
     }
    },
    {
@@ -27440,9 +27440,9 @@ export const kalkulatorSchools: KalkulatorSchool[] = [
      "year": "2025/2026",
      "kvota": 20,
      "upisani": null,
-     "min": 0,
-     "avg": 0,
-     "max": 0
+     "min": null,
+     "avg": null,
+     "max": null
     }
    },
    {
@@ -27466,9 +27466,9 @@ export const kalkulatorSchools: KalkulatorSchool[] = [
      "year": "2025/2026",
      "kvota": 1,
      "upisani": null,
-     "min": 0,
-     "avg": 0,
-     "max": 0
+     "min": null,
+     "avg": null,
+     "max": null
     }
    },
    {
@@ -27492,9 +27492,9 @@ export const kalkulatorSchools: KalkulatorSchool[] = [
      "year": "2025/2026",
      "kvota": 1,
      "upisani": null,
-     "min": 0,
-     "avg": 0,
-     "max": 0
+     "min": null,
+     "avg": null,
+     "max": null
     }
    },
    {
@@ -28058,9 +28058,9 @@ export const kalkulatorSchools: KalkulatorSchool[] = [
      "year": "2025/2026",
      "kvota": 20,
      "upisani": null,
-     "min": 0,
-     "avg": 0,
-     "max": 0
+     "min": null,
+     "avg": null,
+     "max": null
     }
    },
    {
@@ -28933,9 +28933,9 @@ export const kalkulatorSchools: KalkulatorSchool[] = [
      "year": "2025/2026",
      "kvota": 8,
      "upisani": 1,
-     "min": 0,
-     "avg": 0,
-     "max": 0
+     "min": null,
+     "avg": null,
+     "max": null
     }
    },
    {
@@ -29874,9 +29874,9 @@ export const kalkulatorSchools: KalkulatorSchool[] = [
      "year": "2025/2026",
      "kvota": 19,
      "upisani": null,
-     "min": 0,
-     "avg": 0,
-     "max": 0
+     "min": null,
+     "avg": null,
+     "max": null
     }
    }
   ]
@@ -30680,9 +30680,9 @@ export const kalkulatorSchools: KalkulatorSchool[] = [
      "year": "2025/2026",
      "kvota": 15,
      "upisani": null,
-     "min": 0,
-     "avg": 0,
-     "max": 0
+     "min": null,
+     "avg": null,
+     "max": null
     }
    }
   ]
@@ -31131,9 +31131,9 @@ export const kalkulatorSchools: KalkulatorSchool[] = [
      "year": "2025/2026",
      "kvota": 16,
      "upisani": null,
-     "min": 0,
-     "avg": 0,
-     "max": 0
+     "min": null,
+     "avg": null,
+     "max": null
     }
    },
    {
@@ -31144,9 +31144,9 @@ export const kalkulatorSchools: KalkulatorSchool[] = [
      "year": "2025/2026",
      "kvota": 24,
      "upisani": null,
-     "min": 0,
-     "avg": 0,
-     "max": 0
+     "min": null,
+     "avg": null,
+     "max": null
     }
    }
   ]
@@ -31686,9 +31686,9 @@ export const kalkulatorSchools: KalkulatorSchool[] = [
      "year": "2025/2026",
      "kvota": 39,
      "upisani": null,
-     "min": 0,
-     "avg": 0,
-     "max": 0
+     "min": null,
+     "avg": null,
+     "max": null
     }
    },
    {
@@ -31720,9 +31720,9 @@ export const kalkulatorSchools: KalkulatorSchool[] = [
      "year": "2025/2026",
      "kvota": 15,
      "upisani": null,
-     "min": 0,
-     "avg": 0,
-     "max": 0
+     "min": null,
+     "avg": null,
+     "max": null
     }
    },
    {
@@ -31733,9 +31733,9 @@ export const kalkulatorSchools: KalkulatorSchool[] = [
      "year": "2025/2026",
      "kvota": 25,
      "upisani": null,
-     "min": 0,
-     "avg": 0,
-     "max": 0
+     "min": null,
+     "avg": null,
+     "max": null
     }
    },
    {
@@ -31759,9 +31759,9 @@ export const kalkulatorSchools: KalkulatorSchool[] = [
      "year": "2025/2026",
      "kvota": 1,
      "upisani": null,
-     "min": 0,
-     "avg": 0,
-     "max": 0
+     "min": null,
+     "avg": null,
+     "max": null
     }
    },
    {
@@ -31772,9 +31772,9 @@ export const kalkulatorSchools: KalkulatorSchool[] = [
      "year": "2025/2026",
      "kvota": 1,
      "upisani": null,
-     "min": 0,
-     "avg": 0,
-     "max": 0
+     "min": null,
+     "avg": null,
+     "max": null
     }
    },
    {
@@ -31785,9 +31785,9 @@ export const kalkulatorSchools: KalkulatorSchool[] = [
      "year": "2025/2026",
      "kvota": 1,
      "upisani": null,
-     "min": 0,
-     "avg": 0,
-     "max": 0
+     "min": null,
+     "avg": null,
+     "max": null
     }
    },
    {
@@ -31798,9 +31798,9 @@ export const kalkulatorSchools: KalkulatorSchool[] = [
      "year": "2025/2026",
      "kvota": 1,
      "upisani": null,
-     "min": 0,
-     "avg": 0,
-     "max": 0
+     "min": null,
+     "avg": null,
+     "max": null
     }
    },
    {
@@ -31811,9 +31811,9 @@ export const kalkulatorSchools: KalkulatorSchool[] = [
      "year": "2025/2026",
      "kvota": 1,
      "upisani": null,
-     "min": 0,
-     "avg": 0,
-     "max": 0
+     "min": null,
+     "avg": null,
+     "max": null
     }
    }
   ]

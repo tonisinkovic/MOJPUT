@@ -25,8 +25,8 @@ function TikTokGlyph({ className }: { className?: string }) {
 
 const SOCIAL_LINKS = [
   {
-    href: "https://www.youtube.com/@Projekt30dana",
-    label: "YouTube — Projekt 30dana",
+    href: "https://www.youtube.com/@MojPut_hr/featured",
+    label: "YouTube — MojPut",
     Icon: Youtube,
     iconClassName: "h-5 w-5 sm:h-[1.35rem] sm:w-[1.35rem]",
   },
@@ -37,8 +37,8 @@ const SOCIAL_LINKS = [
     iconClassName: "h-[1.15rem] w-[1.15rem] sm:h-5 sm:w-5",
   },
   {
-    href: "https://www.instagram.com/projekt30dana?igsh=MWdxbHBtdW0ybGxrcA==",
-    label: "Instagram — Projekt 30dana",
+    href: "https://www.instagram.com/mojput.app/",
+    label: "Instagram — MojPut",
     Icon: Instagram,
     iconClassName: "h-5 w-5 sm:h-[1.35rem] sm:w-[1.35rem]",
   },
@@ -287,7 +287,7 @@ const SiteFeedback = () => {
 
         <nav
           className="mt-6 flex flex-wrap items-center justify-center gap-3 sm:mt-7 sm:gap-4"
-          aria-label="Društvene mreže — Projekt 30dana"
+          aria-label="Društvene mreže — MojPut"
         >
           {SOCIAL_LINKS.map(({ href, label, Icon, iconClassName }) => (
             <a

@@ -61,9 +61,16 @@ import {
   aggregateScoreFromBreakdown,
   explainCalculation,
   pointsBelowCutoff,
-  PRORACUNSKA_OSNOVICA_EUR_2025,
-  PCT_60_PO_EUR_2025,
+  effectiveReference,
+  PRORACUNSKA_OSNOVICA_EUR,
+  PCT_60_PO_EUR,
   MAX_SCORE_ROUGH,
+  MATURA_OPTIONS,
+  COMPETITION_OPTIONS,
+  STUDENT_AWARD_OPTIONS,
+  type CompetitionAward,
+  type MaturaResult,
+  type StudentAward,
   type DormCalculatorInput,
   type StudyYearOption,
   type IncomeBandId,
@@ -71,6 +78,7 @@ import {
   type SpecialOptionId,
   type DormScoreResult,
 } from "@/lib/dormCalculator";
+import { getCohortCenter, STUDY_LEVEL_OPTIONS, type StudyLevel } from "@/lib/dormCohortAverages";
 
 const STUDY_YEAR_OPTIONS: { value: StudyYearOption; label: string }[] = [
   { value: "maturant", label: "Maturant / prva godina (prvi upis)" },
@@ -100,13 +108,40 @@ const defaultInput = (): DormCalculatorInput => ({
   avgEctsPreviousYears: null,
   ectsCurrentYear: null,
   invaliditet1: false,
+  referenceAverage: null,
+  institution: null,
+  studyLevel: "prijediplomski",
+  siblings: 0,
+  siblingsWithCare: 0,
+  parentsDisabled100: 0,
+  children: 0,
+  maturaResult: "none",
+  competitionAward: "none",
+  studentAward: "none",
+  ects58CurrentYear: false,
+  opomena: false,
 });
+
+const COUNT_FIELDS: {
+  key: "siblings" | "siblingsWithCare" | "parentsDisabled100" | "children";
+  label: string;
+  max: number;
+}[] = [
+  { key: "siblings", label: "Braća/sestre u vrtiću, školi ili na studiju, žive s tobom (150 bod. svaki)", max: 10 },
+  {
+    key: "siblingsWithCare",
+    label: "Braća/sestre s doplatkom za pomoć i njegu ili osobnom invalidninom (200 bod. svaki) — boduje se samo jača od ove dvije osnove",
+    max: 10,
+  },
+  { key: "parentsDisabled100", label: "Roditelji sa 100 % tjelesnim oštećenjem (200 bod. po roditelju)", max: 2 },
+  { key: "children", label: "Tvoja djeca, ako si student roditelj (500 bod. po djetetu)", max: 10 },
+];
 
 function stepValid(step: number, input: DormCalculatorInput): boolean {
   if (step === 0) return true;
   if (step === 1) {
     return (
-      input.gradeAverage >= 1 &&
+      input.gradeAverage >= 2 &&
       input.gradeAverage <= 5 &&
       Number.isFinite(input.gradeAverage)
     );
@@ -131,6 +166,10 @@ export default function KalkulatorDoma() {
     [dormId],
   );
   const cutoff = dorm ? latestCutoff(dorm) : null;
+  const cohortCenter = dorm ? getCohortCenter(dorm.id) : undefined;
+  const cohortInstitutions = cohortCenter?.institutions ?? [];
+  const selectedInstitutionCode = input.institution?.dormId === dorm?.id ? input.institution.code : null;
+  const reference = useMemo(() => effectiveReference(dorm, input), [dorm, input]);
 
   const ranking = useMemo(() => rankDormsByFit(input), [input]);
   const history = useMemo(() => loadHistory(), [historyTick]);
@@ -143,7 +182,7 @@ export default function KalkulatorDoma() {
 
   const chanceLevel = useMemo(() => {
     if (!result) return "medium" as const;
-    return displayChance(result.total, cutoff, result.competitiveInvalid);
+    return displayChance(result.total, cutoff, result.competitiveInvalid, result.izravnoPravo.length > 0);
   }, [result, cutoff]);
 
   const chanceStyle =
@@ -210,8 +249,14 @@ export default function KalkulatorDoma() {
         if (id === "jedan_roditelj" && next.includes("oba_roditelja_izravno")) {
           next = next.filter((x) => x !== "oba_roditelja_izravno");
         }
-        if (id === "oba_roditelja_izravno" && next.includes("jedan_roditelj")) {
-          next = next.filter((x) => x !== "jedan_roditelj");
+        if (id === "oba_roditelja_izravno") {
+          next = next.filter((x) => x !== "jedan_roditelj" && x !== "razvedeni_roditelji");
+        }
+        if (id === "jedan_roditelj" && next.includes("razvedeni_roditelji")) {
+          next = next.filter((x) => x !== "razvedeni_roditelji");
+        }
+        if (id === "razvedeni_roditelji") {
+          next = next.filter((x) => x !== "jedan_roditelj" && x !== "oba_roditelja_izravno");
         }
       } else {
         next = next.filter((x) => x !== id);
@@ -296,8 +341,8 @@ export default function KalkulatorDoma() {
                 <span className="text-gradient">studentske domove</span>
               </h1>
               <p className="mt-1.5 max-w-2xl text-pretty text-sm leading-relaxed text-muted-foreground sm:text-base">
-                Okvirni broj bodova za natječaj. Za Zagreb usporedba s objavljenim pragom; za ostale gradove procjena
-                šanse bez službenog praga u aplikaciji.
+                Okvirni broj bodova za natječaj prema Pravilniku MZOM-a. Za Zagreb i Split usporedba s pragom
+                2026./2027.; za ostale gradove procjena šanse.
               </p>
             </div>
           </div>
@@ -405,20 +450,19 @@ export default function KalkulatorDoma() {
               <Scale className="h-5 w-5" strokeWidth={2.2} aria-hidden />
             </div>
             <div className="min-w-0 flex-1 space-y-1">
-              <p className="text-[10px] font-bold uppercase tracking-wide text-primary md:text-[11px]">Referenca 2025.</p>
+              <p className="text-[10px] font-bold uppercase tracking-wide text-primary md:text-[11px]">Natječaj 2026./2027.</p>
               <h3 className="text-base font-bold leading-snug text-foreground md:text-lg">
-                Referentni iznosi za prinos (2025.)
+                Proračunska osnovica za prihod
               </h3>
               <p className="text-xs leading-relaxed text-muted-foreground md:text-sm">
-                Pri odabiru najvišeg raspona prihoda koristi se okvirno{" "}
                 <strong className="font-semibold text-foreground tabular-nums">
-                  100 % = {PRORACUNSKA_OSNOVICA_EUR_2025.toLocaleString("hr-HR")} €
+                  100 % = {PRORACUNSKA_OSNOVICA_EUR.toLocaleString("hr-HR")} €
                 </strong>{" "}
                 ·{" "}
                 <strong className="font-semibold text-foreground tabular-nums">
-                  60 % = {PCT_60_PO_EUR_2025.toLocaleString("hr-HR")} €
+                  60 % = {PCT_60_PO_EUR.toLocaleString("hr-HR")} €
                 </strong>{" "}
-                (provjeri točan broj u natječaju).
+                po članu kućanstva. Iznad 100 % nema bodova za prihod ni izravnog prava prema izvrsnosti.
               </p>
             </div>
           </div>
@@ -434,8 +478,8 @@ export default function KalkulatorDoma() {
               {STEPS[step].desc}
             </CardTitle>
             <CardDescription className="text-base">
-              {step === 0 && "Odaberi grad. Za Zagreb imaš usporedbu s objavljenim pragom; za ostale samo procjenu."}
-              {step === 1 && "Prosjek ocjena, godina studija i po želji ECTS (utječu na bodove)."}
+              {step === 0 && "Odaberi grad. Gdje je prag objavljen, usporedit ćemo te s njim; inače dobivaš procjenu."}
+              {step === 1 && "Prosjek ocjena, prosjek tvoje skupine, godina studija, ECTS i nagrade."}
               {step === 2 && "Moraš stanovati izvan mjesta studija da bi se u pravilu mogao prijaviti — udaljenost u km se ne boduje."}
               {step === 3 && "Odaberi raspon mjesečnog prihoda po članu kućanstva (prethodna kalendarska godina)."}
               {step === 4 && "Označi što se odnosi na tebe (uz prijavu ide i dokumentacija)."}
@@ -511,11 +555,16 @@ export default function KalkulatorDoma() {
                   <Slider
                     value={[input.gradeAverage]}
                     onValueChange={([v]) => setInput((p) => ({ ...p, gradeAverage: v }))}
-                    min={1}
+                    min={2}
                     max={5}
                     step={0.01}
                     className="py-4 touch-pan-x"
                   />
+                  <p className="text-sm text-muted-foreground">
+                    {input.studyYear === "maturant"
+                      ? "Maturanti upisuju prosjek svih razreda srednje škole."
+                      : "Prosjek svih položenih ispita na studiju."}
+                  </p>
                 </div>
                 <div className="space-y-2">
                   <Label className="text-base font-semibold">Godina studija / status</Label>
@@ -534,6 +583,107 @@ export default function KalkulatorDoma() {
                       ))}
                     </SelectContent>
                   </Select>
+                </div>
+                {input.studyYear !== "maturant" && cohortInstitutions.length > 0 && (
+                  <div className="grid gap-4">
+                    <div className="space-y-2">
+                      <Label className="text-base font-semibold">Tvoje visoko učilište</Label>
+                      <Select
+                        value={selectedInstitutionCode ?? "none"}
+                        onValueChange={(v) =>
+                          setInput((p) => ({ ...p, institution: v === "none" ? null : { dormId: dorm.id, code: v } }))
+                        }
+                      >
+                        <SelectTrigger className="h-14 rounded-xl text-base">
+                          <SelectValue placeholder="Odaberi učilište" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="none" className="text-base py-3">
+                            Nije na popisu / ne znam
+                          </SelectItem>
+                          {cohortInstitutions.map((i) => (
+                            <SelectItem key={i.code} value={i.code} className="text-base py-3">
+                              {i.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="text-base font-semibold">Razina studija</Label>
+                      <Select
+                        value={input.studyLevel ?? "prijediplomski"}
+                        onValueChange={(v) => setInput((p) => ({ ...p, studyLevel: v as StudyLevel }))}
+                      >
+                        <SelectTrigger className="h-14 rounded-xl text-base">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {STUDY_LEVEL_OPTIONS.map((o) => (
+                            <SelectItem key={o.id} value={o.id} className="text-base py-3">
+                              {o.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                )}
+                <div className="space-y-2">
+                  <div
+                    className={cn(
+                      "rounded-xl border p-3 text-sm leading-relaxed",
+                      reference.source === "estimate" || reference.source === "center_level"
+                        ? "border-amber-300 bg-amber-50 text-amber-900 dark:bg-amber-950/30 dark:text-amber-200"
+                        : "bg-muted/40",
+                    )}
+                  >
+                    <span className="font-semibold">Prosjek skupine: </span>
+                    {reference.label_hr}
+                    {reference.source === "brucosi" &&
+                      ". Brucoši se uspoređuju s prosjekom svih brucoša koji su se prijavili na natječaj (čl. 11.)."}
+                    {(reference.source === "estimate" || reference.source === "center_level") &&
+                      ". Odaberi učilište za točan izračun."}
+                  </div>
+                  <Label htmlFor="ref-avg" className="text-sm text-muted-foreground">
+                    Ručno upiši prosjek skupine (opc., ima prednost)
+                  </Label>
+                  <Input
+                    id="ref-avg"
+                    inputMode="decimal"
+                    type="number"
+                    min={2}
+                    max={5}
+                    step={0.001}
+                    placeholder="npr. 3,734"
+                    className="h-14 rounded-xl text-lg"
+                    value={input.referenceAverage ?? ""}
+                    onChange={(e) => {
+                      const v = e.target.value;
+                      setInput((p) => ({ ...p, referenceAverage: v === "" ? null : parseFloat(v) }));
+                    }}
+                  />
+                  <p className="text-sm text-muted-foreground leading-relaxed">
+                    Bodovi za prosjek = tvoj prosjek ÷ prosjek skupine × 1000. Ugrađeni su službeni prosjeci iz natječaja{" "}
+                    {cohortCenter?.academic_year ?? ""}
+                    {cohortCenter?.source_url && (
+                      <>
+                        {" "}
+                        (
+                        <a
+                          href={cohortCenter.source_url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="underline text-primary"
+                        >
+                          PDF centra
+                        </a>
+                        )
+                      </>
+                    )}
+                    . Na idućem natječaju prosjeci se računaju iznova iz prijava, ali se obično pomaknu tek za nekoliko
+                    stotinki.
+                  </p>
                 </div>
                 <label className="flex items-start gap-3 min-h-[44px] cursor-pointer rounded-xl border p-3 active:bg-muted/50">
                   <Checkbox
@@ -581,6 +731,80 @@ export default function KalkulatorDoma() {
                     />
                   </div>
                 </div>
+                {input.studyYear !== "maturant" && input.studyYear !== "g1" && (
+                  <label className="flex items-start gap-3 min-h-[44px] cursor-pointer rounded-xl border p-3 active:bg-muted/50">
+                    <Checkbox
+                      checked={Boolean(input.ects58CurrentYear)}
+                      onCheckedChange={(c) => setInput((p) => ({ ...p, ects58CurrentYear: Boolean(c) }))}
+                      className="mt-1"
+                    />
+                    <span className="text-base leading-snug">
+                      U tekućoj godini do prijave imam 58 ili više ECTS (uz završni rad) — 100 bod.
+                    </span>
+                  </label>
+                )}
+                {input.studyYear === "maturant" ? (
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <div className="space-y-2">
+                      <Label className="text-sm font-semibold">Državna matura</Label>
+                      <Select
+                        value={input.maturaResult ?? "none"}
+                        onValueChange={(v) => setInput((p) => ({ ...p, maturaResult: v as MaturaResult }))}
+                      >
+                        <SelectTrigger className="h-14 rounded-xl text-base">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {MATURA_OPTIONS.map((o) => (
+                            <SelectItem key={o.id} value={o.id} className="text-base py-3">
+                              {o.label}
+                              {o.points > 0 ? ` — ${o.points} bod.` : ""}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="text-sm font-semibold">Natjecanja u srednjoj školi</Label>
+                      <Select
+                        value={input.competitionAward ?? "none"}
+                        onValueChange={(v) => setInput((p) => ({ ...p, competitionAward: v as CompetitionAward }))}
+                      >
+                        <SelectTrigger className="h-14 rounded-xl text-base">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {COMPETITION_OPTIONS.map((o) => (
+                            <SelectItem key={o.id} value={o.id} className="text-base py-3">
+                              {o.label}
+                              {o.points > 0 ? ` — ${o.points} bod.` : ""}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    <Label className="text-sm font-semibold">Nagrada na studiju</Label>
+                    <Select
+                      value={input.studentAward ?? "none"}
+                      onValueChange={(v) => setInput((p) => ({ ...p, studentAward: v as StudentAward }))}
+                    >
+                      <SelectTrigger className="h-14 rounded-xl text-base">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {STUDENT_AWARD_OPTIONS.map((o) => (
+                          <SelectItem key={o.id} value={o.id} className="text-base py-3">
+                            {o.label}
+                            {o.points > 0 ? ` — ${o.points} bod.` : ""}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
               </div>
             )}
 
@@ -665,6 +889,42 @@ export default function KalkulatorDoma() {
                     ))}
                   </div>
                 </ScrollArea>
+                <div className="grid gap-3">
+                  {COUNT_FIELDS.map((f) => (
+                    <div key={f.key} className="flex items-center justify-between gap-3 rounded-xl border p-3">
+                      <Label htmlFor={`count-${f.key}`} className="text-sm leading-snug font-normal">
+                        {f.label}
+                      </Label>
+                      <Input
+                        id={`count-${f.key}`}
+                        type="number"
+                        inputMode="numeric"
+                        min={0}
+                        max={f.max}
+                        step={1}
+                        className="h-12 w-20 shrink-0 rounded-xl text-center text-lg"
+                        value={input[f.key] ?? 0}
+                        onChange={(e) => {
+                          const n = Math.floor(Number(e.target.value));
+                          setInput((p) => ({
+                            ...p,
+                            [f.key]: Number.isFinite(n) ? Math.min(f.max, Math.max(0, n)) : 0,
+                          }));
+                        }}
+                      />
+                    </div>
+                  ))}
+                </div>
+                <label className="flex items-start gap-3 min-h-[44px] cursor-pointer rounded-xl border p-3">
+                  <Checkbox
+                    checked={Boolean(input.opomena)}
+                    onCheckedChange={(c) => setInput((p) => ({ ...p, opomena: Boolean(c) }))}
+                    className="mt-1"
+                  />
+                  <span className="text-base leading-snug">
+                    Ove godine dobio/la sam opomenu pred gubitak prava u domu (−200 bod.)
+                  </span>
+                </label>
               </div>
             )}
           </CardContent>
@@ -745,6 +1005,20 @@ export default function KalkulatorDoma() {
                 <span className="text-lg font-medium text-muted-foreground ml-2">bodova</span>
               </p>
 
+              {result.izravnoPravo.length > 0 && (
+                <div className="mb-4 rounded-2xl border-2 border-emerald-500/40 bg-emerald-500/5 p-4">
+                  <p className="font-bold text-emerald-700 dark:text-emerald-400">Izravno pravo na smještaj</p>
+                  <ul className="mt-1 list-disc pl-5 text-sm text-muted-foreground space-y-1">
+                    {result.izravnoPravo.map((r) => (
+                      <li key={r}>{r}</li>
+                    ))}
+                  </ul>
+                  <p className="mt-2 text-sm text-muted-foreground">
+                    S izravnim pravom ne natječeš se bodovima, ali uz prijavu moraš priložiti dokaze.
+                  </p>
+                </div>
+              )}
+
               {!result.competitiveInvalid && cutoff != null && (
                 <>
                   <div className="space-y-2 mb-4">
@@ -773,12 +1047,12 @@ export default function KalkulatorDoma() {
                     <p className="text-center text-lg font-medium text-foreground mb-2">
                       Fali ti još{" "}
                       <strong className={chanceStyle.text}>{gap.toLocaleString("hr-HR")}</strong> bodova do
-                      objavljenog praga (Zagreb).
+                      praga za {dorm?.city} ({dorm?.published_cutoff?.academic_year}).
                     </p>
                   )}
                   {result.total >= cutoff && (
                     <p className="text-center text-emerald-600 font-medium mb-2">
-                      Na ili iznad objavljenog praga — uz isti unos (Zagreb).
+                      Na ili iznad praga za {dorm?.city} ({dorm?.published_cutoff?.academic_year}).
                     </p>
                   )}
                 </>
@@ -816,12 +1090,14 @@ export default function KalkulatorDoma() {
                   </p>
                   <p className="text-muted-foreground text-base leading-relaxed mt-1">
                     {result.competitiveInvalid
-                      ? "S ovim prebivalištem se u pravilu ne možeš prijaviti na natječaj."
-                      : cutoff == null
-                        ? "Više bodova obično znači bolju poziciju na listi, ali ovisi o godini i konkurenciji. Točan ishod vidi na stranici studentskog centra."
-                        : result.total >= cutoff
-                          ? "Po unosu si na ili iznad objavljenog praga za Zagreb — provjeri još dokumente i natječaj."
-                          : "Po unosu si ispod objavljenog praga za Zagreb — razmisli što još možeš ostvariti ili provjeri natječaj."}
+                      ? "Po ovom unosu ne ispunjavaš uvjete za prijavu na natječaj — pogledaj napomene ispod."
+                      : result.izravnoPravo.length > 0
+                        ? "Po unosu ispunjavaš uvjete za izravno pravo — mjesto ne ovisi o bodovnoj granici."
+                        : cutoff == null
+                          ? "Više bodova obično znači bolju poziciju na listi, ali ovisi o godini i konkurenciji. Točan ishod vidi na stranici studentskog centra."
+                          : result.total >= cutoff
+                            ? `Po unosu si na ili iznad praga za ${dorm?.city} — provjeri još dokumente i natječaj.`
+                            : `Po unosu si ispod praga za ${dorm?.city} — razmisli što još možeš ostvariti ili provjeri natječaj.`}
                   </p>
                 </div>
               </div>
@@ -883,9 +1159,11 @@ export default function KalkulatorDoma() {
                     <AccordionContent>
                       <ul className="text-sm text-muted-foreground space-y-2">
                         {result.breakdown
-                          .filter((l) => l.key === "study")
+                          .filter((l) => l.key === "study" || l.key.startsWith("study_"))
                           .map((l) => (
-                            <li key={l.key}>{l.label}</li>
+                            <li key={l.key}>
+                              {l.label} — {l.points.toFixed(0)} bod.
+                            </li>
                           ))}
                       </ul>
                     </AccordionContent>
@@ -902,7 +1180,8 @@ export default function KalkulatorDoma() {
                         {result.breakdown
                           .filter(
                             (l) =>
-                              !["grade", "income", "distance_info", "study"].includes(l.key),
+                              !["grade", "income", "distance_info", "study"].includes(l.key) &&
+                              !l.key.startsWith("study_"),
                           )
                           .map((l) => (
                             <li key={l.key} className="text-muted-foreground">
@@ -979,7 +1258,7 @@ export default function KalkulatorDoma() {
             <CardHeader>
               <CardTitle className="text-lg">Usporedba centara</CardTitle>
               <CardDescription>
-                Isti unos — viši broj = jača prijava. Razlika do praga samo gdje je prag objavljen (Zagreb).
+                Isti unos — viši broj = jača prijava. Razlika do praga samo gdje je prag objavljen (Zagreb, Split).
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-2">
@@ -998,7 +1277,7 @@ export default function KalkulatorDoma() {
                     className="tabular-nums text-muted-foreground text-right"
                     title={
                       r.delta != null
-                        ? "Razlika do objavljenog praga (Zagreb)"
+                        ? "Razlika do objavljenog praga"
                         : "Ukupni bodovi (nema praga u aplikaciji)"
                     }
                   >

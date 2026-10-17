@@ -1,0 +1,776 @@
+{
+  "_note": "Službeni prosjeci ocjena po visokim učilištima (Pravilnik NN 68/2023, čl. 11). Generirano iz PDF-ova studentskih centara.",
+  "centers": {
+    "zagreb": {
+      "academic_year": "2026./2027.",
+      "source_url": "https://www.sczg.unizg.hr/wp-content/uploads/2026/09/Prosjek-ocjena-ucilista-2026_27.pdf",
+      "brucosi": 4.406,
+      "institutions": [
+        {
+          "code": "178",
+          "name": "Agronomski fakultet",
+          "prijediplomski": 3.391,
+          "diplomskiUpis": 3.722,
+          "diplomski": 3.722
+        },
+        {
+          "code": "264",
+          "name": "Akademija dramske umjetnosti",
+          "prijediplomski": 4.447,
+          "diplomskiUpis": 4.782,
+          "diplomski": 4.782
+        },
+        {
+          "code": "260",
+          "name": "Akademija likovnih umjetnosti",
+          "prijediplomski": 4.477,
+          "diplomskiUpis": 4.299,
+          "diplomski": 4.299
+        },
+        {
+          "code": "54",
+          "name": "Arhitektonski fakultet",
+          "prijediplomski": 3.933,
+          "diplomskiUpis": 3.952,
+          "diplomski": 3.952
+        },
+        {
+          "code": "13",
+          "name": "Edukacijsko-rehabilitacijski fakultet",
+          "prijediplomski": 4.237,
+          "diplomskiUpis": 4.197,
+          "diplomski": 4.197
+        },
+        {
+          "code": "342",
+          "name": "EFFECTUS veleučilište",
+          "prijediplomski": 3.346,
+          "diplomskiUpis": null,
+          "diplomski": null
+        },
+        {
+          "code": "67",
+          "name": "Ekonomski fakultet u Zagrebu",
+          "prijediplomski": 3.394,
+          "diplomskiUpis": 3.607,
+          "diplomski": 3.607
+        },
+        {
+          "code": "36",
+          "name": "Fakultet elektrotehnike i računarstva",
+          "prijediplomski": 3.463,
+          "diplomskiUpis": 3.584,
+          "diplomski": 3.584
+        },
+        {
+          "code": "199",
+          "name": "Fakultet filozofije i religijskih znanosti",
+          "prijediplomski": 4.12,
+          "diplomskiUpis": null,
+          "diplomski": null
+        },
+        {
+          "code": "226",
+          "name": "Fakultet hrvatskih studija",
+          "prijediplomski": 4.136,
+          "diplomskiUpis": 4.151,
+          "diplomski": 4.151
+        },
+        {
+          "code": "125",
+          "name": "Fakultet kemijskog inženjerstva i tehnologije",
+          "prijediplomski": 3.733,
+          "diplomskiUpis": 3.62,
+          "diplomski": 3.62
+        },
+        {
+          "code": "15",
+          "name": "Fakultet političkih znanosti",
+          "prijediplomski": 3.793,
+          "diplomskiUpis": 3.894,
+          "diplomski": 3.894
+        },
+        {
+          "code": "135",
+          "name": "Fakultet prometnih znanosti",
+          "prijediplomski": 3.143,
+          "diplomskiUpis": 3.071,
+          "diplomski": 3.071
+        },
+        {
+          "code": "120",
+          "name": "Fakultet strojarstva i brodogradnje",
+          "prijediplomski": 3.356,
+          "diplomskiUpis": 3.535,
+          "diplomski": 3.535
+        },
+        {
+          "code": "68",
+          "name": "Fakultet šumarstva i drvne tehnologije",
+          "prijediplomski": 3.241,
+          "diplomskiUpis": 3.478,
+          "diplomski": 3.478
+        },
+        {
+          "code": "6",
+          "name": "Farmaceutsko-biokemijski fakultet",
+          "prijediplomski": 3.614,
+          "diplomskiUpis": null,
+          "diplomski": null
+        },
+        {
+          "code": "130",
+          "name": "Filozofski fakultet",
+          "prijediplomski": 3.844,
+          "diplomskiUpis": 3.994,
+          "diplomski": 3.994
+        },
+        {
+          "code": "7",
+          "name": "Geodetski fakultet, Zagreb",
+          "prijediplomski": 3.367,
+          "diplomskiUpis": 3.612,
+          "diplomski": 3.612
+        },
+        {
+          "code": "82",
+          "name": "Građevinski fakultet",
+          "prijediplomski": 3.428,
+          "diplomskiUpis": 3.415,
+          "diplomski": 3.415
+        },
+        {
+          "code": "128",
+          "name": "Grafički fakultet, Zagreb",
+          "prijediplomski": 4.004,
+          "diplomskiUpis": 3.852,
+          "diplomski": 3.852
+        },
+        {
+          "code": "331",
+          "name": "Hrvatsko katoličko sveučilište",
+          "prijediplomski": 3.747,
+          "diplomskiUpis": 4.05,
+          "diplomski": 4.05
+        },
+        {
+          "code": "203",
+          "name": "Katolički bogoslovni fakultet",
+          "prijediplomski": 3.684,
+          "diplomskiUpis": 4.407,
+          "diplomski": 4.407
+        },
+        {
+          "code": "34",
+          "name": "Kineziološki fakultet",
+          "prijediplomski": 3.83,
+          "diplomskiUpis": null,
+          "diplomski": null
+        },
+        {
+          "code": "329",
+          "name": "Libertas međunarodno sveučilište",
+          "prijediplomski": 3.778,
+          "diplomskiUpis": 3.96,
+          "diplomski": 3.96
+        },
+        {
+          "code": "108",
+          "name": "Medicinski fakultet",
+          "prijediplomski": 3.858,
+          "diplomskiUpis": 4.4,
+          "diplomski": 4.4
+        },
+        {
+          "code": "204",
+          "name": "MUP, Policijska akademija „Prvi hrvatski redarstvenik” – Veleučilište kriminalistike i javne sigurnosti",
+          "prijediplomski": 3.974,
+          "diplomskiUpis": null,
+          "diplomski": null
+        },
+        {
+          "code": "213",
+          "name": "Muzička akademija",
+          "prijediplomski": 4.489,
+          "diplomskiUpis": null,
+          "diplomski": null
+        },
+        {
+          "code": "301",
+          "name": "Poslovno veleučilište Zagreb",
+          "prijediplomski": 4.335,
+          "diplomskiUpis": null,
+          "diplomski": null
+        },
+        {
+          "code": "66",
+          "name": "Pravni fakultet u Zagrebu",
+          "prijediplomski": 3.553,
+          "diplomskiUpis": 3.748,
+          "diplomski": 3.748
+        },
+        {
+          "code": "58",
+          "name": "Prehrambeno-biotehnološki fakultet",
+          "prijediplomski": 3.556,
+          "diplomskiUpis": 3.728,
+          "diplomski": 3.728
+        },
+        {
+          "code": "119",
+          "name": "Prirodoslovno-matematički fakultet",
+          "prijediplomski": 3.734,
+          "diplomskiUpis": 3.733,
+          "diplomski": 3.733
+        },
+        {
+          "code": "889",
+          "name": "RIT Croatia - Zagreb",
+          "prijediplomski": 4.341,
+          "diplomskiUpis": null,
+          "diplomski": null
+        },
+        {
+          "code": "195",
+          "name": "Rudarsko-geološko-naftni fakultet",
+          "prijediplomski": 3.362,
+          "diplomskiUpis": 3.502,
+          "diplomski": 3.502
+        },
+        {
+          "code": "65",
+          "name": "Stomatološki fakultet",
+          "prijediplomski": 4.143,
+          "diplomskiUpis": null,
+          "diplomski": null
+        },
+        {
+          "code": "321",
+          "name": "Sveučilište Algebra Bernays",
+          "prijediplomski": 3.865,
+          "diplomskiUpis": 4.495,
+          "diplomski": 4.495
+        },
+        {
+          "code": "229",
+          "name": "Sveučilište VERN",
+          "prijediplomski": 4.163,
+          "diplomskiUpis": 4.557,
+          "diplomski": 4.557
+        },
+        {
+          "code": "246",
+          "name": "Tehničko veleučilište u Zagrebu",
+          "prijediplomski": 3.596,
+          "diplomskiUpis": 3.789,
+          "diplomski": 3.789
+        },
+        {
+          "code": "117",
+          "name": "Tekstilno-tehnološki fakultet",
+          "prijediplomski": 3.859,
+          "diplomskiUpis": 4.066,
+          "diplomski": 4.066
+        },
+        {
+          "code": "227",
+          "name": "Učiteljski fakultet",
+          "prijediplomski": 3.999,
+          "diplomskiUpis": 4.384,
+          "diplomski": 4.384
+        },
+        {
+          "code": "257",
+          "name": "Veleučilište studija sigurnosti",
+          "prijediplomski": 3.111,
+          "diplomskiUpis": 3.222,
+          "diplomski": 3.222
+        },
+        {
+          "code": "1245",
+          "name": "Veleučilište suvremenih informacijskih tehnologija",
+          "prijediplomski": 3.88,
+          "diplomskiUpis": 3.8,
+          "diplomski": 3.8
+        },
+        {
+          "code": "268",
+          "name": "Veleučilište Velika Gorica",
+          "prijediplomski": 4.141,
+          "diplomskiUpis": 3.338,
+          "diplomski": 3.338
+        },
+        {
+          "code": "53",
+          "name": "Veterinarski fakultet, Zagreb",
+          "prijediplomski": 3.876,
+          "diplomskiUpis": null,
+          "diplomski": null
+        },
+        {
+          "code": "333",
+          "name": "Visoka škola za menadžment i dizajn Aspira",
+          "prijediplomski": 4.155,
+          "diplomskiUpis": null,
+          "diplomski": null
+        },
+        {
+          "code": "255",
+          "name": "Zagrebačka škola ekonomije i managementa, Zagreb",
+          "prijediplomski": 3.33,
+          "diplomskiUpis": null,
+          "diplomski": null
+        },
+        {
+          "code": "217",
+          "name": "Zdravstveno veleučilište",
+          "prijediplomski": 4.003,
+          "diplomskiUpis": 4.119,
+          "diplomski": 4.119
+        }
+      ]
+    },
+    "split": {
+      "academic_year": "2026./2027.",
+      "source_url": "https://www.scst.unist.hr/images/documents/2236/Prosjek%20ocjena%20po%20visokom%20uc%CC%8Cilis%CC%8Ctima,%20akad.2026.-27.pdf",
+      "brucosi": 4.215,
+      "ukupno": {
+        "prijediplomski": 3.503,
+        "diplomskiUpis": 3.612,
+        "diplomski": 3.888
+      },
+      "institutions": [
+        {
+          "code": "11205",
+          "name": "Aspira – visoka škola za menadžment",
+          "prijediplomski": 3.667,
+          "diplomskiUpis": 4.457,
+          "diplomski": 4.7
+        },
+        {
+          "code": "13",
+          "name": "Edukacijsko-rehabilitacijski fakultet",
+          "prijediplomski": 4.123,
+          "diplomskiUpis": null,
+          "diplomski": null
+        },
+        {
+          "code": "55",
+          "name": "Ekonomski fakultet",
+          "prijediplomski": 3.165,
+          "diplomskiUpis": 3.444,
+          "diplomski": 3.622
+        },
+        {
+          "code": "23",
+          "name": "Fakultet elektrotehnike, strojarstva i brodogradnje",
+          "prijediplomski": 3.246,
+          "diplomskiUpis": 3.48,
+          "diplomski": 3.702
+        },
+        {
+          "code": "83",
+          "name": "Fakultet građevinarstva, arhitekture i geodezije",
+          "prijediplomski": 3.331,
+          "diplomskiUpis": 3.65,
+          "diplomski": 3.749
+        },
+        {
+          "code": "340",
+          "name": "Fakultet za forenzičke znanosti",
+          "prijediplomski": 3.49,
+          "diplomskiUpis": 3.895,
+          "diplomski": 4.029
+        },
+        {
+          "code": "346",
+          "name": "Fakultet zdravstvenih znanosti",
+          "prijediplomski": 4.077,
+          "diplomskiUpis": 4.048,
+          "diplomski": null
+        },
+        {
+          "code": "11417",
+          "name": "Fakultet zdravstvenih znanosti (šifra 11417)",
+          "prijediplomski": null,
+          "diplomskiUpis": 3.826,
+          "diplomski": null
+        },
+        {
+          "code": "244",
+          "name": "Filozofski fakultet",
+          "prijediplomski": 3.877,
+          "diplomskiUpis": 3.9,
+          "diplomski": 4.336
+        },
+        {
+          "code": "11387",
+          "name": "Hotelijerstvo i gastronomija u Makarskoj",
+          "prijediplomski": 3.677,
+          "diplomskiUpis": 3.552,
+          "diplomski": null
+        },
+        {
+          "code": "2033",
+          "name": "Katolički bogoslovni fakultet",
+          "prijediplomski": 3.764,
+          "diplomskiUpis": null,
+          "diplomski": null
+        },
+        {
+          "code": "11",
+          "name": "Kemijsko-tehnološki fakultet",
+          "prijediplomski": 3.601,
+          "diplomskiUpis": 3.757,
+          "diplomski": 3.797
+        },
+        {
+          "code": "315",
+          "name": "Kineziološki fakultet Split",
+          "prijediplomski": 3.881,
+          "diplomskiUpis": 3.895,
+          "diplomski": 3.994
+        },
+        {
+          "code": "1004",
+          "name": "Komunikacije i mediji",
+          "prijediplomski": 4.377,
+          "diplomskiUpis": 4.199,
+          "diplomski": null
+        },
+        {
+          "code": "63",
+          "name": "Medicinski fakultet Split",
+          "prijediplomski": 3.977,
+          "diplomskiUpis": null,
+          "diplomski": null
+        },
+        {
+          "code": "240",
+          "name": "Mediteranska poljoprivreda",
+          "prijediplomski": 3.47,
+          "diplomskiUpis": 3.5,
+          "diplomski": 3.8
+        },
+        {
+          "code": "171",
+          "name": "Pomorski fakultet u Splitu",
+          "prijediplomski": 3.523,
+          "diplomskiUpis": 3.544,
+          "diplomski": 3.982
+        },
+        {
+          "code": "18",
+          "name": "Pravni fakultet",
+          "prijediplomski": 3.295,
+          "diplomskiUpis": null,
+          "diplomski": null
+        },
+        {
+          "code": "177",
+          "name": "Prirodoslovno-matematički fakultet",
+          "prijediplomski": 3.564,
+          "diplomskiUpis": 3.399,
+          "diplomski": 4.334
+        },
+        {
+          "code": "243",
+          "name": "Sveučilišni odjel za stručne studije",
+          "prijediplomski": 3.103,
+          "diplomskiUpis": 3.481,
+          "diplomski": 3.844
+        },
+        {
+          "code": "245",
+          "name": "Sveučilišni odjel za studije mora",
+          "prijediplomski": 3.188,
+          "diplomskiUpis": 3.317,
+          "diplomski": 4.538
+        },
+        {
+          "code": "215",
+          "name": "Umjetnička akademija",
+          "prijediplomski": 4.256,
+          "diplomskiUpis": 4.442,
+          "diplomski": 4.491
+        }
+      ]
+    },
+    "rijeka": {
+      "academic_year": "2026./2027.",
+      "source_url": "https://scri.uniri.hr/wp-content/uploads/2026/08/Izvjestaj-o-prosjecima-po-ucilistima.pdf",
+      "brucosi": 4.345,
+      "ukupno": {
+        "prijediplomski": 3.788,
+        "diplomskiUpis": 3.84,
+        "diplomski": 4.053
+      },
+      "institutions": [
+        {
+          "code": "287",
+          "name": "Akademija primijenjenih umjetnosti Sveučilišta u Rijeci",
+          "prijediplomski": 4.356,
+          "diplomskiUpis": 4.482,
+          "diplomski": 4.474
+        },
+        {
+          "code": "81",
+          "name": "Ekonomski fakultet",
+          "prijediplomski": 3.129,
+          "diplomskiUpis": 3.494,
+          "diplomski": 3.613
+        },
+        {
+          "code": "335",
+          "name": "Fakultet biotehnologije i razvoja lijekova",
+          "prijediplomski": 4.213,
+          "diplomskiUpis": 4.019,
+          "diplomski": 4.254
+        },
+        {
+          "code": "3543",
+          "name": "Fakultet dentalne medicine",
+          "prijediplomski": 4.173,
+          "diplomskiUpis": null,
+          "diplomski": null
+        },
+        {
+          "code": "318",
+          "name": "Fakultet informatike i digitalnih tehnologija",
+          "prijediplomski": 3.433,
+          "diplomskiUpis": 3.608,
+          "diplomski": 3.81
+        },
+        {
+          "code": "316",
+          "name": "Fakultet za fiziku",
+          "prijediplomski": 4.039,
+          "diplomskiUpis": null,
+          "diplomski": 4.545
+        },
+        {
+          "code": "319",
+          "name": "Fakultet za matematiku",
+          "prijediplomski": 4.054,
+          "diplomskiUpis": 2.571,
+          "diplomski": 4.075
+        },
+        {
+          "code": "116",
+          "name": "Fakultet za menadžment u turizmu i ugostiteljstvu",
+          "prijediplomski": 3.34,
+          "diplomskiUpis": 3.602,
+          "diplomski": 4.387
+        },
+        {
+          "code": "351",
+          "name": "Fakultet zdravstvenih studija",
+          "prijediplomski": 4.153,
+          "diplomskiUpis": 4.169,
+          "diplomski": null
+        },
+        {
+          "code": "9",
+          "name": "Filozofski fakultet",
+          "prijediplomski": 3.953,
+          "diplomskiUpis": 4.122,
+          "diplomski": 4.261
+        },
+        {
+          "code": "114",
+          "name": "Građevinski fakultet",
+          "prijediplomski": 3.397,
+          "diplomskiUpis": 3.577,
+          "diplomski": 3.979
+        },
+        {
+          "code": "62",
+          "name": "Medicinski fakultet",
+          "prijediplomski": 4.105,
+          "diplomskiUpis": null,
+          "diplomski": 3.962
+        },
+        {
+          "code": "112",
+          "name": "Pomorski fakultet",
+          "prijediplomski": 3.486,
+          "diplomskiUpis": 3.635,
+          "diplomski": 3.691
+        },
+        {
+          "code": "115",
+          "name": "Pravni fakultet",
+          "prijediplomski": 3.136,
+          "diplomskiUpis": null,
+          "diplomski": null
+        },
+        {
+          "code": "3541",
+          "name": "Studij logopedije",
+          "prijediplomski": 4.452,
+          "diplomskiUpis": 4.405,
+          "diplomski": 4.617
+        },
+        {
+          "code": "69",
+          "name": "Tehnički fakultet",
+          "prijediplomski": 3.231,
+          "diplomskiUpis": 3.536,
+          "diplomski": 3.707
+        },
+        {
+          "code": "264",
+          "name": "Učiteljski fakultet",
+          "prijediplomski": 3.929,
+          "diplomskiUpis": 4.347,
+          "diplomski": null
+        },
+        {
+          "code": "242",
+          "name": "Veleučilište u Rijeci",
+          "prijediplomski": 3.615,
+          "diplomskiUpis": 3.498,
+          "diplomski": 3.858
+        }
+      ]
+    },
+    "osijek": {
+      "academic_year": "2026./2027.",
+      "source_url": "http://www.stucos.unios.hr/wp-content/uploads/2026/08/Prosjek-ocjena-po-ucilistima.pdf",
+      "brucosi": 4.289,
+      "ukupno": {
+        "prijediplomski": 3.669,
+        "diplomskiUpis": 3.725,
+        "diplomski": 4.143
+      },
+      "institutions": [
+        {
+          "code": "361",
+          "name": "Akademija za umjetnost i kulturu u Osijeku",
+          "prijediplomski": 4.397,
+          "diplomskiUpis": 4.409,
+          "diplomski": 4.753
+        },
+        {
+          "code": "10",
+          "name": "Ekonomski fakultet u Osijeku",
+          "prijediplomski": 3.408,
+          "diplomskiUpis": 3.758,
+          "diplomski": 3.533
+        },
+        {
+          "code": "79",
+          "name": "Fakultet agrobiotehničkih znanosti u Osijeku",
+          "prijediplomski": 3.068,
+          "diplomskiUpis": 3.146,
+          "diplomski": 3.995
+        },
+        {
+          "code": "372",
+          "name": "Fakultet primijenjene matematike i informatike",
+          "prijediplomski": 3.186,
+          "diplomskiUpis": 2.886,
+          "diplomski": 3.261
+        },
+        {
+          "code": "3495",
+          "name": "Fakultet turizma i ruralnog razvoja u Požegi",
+          "prijediplomski": 3.733,
+          "diplomskiUpis": 3.635,
+          "diplomski": null
+        },
+        {
+          "code": "355",
+          "name": "Fakultet za dentalnu medicinu i zdravstvo – Fizioterapija Orahovica",
+          "prijediplomski": 3.754,
+          "diplomskiUpis": null,
+          "diplomski": 4.625
+        },
+        {
+          "code": "356",
+          "name": "Fakultet za dentalnu medicinu i zdravstvo – Sestrinstvo",
+          "prijediplomski": 4.404,
+          "diplomskiUpis": 4.148,
+          "diplomski": 4.881
+        },
+        {
+          "code": "267",
+          "name": "Fakultet za odgojne i obrazovne znanosti Osijek",
+          "prijediplomski": 4.183,
+          "diplomskiUpis": 4.401,
+          "diplomski": 4.567
+        },
+        {
+          "code": "165",
+          "name": "FERIT Osijek",
+          "prijediplomski": 3.269,
+          "diplomskiUpis": 3.503,
+          "diplomski": 3.901
+        },
+        {
+          "code": "122",
+          "name": "Filozofski fakultet Osijek",
+          "prijediplomski": 3.615,
+          "diplomskiUpis": 3.816,
+          "diplomski": 4.372
+        },
+        {
+          "code": "149",
+          "name": "Građevinski i arhitektonski fakultet Osijek",
+          "prijediplomski": 3.444,
+          "diplomskiUpis": 3.549,
+          "diplomski": 3.95
+        },
+        {
+          "code": "368",
+          "name": "Kineziološki fakultet Osijek",
+          "prijediplomski": 3.395,
+          "diplomskiUpis": 3.751,
+          "diplomski": 4.219
+        },
+        {
+          "code": "236",
+          "name": "Medicinski fakultet Osijek",
+          "prijediplomski": 4.113,
+          "diplomskiUpis": 4.18,
+          "diplomski": 4.884
+        },
+        {
+          "code": "285",
+          "name": "Odjel za biologiju Osijek",
+          "prijediplomski": 3.733,
+          "diplomskiUpis": 3.712,
+          "diplomski": 4.628
+        },
+        {
+          "code": "1312",
+          "name": "Odjel za fiziku Osijek",
+          "prijediplomski": 3.592,
+          "diplomskiUpis": 3.098,
+          "diplomski": 4.273
+        },
+        {
+          "code": "291",
+          "name": "Odjel za kemiju Osijek",
+          "prijediplomski": 3.906,
+          "diplomskiUpis": 4.107,
+          "diplomski": 4.881
+        },
+        {
+          "code": "111",
+          "name": "Pravni fakultet u Osijeku",
+          "prijediplomski": 3.841,
+          "diplomskiUpis": 4.226,
+          "diplomski": 4.441
+        },
+        {
+          "code": "113",
+          "name": "Prehrambeno tehnološki fakultet Osijek",
+          "prijediplomski": 3.386,
+          "diplomskiUpis": 3.842,
+          "diplomski": 4.212
+        }
+      ]
+    }
+  }
+}

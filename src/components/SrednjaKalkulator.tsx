@@ -26,10 +26,12 @@ import HeaderDecor, { HeaderHero } from "@/components/header-animations/HeaderDe
 import JuniorNumbersNote from "@/components/junior/JuniorNumbersNote";
 import {
   chanceForProgram,
+  comparablePragAvg,
   computeProgramPoints,
   emptySevenEight,
   loadJuniorGrades,
-  programTypeFromPrag,
+  MAX_DODATNI_BODOVI,
+  programTypeFor,
   saveJuniorGrades,
   scoringProfileFor,
   type SevenEightGrades,
@@ -455,7 +457,7 @@ export default function SrednjaKalkulator() {
       const nextProfile = scoringProfileFor(prog ? { ...prog, schoolName: school.name } : prog);
       if (nextProfile.schoolProgram) setProgram(nextProfile.schoolProgram);
       else if (nextProfile.id === "standard") {
-        const inferred = programTypeFromPrag(prog?.prag ?? null);
+        const inferred = programTypeFor(prog);
         if (inferred) setProgram(inferred);
       }
     }
@@ -473,7 +475,8 @@ export default function SrednjaKalkulator() {
   }, [program, prosjek5, prosjek6, razred7, razred8, dodatniBodovi]);
 
   const counties = useMemo(
-    () => [...new Set(kalkulatorSchools.map((s) => s.county))].sort((a, b) => a.localeCompare(b, "hr")),
+    () =>
+      [...new Set(kalkulatorSchools.map((s) => s.county).filter(Boolean))].sort((a, b) => a.localeCompare(b, "hr")),
     [],
   );
 
@@ -539,7 +542,7 @@ export default function SrednjaKalkulator() {
         return;
       }
       if (nextProfile.id !== "standard") return;
-      const inferred = programTypeFromPrag(prog?.prag ?? null);
+      const inferred = programTypeFor(prog);
       if (inferred) setProgram(inferred);
     }
   };
@@ -649,7 +652,7 @@ export default function SrednjaKalkulator() {
               Odaberi željenu školu i program — prikazat ćemo prošlogodišnji prag bodova s ljetnog upisnog roka.
             </p>
           </div>
-        </div>
+          </div>
 
         {/* Županija: pretraživi dropdown */}
         <div className="mb-4">
@@ -757,7 +760,7 @@ export default function SrednjaKalkulator() {
             {selPrag && selPrag.min != null ? (
               <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-5 sm:gap-3">
                 <PragStat label="Prag (min.)" value={fmt(selPrag.min)} highlight />
-                <PragStat label="Prosječni" value={fmt(selPrag.avg)} />
+                <PragStat label="Prosječni" value={fmt(comparablePragAvg(selPrag))} />
                 <PragStat label="Maksimalni" value={fmt(selPrag.max)} />
                 <PragStat label="Kvota" value={fmt(selPrag.kvota)} />
                 <PragStat label="Upisani" value={fmt(selPrag.upisani)} />
@@ -817,53 +820,53 @@ export default function SrednjaKalkulator() {
           <p className="mt-1 text-sm leading-relaxed text-muted-foreground">{profile.note}</p>
         </section>
       ) : (
-        <section className="mb-5 rounded-2xl border bg-card p-4 shadow-card sm:p-5">
-          <h2 className="mb-3 text-lg font-bold">Tip programa</h2>
-          <div className="flex flex-wrap gap-2">
-            {(Object.keys(PROGRAM_LABELS) as ProgramType[]).map((key) => (
-              <button
-                key={key}
-                type="button"
-                onClick={() => setProgram(key)}
-                className={`rounded-full border px-4 py-2 text-sm font-semibold transition ${
-                  program === key
-                    ? "border-primary bg-primary text-primary-foreground"
-                    : "border-border bg-background text-muted-foreground hover:border-primary/40"
-                }`}
-              >
-                {PROGRAM_LABELS[key]}
-              </button>
-            ))}
-          </div>
+      <section className="mb-5 rounded-2xl border bg-card p-4 shadow-card sm:p-5">
+        <h2 className="mb-3 text-lg font-bold">Tip programa</h2>
+        <div className="flex flex-wrap gap-2">
+          {(Object.keys(PROGRAM_LABELS) as ProgramType[]).map((key) => (
+            <button
+              key={key}
+              type="button"
+              onClick={() => setProgram(key)}
+              className={`rounded-full border px-4 py-2 text-sm font-semibold transition ${
+                program === key
+                  ? "border-primary bg-primary text-primary-foreground"
+                  : "border-border bg-background text-muted-foreground hover:border-primary/40"
+              }`}
+            >
+              {PROGRAM_LABELS[key]}
+            </button>
+          ))}
+        </div>
           {selProgram && (
             <p className="mt-2 text-xs text-muted-foreground">
               Tip programa automatski je postavljen prema odabranom programu — po potrebi ga promijeni.
             </p>
           )}
-        </section>
+      </section>
       )}
 
       {profile.includeSchool && (
         <>
-          <section className="mb-5 rounded-2xl border bg-card p-4 shadow-card sm:p-5">
-            <h2 className="mb-3 text-lg font-bold">5. i 6. razred</h2>
-            <div className="grid gap-4 sm:grid-cols-2">
-              <NumberField label="Ukupan prosjek, 5. razred" value={prosjek5} onChange={setProsjek5} placeholder="npr. 4.85" />
-              <NumberField label="Ukupan prosjek, 6. razred" value={prosjek6} onChange={setProsjek6} placeholder="npr. 4.90" />
-            </div>
-          </section>
+      <section className="mb-5 rounded-2xl border bg-card p-4 shadow-card sm:p-5">
+        <h2 className="mb-3 text-lg font-bold">5. i 6. razred</h2>
+        <div className="grid gap-4 sm:grid-cols-2">
+          <NumberField label="Ukupan prosjek, 5. razred" value={prosjek5} onChange={setProsjek5} placeholder="npr. 4.85" />
+          <NumberField label="Ukupan prosjek, 6. razred" value={prosjek6} onChange={setProsjek6} placeholder="npr. 4.90" />
+        </div>
+      </section>
 
-          <RazredCard
-            naslov="7. razred"
-            podaci={razred7}
-            onChange={updateSeven}
+      <RazredCard
+        naslov="7. razred"
+        podaci={razred7}
+        onChange={updateSeven}
             pokaziKljucne={schoolKind !== "kraci"}
             pokaziPosebne={schoolKind === "gimnazija4"}
-          />
-          <RazredCard
-            naslov="8. razred"
-            podaci={razred8}
-            onChange={updateEight}
+      />
+      <RazredCard
+        naslov="8. razred"
+        podaci={razred8}
+        onChange={updateEight}
             pokaziKljucne={schoolKind !== "kraci"}
             pokaziPosebne={schoolKind === "gimnazija4"}
           />
@@ -894,9 +897,17 @@ export default function SrednjaKalkulator() {
         <p className="mb-3 text-sm leading-relaxed text-muted-foreground">
           {profile.id === "sport"
             ? "Natjecanja u znanju i druga posebna postignuća, osim sportske uspješnosti s rang-liste."
-            : "Natjecanja i druga posebna postignuća unose se ručno kao ukupni dodatni bodovi."}
+            : "Natjecanja i druga posebna postignuća unose se ručno kao ukupni dodatni bodovi."}{" "}
+          Boduje se jedno natjecanje (do 4 boda) i provjera posebnih znanja ako je škola provodi (do 10), ukupno najviše{" "}
+          {MAX_DODATNI_BODOVI}.
         </p>
-        <NumberField label="Dodatni bodovi" value={dodatniBodovi} onChange={setDodatniBodovi} placeholder="0" max={30} />
+        <NumberField
+          label="Dodatni bodovi"
+          value={dodatniBodovi}
+          onChange={setDodatniBodovi}
+          placeholder="0"
+          max={MAX_DODATNI_BODOVI}
+        />
       </section>
 
       <div className="mb-5 flex items-center justify-between gap-3 rounded-2xl border bg-card px-4 py-3 shadow-card">
@@ -933,13 +944,13 @@ export default function SrednjaKalkulator() {
             <h2 className="mb-3 text-base font-bold">Od čega se sastoji</h2>
             {rezultat.includeSchool && (
               <>
-                <ResultRow label="Opći uspjeh (5.-8. razred)" value={`${rezultat.opciUspjeh.toFixed(2)} / 20`} />
+          <ResultRow label="Opći uspjeh (5.-8. razred)" value={`${rezultat.opciUspjeh.toFixed(2)} / 20`} />
                 {(schoolKind === "gimnazija4" || schoolKind === "trogodisnji") && (
-                  <ResultRow label="Hrvatski, Matematika, Strani jezik (7.-8.)" value={`${rezultat.kljucniPredmeti.toFixed(2)} / 30`} />
-                )}
+            <ResultRow label="Hrvatski, Matematika, Strani jezik (7.-8.)" value={`${rezultat.kljucniPredmeti.toFixed(2)} / 30`} />
+          )}
                 {schoolKind === "gimnazija4" && (
-                  <ResultRow label="Predmeti značajni za upis (7.-8.)" value={`${rezultat.posebniPredmeti.toFixed(2)} / 30`} />
-                )}
+            <ResultRow label="Predmeti značajni za upis (7.-8.)" value={`${rezultat.posebniPredmeti.toFixed(2)} / 30`} />
+          )}
               </>
             )}
             {rezultat.extras.map((extra) => (
@@ -949,7 +960,7 @@ export default function SrednjaKalkulator() {
                 value={extra.entered ? `${extra.points.toFixed(2)} / ${extra.max}` : `— / ${extra.max}`}
               />
             ))}
-            <ResultRow label="Dodatni bodovi" value={rezultat.dodatni.toFixed(2)} />
+          <ResultRow label="Dodatni bodovi" value={rezultat.dodatni.toFixed(2)} />
           </div>
         </section>
       )}
@@ -984,19 +995,19 @@ export default function SrednjaKalkulator() {
           <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
             <div className="flex items-start gap-3">
               <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-background text-foreground shadow-sm">
-                <Trophy className="h-5 w-5" />
-              </div>
+            <Trophy className="h-5 w-5" />
+          </div>
               <div className="min-w-0">
                 <h2 className="text-lg font-bold">Tvoje šanse za upis</h2>
                 <p className="mt-0.5 text-sm text-muted-foreground">
                   {selProgram.name} · {selSchool.name}, {selSchool.city}
-                </p>
-              </div>
+            </p>
+          </div>
             </div>
             <span className={`rounded-full px-4 py-1.5 text-sm font-bold shadow-sm ${CHANCE_TONE[chance.tone].badge}`}>
               {chance.label}
             </span>
-          </div>
+        </div>
 
           <div className="grid gap-3 sm:grid-cols-3">
             <div className="rounded-2xl bg-background p-4 text-center">
@@ -1019,7 +1030,7 @@ export default function SrednjaKalkulator() {
                 {rezultat.ukupno >= selPrag.min ? "+" : ""}
                 {(rezultat.ukupno - selPrag.min).toFixed(2)}
               </p>
-            </div>
+          </div>
           </div>
 
           {/* Vizualna usporedba */}
@@ -1062,7 +1073,7 @@ export default function SrednjaKalkulator() {
             Procjena je informativna — pragovi se svake godine mijenjaju ovisno o interesu i kvoti. Podaci o
             pragovima: srednja.hr (ljetni upisni rok).
           </p>
-        </section>
+      </section>
       )}
 
       {step === 2 && rezultatIzracunat && !selProgram && (

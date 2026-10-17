@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import type { KalkulatorPrag } from "@/data/srednjaKalkulator";
-import { calculatorHref } from "@/lib/juniorPath";
+import { calculatorHref, comparablePragAvg } from "@/lib/juniorPath";
 import {
   durationLabel,
   kindLabel,
@@ -98,7 +98,7 @@ export default function ProgramOpisDialog({
                 [
                   ["Kvota", prag.kvota ?? "—"],
                   ["Prag", fmtScore(prag.min)],
-                  ["Prosjek", fmtScore(prag.avg)],
+                  ["Prosjek", fmtScore(comparablePragAvg(prag))],
                 ] as const
               ).map(([label, value]) => (
                 <div key={label} className="rounded-2xl border border-border/60 bg-muted/30 px-3 py-2.5 text-center">
