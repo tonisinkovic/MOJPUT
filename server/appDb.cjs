@@ -33,26 +33,42 @@ function pgHostLabel(connectionString) {
   }
 }
 
+function isOnRenderHost() {
+  const r = String(process.env.RENDER || "").toLowerCase();
+  if (r === "true" || r === "1") return true;
+  if (String(process.env.RENDER_SERVICE_ID || "").trim()) return true;
+  return String(process.env.RENDER_EXTERNAL_URL || "").includes("onrender.com");
+}
+
 /**
- * sslmode=require u URI-ju + eksplicitni ssl objekt (node-pg često zanemari query param).
- * Supabase Direct (db.*.supabase.co) na Renderu često pada — Session pooler ima IPv4.
+ * Render Postgres: iz web servisa koristi Internal host (dpg-xxx-a), ne External (*.postgres.render.com).
+ * SSL: ne stavljaј gol sslmode=require — noviji node-pg ga tretira kao verify-full i veza puca
+ * s «Connection terminated unexpectedly». Oslanjamo se na ssl: { rejectUnauthorized: false }.
  */
 function normalizePgConnectionString(raw) {
   const trimmed = String(raw || "").trim();
   try {
     const u = new URL(trimmed.replace(/^postgresql:/, "postgres:"));
-    if (u.searchParams.get("sslmode") !== "disable" && !u.searchParams.has("sslmode")) {
-      u.searchParams.set("sslmode", "require");
-    }
     const host = u.hostname.toLowerCase();
+
+    const renderExt = /^(dpg-[a-z0-9]+-a)\.[a-z0-9.-]*render\.com$/i.exec(host);
+    if (renderExt && isOnRenderHost()) {
+      const internal = renderExt[1];
+      console.log(`[config] Render Postgres External → Internal: ${host} → ${internal}`);
+      u.hostname = internal;
+    }
+
     if (/^db\.[a-z0-9]+\.supabase\.co$/i.test(host)) {
       console.warn(
-        "[config] MOJPUT_DATABASE_URL koristi Supabase Direct (%s). Na Renderu to često daje «Connection terminated unexpectedly».",
+        "[config] MOJPUT_DATABASE_URL koristi Supabase Direct (%s). Na Renderu to često pada — koristi Session pooler (*.pooler.supabase.com).",
         host,
       );
-      console.warn(
-        "[config] Popravak: Supabase → Connect → Session pooler → zalijepi novi URI u Render Environment (host mora biti *.pooler.supabase.com).",
-      );
+    }
+
+    // Makni sslmode iz URI-ja da ne forsira verify-full; SSL ide preko Pool { ssl }.
+    if (u.searchParams.get("sslmode") !== "disable") {
+      u.searchParams.delete("sslmode");
+      u.searchParams.delete("uselibpqcompat");
     }
     return u.toString().replace(/^postgres:/, "postgresql:");
   } catch {
@@ -92,7 +108,7 @@ async function migratePgWithRetry(pool, connectionString, attempts = 4) {
   }
   const host = pgHostLabel(connectionString);
   console.error(
-    `[config] Postgres nedostupan na ${host}. Provjeri MOJPUT_DATABASE_URL na Renderu (Supabase: Session pooler, ne Direct; Neon: projekt aktivan + ?sslmode=require).`,
+    `[config] Postgres nedostupan na ${host}. Render Postgres: provjeri da je baza Available i da MOJPUT_DATABASE_URL koristi Internal Database URL (host dpg-…-a). Neon/Supabase: aktivan projekt + ispravan URI.`,
   );
   throw lastErr;
 }
