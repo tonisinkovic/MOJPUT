@@ -23,6 +23,43 @@ function isPostgresUrl(url) {
   return /^postgres(ql)?:\/\//i.test(url.trim());
 }
 
+/** Bez lozinke — samo za logove. */
+function pgHostLabel(connectionString) {
+  try {
+    const u = new URL(connectionString.replace(/^postgresql:/, "postgres:"));
+    return `${u.hostname}${u.port ? `:${u.port}` : ""}`;
+  } catch {
+    return "(nevaljan URL)";
+  }
+}
+
+/**
+ * sslmode=require u URI-ju + eksplicitni ssl objekt (node-pg često zanemari query param).
+ * Supabase Direct (db.*.supabase.co) na Renderu često pada — Session pooler ima IPv4.
+ */
+function normalizePgConnectionString(raw) {
+  const trimmed = String(raw || "").trim();
+  try {
+    const u = new URL(trimmed.replace(/^postgresql:/, "postgres:"));
+    if (u.searchParams.get("sslmode") !== "disable" && !u.searchParams.has("sslmode")) {
+      u.searchParams.set("sslmode", "require");
+    }
+    const host = u.hostname.toLowerCase();
+    if (/^db\.[a-z0-9]+\.supabase\.co$/i.test(host)) {
+      console.warn(
+        "[config] MOJPUT_DATABASE_URL koristi Supabase Direct (%s). Na Renderu to često daje «Connection terminated unexpectedly».",
+        host,
+      );
+      console.warn(
+        "[config] Popravak: Supabase → Connect → Session pooler → zalijepi novi URI u Render Environment (host mora biti *.pooler.supabase.com).",
+      );
+    }
+    return u.toString().replace(/^postgres:/, "postgresql:");
+  } catch {
+    return trimmed;
+  }
+}
+
 function pgSslOption(connectionString) {
   try {
     const u = new URL(connectionString.replace(/^postgresql:/, "postgres:"));
@@ -32,6 +69,32 @@ function pgSslOption(connectionString) {
     /* ignore */
   }
   return { rejectUnauthorized: false };
+}
+
+async function sleep(ms) {
+  return new Promise((r) => setTimeout(r, ms));
+}
+
+async function migratePgWithRetry(pool, connectionString, attempts = 4) {
+  let lastErr;
+  for (let i = 1; i <= attempts; i++) {
+    try {
+      await migratePg(pool);
+      return;
+    } catch (err) {
+      lastErr = err;
+      const host = pgHostLabel(connectionString);
+      console.error(
+        `[config] Postgres migrate pokušaj ${i}/${attempts} nije uspio (${host}): ${err?.message || err}`,
+      );
+      if (i < attempts) await sleep(1500 * i);
+    }
+  }
+  const host = pgHostLabel(connectionString);
+  console.error(
+    `[config] Postgres nedostupan na ${host}. Provjeri MOJPUT_DATABASE_URL na Renderu (Supabase: Session pooler, ne Direct; Neon: projekt aktivan + ?sslmode=require).`,
+  );
+  throw lastErr;
 }
 
 function getChatDayKey() {
@@ -750,10 +813,14 @@ function createSqliteDriver(dbPath) {
 }
 
 function createPgDriver(connectionString) {
-  const ssl = pgSslOption(connectionString);
+  const normalized = normalizePgConnectionString(connectionString);
+  const ssl = pgSslOption(normalized);
+  console.log("[config] Postgres host:", pgHostLabel(normalized));
   const pool = new Pool({
-    connectionString,
+    connectionString: normalized,
     max: 10,
+    connectionTimeoutMillis: 15_000,
+    keepAlive: true,
     ...(ssl ? { ssl } : {}),
   });
 
@@ -761,7 +828,7 @@ function createPgDriver(connectionString) {
     isPostgres: true,
     pool,
     async migrate() {
-      await migratePg(pool);
+      await migratePgWithRetry(pool, normalized);
     },
     async get(sql, ...params) {
       const text = toPgSql(sql);
