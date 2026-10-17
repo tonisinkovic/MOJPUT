@@ -134,10 +134,12 @@ export function answerJuniorFromBase(question: string): string {
     if (!next && upcoming.length === 0) {
       return "U kalendaru trenutno nemam sljedeći upisni rok. Provjeri službeni natječaj na stranici škole ili ministarstva.";
     }
-    const lines = (upcoming.length ? upcoming : next ? [next] : []).map(
-      (e) => `- ${formatEventDate(e)}: ${e.title}`,
-    );
-    return `Upisni rokovi iz našeg kalendara (2026.):\n${listLines(lines)}\n\nTočan datum za tvoju školu uvijek potvrdi na službenoj stranici — kalendar je orijentacija.`;
+    const shown = upcoming.length ? upcoming : next ? [next] : [];
+    const lines = shown.map((e) => `${formatEventDate(e)}: ${e.title}${e.estimated ? " (okvirno)" : ""}`);
+    const estimatedNote = shown.some((e) => e.estimated)
+      ? " Datumi označeni kao okvirni prema prošlogodišnjem rasporedu; službeni izlaze u proljeće."
+      : "";
+    return `Upisni rokovi iz našeg kalendara:\n${listLines(lines)}\n\nTočan datum za tvoju školu uvijek potvrdi na službenoj stranici — kalendar je orijentacija.${estimatedNote}`;
   }
 
   const named = findSchoolByName(q);

@@ -1339,3 +1339,187 @@
     border-radius: 4px 0 0 0;
   }
 }
+
+
+/* ---------- MojPut Junior početna (jh-*) ---------- */
+:root {
+  --jh-teal: 174 62% 42%;
+  --jh-violet: 248 85% 66%;
+  --jh-coral: 14 90% 62%;
+  --jh-amber: 38 92% 54%;
+  --jh-sky: 210 88% 58%;
+  --jh-rose: 343 80% 60%;
+  --jh-teal-t: 174 66% 29%;
+  --jh-violet-t: 248 65% 52%;
+  --jh-coral-t: 14 72% 46%;
+  --jh-amber-t: 34 85% 34%;
+  --jh-sky-t: 210 78% 42%;
+  --jh-rose-t: 343 66% 46%;
+  --jh-ink: 220 45% 16%;
+}
+
+.dark {
+  --jh-teal-t: 174 62% 62%;
+  --jh-violet-t: 248 90% 80%;
+  --jh-coral-t: 14 92% 72%;
+  --jh-amber-t: 38 92% 66%;
+  --jh-sky-t: 210 92% 72%;
+  --jh-rose-t: 343 88% 74%;
+  --jh-ink: 210 30% 94%;
+}
+
+@keyframes jh-shine {
+  0% { transform: translateX(-160%) skewX(-20deg); }
+  55%, 100% { transform: translateX(520%) skewX(-20deg); }
+}
+
+@keyframes jh-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-9px); }
+}
+
+@keyframes jh-blob {
+  0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+  50% { transform: translate3d(30px, -24px, 0) scale(1.08); }
+}
+
+@keyframes jh-ring {
+  0% { transform: scale(0.6); opacity: 0.9; }
+  100% { transform: scale(2.4); opacity: 0; }
+}
+
+@keyframes jh-dash {
+  to { stroke-dashoffset: -48; }
+}
+
+@keyframes jh-dot {
+  0%, 80%, 100% { transform: translateY(0); opacity: 0.4; }
+  40% { transform: translateY(-4px); opacity: 1; }
+}
+
+.jh-shine::after {
+  content: "";
+  position: absolute;
+  top: -20px;
+  bottom: -20px;
+  left: 0;
+  width: 70px;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.55), transparent);
+  animation: jh-shine 3.6s ease-in-out infinite;
+  pointer-events: none;
+}
+
+.jh-float { animation: jh-float 5.5s ease-in-out infinite; }
+.jh-blob { animation: jh-blob 14s ease-in-out infinite; }
+.jh-ring { animation: jh-ring 2.2s ease-out infinite; }
+.jh-dash { animation: jh-dash 2.4s linear infinite; }
+.jh-dot { animation: jh-dot 1.2s ease-in-out infinite; }
+
+@media (prefers-reduced-motion: reduce) {
+  .jh-shine::after, .jh-float, .jh-blob, .jh-ring, .jh-dash, .jh-dot { animation: none !important; }
+}
+
+/* ---------- MojPut Senior pocetna (sr-*) : "Ponoc i zlato" ---------- */
+:root {
+  --sr-night: 232 52% 7%;
+  --sr-night-2: 232 44% 12%;
+  --sr-indigo: 236 86% 67%;
+  --sr-cyan: 190 94% 50%;
+  --sr-gold: 43 98% 58%;
+  --sr-fuchsia: 292 78% 62%;
+  --sr-emerald: 158 68% 42%;
+  --sr-rose: 350 86% 62%;
+  --sr-indigo-t: 236 62% 50%;
+  --sr-cyan-t: 192 92% 31%;
+  --sr-gold-t: 32 92% 30%;
+  --sr-fuchsia-t: 292 62% 46%;
+  --sr-emerald-t: 158 72% 28%;
+  --sr-rose-t: 350 70% 46%;
+  --sr-ink: 232 40% 14%;
+}
+
+.dark {
+  --sr-indigo-t: 236 100% 80%;
+  --sr-cyan-t: 190 94% 66%;
+  --sr-gold-t: 43 98% 66%;
+  --sr-fuchsia-t: 292 88% 78%;
+  --sr-emerald-t: 158 68% 62%;
+  --sr-rose-t: 350 90% 76%;
+  --sr-ink: 220 30% 94%;
+}
+
+@keyframes sr-orbit { to { transform: rotate(360deg); } }
+@keyframes sr-orbit-rev { to { transform: rotate(-360deg); } }
+@keyframes sr-marquee { to { transform: translateX(-50%); } }
+@keyframes sr-pulse {
+  0%, 100% { opacity: 0.55; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.08); }
+}
+@keyframes sr-twinkle {
+  0%, 100% { opacity: 0.15; }
+  50% { opacity: 0.9; }
+}
+@keyframes sr-scan {
+  0% { transform: translateY(-120%); }
+  100% { transform: translateY(520%); }
+}
+@keyframes sr-sheen {
+  0% { transform: translateX(-140%) skewX(-18deg); }
+  60%, 100% { transform: translateX(520%) skewX(-18deg); }
+}
+
+.sr-orbit { animation: sr-orbit 60s linear infinite; }
+.sr-orbit-rev { animation: sr-orbit-rev 60s linear infinite; }
+.sr-marquee { animation: sr-marquee 46s linear infinite; }
+.sr-marquee:hover { animation-play-state: paused; }
+.sr-pulse { animation: sr-pulse 3.4s ease-in-out infinite; }
+.sr-twinkle { animation: sr-twinkle 3.2s ease-in-out infinite; }
+.sr-scan { animation: sr-scan 4.8s ease-in-out infinite; }
+
+/* Blueprint mreza: tanke linije kao na crtezu */
+.sr-grid {
+  background-image:
+    linear-gradient(hsl(var(--sr-indigo) / 0.13) 1px, transparent 1px),
+    linear-gradient(90deg, hsl(var(--sr-indigo) / 0.13) 1px, transparent 1px);
+  background-size: 44px 44px;
+}
+.sr-grid-fine {
+  background-image:
+    linear-gradient(hsl(var(--sr-indigo) / 0.07) 1px, transparent 1px),
+    linear-gradient(90deg, hsl(var(--sr-indigo) / 0.07) 1px, transparent 1px);
+  background-size: 28px 28px;
+}
+
+/* Gradijentni okvir 1px (indigo -> cijan -> zlato) */
+.sr-edge {
+  position: relative;
+}
+.sr-edge::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  padding: 1px;
+  border-radius: inherit;
+  background: linear-gradient(135deg, hsl(var(--sr-indigo) / 0.7), hsl(var(--sr-cyan) / 0.25) 45%, hsl(var(--sr-gold) / 0.6));
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
+  mask-composite: exclude;
+  pointer-events: none;
+}
+
+.sr-sheen::after {
+  content: "";
+  position: absolute;
+  top: -20px;
+  bottom: -20px;
+  left: 0;
+  width: 64px;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.5), transparent);
+  animation: sr-sheen 4.2s ease-in-out infinite;
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sr-orbit, .sr-orbit-rev, .sr-marquee, .sr-pulse, .sr-twinkle, .sr-scan, .sr-sheen::after { animation: none !important; }
+}
