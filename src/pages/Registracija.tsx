@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import Layout from "@/components/Layout";
 import {
@@ -24,13 +24,16 @@ import {
   Loader2,
   type LucideIcon,
 } from "lucide-react";
-import { authRegister, authResendVerification } from "@/lib/auth";
+import { authGoogle, authRegister, authResendVerification, userFromAuthMe } from "@/lib/auth";
+import GoogleSignInButton from "@/components/GoogleSignInButton";
 import { setStoredLastLoginEmail, warmupApiHealth } from "@/lib/api";
 import { trackEvent } from "@/lib/analytics";
 import { storePreferredExperience } from "@/lib/experience";
 import { cn } from "@/lib/utils";
 
 const Registracija = () => {
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [verifyInfo, setVerifyInfo] = useState<{
     emailPreviewUrl?: string;
   } | null>(null);
@@ -56,6 +59,7 @@ const Registracija = () => {
   const [showConfirmPw, setShowConfirmPw] = useState(false);
   const [hasInteracted, setHasInteracted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [googleSubmitting, setGoogleSubmitting] = useState(false);
   const [ageConfirmed, setAgeConfirmed] = useState(false);
 
   React.useEffect(() => {
@@ -87,6 +91,56 @@ const Registracija = () => {
       window.removeEventListener("pagehide", onAbandon);
     };
   }, [hasInteracted, submitted]);
+
+  const handleGoogleCredential = async (credential: string) => {
+    setError("");
+    setErrorKind(null);
+    setExistingEmail("");
+    if (!ageConfirmed) {
+      setError("Potvrdi da imaš 16 ili više godina ili pristanak roditelja odnosno skrbnika.");
+      return;
+    }
+    const username = `${formData.firstName} ${formData.lastName}`.trim();
+    trackEvent("sign_up_started", {
+      method: "google",
+      page_path: window.location.pathname,
+    });
+    setGoogleSubmitting(true);
+    let res;
+    try {
+      res = await authGoogle(credential, {
+        username: username || undefined,
+        user_type: formData.status || "srednjoskolac",
+      });
+    } finally {
+      setGoogleSubmitting(false);
+    }
+    if (!res.success) {
+      setError(res.message || "Registracija putem Googlea nije uspjela.");
+      return;
+    }
+    const user = userFromAuthMe(res);
+    if (!user) {
+      setError("Server je odgovorio bez podataka o korisniku. Osvježi stranicu i pokušaj ponovno.");
+      return;
+    }
+    if (formData.experience === "junior" || formData.experience === "senior") {
+      storePreferredExperience(formData.experience, user.email);
+    }
+    const created = Boolean((res as { created?: boolean }).created);
+    trackEvent(created ? "sign_up_completed" : "login_completed", {
+      method: "google",
+      page_path: window.location.pathname,
+    });
+    const nextPath = searchParams.get("next");
+    if (user.user_type === "skola" || user.school) {
+      navigate("/skola/dashboard");
+    } else if (nextPath && nextPath.startsWith("/") && !nextPath.startsWith("//")) {
+      navigate(nextPath);
+    } else {
+      navigate("/");
+    }
+  };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!hasInteracted) setHasInteracted(true);
@@ -349,13 +403,48 @@ const Registracija = () => {
                         Otvori besplatan račun
                       </h2>
                       <p className="text-[13px] text-muted-foreground mt-0.5">
-                        Nekoliko detalja i spremno je.
+                        Gmailom odmah, ili ispuni obrazac ispod.
                       </p>
                     </div>
                     <div className="shrink-0 flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br from-primary/20 to-primary/5 text-primary ring-1 ring-primary/20 shadow-inner">
                       <User className="h-[1.15rem] w-[1.15rem]" />
                     </div>
                   </div>
+
+                  <label className="mb-4 flex cursor-pointer items-start gap-2.5 rounded-xl border border-border bg-muted/30 px-3.5 py-3 text-[13px] leading-snug text-foreground">
+                    <input
+                      type="checkbox"
+                      checked={ageConfirmed}
+                      onChange={(e) => setAgeConfirmed(e.target.checked)}
+                      className="mt-0.5 h-4 w-4 shrink-0 accent-[hsl(var(--primary))]"
+                    />
+                    <span>
+                      Imam 16 ili više godina ili imam pristanak roditelja odnosno skrbnika za izradu računa.
+                    </span>
+                  </label>
+
+                  <p className="mb-3 text-[13px] leading-snug text-muted-foreground">
+                    Postojeći Gmail otvara račun bez koda iz maila. Ako je taj email već registriran, poveže se s
+                    njim. Nakon toga ostaješ prijavljen/a na ovom uređaju.
+                  </p>
+                  <GoogleSignInButton
+                    text="signup_with"
+                    disabled={!ageConfirmed || googleSubmitting || submitting}
+                    busy={googleSubmitting}
+                    onCredential={handleGoogleCredential}
+                    onError={setError}
+                  />
+                  {error && !errorKind ? (
+                    <div
+                      className="mb-4 flex items-start gap-2.5 rounded-xl border border-destructive/30 bg-destructive/5 px-3.5 py-2.5 text-[13px] font-medium text-destructive"
+                      role="alert"
+                    >
+                      <span className="mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-destructive/15 text-[10px] font-bold">
+                        !
+                      </span>
+                      <span>{error}</span>
+                    </div>
+                  ) : null}
 
                   <form onSubmit={handleSubmit} className="space-y-5">
                     {/* Ime / Prezime */}
@@ -658,20 +747,6 @@ const Registracija = () => {
                       </div>
                     </div>
 
-                    {error && !errorKind && (
-                      <motion.div
-                        initial={{ opacity: 0, y: -6 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        className="flex items-start gap-2.5 rounded-xl border border-destructive/30 bg-destructive/5 px-3.5 py-2.5 text-[13px] font-medium text-destructive"
-                        role="alert"
-                      >
-                        <span className="mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-destructive/15 text-destructive text-[10px] font-bold">
-                          !
-                        </span>
-                        <span>{error}</span>
-                      </motion.div>
-                    )}
-
                     {errorKind === "email_already_registered" && (
                       <motion.div
                         initial={{ opacity: 0, y: -6 }}
@@ -764,19 +839,6 @@ const Registracija = () => {
                         </div>
                       </motion.div>
                     )}
-
-                    <label className="flex cursor-pointer items-start gap-2.5 rounded-xl border border-border bg-muted/30 px-3.5 py-3 text-[13px] leading-snug text-foreground">
-                      <input
-                        type="checkbox"
-                        checked={ageConfirmed}
-                        onChange={(e) => setAgeConfirmed(e.target.checked)}
-                        className="mt-0.5 h-4 w-4 shrink-0 accent-[hsl(var(--primary))]"
-                        required
-                      />
-                      <span>
-                        Imam 16 ili više godina ili imam pristanak roditelja odnosno skrbnika za izradu računa.
-                      </span>
-                    </label>
 
                     <button
                       type="submit"

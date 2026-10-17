@@ -13,13 +13,16 @@
         ad_personalization: 'denied'
       });
       gtag('js', new Date());
+      var host = location.hostname;
+      var analyticsOn = host !== 'localhost' && host !== '127.0.0.1';
       try {
-        if (localStorage.getItem('mojput_analytics_consent') === 'granted') {
-          gtag('consent', 'update', { analytics_storage: 'granted' });
-          gtag('config', 'G-9N7061Q2JN', { send_page_view: true });
-          window.__mojputGaConfigured = true;
-        }
+        if (localStorage.getItem('mojput_analytics_consent') === 'denied') analyticsOn = false;
       } catch (e) {}
+      if (analyticsOn) {
+        gtag('consent', 'update', { analytics_storage: 'granted' });
+        gtag('config', 'G-9N7061Q2JN', { send_page_view: true });
+        window.__mojputGaConfigured = true;
+      }
     </script>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/png" sizes="32x32" href="%BASE_URL%favicon.png?v=3" />

@@ -3,6 +3,7 @@ import {
   ANALYTICS_CONSENT_EVENT,
   ANALYTICS_CONSENT_KEY,
   getAnalyticsConsent,
+  isAnalyticsCollectionEnabled,
   setAnalyticsConsent,
   trackEvent,
 } from "./analytics";
@@ -36,9 +37,19 @@ describe("analytics consent", () => {
     window.removeEventListener(ANALYTICS_CONSENT_EVENT, listener);
   });
 
-  it("ne šalje evente bez pristanka", () => {
+  it("broji posjet dok osoba ne isključi analitiku", () => {
+    expect(isAnalyticsCollectionEnabled()).toBe(true);
+    setAnalyticsConsent("granted");
+    expect(isAnalyticsCollectionEnabled()).toBe(true);
+    setAnalyticsConsent("denied");
+    expect(isAnalyticsCollectionEnabled()).toBe(false);
+  });
+
+  it("ne šalje evente kad je analitika isključena", () => {
     const gtag = vi.fn();
     window.gtag = gtag;
+    setAnalyticsConsent("denied");
+    gtag.mockClear();
     trackEvent("quiz_started");
     expect(gtag).not.toHaveBeenCalled();
   });

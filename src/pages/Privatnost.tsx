@@ -9,7 +9,7 @@ const PRIVACY_EMAIL = "mojputhr@gmail.com";
 
 const AnalyticsConsentControl = () => {
   const [consent, setConsent] = useState(getAnalyticsConsent);
-  const granted = consent === "granted";
+  const granted = consent !== "denied";
   const toggle = () => {
     const next = granted ? "denied" : "granted";
     setAnalyticsConsent(next);
@@ -165,8 +165,9 @@ const Privatnost = () => {
             </ul>
             <p>
               Analitiku obrađuje Google Ireland Limited / Google LLC (Google Analytics 4). Oglase ne koristimo.
-              Analitički kolačići su zadano isključeni i uključuju se tek kad ih prihvatiš u banneru. Nužni kolačići
-              (prijava, postavke) rade bez obzira na tvoj izbor.
+              Analitika je uključena za svaki posjet, da se vidi koliko je ljudi na stranici i koliko ih je trenutno.
+              Oglasi se ne prikazuju. Možeš je isključiti ovdje. Nužni kolačići (prijava, postavke) rade bez obzira
+              na taj izbor.
             </p>
             <AnalyticsConsentControl />
           </SectionBlock>

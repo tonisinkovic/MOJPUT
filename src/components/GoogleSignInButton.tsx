@@ -11,8 +11,11 @@ type GoogleAccountsId = {
     auto_select?: boolean;
     cancel_on_tap_outside?: boolean;
     ux_mode?: "popup" | "redirect";
+    context?: "signin" | "signup" | "use";
+    itp_support?: boolean;
   }) => void;
   renderButton: (parent: HTMLElement, options: Record<string, unknown>) => void;
+  prompt: (momentListener?: (notification: { isNotDisplayed: () => boolean; isSkippedMoment: () => boolean }) => void) => void;
 };
 
 declare global {
@@ -48,12 +51,23 @@ function loadGoogleScript(): Promise<void> {
 
 type Props = {
   disabled?: boolean;
+  busy?: boolean;
+  text?: "continue_with" | "signup_with" | "signin_with";
+  /** Vrati prijavu bez novog klika ako je ovaj preglednik već potvrdio taj Google račun. */
+  autoSelect?: boolean;
   onCredential: (credential: string) => void;
   onError: (message: string) => void;
 };
 
 /** Službeni gumb „Nastavi s Googleom”. Sakriven dok API ne vrati GOOGLE_CLIENT_ID. */
-export default function GoogleSignInButton({ disabled, onCredential, onError }: Props) {
+export default function GoogleSignInButton({
+  disabled,
+  busy,
+  text = "continue_with",
+  autoSelect = false,
+  onCredential,
+  onError,
+}: Props) {
   const hostRef = useRef<HTMLDivElement>(null);
   const onCredentialRef = useRef(onCredential);
   const onErrorRef = useRef(onError);
@@ -98,8 +112,10 @@ export default function GoogleSignInButton({ disabled, onCredential, onError }: 
         host.innerHTML = "";
         gis.initialize({
           client_id: clientId,
-          auto_select: false,
+          auto_select: autoSelect,
           cancel_on_tap_outside: true,
+          context: text === "signup_with" ? "signup" : "signin",
+          itp_support: true,
           ux_mode: "popup",
           callback: (response) => {
             const credential = String(response?.credential || "").trim();
@@ -115,13 +131,19 @@ export default function GoogleSignInButton({ disabled, onCredential, onError }: 
           type: "standard",
           theme: "outline",
           size: "large",
-          text: "continue_with",
+          text,
           shape: "pill",
           logo_alignment: "left",
           width,
           locale: "hr",
         });
-        setPhase("ready");
+        if (autoSelect && typeof gis.prompt === "function") {
+          try {
+            gis.prompt();
+          } catch {
+            /* gumb i dalje radi ako One Tap nije dostupan */
+          }
+        }
       })
       .catch(() => {
         if (cancelled) return;
@@ -131,9 +153,20 @@ export default function GoogleSignInButton({ disabled, onCredential, onError }: 
     return () => {
       cancelled = true;
     };
-  }, [clientId, phase]);
+  }, [autoSelect, clientId, phase, text]);
 
-  if (phase === "off") return null;
+  if (phase === "off") {
+    if (import.meta.env.DEV) {
+      return (
+        <p className="mb-4 rounded-xl border border-border/70 bg-muted/40 px-3.5 py-2.5 text-[12.5px] leading-snug text-muted-foreground">
+          Google prijava čeka <span className="font-semibold text-foreground">GOOGLE_CLIENT_ID</span> u .env.
+          To je Web client iz Google Clouda, s originom http://localhost:8080 te https://mojput.com i
+          https://www.mojput.com. Nakon toga restartaj API.
+        </p>
+      );
+    }
+    return null;
+  }
   if (phase === "loading") {
     return <div className="mb-4 h-11 w-full animate-pulse rounded-full bg-muted/70" aria-hidden />;
   }
@@ -143,7 +176,7 @@ export default function GoogleSignInButton({ disabled, onCredential, onError }: 
     <div className="mb-4 space-y-4">
       <div className={disabled ? "pointer-events-none opacity-60" : undefined}>
         <div ref={hostRef} className="flex min-h-11 w-full justify-center [&>div]:w-full" />
-        {disabled ? (
+        {busy ? (
           <p className="mt-2 flex items-center justify-center gap-2 text-[12.5px] font-medium text-muted-foreground">
             <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden />
             Povezujem Google račun…

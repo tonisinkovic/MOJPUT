@@ -449,6 +449,8 @@ const Prijava = () => {
 
                 <GoogleSignInButton
                   disabled={googleSubmitting || loginSubmitting}
+                  busy={googleSubmitting}
+                  autoSelect
                   onCredential={handleGoogleCredential}
                   onError={setLoginError}
                 />

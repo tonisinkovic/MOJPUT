@@ -91,8 +91,13 @@ export async function authGoogleClientId(): Promise<string | null> {
 
 export async function authGoogle(
   credential: string,
-): Promise<ApiResponse<{ user: AuthUser; token?: string }>> {
-  const res = await apiPost<{ user: AuthUser; token?: string }>("/api/auth/google", { credential });
+  extra?: { user_type?: string; username?: string },
+): Promise<ApiResponse<{ user: AuthUser; token?: string; created?: boolean }>> {
+  const res = await apiPost<{ user: AuthUser; token?: string; created?: boolean }>("/api/auth/google", {
+    credential,
+    user_type: extra?.user_type,
+    username: extra?.username,
+  });
   rememberAuthResponse(res);
   return res;
 }

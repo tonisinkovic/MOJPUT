@@ -9,7 +9,6 @@ import { startJuniorCloudSync } from "@/lib/juniorCloud";
 import Index from "./pages/Index";
 import ScrollToTop from "./components/ScrollToTop";
 import PwaInstallPrompt from "./components/PwaInstallPrompt";
-import CookieConsentBanner from "./components/CookieConsentBanner";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { trackPageView } from "./lib/analytics";
 
@@ -113,7 +112,6 @@ const App = () => (
       <PwaInstallPrompt />
       <BrowserRouter basename={routerBasename}>
         <ScrollToTop />
-        <CookieConsentBanner />
         <AnalyticsPageTracker />
         <ApiWarmup />
         <JuniorCloudSync />

@@ -839,7 +839,7 @@ async function verifyGoogleIdToken(credential, clientId) {
   return { email, sub, name: String(data.name || data.given_name || "").trim() };
 }
 
-async function issueUserSession(db, req, res, userId) {
+async function issueUserSession(db, req, res, userId, extra) {
   await db.prepare("UPDATE users SET last_login_at = datetime('now') WHERE id = ?").run(userId);
   const fresh = await db
     .prepare(
@@ -855,7 +855,7 @@ async function issueUserSession(db, req, res, userId) {
   }
   const token = signToken({ sub: user.id });
   setAuthCookie(res, token, req);
-  return res.json({ success: true, user, token });
+  return res.json({ success: true, user, token, ...(extra && typeof extra === "object" ? extra : {}) });
 }
 
 function escapeHtml(s) {
@@ -1826,6 +1826,7 @@ async function main() {
         });
       }
 
+      let created = false;
       let row = await db.prepare("SELECT id FROM users WHERE google_sub = ?").get(profile.sub);
       if (!row) {
         const byEmail = await db
@@ -1847,14 +1848,17 @@ async function main() {
 
       if (!row) {
         const passwordHash = bcrypt.hashSync(crypto.randomBytes(32).toString("hex"), 12);
-        const username = displayNameFromGoogle(profile.name, profile.email);
+        const requestedName = String(req.body?.username || "").trim();
+        const username = displayNameFromGoogle(requestedName || profile.name, profile.email);
+        const userType = normalizeUserType(req.body?.user_type);
         try {
           const info = await db
             .prepare(
-              "INSERT INTO users (username, email, password_hash, email_verified, user_type, google_sub) VALUES (?, ?, ?, 1, 'srednjoskolac', ?)",
+              "INSERT INTO users (username, email, password_hash, email_verified, user_type, google_sub) VALUES (?, ?, ?, 1, ?, ?)",
             )
-            .run(username, profile.email, passwordHash, profile.sub);
+            .run(username, profile.email, passwordHash, userType, profile.sub);
           row = { id: Number(info.lastInsertRowid) };
+          created = true;
         } catch (err) {
           if (!isUniqueViolation(err)) throw err;
           const again = await db
@@ -1869,7 +1873,7 @@ async function main() {
         return res.status(500).json({ success: false, message: "Račun nije moguće otvoriti." });
       }
       await db.prepare("DELETE FROM pending_registrations WHERE email = ?").run(profile.email);
-      return issueUserSession(db, req, res, row.id);
+      return issueUserSession(db, req, res, row.id, { created });
     } catch (err) {
       console.error("[auth/google]", err?.message || err);
       return res.status(500).json({ success: false, message: "Interna greška servera." });

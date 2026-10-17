@@ -55,8 +55,9 @@ export function getAnalyticsConsent(): AnalyticsConsent | null {
   }
 }
 
-function hasConsent(): boolean {
-  return getAnalyticsConsent() === "granted";
+/** Uključeno za svaki posjet, osim ako je osoba to isključila na stranici Privatnost. */
+export function isAnalyticsCollectionEnabled(): boolean {
+  return getAnalyticsConsent() !== "denied";
 }
 
 export function setAnalyticsConsent(consent: AnalyticsConsent): void {
@@ -87,7 +88,7 @@ function normalizeParams(params: AnalyticsParams = {}): Record<string, string | 
 }
 
 export function initAnalytics(): void {
-  if (gaInitialized || !measurementId || isLocalHost() || !hasConsent()) return;
+  if (gaInitialized || !measurementId || isLocalHost() || !isAnalyticsCollectionEnabled()) return;
 
   window.dataLayer = window.dataLayer || [];
   if (typeof window.gtag !== "function") {
@@ -122,7 +123,7 @@ export function initAnalytics(): void {
 }
 
 export function trackEvent(eventName: AnalyticsEventName, params: AnalyticsParams = {}): void {
-  if (!measurementId || isLocalHost() || !hasConsent()) return;
+  if (!measurementId || isLocalHost() || !isAnalyticsCollectionEnabled()) return;
   if (!gaInitialized) initAnalytics();
   if (typeof window.gtag !== "function") return;
 
