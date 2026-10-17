@@ -22,6 +22,7 @@ import {
   RefreshCw,
   ExternalLink,
   Loader2,
+  type LucideIcon,
 } from "lucide-react";
 import { authRegister, authResendVerification } from "@/lib/auth";
 import { setStoredLastLoginEmail, warmupApiHealth } from "@/lib/api";
@@ -55,6 +56,7 @@ const Registracija = () => {
   const [showConfirmPw, setShowConfirmPw] = useState(false);
   const [hasInteracted, setHasInteracted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [ageConfirmed, setAgeConfirmed] = useState(false);
 
   React.useEffect(() => {
     warmupApiHealth(true);
@@ -102,6 +104,10 @@ const Registracija = () => {
     setExistingEmail("");
     if (formData.password !== formData.confirmPassword) {
       setError("Lozinke se ne poklapaju.");
+      return;
+    }
+    if (!ageConfirmed) {
+      setError("Potvrdi da imaš 16 ili više godina ili pristanak roditelja odnosno skrbnika.");
       return;
     }
 
@@ -196,7 +202,7 @@ const Registracija = () => {
   const statusOptions: {
     value: string;
     label: string;
-    icon: React.ComponentType<{ className?: string; strokeWidth?: number }>;
+    icon: LucideIcon;
   }[] = [
     { value: "srednjoskolac", label: "Srednjoškolac", icon: BookOpen },
     { value: "student", label: "Student", icon: GraduationCap },
@@ -758,6 +764,19 @@ const Registracija = () => {
                         </div>
                       </motion.div>
                     )}
+
+                    <label className="flex cursor-pointer items-start gap-2.5 rounded-xl border border-border bg-muted/30 px-3.5 py-3 text-[13px] leading-snug text-foreground">
+                      <input
+                        type="checkbox"
+                        checked={ageConfirmed}
+                        onChange={(e) => setAgeConfirmed(e.target.checked)}
+                        className="mt-0.5 h-4 w-4 shrink-0 accent-[hsl(var(--primary))]"
+                        required
+                      />
+                      <span>
+                        Imam 16 ili više godina ili imam pristanak roditelja odnosno skrbnika za izradu računa.
+                      </span>
+                    </label>
 
                     <button
                       type="submit"

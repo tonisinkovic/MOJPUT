@@ -1,4 +1,5 @@
 import Layout from "@/components/Layout";
+import PageSeo from "@/components/seo/PageSeo";
 import { motion, AnimatePresence } from "framer-motion";
 import { useCallback, useMemo, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -300,6 +301,7 @@ export default function KalkulatorDoma() {
 
   return (
     <Layout>
+      <PageSeo title="Kalkulator bodova za studentski dom – MojPut" description="Procijeni bodove za studentski dom u Zagrebu, Splitu, Rijeci i Osijeku prema kriterijima natječaja." />
       <div className="mx-auto max-w-lg px-4 pb-10 pt-6 md:max-w-3xl md:pt-10 [padding-bottom:max(2.5rem,env(safe-area-inset-bottom))]">
         {/* Back button */}
         <button

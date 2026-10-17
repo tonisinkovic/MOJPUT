@@ -1,138 +1,19 @@
 import Layout from "@/components/Layout";
+import PageSeo from "@/components/seo/PageSeo";
 import { getStoredExperience, onExperienceChange, type MojPutExperienceMode } from "@/lib/experience";
 import { motion } from "framer-motion";
 import { ArrowLeft, Bell, CalendarDays, ChevronLeft, ChevronRight, ListChecks, Sparkles } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
+import {
+  isArchivedEvent,
+  juniorEvents,
+  schoolCalendarEvents,
+  seniorEvents,
+  type CalendarEvent,
+} from "@/data/calendarEvents";
 
-type CalendarEvent = {
-  year: number;
-  month: number;
-  day: number;
-  title: string;
-  type: string;
-  urgent: boolean;
-};
-
-const seniorEvents: CalendarEvent[] = [
-  // --- Rokovi prijava (prema slici: kalendar mature i upisa 2025./2026.) ---
-  { year: 2025, month: 11, day: 1, title: "Početak prijava ispita mature", type: "Rok", urgent: true },
-  { year: 2026, month: 1, day: 1, title: "Početak prijava studija", type: "Upisi", urgent: true },
-  { year: 2026, month: 1, day: 15, title: "Kraj prijava ispita mature", type: "Rok", urgent: true },
-  { year: 2026, month: 3, day: 27, title: "Orijentacijske rang-liste upisa na studije", type: "Upisi", urgent: false },
-  { year: 2026, month: 4, day: 22, title: "Kraj nastave za maturante i norijada", type: "Rok", urgent: false },
-
-  // --- Ljetni rok ispita (lipanj 2026) ---
-  { year: 2026, month: 5, day: 3, title: "Biologija (9h) • Geografija (14h)", type: "Ispit", urgent: false },
-  { year: 2026, month: 5, day: 9, title: "Njemački jezik (9h) • Filozofija (14h)", type: "Ispit", urgent: false },
-  { year: 2026, month: 5, day: 10, title: "Talijanski jezik (9h) • Likovna umjetnost (14h)", type: "Ispit", urgent: false },
-  { year: 2026, month: 5, day: 15, title: "Hrvatski jezik – test + sažetak (9h)", type: "Ispit", urgent: true },
-  { year: 2026, month: 5, day: 16, title: "Hrvatski jezik – esej (9h)", type: "Ispit", urgent: true },
-  { year: 2026, month: 5, day: 17, title: "Politika i gospodarstvo (9h) • Povijest (14h)", type: "Ispit", urgent: false },
-  { year: 2026, month: 5, day: 18, title: "Fizika (9h) • Logika (14h)", type: "Ispit", urgent: false },
-  { year: 2026, month: 5, day: 19, title: "Engleski jezik – viša razina (9h)", type: "Ispit", urgent: true },
-  { year: 2026, month: 5, day: 23, title: "Psihologija (9h) • Informatika (14h)", type: "Ispit", urgent: false },
-  { year: 2026, month: 5, day: 24, title: "Kemija (9h) • Sociologija (14h)", type: "Ispit", urgent: false },
-  { year: 2026, month: 5, day: 25, title: "Matematika – viša i osnovna (9h)", type: "Ispit", urgent: true },
-  { year: 2026, month: 5, day: 26, title: "Glazbena umjetnost (9h) • Etika (14h) • Vjeronauk (14h)", type: "Ispit", urgent: false },
-
-  // --- Srpanj 2026 (Postani student, rezultati, upisi) ---
-  { year: 2026, month: 6, day: 1, title: "Kraj registracija u sustavu Postani student (stariji kandidati)", type: "Upisi", urgent: false },
-  { year: 2026, month: 6, day: 8, title: "Privremeni rezultati mature • privremene rang-liste upisa na studije", type: "Rezultati", urgent: false },
-  { year: 2026, month: 6, day: 10, title: "Rok za prigovore na rezultate mature", type: "Rok", urgent: true },
-  {
-    year: 2026,
-    month: 6,
-    day: 15,
-    title:
-      "Konačni rezultati mature • rok za prijavu i odjavu studija (do 13:59) • konačne liste upisa na studije (iza 15h)",
-    type: "Rezultati",
-    urgent: true,
-  },
-
-  // ═══════════════════════════════════════════════════════════════════════════
-  // DRŽAVNA MATURA 2026./2027. (prema NCVVO)
-  // ═══════════════════════════════════════════════════════════════════════════
-
-  // --- Prijave ispita mature 2026./2027. ---
-  { year: 2026, month: 11, day: 1, title: "Početak prijava ispita mature 2027.", type: "Rok", urgent: true },
-  { year: 2027, month: 1, day: 15, title: "Kraj prijava ispita mature 2027.", type: "Rok", urgent: true },
-
-  // --- Ljetni ispitni rok 2027. (1. – 25. lipnja) ---
-  { year: 2027, month: 5, day: 1, title: "Početak provedbe ispita – ljetni rok", type: "Ispit", urgent: true },
-  { year: 2027, month: 5, day: 16, title: "Hrvatski jezik – test + sažetak (9h)", type: "Ispit", urgent: true },
-  { year: 2027, month: 5, day: 17, title: "Hrvatski jezik – esej (9h)", type: "Ispit", urgent: true },
-  { year: 2027, month: 5, day: 25, title: "Završetak provedbe ispita – ljetni rok", type: "Ispit", urgent: false },
-  { year: 2027, month: 6, day: 7, title: "Objava privremenih rezultata mature", type: "Rezultati", urgent: true },
-  { year: 2027, month: 6, day: 9, title: "Rok za prigovore na rezultate mature", type: "Rok", urgent: true },
-  { year: 2027, month: 6, day: 14, title: "Konačni rezultati mature • izdavanje svjedodžbi", type: "Rezultati", urgent: true },
-  { year: 2027, month: 6, day: 16, title: "Podjela svjedodžbi u školama", type: "Rezultati", urgent: false },
-
-  // --- Prijave jesenskog roka 2027. ---
-  { year: 2027, month: 6, day: 17, title: "Početak prijava – jesenski rok (17. – 26. 7.)", type: "Rok", urgent: true },
-  { year: 2027, month: 6, day: 26, title: "Kraj prijava – jesenski rok", type: "Rok", urgent: true },
-
-  // --- Jesenski ispitni rok 2027. (od 18. kolovoza) ---
-  { year: 2027, month: 7, day: 18, title: "Početak provedbe ispita – jesenski rok", type: "Ispit", urgent: true },
-  { year: 2027, month: 7, day: 25, title: "Hrvatski jezik – esej • Glazbena umjetnost", type: "Ispit", urgent: true },
-  { year: 2027, month: 7, day: 26, title: "Kemija • Psihologija", type: "Ispit", urgent: false },
-  { year: 2027, month: 7, day: 27, title: "Fizika • Likovna umjetnost", type: "Ispit", urgent: false },
-  { year: 2027, month: 7, day: 30, title: "Matematika – viša i osnovna razina", type: "Ispit", urgent: true },
-  { year: 2027, month: 7, day: 31, title: "Biologija • Povijest", type: "Ispit", urgent: false },
-  { year: 2027, month: 8, day: 1, title: "Informatika • Politika i gospodarstvo", type: "Ispit", urgent: false },
-  { year: 2027, month: 8, day: 8, title: "Objava privremenih rezultata – jesenski rok", type: "Rezultati", urgent: true },
-  { year: 2027, month: 8, day: 10, title: "Rok za prigovore – jesenski rok", type: "Rok", urgent: true },
-  { year: 2027, month: 8, day: 15, title: "Objava konačnih rezultata – jesenski rok", type: "Rezultati", urgent: true },
-  { year: 2027, month: 8, day: 16, title: "Podjela svjedodžbi – jesenski rok", type: "Rezultati", urgent: false },
-];
-
-const juniorEvents: CalendarEvent[] = [
-  // --- Ljetni upisni rok 2026 ---
-  { year: 2026, month: 5, day: 6, title: "Počinju prijave u sustav", type: "Upisi", urgent: true },
-  { year: 2026, month: 5, day: 24, title: "Prijava obrazovnih programa (24. 6. – 3. 7.)", type: "Upisi", urgent: true },
-  { year: 2026, month: 5, day: 24, title: "Programi koji imaju dodatne provjere (24. 6. – 26. 6.)", type: "Upisi", urgent: false },
-  { year: 2026, month: 5, day: 24, title: "Dostava dokumentacije za dodatna prava / HZZ (24. 6. – 1. 7.)", type: "Rok", urgent: false },
-  { year: 2026, month: 5, day: 29, title: "Dodatni ispiti i provjere (29. 6. – 2. 7.)", type: "Ispit", urgent: false },
-  { year: 2026, month: 6, day: 2, title: "Brisanje kandidata koji nisu zadovoljili preduvjete", type: "Rok", urgent: true },
-  { year: 2026, month: 6, day: 3, title: "Rok za prigovore", type: "Rok", urgent: true },
-  { year: 2026, month: 6, day: 7, title: "Objava konačnih ljestvica", type: "Rezultati", urgent: true },
-  { year: 2026, month: 6, day: 7, title: "Dostava upisnice i potrebnih liječničkih dokumenata (7. – 9. 7.)", type: "Upisi", urgent: true },
-  { year: 2026, month: 7, day: 10, title: "Objava slobodnih mjesta za jesenski rok", type: "Rezultati", urgent: false },
-
-  // --- Jesenski upisni rok 2026 ---
-  { year: 2026, month: 7, day: 24, title: "Prijava obrazovnih programa (24. – 28. 8.)", type: "Upisi", urgent: true },
-  { year: 2026, month: 7, day: 24, title: "Programi s dodatnim provjerama (24. – 26. 8.)", type: "Upisi", urgent: false },
-  { year: 2026, month: 7, day: 24, title: "Dostava dokumentacije (24. – 27. 8.)", type: "Rok", urgent: false },
-  { year: 2026, month: 7, day: 27, title: "Dodatne provjere", type: "Ispit", urgent: false },
-  { year: 2026, month: 7, day: 28, title: "Brisanje kandidata koji ne zadovoljavaju preduvjete", type: "Rok", urgent: true },
-  { year: 2026, month: 7, day: 28, title: "Prigovori", type: "Rok", urgent: true },
-  { year: 2026, month: 7, day: 31, title: "Objava konačnih ljestvica", type: "Rezultati", urgent: true },
-  { year: 2026, month: 7, day: 31, title: "Dostava upisnica i potrebne dokumentacije (31. 8. – 2. 9.)", type: "Upisi", urgent: true },
-  { year: 2026, month: 8, day: 3, title: "Objava slobodnih mjesta nakon jesenskog roka", type: "Rezultati", urgent: false },
-
-  // --- Naknadni upisni rok 2026 ---
-  { year: 2026, month: 8, day: 3, title: "Naknadni upisni rok (3. – 30. 9., samo gdje ostane slobodnih mjesta)", type: "Upisi", urgent: true },
-  { year: 2026, month: 8, day: 30, title: "Naknadni upisni rok – završetak", type: "Upisi", urgent: true },
-
-  // --- Školski kalendar 2026./2027. ---
-  { year: 2026, month: 8, day: 7, title: "Početak nastave", type: "Škola", urgent: true },
-  { year: 2026, month: 10, day: 1, title: "Svi sveti — neradni dan", type: "Praznik", urgent: false },
-  { year: 2026, month: 10, day: 18, title: "Dan sjećanja", type: "Praznik", urgent: false },
-  { year: 2026, month: 11, day: 24, title: "Početak zimskih praznika", type: "Praznik", urgent: true },
-  { year: 2026, month: 11, day: 25, title: "Božić", type: "Praznik", urgent: false },
-  { year: 2026, month: 11, day: 26, title: "Sv. Stjepan", type: "Praznik", urgent: false },
-  { year: 2027, month: 0, day: 1, title: "Nova godina", type: "Praznik", urgent: false },
-  { year: 2027, month: 0, day: 6, title: "Sveta tri kralja — kraj zimskih praznika", type: "Praznik", urgent: true },
-  { year: 2027, month: 1, day: 20, title: "Drugi dio zimskih praznika (20. – 28. 2.)", type: "Praznik", urgent: true },
-  { year: 2027, month: 2, day: 25, title: "Proljetni praznici (25. 3. – 4. 4.)", type: "Praznik", urgent: true },
-  { year: 2027, month: 2, day: 28, title: "Uskrs", type: "Praznik", urgent: false },
-  { year: 2027, month: 2, day: 29, title: "Uskrsni ponedjeljak", type: "Praznik", urgent: false },
-  { year: 2027, month: 4, day: 1, title: "Praznik rada", type: "Praznik", urgent: false },
-  { year: 2027, month: 4, day: 21, title: "Kraj nastave za maturante + norijada", type: "Škola", urgent: true },
-  { year: 2027, month: 4, day: 27, title: "Tijelovo", type: "Praznik", urgent: false },
-  { year: 2027, month: 4, day: 30, title: "Dan državnosti", type: "Praznik", urgent: false },
-  { year: 2027, month: 5, day: 15, title: "Zadnji dan nastave", type: "Škola", urgent: true },
-];
+const juniorCalendar = [...juniorEvents, ...schoolCalendarEvents];
 
 const croatianMonths = [
   "Siječanj", "Veljača", "Ožujak", "Travanj", "Svibanj", "Lipanj",
@@ -148,6 +29,7 @@ const typeColors: Record<string, string> = {
   Upisi: "bg-orange-50 text-orange-700 border-orange-200",
   Škola: "bg-emerald-50 text-emerald-700 border-emerald-200",
   Praznik: "bg-rose-50 text-rose-700 border-rose-200",
+  Dom: "bg-amber-50 text-amber-800 border-amber-200",
 };
 
 const typeDots: Record<string, string> = {
@@ -158,6 +40,7 @@ const typeDots: Record<string, string> = {
   Upisi: "bg-orange-500",
   Škola: "bg-emerald-500",
   Praznik: "bg-rose-500",
+  Dom: "bg-amber-500",
 };
 
 function getEventBounds(eventList: CalendarEvent[]) {
@@ -209,7 +92,13 @@ const Kalendar = () => {
   }, []);
 
   const isJunior = experience === "junior";
-  const events = isJunior ? juniorEvents : seniorEvents;
+  const [showArchive, setShowArchive] = useState(false);
+  const allEvents = isJunior ? juniorCalendar : seniorEvents;
+  const archivedCount = useMemo(() => allEvents.filter((e) => isArchivedEvent(e)).length, [allEvents]);
+  const events = useMemo(
+    () => (showArchive ? allEvents : allEvents.filter((e) => !isArchivedEvent(e))),
+    [allEvents, showArchive],
+  );
   const bounds = useMemo(() => getEventBounds(events), [events]);
 
   const [year, setYear] = useState(() => getInitialMonthYear(getEventBounds(seniorEvents)).year);
@@ -220,6 +109,8 @@ const Kalendar = () => {
     setYear(clamped.year);
     setMonth(clamped.month);
   }, [experience, bounds]);
+
+  const hasEstimated = events.some((e) => e.estimated);
 
   const { minYear, minMonth, maxYear, maxMonth } = bounds;
 
@@ -300,8 +191,8 @@ const Kalendar = () => {
 
   const heroBadge = isJunior ? "Upisi · rokovi · ljestvice" : "Matura · upisi · rokovi";
   const heroSubtitle = isJunior
-    ? "Ljetni, jesenski i naknadni upisni rok 2026."
-    : "Svi rokovi za maturu, prijave i upise";
+    ? "Upisni rokovi u srednje škole i školski kalendar 2026./2027."
+    : "Prijave i upisi na studije, rang-liste, natječaji za studentske domove i matura — 2026./2027.";
   const listTitle = isJunior ? (
     <>
       <span className="text-gradient">Upisni</span> rokovi
@@ -314,6 +205,7 @@ const Kalendar = () => {
 
   return (
     <Layout>
+      <PageSeo title="Kalendar upisa – rokovi za fakultete, srednje škole i domove | MojPut" description="Rokovi prijava, rang-liste, upisi i natječaji za studentske domove na jednom mjestu. Okvirni datumi su jasno označeni, uz poveznicu na službeni izvor." />
       <section className="container py-12 max-w-6xl">
         {/* Back button */}
         <button
@@ -365,6 +257,24 @@ const Kalendar = () => {
                     {type}
                   </span>
                 ))}
+              </div>
+
+              <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-muted-foreground">
+                {hasEstimated && (
+                  <span>
+                    <span className="font-semibold text-foreground">Okvirno</span> = procjena prema prošloj godini dok
+                    službeni datum nije objavljen. Uvijek provjeri izvor.
+                  </span>
+                )}
+                {archivedCount > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => setShowArchive((v) => !v)}
+                    className="font-semibold text-primary underline-offset-2 hover:underline"
+                  >
+                    {showArchive ? "Sakrij arhivu prošle godine" : `Prikaži arhivu prošle godine (${archivedCount})`}
+                  </button>
+                )}
               </div>
             </div>
           </div>
@@ -507,8 +417,28 @@ const Kalendar = () => {
                                 Hitno
                               </span>
                             )}
+                            {e.estimated && (
+                              <span className="inline-flex items-center rounded-full border border-current/25 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide opacity-80">
+                                Okvirno
+                              </span>
+                            )}
+                            {isArchivedEvent(e) && (
+                              <span className="inline-flex items-center rounded-full border border-current/25 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide opacity-60">
+                                Arhiva
+                              </span>
+                            )}
                           </div>
                           <p className="leading-snug text-sm sm:text-[15px]">{e.title}</p>
+                          {e.source && (
+                            <a
+                              href={e.source.url}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="mt-0.5 inline-block text-xs font-normal underline-offset-2 opacity-80 hover:underline"
+                            >
+                              Izvor: {e.source.label}
+                            </a>
+                          )}
                         </div>
                         <button
                           onClick={() => toggleReminder(e)}

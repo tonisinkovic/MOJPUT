@@ -1,4 +1,5 @@
 import Layout from "@/components/Layout";
+import PageSeo from "@/components/seo/PageSeo";
 import { motion } from "framer-motion";
 import CareerQuizFlow from "@/components/career-quiz/CareerQuizFlow";
 import { ArrowLeft } from "lucide-react";
@@ -6,6 +7,7 @@ import { ArrowLeft } from "lucide-react";
 const Kviz = () => {
   return (
     <Layout>
+      <PageSeo title="Kviz: koji fakultet upisati? – MojPut" description="Besplatan kviz interesa s preporukom područja studija, fakulteta u tvom gradu i poveznicom na kalkulator bodova." />
       <section className="relative mx-auto min-h-[70vh] max-w-5xl px-3 pb-10 pt-6 sm:px-4 sm:pb-12 sm:pt-8 md:py-14 md:pb-16 [padding-bottom:max(2.5rem,env(safe-area-inset-bottom))]">
         {/* Back button */}
         <button

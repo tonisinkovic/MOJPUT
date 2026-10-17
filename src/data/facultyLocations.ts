@@ -206,7 +206,11 @@ function hashJitter(id: string, scale: number): { dLat: number; dLng: number } {
   return { dLat: r1 * scale, dLng: r2 * scale };
 }
 
-export type FacultyWithGeo = FacultyInstitution & FacultyGeo;
+export type FacultyWithGeo = FacultyInstitution &
+  FacultyGeo & {
+    /** True kad je marker samo oko središta grada, a ne na adresi ustanove. */
+    approximate: boolean;
+  };
 
 /** Vrati fakultet s (približnim) koordinatama; null ako grad nije poznat. */
 export function withFacultyGeo(f: FacultyInstitution): FacultyWithGeo | null {
@@ -219,11 +223,11 @@ export function withFacultyGeo(f: FacultyInstitution): FacultyWithGeo | null {
   if (known) {
     // Sitni pomak i za poznate — kombinirane ustanove dijele lokaciju
     const { dLat, dLng } = hashJitter(f.id, 0.0012);
-    return { ...f, lat: known.lat + dLat, lng: known.lng + dLng };
+    return { ...f, lat: known.lat + dLat, lng: known.lng + dLng, approximate: false };
   }
 
   const city = CITY_COORDS[cityLower];
   if (!city) return null;
   const { dLat, dLng } = hashJitter(f.id, 0.009);
-  return { ...f, lat: city.lat + dLat, lng: city.lng + dLng };
+  return { ...f, lat: city.lat + dLat, lng: city.lng + dLng, approximate: true };
 }

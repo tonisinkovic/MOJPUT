@@ -310,6 +310,11 @@ export default function FacultyMap({
                       <div className="mt-0.5 flex items-center gap-1 text-xs text-muted-foreground">
                         <MapPin className="h-3 w-3" />
                         {faculty.city}
+                        {faculty.approximate && (
+                          <span className="text-[10px] italic" title="Marker je u središtu grada, ne na adresi ustanove">
+                            · približna lokacija
+                          </span>
+                        )}
                       </div>
                     </div>
                   </div>

@@ -68,7 +68,7 @@ export default function JuniorSchoolRow({
       return;
     }
     const res = addToShortlist(item);
-    if (res.ok) {
+    if (!("reason" in res)) {
       toast.success("Spremljeno u moje škole.");
       return;
     }

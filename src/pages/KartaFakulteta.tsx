@@ -1,9 +1,11 @@
 import Layout from "@/components/Layout";
+import PageSeo from "@/components/seo/PageSeo";
 import { motion } from "framer-motion";
 import {
   ArrowLeft,
   BookOpen,
   Building2,
+  Calculator,
   ChevronDown,
   ChevronUp,
   ExternalLink,
@@ -50,6 +52,9 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
+import { Link } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+import { facultyCatalog } from "@/lib/facultyCatalog";
 
 const faculties: FacultyWithGeo[] = facultyInstitutions
   .map(withFacultyGeo)
@@ -182,6 +187,15 @@ const KartaFakulteta = () => {
     [detailFacultyId],
   );
 
+  const detailProfileId = useMemo(() => {
+    if (!detailFaculty) return null;
+    const name = detailFaculty.name.trim().toLowerCase();
+    const city = detailFaculty.city.trim().toLowerCase();
+    return (
+      facultyCatalog.find((f) => f.name.toLowerCase() === name && f.city.toLowerCase() === city)?.id ?? null
+    );
+  }, [detailFaculty]);
+
   const detailPrograms = useMemo(() => {
     if (!detailFaculty) return [];
     return detailFaculty.programs
@@ -202,6 +216,7 @@ const KartaFakulteta = () => {
 
   return (
     <Layout>
+      <PageSeo title="Karta fakulteta i veleučilišta u Hrvatskoj – MojPut" description="Fakulteti, akademije, veleučilišta i sveučilišni odjeli na karti, s popisom studijskih programa i pragovima bodova." />
       <section className="container max-w-7xl mx-auto px-3 sm:px-4 py-4 sm:py-8 md:py-12 pb-[max(1.5rem,env(safe-area-inset-bottom))]">
         {/* Back button */}
         <button
@@ -817,6 +832,11 @@ const KartaFakulteta = () => {
                   <div className="min-w-0 flex-1">
                     <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">Lokacija</p>
                     <p className="text-sm font-medium text-foreground">{detailFaculty.city}</p>
+                    {detailFaculty.approximate && (
+                      <p className="text-xs text-muted-foreground">
+                        Približna lokacija — marker je u središtu grada, ne na adresi ustanove.
+                      </p>
+                    )}
                     <a
                       href={mapsUrl(detailFaculty)}
                         target="_blank"
@@ -854,6 +874,20 @@ const KartaFakulteta = () => {
                   </ul>
                   )}
                   </div>
+
+                <div className="flex flex-wrap gap-2 pt-1">
+                  {detailProfileId && (
+                    <Button asChild size="sm" className="rounded-lg">
+                      <Link to={`/fakulteti/${detailProfileId}`}>Profil fakulteta</Link>
+                    </Button>
+                  )}
+                  <Button asChild size="sm" variant="outline" className="rounded-lg">
+                    <Link to={`/kalkulator-fakulteti?q=${encodeURIComponent(detailFaculty.name.toLowerCase())}`}>
+                      <Calculator className="mr-1 h-3.5 w-3.5" />
+                      Izračunaj bodove
+                    </Link>
+                  </Button>
+                </div>
                   </div>
             </>
         )}

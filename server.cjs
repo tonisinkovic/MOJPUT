@@ -25,6 +25,7 @@ const crypto = require("crypto");
 const nodemailer = require("nodemailer");
 const { createAppDb, finalizePendingRegistration, seedForum } = require(path.join(__dirname, "server", "appDb.cjs"));
 const { registerSchoolCms, enrichUserWithSchool } = require(path.join(__dirname, "server", "schoolCms.cjs"));
+const forumModeration = require(path.join(__dirname, "server", "forumModeration.cjs"));
 const { fromZonedTime, toZonedTime } = require("date-fns-tz");
 const { addDays, startOfDay } = require("date-fns");
 
@@ -2448,11 +2449,25 @@ async function main() {
     const category = normalizeForumCategory(categoryRaw);
     if (!cleanTitle) return res.status(400).json({ success: false, message: "Unesi naziv razgovora!" });
 
+    const titleCheck = forumModeration.checkForumText(cleanTitle);
+    const descCheck = forumModeration.checkForumText(cleanDescription);
+    if (!titleCheck.ok || !descCheck.ok) {
+      return res.status(422).json({ success: false, code: "FORUM_BLOCKED", message: (titleCheck.ok ? descCheck : titleCheck).reason });
+    }
+    const convLimit = forumModeration.conversationLimiter.hit(`u${req.user.id}`);
+    if (!convLimit.ok) {
+      return res.status(429).json({
+        success: false,
+        code: "FORUM_RATE_LIMIT",
+        message: `Otvaraš teme prebrzo. Pokušaj ponovno za ${convLimit.retryAfterSec} s.`,
+      });
+    }
+
     const info = await db
       .prepare(
         "INSERT INTO forum_conversations (title, description, creator_user_id, audience, category) VALUES (?, ?, ?, ?, ?)",
       )
-      .run(cleanTitle, cleanDescription, req.user.id, audience, category);
+      .run(titleCheck.text, descCheck.text, req.user.id, audience, category);
 
     const conv = await db
       .prepare(
@@ -2479,10 +2494,11 @@ async function main() {
         `
         SELECT
           m.id,
-          CASE WHEN m.deleted_by_user_at IS NOT NULL THEN '' ELSE m.text END as text,
+          CASE WHEN m.deleted_by_user_at IS NOT NULL OR m.hidden_at IS NOT NULL THEN '' ELSE m.text END as text,
           m.created_at,
           m.reply_to_id,
           m.deleted_by_user_at,
+          CASE WHEN m.hidden_at IS NOT NULL THEN 1 ELSE 0 END as hidden,
           u.id as user_id,
           u.username,
           (SELECT COUNT(*) FROM forum_likes l WHERE l.message_id = m.id) as like_count,
@@ -2490,6 +2506,7 @@ async function main() {
           CASE
             WHEN m.reply_to_id IS NULL THEN NULL
             WHEN parent.deleted_by_user_at IS NOT NULL THEN '(poruka uklonjena od autora)'
+            WHEN parent.hidden_at IS NOT NULL THEN '(poruka skrivena nakon prijava)'
             ELSE SUBSTR(COALESCE(parent.text, ''), 1, 120)
           END as reply_to_snippet
         FROM forum_messages m
@@ -2512,6 +2529,7 @@ async function main() {
       }
       withLiked.push({
         ...r,
+        hidden: Boolean(Number(r.hidden)),
         user_liked: userLiked,
         reply_to_username: r.reply_to_username || null,
         reply_to_snippet: r.reply_to_snippet || null,
@@ -2532,6 +2550,19 @@ async function main() {
     if (!Number.isFinite(convId)) return res.status(400).json({ success: false, message: "Neispravan ID." });
     if (!cleanText) return res.status(400).json({ success: false, message: "Poruka ne može biti prazna." });
 
+    const textCheck = forumModeration.checkForumText(cleanText);
+    if (!textCheck.ok) {
+      return res.status(422).json({ success: false, code: "FORUM_BLOCKED", message: textCheck.reason });
+    }
+    const msgLimit = forumModeration.messageLimiter.hit(`u${req.user.id}`);
+    if (!msgLimit.ok) {
+      return res.status(429).json({
+        success: false,
+        code: "FORUM_RATE_LIMIT",
+        message: `Šalješ poruke prebrzo. Pričekaj ${msgLimit.retryAfterSec} s.`,
+      });
+    }
+
     const conv = await db.prepare("SELECT id FROM forum_conversations WHERE id = ?").get(convId);
     if (!conv) return res.status(404).json({ success: false, message: "Razgovor ne postoji." });
 
@@ -2550,7 +2581,12 @@ async function main() {
       .prepare(
         "INSERT INTO forum_messages (conversation_id, user_id, text, reply_to_id) VALUES (?, ?, ?, ?)",
       )
-      .run(convId, req.user.id, cleanText, replyToId != null && Number.isFinite(replyToId) ? Math.floor(replyToId) : null);
+      .run(
+        convId,
+        req.user.id,
+        textCheck.text,
+        replyToId != null && Number.isFinite(replyToId) ? Math.floor(replyToId) : null,
+      );
 
     const msg = await db
       .prepare(
@@ -2632,6 +2668,87 @@ async function main() {
     const countRow2 = await db.prepare("SELECT COUNT(*) as c FROM forum_likes WHERE message_id = ?").get(msgId);
     const count = Number(countRow2?.c ?? 0);
     return res.json({ success: true, liked: true, like_count: count });
+  });
+
+  /** Prijava poruke; nakon REPORT_HIDE_THRESHOLD različitih prijava poruka se automatski skriva do pregleda. */
+  app.post("/api/forum/messages/:id/report", authMiddleware(db), async (req, res) => {
+    const msgId = Number(req.params.id);
+    if (!Number.isFinite(msgId)) return res.status(400).json({ success: false, message: "Neispravan ID." });
+    const limit = forumModeration.reportLimiter.hit(`u${req.user.id}`);
+    if (!limit.ok) {
+      return res.status(429).json({ success: false, message: "Previše prijava u kratkom vremenu. Pokušaj kasnije." });
+    }
+
+    const msg = await db
+      .prepare("SELECT id, user_id, hidden_at, deleted_by_user_at FROM forum_messages WHERE id = ?")
+      .get(msgId);
+    if (!msg) return res.status(404).json({ success: false, message: "Poruka ne postoji." });
+    if (msg.user_id === req.user.id) {
+      return res.status(400).json({ success: false, message: "Ne možeš prijaviti vlastitu poruku." });
+    }
+
+    const already = await db
+      .prepare("SELECT id FROM forum_reports WHERE message_id = ? AND reporter_user_id = ?")
+      .get(msgId, req.user.id);
+    if (!already) {
+      await db
+        .prepare("INSERT INTO forum_reports (message_id, reporter_user_id, reason) VALUES (?, ?, ?)")
+        .run(msgId, req.user.id, forumModeration.normalizeReportReason(req.body?.reason));
+    }
+
+    const countRow = await db.prepare("SELECT COUNT(*) as c FROM forum_reports WHERE message_id = ?").get(msgId);
+    const reportCount = Number(countRow?.c ?? 0);
+    let hidden = Boolean(msg.hidden_at);
+    if (!hidden && reportCount >= forumModeration.REPORT_HIDE_THRESHOLD) {
+      await db.prepare("UPDATE forum_messages SET hidden_at = datetime('now') WHERE id = ?").run(msgId);
+      hidden = true;
+    }
+    return res.json({ success: true, already: Boolean(already), hidden });
+  });
+
+  app.get("/api/admin/forum/reports", adminMiddleware(db), async (_req, res) => {
+    const rows = await db
+      .prepare(
+        `
+        SELECT m.id as message_id, m.text, m.created_at, m.hidden_at, m.deleted_by_user_at,
+               c.id as conversation_id, c.title as conversation_title, COALESCE(c.audience, 'senior') as audience,
+               u.username as author,
+               COUNT(r.id) as report_count,
+               MAX(r.created_at) as last_report_at
+        FROM forum_reports r
+        JOIN forum_messages m ON m.id = r.message_id
+        JOIN forum_conversations c ON c.id = m.conversation_id
+        JOIN users u ON u.id = m.user_id
+        GROUP BY m.id, m.text, m.created_at, m.hidden_at, m.deleted_by_user_at, c.id, c.title, c.audience, u.username
+        ORDER BY MAX(r.created_at) DESC
+        LIMIT 200
+      `,
+      )
+      .all();
+    const reasons = await db.prepare("SELECT message_id, reason FROM forum_reports").all();
+    const byMessage = new Map();
+    for (const r of reasons) {
+      const list = byMessage.get(r.message_id) || [];
+      list.push(r.reason);
+      byMessage.set(r.message_id, list);
+    }
+    return res.json({
+      success: true,
+      data: rows.map((r) => ({
+        ...r,
+        report_count: Number(r.report_count),
+        reasons: byMessage.get(r.message_id) || [],
+      })),
+    });
+  });
+
+  /** Moderator vraća poruku (lažne prijave) — briše prijave i skida skrivanje. */
+  app.post("/api/admin/forum/messages/:id/restore", adminMiddleware(db), async (req, res) => {
+    const msgId = Number(req.params.id);
+    if (!Number.isFinite(msgId)) return res.status(400).json({ success: false, message: "Neispravan ID." });
+    await db.prepare("UPDATE forum_messages SET hidden_at = NULL WHERE id = ?").run(msgId);
+    await db.prepare("DELETE FROM forum_reports WHERE message_id = ?").run(msgId);
+    return res.json({ success: true });
   });
 
   app.get("/api/chat/quota", optionalAuthMiddleware(db), async (req, res) => {
@@ -2734,8 +2851,8 @@ async function main() {
       }
 
       try {
-        const response = await chatService.chatLocal(messages, mode);
-        res.json({ success: true, content: response });
+        const { content, source } = await chatService.chatWithSource(messages, mode);
+        res.json({ success: true, content, source });
       } catch (err) {
         await refundChatSlot(req.user.id);
         console.error("[api/chat]", err);

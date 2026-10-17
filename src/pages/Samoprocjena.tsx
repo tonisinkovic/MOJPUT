@@ -1,4 +1,5 @@
 import Layout from "@/components/Layout";
+import PageSeo from "@/components/seo/PageSeo";
 import { motion } from "framer-motion";
 import {
   ArrowLeft,
@@ -57,6 +58,8 @@ import {
 } from "@/data/psychotherapyMiniItems";
 import { cn } from "@/lib/utils";
 import { QUIZ_CARDS, QUIZ_TITLES, type QuizId } from "@/lib/samoprocjenaQuizMeta";
+import { useSamoprocjenaSaveConsent } from "@/lib/samoprocjenaConsent";
+import { CrisisLines, SaveResultsConsent } from "@/components/samoprocjena/SelfAssessmentSafety";
 
 const SERENITY_INTAKE_PDF = "https://www.serene.me.uk/intake.pdf";
 const PSIHO_DEPRESSION_TEST = "https://www.psihocentrala.com/testovi/test-za-depresiju/";
@@ -211,10 +214,12 @@ const traitConfig = [
   { label: "Empatija", weight: 1.12, color: "bg-badge-success" },
 ];
 
-function ConfidenceFeedback({ traits, confidenceLevel, recommendation }: { traits: typeof traitConfig; confidenceLevel: string; recommendation: string }) {
-  const sorted = [...traits].sort((a, b) => (b as { value: number }).value - (a as { value: number }).value);
-  const strongest = sorted[0] as { label: string; value: number };
-  const focusArea = sorted[sorted.length - 1] as { label: string; value: number };
+type ScoredTrait = (typeof traitConfig)[number] & { value: number };
+
+function ConfidenceFeedback({ traits, confidenceLevel, recommendation }: { traits: ScoredTrait[]; confidenceLevel: string; recommendation: string }) {
+  const sorted = [...traits].sort((a, b) => b.value - a.value);
+  const strongest = sorted[0];
+  const focusArea = sorted[sorted.length - 1];
 
   const opening =
     confidenceLevel === "Visoko"
@@ -343,13 +348,7 @@ function DepressionFeedback({
           <h3 className="text-lg font-bold tracking-tight text-foreground md:text-xl">Povratni komentar</h3>
         </div>
         <p className="text-base leading-relaxed text-foreground/90 md:text-lg">{opening}</p>
-        {crisis && (
-          <div className="mt-4 rounded-lg border-2 border-destructive/40 bg-destructive/10 px-4 py-3 text-sm font-medium text-foreground">
-            Ako si u neposrednoj opasnosti, nazovi{" "}
-            <span className="whitespace-nowrap">112</span> (hitna pomoć). Za razgovor i podršku možeš potražiti i
-            savjetovalište ili psihijatrijsku pomoć u svojoj županiji — ne ostaj sam/a s tim osjećajima.
-          </div>
-        )}
+        {crisis && <CrisisLines emphasized className="mt-4" />}
         <div className="mt-4 flex flex-wrap gap-2">
           <span className="inline-flex rounded-full bg-badge-info/15 px-3 py-1 text-xs font-medium text-badge-info">
             Zbroj: {total}/63 · {severity}
@@ -406,10 +405,12 @@ function OcdFeedback({
         </div>
         <p className="text-base leading-relaxed text-foreground/90 md:text-lg">{opening}</p>
         {intrusiveHigh && (
-          <div className="mt-4 rounded-lg border border-border/70 bg-muted/40 px-4 py-3 text-sm text-foreground/90">
-            Ako misli izazivaju jaku tjeskobu ili osjećaj gubitka kontrole, potraži stručnu pomoć. Ako postoji neposredna
-            opasnost po život, nazovi <span className="whitespace-nowrap font-semibold">112</span>.
-          </div>
+          <>
+            <div className="mt-4 rounded-lg border border-border/70 bg-muted/40 px-4 py-3 text-sm text-foreground/90">
+              Ako misli izazivaju jaku tjeskobu ili osjećaj gubitka kontrole, potraži stručnu pomoć.
+            </div>
+            <CrisisLines className="mt-3" />
+          </>
         )}
         <div className="mt-4 flex flex-wrap gap-2">
           <span className="inline-flex rounded-full bg-badge-info/15 px-3 py-1 text-xs font-medium text-badge-info">
@@ -467,10 +468,13 @@ function BipolarFeedback({
         </div>
         <p className="text-base leading-relaxed text-foreground/90 md:text-lg">{opening}</p>
         {mixedHigh && (
-          <div className="mt-4 rounded-lg border border-amber-500/50 bg-amber-500/10 px-4 py-3 text-sm text-foreground/90">
-            Mješovita stanja mogu biti teška — ne čekaj sam/sama; obrati se hitnoj ili psihijatrijskoj službi ako si u
-            krizi.
-          </div>
+          <>
+            <div className="mt-4 rounded-lg border border-amber-500/50 bg-amber-500/10 px-4 py-3 text-sm text-foreground/90">
+              Mješovita stanja mogu biti teška — ne čekaj sam/sama; obrati se hitnoj ili psihijatrijskoj službi ako si u
+              krizi.
+            </div>
+            <CrisisLines className="mt-3" />
+          </>
         )}
         <div className="mt-4 flex flex-wrap gap-2">
           <span className="inline-flex rounded-full bg-badge-info/15 px-3 py-1 text-xs font-medium text-badge-info">
@@ -839,8 +843,9 @@ function SerenityIntakeQuiz() {
   }, [allAnswered, phq9Total, gad7Total, functionalScore]);
 
   const serenitySavedRef = useRef<string | null>(null);
+  const saveConsent = useSamoprocjenaSaveConsent();
   useEffect(() => {
-    if (!allAnswered) return;
+    if (!allAnswered || !saveConsent) return;
     const hash = answers.join(",");
     if (serenitySavedRef.current === hash) return;
     void authMe().then(async (res) => {
@@ -873,7 +878,7 @@ function SerenityIntakeQuiz() {
         }
       }
     });
-  }, [allAnswered, answers, phq9Total, gad7Total, functionalScore]);
+  }, [allAnswered, answers, phq9Total, gad7Total, functionalScore, saveConsent]);
 
   return (
     <div className="grid gap-6 lg:grid-cols-[1.15fr_0.85fr] lg:items-start">
@@ -1028,8 +1033,8 @@ function SerenityIntakeQuiz() {
       )}
 
       <div className="lg:col-span-2 rounded-xl border bg-muted/30 p-4 text-xs text-muted-foreground">
-        PHQ-9 i GAD-7 razvijeni su u okviru PRIME-MD / Pfizer (PHQ screeners). Ako si prijavljen/a, sažetak rezultata može
-        se spremiti na tvoj MojPut profil; inače ostaje samo u pregledniku. Rezultat je informativan i{" "}
+        PHQ-9 i GAD-7 razvijeni su u okviru PRIME-MD / Pfizer (PHQ screeners). Ako si prijavljen/a, sažetak rezultata se uz
+        tvoju potvrdu ispod može spremiti na MojPut profil; inače ostaje samo u pregledniku. Rezultat je informativan i{" "}
         <span className="font-medium text-foreground">ne zamjenjuje stručnu procjenu</span>.
       </div>
     </div>
@@ -1090,8 +1095,9 @@ function DepressionScreeningQuiz() {
   }, [allAnswered, totalScore]);
 
   const depressionSavedRef = useRef<string | null>(null);
+  const saveConsent = useSamoprocjenaSaveConsent();
   useEffect(() => {
-    if (!allAnswered) return;
+    if (!allAnswered || !saveConsent) return;
     const hash = answers.join(",");
     if (depressionSavedRef.current === hash) return;
     void authMe().then(async (res) => {
@@ -1121,7 +1127,7 @@ function DepressionScreeningQuiz() {
         }
       }
     });
-  }, [allAnswered, answers, totalScore]);
+  }, [allAnswered, answers, totalScore, saveConsent]);
 
   return (
     <div className="grid gap-6 lg:grid-cols-[1.15fr_0.85fr] lg:items-start">
@@ -1277,7 +1283,7 @@ function DepressionScreeningQuiz() {
 
       <div className="lg:col-span-2 rounded-xl border bg-muted/30 p-4 text-xs text-muted-foreground">
         Upitnik je u duhu bihevioralnog skrininga sličnog BDI-u, kao na referentnoj stranici. Ako si prijavljen/a, sažetak se
-        može spremiti na profil; inače ostaje u pregledniku.{" "}
+        uz tvoju potvrdu ispod može spremiti na profil; inače ostaje u pregledniku.{" "}
         <span className="font-medium text-foreground">Ne zamjenjuje stručnu procjenu.</span>
       </div>
     </div>
@@ -1339,8 +1345,9 @@ function EmpathyQuotientQuiz() {
   }, [allAnswered, totalScore]);
 
   const empathySavedRef = useRef<string | null>(null);
+  const saveConsent = useSamoprocjenaSaveConsent();
   useEffect(() => {
-    if (!allAnswered) return;
+    if (!allAnswered || !saveConsent) return;
     const hash = answers.join(",");
     if (empathySavedRef.current === hash) return;
     void authMe().then(async (res) => {
@@ -1370,7 +1377,7 @@ function EmpathyQuotientQuiz() {
         }
       }
     });
-  }, [allAnswered, answers, totalScore]);
+  }, [allAnswered, answers, totalScore, saveConsent]);
 
   const binaryOptions: { label: string; value: 0 | 1 }[] = [
     { label: "Ne slažem se", value: 0 },
@@ -1527,7 +1534,7 @@ function EmpathyQuotientQuiz() {
       <div className="lg:col-span-2 rounded-xl border bg-muted/30 p-4 text-xs text-muted-foreground">
         Znanstveni EQ često ima više stavki i detaljniju ljestvicu odgovora (
         <span className="font-medium text-foreground">Psychological Medicine</span>, Baron-Cohen i sur.). Ovaj kratak
-        oblik služi samoinformaciji. Ako si prijavljen/a, sažetak se može spremiti na profil.
+        oblik služi samoinformaciji. Ako si prijavljen/a, sažetak se uz tvoju potvrdu ispod može spremiti na profil.
       </div>
     </div>
   );
@@ -1589,8 +1596,9 @@ function InnateIntelligenceQuiz() {
   }, [allAnswered, correctCount, n]);
 
   const iqSavedRef = useRef<string | null>(null);
+  const saveConsent = useSamoprocjenaSaveConsent();
   useEffect(() => {
-    if (!allAnswered) return;
+    if (!allAnswered || !saveConsent) return;
     const hash = answers.join(",");
     if (iqSavedRef.current === hash) return;
     const { mid, band, tier } = innateIqEstimate(correctCount, n);
@@ -1624,7 +1632,7 @@ function InnateIntelligenceQuiz() {
         }
       }
     });
-  }, [allAnswered, answers, correctCount, n]);
+  }, [allAnswered, answers, correctCount, n, saveConsent]);
 
   return (
     <div className="grid gap-6 lg:grid-cols-[1.15fr_0.85fr] lg:items-start">
@@ -1780,7 +1788,7 @@ function InnateIntelligenceQuiz() {
 
       <div className="lg:col-span-2 rounded-xl border bg-muted/30 p-4 text-xs text-muted-foreground">
         Pravi IQ testovi u kliničkoj praksi traju dulje i imaju normirane rezultate. Ovaj kviz je zabava i samoprocjena; ako
-        si prijavljen/a, sažetak se može spremiti na profil.
+        si prijavljen/a, sažetak se uz tvoju potvrdu ispod može spremiti na profil.
       </div>
     </div>
   );
@@ -1839,8 +1847,9 @@ function PersonalityTypeScreeningQuiz() {
   }, [allAnswered, typeCode]);
 
   const personalitySavedRef = useRef<string | null>(null);
+  const saveConsent = useSamoprocjenaSaveConsent();
   useEffect(() => {
-    if (!allAnswered || !typeCode) return;
+    if (!allAnswered || !typeCode || !saveConsent) return;
     const hash = answers.join(",");
     if (personalitySavedRef.current === hash) return;
     void authMe().then(async (res) => {
@@ -1873,7 +1882,7 @@ function PersonalityTypeScreeningQuiz() {
         }
       }
     });
-  }, [allAnswered, answers, scores.EI, scores.JP, scores.SN, scores.TF, typeCode]);
+  }, [allAnswered, answers, scores.EI, scores.JP, scores.SN, scores.TF, typeCode, saveConsent]);
 
   const binaryOptions: { label: string; value: 0 | 1 }[] = [
     { label: q.towardFirst, value: 0 },
@@ -2044,7 +2053,7 @@ function PersonalityTypeScreeningQuiz() {
         <a href={PERSONALITIES_16_HR} className="font-medium text-primary underline-offset-4 hover:underline" target="_blank" rel="noopener noreferrer">
           16Personalities
         </a>
-        . Sažetak se može spremiti na profil ako si prijavljen/a.
+        . Uz tvoju potvrdu ispod sažetak se sprema na profil (ako si prijavljen/a).
       </div>
     </div>
   );
@@ -2101,8 +2110,9 @@ function OcdScreeningQuiz() {
   }, [allAnswered, totalScore]);
 
   const ocdSavedRef = useRef<string | null>(null);
+  const saveConsent = useSamoprocjenaSaveConsent();
   useEffect(() => {
-    if (!allAnswered) return;
+    if (!allAnswered || !saveConsent) return;
     const hash = answers.join(",");
     if (ocdSavedRef.current === hash) return;
     void authMe().then(async (res) => {
@@ -2132,7 +2142,7 @@ function OcdScreeningQuiz() {
         }
       }
     });
-  }, [allAnswered, answers, totalScore]);
+  }, [allAnswered, answers, totalScore, saveConsent]);
 
   const letters = ["A", "B", "C", "D", "E"];
 
@@ -2287,7 +2297,7 @@ function OcdScreeningQuiz() {
 
       <div className="lg:col-span-2 rounded-xl border bg-muted/30 p-4 text-xs text-muted-foreground">
         OKP je dijagnostička kategorija stručnjaka. Ovaj upitnik je samo skrining; ako simptomi ometaju život, obrati se
-        liječniku ili psihologu/kinji. Sažetak se može spremiti na profil ako si prijavljen/a.
+        liječniku ili psihologu/kinji. Uz tvoju potvrdu ispod sažetak se sprema na profil (ako si prijavljen/a).
       </div>
     </div>
   );
@@ -2344,8 +2354,9 @@ function BipolarScreeningQuiz() {
   }, [allAnswered, totalScore]);
 
   const bipolarSavedRef = useRef<string | null>(null);
+  const saveConsent = useSamoprocjenaSaveConsent();
   useEffect(() => {
-    if (!allAnswered) return;
+    if (!allAnswered || !saveConsent) return;
     const hash = answers.join(",");
     if (bipolarSavedRef.current === hash) return;
     void authMe().then(async (res) => {
@@ -2375,7 +2386,7 @@ function BipolarScreeningQuiz() {
         }
       }
     });
-  }, [allAnswered, answers, totalScore]);
+  }, [allAnswered, answers, totalScore, saveConsent]);
 
   const letters = ["A", "B", "C", "D", "E", "F"];
 
@@ -2529,7 +2540,7 @@ function BipolarScreeningQuiz() {
       )}
 
       <div className="lg:col-span-2 rounded-xl border bg-muted/30 p-4 text-xs text-muted-foreground">
-        Bipolarni poremećaj i srodna stanja dijagnosticira stručnjak. Ovaj upitnik je samo skrining; ako kolebanja raspoloženja ili ponašanja ometaju život, obrati se liječniku ili psihologu/kinji. Sažetak se može spremiti na profil ako si prijavljen/a.
+        Bipolarni poremećaj i srodna stanja dijagnosticira stručnjak. Ovaj upitnik je samo skrining; ako kolebanja raspoloženja ili ponašanja ometaju život, obrati se liječniku ili psihologu/kinji. Uz tvoju potvrdu ispod sažetak se sprema na profil (ako si prijavljen/a).
       </div>
     </div>
   );
@@ -2602,8 +2613,9 @@ function TherapyNeedQuiz() {
   }, [allAnswered, totalScore]);
 
   const therapySavedRef = useRef<string | null>(null);
+  const saveConsent = useSamoprocjenaSaveConsent();
   useEffect(() => {
-    if (!allAnswered) return;
+    if (!allAnswered || !saveConsent) return;
     const hash = answers.join(",");
     if (therapySavedRef.current === hash) return;
     void authMe().then(async (res) => {
@@ -2634,7 +2646,7 @@ function TherapyNeedQuiz() {
         }
       }
     });
-  }, [allAnswered, answers, totalScore]);
+  }, [allAnswered, answers, totalScore, saveConsent]);
 
   const optionLetters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
@@ -2789,8 +2801,7 @@ function TherapyNeedQuiz() {
 
       <div className="lg:col-span-2 rounded-xl border bg-muted/30 p-4 text-xs text-muted-foreground">
         Odluku o psihoterapiji, savjetovanju ili psihijatrijskoj skrbi donosiš ti zajedno sa stručnjakom. Ako si u krizi
-        ili misliš na samoozljeđivanje, nazovi <span className="font-semibold whitespace-nowrap">112</span> ili
-        kontaktiraj najbližu hitnu pomoć.
+        ili misliš na samoozljeđivanje, javi se odmah — brojevi su ispod.
       </div>
     </div>
   );
@@ -2856,8 +2867,9 @@ function ConfidenceQuiz() {
         : "Imaš dobru bazu. Program će ti pomoći da svoje samopouzdanje pretvoriš u dosljedne rezultate.";
 
   const confidenceSavedRef = useRef<string | null>(null);
+  const saveConsent = useSamoprocjenaSaveConsent();
   useEffect(() => {
-    if (!resultsOpen || !allAnswered) return;
+    if (!resultsOpen || !allAnswered || !saveConsent) return;
     const hash = answers.join(",");
     if (confidenceSavedRef.current === hash) return;
     void authMe().then(async (res) => {
@@ -2888,7 +2900,7 @@ function ConfidenceQuiz() {
         }
       }
     });
-  }, [resultsOpen, allAnswered, answers, averageScore, confidenceLevel, recommendation]);
+  }, [resultsOpen, allAnswered, answers, averageScore, confidenceLevel, recommendation, saveConsent]);
 
   const onSelectAnswer = (score: number) => {
     const next = [...answers];
@@ -3198,6 +3210,7 @@ const Samoprocjena = () => {
 
   return (
     <Layout>
+      <PageSeo title="Samoprocjena – raspoloženje, stres i osobnost | MojPut" description="Kratki upitnici o raspoloženju, stresu, osobnosti i samopouzdanju. Rezultati se ne spremaju bez tvog pristanka." />
       <section className="mx-auto max-w-6xl space-y-5 px-3 pb-10 pt-6 sm:space-y-8 sm:px-4 sm:pb-12 sm:pt-8 md:py-14 md:pb-16 [padding-bottom:max(2.5rem,env(safe-area-inset-bottom))]">
         {/* Back button */}
         <button
@@ -3294,7 +3307,7 @@ const Samoprocjena = () => {
               <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground sm:text-[11px]">
                 Privatnost
               </p>
-              <p className="text-sm font-bold text-foreground sm:text-base">100%</p>
+              <p className="text-sm font-bold text-foreground sm:text-base">Ti biraš</p>
             </div>
           </div>
         </motion.div>
@@ -3483,6 +3496,10 @@ const Samoprocjena = () => {
                 ) : (
                   <OcdScreeningQuiz />
                 )}
+                <div className="mt-6 space-y-3 border-t border-border/60 pt-5">
+                  <SaveResultsConsent />
+                  <CrisisLines />
+                </div>
               </div>
             </div>
           </motion.div>

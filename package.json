@@ -12,6 +12,7 @@
     "preview": "vite preview",
     "test": "vitest run",
     "test:watch": "vitest",
+    "sitemap": "vite-node scripts/generate-sitemap.ts",
     "start": "node server.cjs",
     "setup": "node scripts/setup-env.cjs",
     "postinstall": "node -e \"const fs=require('fs');const {execFileSync}=require('child_process');if(fs.existsSync('scripts/setup-env.cjs'))execFileSync('node',['scripts/setup-env.cjs'],{stdio:'inherit'});\" && prisma generate",

@@ -51,7 +51,7 @@ export type AdminStats = {
 /** Izvadi korisnika iz odgovora /api/auth/me (ili login) kad je success. */
 export function userFromAuthMe(res: ApiResponse<{ user: AuthUser }>): AuthUser | null {
   if (!res.success) return null;
-  const r = res as { user?: AuthUser; data?: { user?: AuthUser } };
+  const r = res as unknown as { user?: AuthUser; data?: { user?: AuthUser } };
   return r.user ?? r.data?.user ?? null;
 }
 
@@ -66,7 +66,7 @@ function rememberAuthResponse(
   if (!res.success) return;
   const t = typeof (res as { token?: string }).token === "string" ? (res as { token?: string }).token : "";
   if (t) setStoredAuthToken(t);
-  const fromUser = String((res as { user?: AuthUser }).user?.email || "").trim().toLowerCase();
+  const fromUser = String((res as unknown as { user?: AuthUser }).user?.email || "").trim().toLowerCase();
   const em = fromUser || String(fallbackEmail || "").trim().toLowerCase();
   if (em) setStoredLastLoginEmail(em);
   notifyAuthChanged();

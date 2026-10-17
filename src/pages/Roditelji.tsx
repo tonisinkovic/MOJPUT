@@ -1,4 +1,5 @@
 import Layout from "@/components/Layout";
+import PageSeo from "@/components/seo/PageSeo";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -12,7 +13,7 @@ import { apiGet } from "@/lib/api";
 import { juniorUpisKalendar, nextUpcomingUpisDate } from "@/data/parentJuniorCalendar";
 import { resolveExperienceMode } from "@/lib/experience";
 import { getTotalViews, readParentHubState, setLastVisited, toggleFavorite } from "@/lib/parentHubStore";
-import { motion } from "framer-motion";
+import { motion, type Variants } from "framer-motion";
 import {
   ArrowRight,
   BarChart3,
@@ -256,7 +257,7 @@ const filterChips: { id: "sve" | "vodic" | "mentalno" | "procjena"; emoji: strin
   { id: "procjena", emoji: "📊", label: "Procjena", labelMd: "Procjena" },
 ];
 
-const listStagger = {
+const listStagger: Variants = {
   hidden: { opacity: 0 },
   show: {
     opacity: 1,
@@ -264,7 +265,7 @@ const listStagger = {
   },
 };
 
-const listItem = {
+const listItem: Variants = {
   hidden: { opacity: 0, y: 10 },
   show: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 380, damping: 28 } },
 };
@@ -394,6 +395,7 @@ const Roditelji = () => {
 
   return (
     <Layout>
+      <PageSeo title="Roditeljski kutak – MojPut" description="Vodič za roditelje kroz upis u srednju školu i na fakultet: kontrolna lista, mentalno zdravlje, zajednička procjena i forum za roditelje." />
       <section className="mx-auto max-w-6xl space-y-5 px-3 pb-10 pt-6 sm:space-y-8 sm:px-4 sm:pb-12 sm:pt-8 md:py-14 md:pb-16 [padding-bottom:max(2.5rem,env(safe-area-inset-bottom))]">
         {/* Hero */}
         <motion.div

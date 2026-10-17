@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { ArrowRight, GraduationCap, MapPin, Search, X } from "lucide-react";
 import { CityTypeahead, matchesCity } from "@/components/CityTypeahead";
 import Layout from "@/components/Layout";
@@ -15,6 +15,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { facultyInitial } from "@/lib/facultyCatalog";
+import { expandAliasQuery } from "@/lib/facultyAliases";
 import { getFaculties } from "@/lib/facultyStore";
 import type { Faculty } from "@/types/faculty";
 import { cn } from "@/lib/utils";
@@ -85,7 +86,7 @@ function wordsFromText(s: string): string[] {
 function matchesFacultySearch(faculty: Faculty, qRaw: string): boolean {
   const raw = qRaw.trim();
   if (!raw) return true;
-  const tokens = raw
+  const tokens = expandAliasQuery(raw)
     .toLowerCase()
     .split(/\s+/)
     .map((t) => t.replace(/^['"]+|['"]+$/g, ""))
@@ -124,7 +125,8 @@ function facultyWord(n: number): string {
 
 const FacultyProfiles = () => {
   const faculties = useMemo(() => getFaculties(), []);
-  const [search, setSearch] = useState("");
+  const [searchParams] = useSearchParams();
+  const [search, setSearch] = useState(() => searchParams.get("q") ?? "");
   const [cityInput, setCityInput] = useState("");
   const [area, setArea] = useState("sve");
   const [sort, setSort] = useState<SortKey>("name");

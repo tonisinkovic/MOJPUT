@@ -111,20 +111,15 @@ function isJunkInstitution(name: string): boolean {
   return false;
 }
 
-function copyForFaculty(
-  name: string,
-  university: string,
-  city: string,
-  type: string,
-  levels: string[],
-): { description: string; longDescription: string } {
-  const levelText = levels.length
-    ? ` Nudi ${levels.map((level) => level.toLowerCase()).join(", ")} studij.`
-    : "";
-  return {
-    description: `${name} u gradu ${city}.`,
-    longDescription: `${name} sastavnica je ustanove ${university} (${type}) u ${city}.${levelText} Podaci o upisu, kvotama i natječajima objavljuju se na službenim stranicama fakulteta.`,
-  };
+function descriptionForFaculty(city: string, programCount: number): string {
+  if (programCount === 0) return city;
+  const word =
+    programCount % 10 === 1 && programCount % 100 !== 11
+      ? "studijski program"
+      : [2, 3, 4].includes(programCount % 10) && ![12, 13, 14].includes(programCount % 100)
+        ? "studijska programa"
+        : "studijskih programa";
+  return `${city} · ${programCount} ${word} za upis`;
 }
 
 function universityTypeFor(university: string, institutionType: string): string {
@@ -168,6 +163,7 @@ function pushFaculty(
     universityType: string;
     websiteUrl?: string;
     levels: string[];
+    programCount?: number;
   },
 ) {
   const name = input.name.trim();
@@ -183,7 +179,6 @@ function pushFaculty(
   const id =
     legacy && !used.has(legacy) ? (used.add(legacy), legacy) : uniqueFacultySlug(baseFacultySlug(name, city), used);
   const levels = input.levels.filter(Boolean);
-  const copy = copyForFaculty(name, university, city, input.universityType, levels);
   out.push({
     id,
     name,
@@ -192,8 +187,7 @@ function pushFaculty(
     university,
     universityType: input.universityType,
     levels,
-    description: copy.description,
-    longDescription: copy.longDescription,
+    description: descriptionForFaculty(city, input.programCount ?? 0),
     websiteUrl: input.websiteUrl || websiteFor(name, city, university),
     verified: false,
   });
@@ -208,6 +202,7 @@ function fromInstitution(inst: FacultyInstitution) {
     universityType: universityTypeFor(university, inst.institutionType),
     websiteUrl: websiteFor(inst.name, inst.city, university),
     levels: [] as string[],
+    programCount: inst.programs.filter((p) => !/\((izvanredni|stručni|hrvati izvan rh)/i.test(p.name)).length,
   };
 }
 

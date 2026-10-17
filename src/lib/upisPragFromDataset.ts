@@ -13,7 +13,7 @@ import {
 } from "@/data/faculties";
 import type { ProgramScoring } from "@/data/scoringFormulas";
 
-function normalizeKeyPart(s: string): string {
+export function normalizeKeyPart(s: string): string {
   return s
     .normalize("NFD")
     .replace(/\p{M}/gu, "")

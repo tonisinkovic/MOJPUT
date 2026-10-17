@@ -40,8 +40,8 @@ export async function updateProfile(body: {
   user_type?: string;
   current_password?: string;
   new_password?: string;
-}): Promise<ApiResponse<{ user: AuthUser }>> {
-  return apiPatch<{ user: AuthUser }>("/api/me/profile", body);
+}): Promise<ApiResponse<AuthUser>> {
+  return apiPatch<AuthUser>("/api/me/profile", body);
 }
 
 export async function saveFacultyFavorite(body: {

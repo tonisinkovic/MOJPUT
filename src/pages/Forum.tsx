@@ -1,8 +1,10 @@
 import Layout from "@/components/Layout";
+import PageSeo from "@/components/seo/PageSeo";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   ArrowLeft,
   Clock,
+  Flag,
   LogOut,
   LogIn,
   MessageCircle,
@@ -11,17 +13,47 @@ import {
   Reply,
   Search,
   Send,
+  ShieldCheck,
   ThumbsUp,
   Trash2,
   TrendingUp,
   X,
 } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { apiGet, apiPost } from "@/lib/api";
+import { toast } from "sonner";
+import { apiGet, apiPost, type ApiResponse } from "@/lib/api";
 
 /** Razgovori/poruke iz localStorage (offline fallback) koriste velike ID-eve; serverski su mali autoincrement. */
 function isLocalForumConversationId(id: number): boolean {
   return id >= 1_000_000_000_000;
+}
+
+/** Lokalno spremanje samo kad server nije dostupan — odbijene poruke (filter, limit) se ne spremaju. */
+function isOfflineError<T>(res: ApiResponse<T>): boolean {
+  return !res.success && res.code === "NETWORK_ERROR";
+}
+
+const FORUM_RULES = [
+  "Bez vrijeđanja, psovki, prijetnji i govora mržnje.",
+  "Ne objavljuj osobne podatke (broj mobitela, adresu, OIB) — ni svoje ni tuđe.",
+  "Bez reklama i spama.",
+  "Poruke koje više korisnika prijavi automatski se skrivaju dok ih moderator ne pregleda.",
+];
+
+function ForumRulesNote() {
+  return (
+    <details className="mb-2 rounded-lg border border-border/70 bg-background/70 px-3 py-1.5 text-xs text-muted-foreground">
+      <summary className="flex cursor-pointer items-center gap-1.5 font-semibold text-foreground">
+        <ShieldCheck className="h-3.5 w-3.5 text-primary" aria-hidden />
+        Pravila zajednice
+      </summary>
+      <ul className="mt-1.5 list-disc space-y-0.5 pl-5">
+        {FORUM_RULES.map((rule) => (
+          <li key={rule}>{rule}</li>
+        ))}
+      </ul>
+    </details>
+  );
 }
 import { Link, useLocation, useSearchParams } from "react-router-dom";
 import { authLogout, authMe, userFromAuthMe, type AuthUser } from "@/lib/auth";
@@ -41,6 +73,8 @@ type ForumMessage = {
   replyToSnippet?: string | null;
   /** Autor je uklonio poruku s prikaza; tekst ostaje u bazi za evidenciju. */
   deletedByUser?: boolean;
+  /** Skrivena nakon prijava korisnika, čeka moderatora. */
+  hidden?: boolean;
 };
 
 type ForumConversation = {
@@ -341,6 +375,9 @@ const Forum = () => {
   const [replyingTo, setReplyingTo] = useState<ForumMessage | null>(null);
   const [sendingMessage, setSendingMessage] = useState(false);
   const [deletingMessageId, setDeletingMessageId] = useState<number | null>(null);
+  /** Server nedostupan — prikazujemo lokalne i primjer teme, jasno označene. */
+  const [offline, setOffline] = useState(false);
+  const [reportedIds, setReportedIds] = useState<Set<number>>(new Set());
   /** Skrolani kontejner poruka — skrolamo samo njega da se ne pomiče cijela stranica. */
   const messagesScrollRef = useRef<HTMLDivElement | null>(null);
 
@@ -401,16 +438,15 @@ const Forum = () => {
           messageCount: typeof c.message_count === "number" ? c.message_count : 0,
           messages: [],
         }));
-        const localOnly = readLocalConversations(audience);
-        const merged = [...localOnly, ...mapped];
-        setConversations(merged.length > 0 ? merged : fallbackConversations);
+        setOffline(false);
+        setConversations(mapped);
       } else {
-        const localOnly = readLocalConversations(audience);
-        setConversations([...localOnly, ...fallbackConversations]);
+        setOffline(true);
+        setConversations([...readLocalConversations(audience), ...fallbackConversations]);
       }
     } catch {
-      const localOnly = readLocalConversations(audience);
-      setConversations([...localOnly, ...fallbackConversations]);
+      setOffline(true);
+      setConversations([...readLocalConversations(audience), ...fallbackConversations]);
     } finally {
       setLoadingConversations(false);
     }
@@ -450,6 +486,7 @@ const Forum = () => {
           user_liked: boolean;
           reply_to_id?: number | null;
           deleted_by_user_at?: string | null;
+          hidden?: boolean;
           reply_to_username?: string | null;
           reply_to_snippet?: string | null;
         }>).map((m) => ({
@@ -464,6 +501,7 @@ const Forum = () => {
           replyToUsername: m.reply_to_username ?? null,
           replyToSnippet: m.reply_to_snippet ?? null,
           deletedByUser: Boolean(m.deleted_by_user_at),
+          hidden: Boolean(m.hidden),
         }));
 
         applyMessagesToConversation(conversationId, messages);
@@ -518,13 +556,17 @@ const Forum = () => {
     if (!currentUser) return;
     if (!newConvTitle.trim()) return;
 
-    const res = await apiPost<{ data?: { id: number; title: string; description: string; created_at: string; creator_username: string; message_count: number } }>(
-      "/api/forum/conversations",
-      { title: newConvTitle.trim(), description: newConvDescription.trim(), audience },
-    );
+    const res = await apiPost<{
+      id: number;
+      title: string;
+      description: string;
+      created_at: string;
+      creator_username: string;
+      message_count: number;
+    }>("/api/forum/conversations", { title: newConvTitle.trim(), description: newConvDescription.trim(), audience });
     let newConversation: ForumConversation | null = null;
     if (res.success) {
-      const c = (res as { data?: { id: number; title: string; description: string; created_at: string; creator_username: string; message_count: number } }).data;
+      const c = res.data;
       if (c) {
         newConversation = {
           id: c.id,
@@ -537,8 +579,11 @@ const Forum = () => {
           messages: [],
         };
       }
+    } else if (!isOfflineError(res)) {
+      toast.error(res.message || "Tema nije objavljena.");
+      return;
     } else {
-      // Backend fallback: create locally so authenticated users can always open new topics.
+      toast("Server nije dostupan — tema je spremljena samo na ovom uređaju.");
       newConversation = {
         id: Date.now(),
         title: newConvTitle.trim(),
@@ -593,6 +638,12 @@ const Forum = () => {
       setMessageInput("");
       setReplyingTo(null);
       await loadMessages(convId, { silent: true });
+      setSendingMessage(false);
+      return;
+    }
+
+    if (!isOfflineError(res) && !isLocalForumConversationId(convId)) {
+      toast.error(res.message || "Poruka nije poslana.");
       setSendingMessage(false);
       return;
     }
@@ -699,6 +750,22 @@ const Forum = () => {
     }
   };
 
+  const handleReportMessage = async (msg: ForumMessage) => {
+    if (!currentUser || msg.userId === currentUser.id || reportedIds.has(msg.id)) return;
+    if (isLocalForumConversationId(msg.id)) return;
+    if (!window.confirm("Prijaviti ovu poruku moderatorima? Poruka se skriva nakon više prijava.")) return;
+    const res = await apiPost<{ hidden?: boolean }>(`/api/forum/messages/${msg.id}/report`, { reason: "neprimjereno" });
+    if (!res.success) {
+      toast.error(res.message || "Prijava nije poslana.");
+      return;
+    }
+    setReportedIds((prev) => new Set(prev).add(msg.id));
+    toast.success("Hvala, prijava je zaprimljena.");
+    if ((res as { hidden?: boolean }).hidden && selectedConversation) {
+      await loadMessages(selectedConversation.id, { silent: true });
+    }
+  };
+
   const handleLikeMessage = async (messageId: number) => {
     if (!canUseForum || !currentUser || !selectedConversation) return;
 
@@ -769,6 +836,7 @@ const Forum = () => {
 
   return (
     <Layout>
+      <PageSeo title="Forum za učenike i studente – MojPut" description="Pitaj učenike i studente o upisu, fakultetima i srednjim školama. Moderirani forum s pravilima i prijavom neprimjerenih objava." />
       <section className="container mx-auto max-w-6xl px-3 pb-[max(1rem,env(safe-area-inset-bottom))] pt-3 sm:px-4 sm:py-8">
         <button
           type="button"
@@ -854,6 +922,13 @@ const Forum = () => {
               </Link>
             </div>
           </motion.div>
+        )}
+
+        {offline && !loadingConversations && (
+          <div className="mb-4 rounded-xl border border-amber-300/60 bg-amber-50 px-4 py-3 text-sm text-amber-900 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-200">
+            Forum server trenutno nije dostupan. Prikazujemo primjere tema i ono što si spremio na ovom uređaju —
+            to nisu stvarne objave drugih korisnika.
+          </div>
         )}
 
         <motion.div
@@ -1188,7 +1263,7 @@ const Forum = () => {
                               )}
                               <div
                                 className={`rounded-2xl px-4 py-2.5 text-sm ${
-                                  msg.deletedByUser
+                                  msg.deletedByUser || msg.hidden
                                     ? "rounded-br-md rounded-bl-md border border-dashed border-border bg-muted/50 text-muted-foreground"
                                     : msg.userId === currentUser?.id
                                       ? "rounded-br-md bg-primary text-primary-foreground"
@@ -1199,6 +1274,10 @@ const Forum = () => {
                                   {msg.deletedByUser ? (
                                     <span className="italic">
                                       Ova je poruka uklonjena s prikaza; u temi ostaje zapis radi konteksta.
+                                    </span>
+                                  ) : msg.hidden ? (
+                                    <span className="italic">
+                                      Poruka je skrivena nakon prijava korisnika i čeka pregled moderatora.
                                     </span>
                                   ) : (
                                     msg.text
@@ -1249,6 +1328,21 @@ const Forum = () => {
                                     {msg.likeCount > 0 && <span>{msg.likeCount}</span>}
                                   </button>
                                 )}
+                                {canUseForum &&
+                                  !offline &&
+                                  currentUser?.id !== msg.userId &&
+                                  !msg.deletedByUser &&
+                                  !msg.hidden && (
+                                    <button
+                                      type="button"
+                                      disabled={reportedIds.has(msg.id)}
+                                      onClick={() => void handleReportMessage(msg)}
+                                      className="inline-flex min-h-9 items-center gap-1 px-1 text-xs text-muted-foreground transition-colors hover:text-destructive touch-manipulation disabled:opacity-50"
+                                    >
+                                      <Flag className="h-3.5 w-3.5" />
+                                      {reportedIds.has(msg.id) ? "Prijavljeno" : "Prijavi"}
+                                    </button>
+                                  )}
                               </div>
                             </div>
                           </motion.div>
@@ -1261,6 +1355,7 @@ const Forum = () => {
                         onSubmit={handleSendMessage}
                         className="shrink-0 border-t border-border bg-muted/30 p-3 sm:p-4 pb-[max(0.75rem,env(safe-area-inset-bottom))]"
                       >
+                        <ForumRulesNote />
                         {replyingTo && (
                           <div className="mb-2 flex items-start justify-between gap-2 rounded-xl border border-primary/25 bg-primary/[0.06] px-3 py-2 text-xs text-foreground">
                             <span className="min-w-0 leading-snug">
@@ -1381,6 +1476,7 @@ const Forum = () => {
                     : "Postavi pitanje ili otvori temu o maturi, fakultetima ili studentskom životu."}
                 </p>
                 <form onSubmit={handleCreateConversation} className="space-y-4">
+                  <ForumRulesNote />
                   <div>
                     <label className="mb-1.5 block text-sm font-semibold text-foreground" htmlFor="forum-new-title">
                       Naziv

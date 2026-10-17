@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Download, Share2, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { ANALYTICS_CONSENT_EVENT, getAnalyticsConsent } from "@/lib/analytics";
 
 interface BeforeInstallPromptEvent extends Event {
   prompt: () => Promise<void>;
@@ -24,6 +25,7 @@ const PwaInstallPrompt = () => {
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [dismissed, setDismissed] = useState<boolean>(true);
   const [installed, setInstalled] = useState<boolean>(false);
+  const [consentAnswered, setConsentAnswered] = useState<boolean>(() => getAnalyticsConsent() !== null);
 
   const isIos = useMemo(() => /iphone|ipad|ipod/i.test(navigator.userAgent), []);
   const isSafari = useMemo(
@@ -54,18 +56,22 @@ const PwaInstallPrompt = () => {
       setDeferredPrompt(null);
     };
 
+    const onConsent = () => setConsentAnswered(true);
+
     window.addEventListener("beforeinstallprompt", onBeforeInstallPrompt as EventListener);
     window.addEventListener("appinstalled", onAppInstalled);
+    window.addEventListener(ANALYTICS_CONSENT_EVENT, onConsent);
 
     return () => {
       window.removeEventListener("beforeinstallprompt", onBeforeInstallPrompt as EventListener);
       window.removeEventListener("appinstalled", onAppInstalled);
+      window.removeEventListener(ANALYTICS_CONSENT_EVENT, onConsent);
     };
   }, []);
 
   const showIosInstructions = isMobile && isIos && !installed;
   const showInstallButton = isMobile && !isIos && !installed && Boolean(deferredPrompt);
-  const shouldRender = !dismissed && (showIosInstructions || showInstallButton);
+  const shouldRender = consentAnswered && !dismissed && (showIosInstructions || showInstallButton);
 
   const hidePrompt = () => {
     window.localStorage.setItem(DISMISS_KEY, "1");

@@ -1,9 +1,32 @@
 import Layout from "@/components/Layout";
 import { motion } from "framer-motion";
 import { Lock, Sparkles } from "lucide-react";
-import type { ReactNode } from "react";
+import { useState, type ReactNode } from "react";
+import { Button } from "@/components/ui/button";
+import { getAnalyticsConsent, setAnalyticsConsent } from "@/lib/analytics";
 
 const PRIVACY_EMAIL = "mojputhr@gmail.com";
+
+const AnalyticsConsentControl = () => {
+  const [consent, setConsent] = useState(getAnalyticsConsent);
+  const granted = consent === "granted";
+  const toggle = () => {
+    const next = granted ? "denied" : "granted";
+    setAnalyticsConsent(next);
+    setConsent(next);
+  };
+
+  return (
+    <div className="flex flex-col gap-2 rounded-xl border border-border bg-muted/40 p-3 sm:flex-row sm:items-center sm:justify-between">
+      <p className="text-sm text-foreground">
+        Analitika je trenutno <span className="font-semibold">{granted ? "uključena" : "isključena"}</span>.
+      </p>
+      <Button type="button" size="sm" variant={granted ? "outline" : "default"} onClick={toggle}>
+        {granted ? "Isključi analitiku" : "Uključi analitiku"}
+      </Button>
+    </div>
+  );
+};
 
 type SectionBlockProps = {
   number: number;
@@ -142,18 +165,45 @@ const Privatnost = () => {
             </ul>
             <p>
               Analitiku obrađuje Google Ireland Limited / Google LLC (Google Analytics 4). Oglase ne koristimo.
-              Posjet stranice šalje se u Analytics da vidimo koje stranice se koriste.
+              Analitički kolačići su zadano isključeni i uključuju se tek kad ih prihvatiš u banneru. Nužni kolačići
+              (prijava, postavke) rade bez obzira na tvoj izbor.
             </p>
+            <AnalyticsConsentControl />
           </SectionBlock>
 
-          <SectionBlock number={7} title="Čuvanje podataka">
+          <SectionBlock number={7} title="Maloljetni korisnici">
+            <p>
+              MojPut je namijenjen i učenicima osnovnih i srednjih škola, pa dio korisnika ima manje od 18 godina.
+            </p>
+            <ul className="list-disc space-y-1 pl-5">
+              <li>
+                Za izradu računa moraš imati najmanje 16 godina ili pristanak roditelja odnosno skrbnika (čl. 8.
+                GDPR-a i Zakon o provedbi Opće uredbe o zaštiti podataka).
+              </li>
+              <li>Kviz, kalkulatori, karta i kalendar mogu se koristiti bez računa i bez upisivanja osobnih podataka.</li>
+              <li>
+                Rezultati samoprocjene spremaju se na račun samo uz tvoju izričitu potvrdu; bez nje ostaju samo u
+                tvom pregledniku.
+              </li>
+              <li>
+                Na forumu ne objavljuj ime i prezime, školu, adresu ni broj mobitela. Objave s osobnim podacima možeš
+                prijaviti i uklonit ćemo ih.
+              </li>
+              <li>
+                Roditelj ili skrbnik može u ime djeteta zatražiti pristup, ispravak ili brisanje podataka putem
+                e-pošte navedene u nastavku.
+              </li>
+            </ul>
+          </SectionBlock>
+
+          <SectionBlock number={8} title="Čuvanje podataka">
             <p>
               Vaše podatke čuvamo samo onoliko dugo koliko je potrebno za svrhe za koje su prikupljeni ili koliko to
               zakon zahtijeva.
             </p>
           </SectionBlock>
 
-          <SectionBlock number={8} title="Vaša prava">
+          <SectionBlock number={9} title="Vaša prava">
             <p>Imate pravo:</p>
             <ul className="list-disc space-y-1 pl-5">
               <li>zatražiti pristup svojim podacima</li>
@@ -163,7 +213,7 @@ const Privatnost = () => {
             <p>Za sve zahtjeve možete nas kontaktirati putem e-pošte.</p>
           </SectionBlock>
 
-          <SectionBlock number={9} title="Kontakt">
+          <SectionBlock number={10} title="Kontakt">
             <p>Za pitanja vezana uz privatnost možete nam se obratiti na:</p>
             <p>
               <a
@@ -175,7 +225,7 @@ const Privatnost = () => {
             </p>
           </SectionBlock>
 
-          <SectionBlock number={10} title="Izmjene politike privatnosti">
+          <SectionBlock number={11} title="Izmjene politike privatnosti">
             <p>
               Zadržavamo pravo izmjene ove politike privatnosti u bilo kojem trenutku. Sve promjene bit{" "}
               {"\u0107"}e pravovremeno objavljene na ovoj stranici.

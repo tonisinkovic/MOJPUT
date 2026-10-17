@@ -59,7 +59,7 @@ export default function JuniorClassJoin({
       alias,
     });
     setBusy(false);
-    if (!res.ok) {
+    if ("message" in res) {
       toast.error(res.message);
       return;
     }

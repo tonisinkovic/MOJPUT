@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import Layout from "@/components/Layout";
+import PageSeo from "@/components/seo/PageSeo";
 import { motion } from "framer-motion";
 import {
   ArrowLeft,
@@ -28,12 +29,14 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { facultyInstitutions } from "@/data/faculties";
+import { formatEventLine, seniorEvents, upcomingEvents } from "@/data/calendarEvents";
 import { highSchools } from "@/data/highSchools";
 import { resolveExperienceMode } from "@/lib/experience";
 import { API_BASE_URL } from "@/config/apiBase";
 import { apiGet, getStoredAuthToken, setStoredAuthToken } from "@/lib/api";
 import { authMe, userFromAuthMe, type AuthUser } from "@/lib/auth";
 import { cn } from "@/lib/utils";
+import { formatChatMessage, normalizeChatSource, type ChatReplySource } from "@/lib/chatFormat";
 
 const API_BASE = API_BASE_URL;
 
@@ -65,6 +68,7 @@ interface Message {
   role: "user" | "assistant";
   content: string;
   attachments?: ChatAttachment[];
+  source?: ChatReplySource;
 }
 
 const MAX_ATTACH_BYTES = 4 * 1024 * 1024;
@@ -259,6 +263,17 @@ Pomažem ti sa svim pitanjima o srednjim školama u Hrvatskoj. Što te zanima?`;
 
 function buildLocalChatReplySenior(question: string): string {
   const q = question.toLowerCase();
+
+  if (/\brok|kalendar|rang-?list|prijav[ae] studij|natječaj|kad (su|je|počinj)/.test(q)) {
+    const dorm = /\bdom|smještaj/.test(q);
+    const pool = dorm ? seniorEvents.filter((e) => e.type === "Dom") : seniorEvents;
+    const next = upcomingEvents(pool, new Date(), 5);
+    if (next.length) {
+      return `${dorm ? "Natječaji za studentske domove" : "Sljedeći rokovi"} iz MojPut kalendara:\n- ${next
+        .map(formatEventLine)
+        .join("\n- ")}\n\n„Okvirno” znači da je datum procijenjen prema prošloj godini — službeni objavljuju postani-student.hr i studentski centri. Sve rokove vidiš na /kalendar.`;
+    }
+  }
   const cities = Array.from(new Set(facultyInstitutions.map((f) => f.city)));
   const matchedCity = cities.find((city) => q.includes(city.toLowerCase()));
 
@@ -359,6 +374,7 @@ const Chatbot = () => {
   const aiWelcome = isJunior ? AI_WELCOME_JUNIOR : AI_WELCOME_SENIOR;
 
   const [messages, setMessages] = useState<Message[]>([]);
+  const lastReplySource = [...messages].reverse().find((m) => m.role === "assistant" && m.source)?.source;
   useEffect(() => {
     setMessages([{ role: "assistant", content: aiWelcome }]);
   }, [aiWelcome]);
@@ -502,14 +518,6 @@ const Chatbot = () => {
     el.style.height = `${Math.min(el.scrollHeight, 120)}px`;
   };
 
-  const formatMessage = (text: string) => {
-    return text
-      .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
-      .replace(/\*(.*?)\*/g, "<em>$1</em>")
-      .replace(/`(.*?)`/g, '<code class="chat-code">$1</code>')
-      .replace(/\n/g, "<br>");
-  };
-
   const sendMessage = async (text?: string) => {
     if (pendingAttachments.some((a) => a.loading)) return;
     const content = (text !== undefined ? text : input).trim();
@@ -558,7 +566,7 @@ const Chatbot = () => {
         : buildLocalChatReplySenior(buildUserSearchQuery(content, userMsg.attachments));
       setMessages((m) => {
         const next = [...m];
-        next[assistantIdx] = { role: "assistant", content: localReply };
+        next[assistantIdx] = { role: "assistant", content: localReply, source: "local" };
         return next;
       });
       setIsLoading(false);
@@ -613,10 +621,12 @@ const Chatbot = () => {
 
       const ct = res.headers.get("content-type") || "";
       let fullText = "";
+      let replySource: ChatReplySource | undefined;
 
       if (ct.includes("application/json")) {
         const data = await res.json();
         fullText = typeof data?.content === "string" ? data.content : "";
+        replySource = normalizeChatSource(data?.source);
       } else {
         const reader = res.body?.getReader();
         const decoder = new TextDecoder();
@@ -659,7 +669,7 @@ const Chatbot = () => {
       if (ct.includes("application/json") && fullText) {
         setMessages((m) => {
           const next = [...m];
-          if (next[assistantIdx]) next[assistantIdx] = { role: "assistant", content: fullText };
+          if (next[assistantIdx]) next[assistantIdx] = { role: "assistant", content: fullText, source: replySource };
           return next;
         });
       }
@@ -674,16 +684,18 @@ const Chatbot = () => {
       await refreshQuota();
     } catch (err) {
       let msg = err instanceof Error ? err.message : "Došlo je do greške. Pokušajte ponovo.";
+      let source: ChatReplySource | undefined;
       if (msg.includes("404") || msg.includes("502") || msg.includes("Failed to fetch")) {
         msg = isJunior
           ? buildLocalChatReplyJunior(buildUserSearchQuery(content, userMsg.attachments))
           : buildLocalChatReplySenior(buildUserSearchQuery(content, userMsg.attachments));
+        source = "local";
       } else if (msg.includes("429") || msg.includes("quota") || msg.includes("OpenAI")) {
-        msg = "OpenAI trenutno nije dostupan (kvota ili limit). Pokušaj za chvili ili provjeri račun na platform.openai.com.";
+        msg = "AI asistent trenutno nije dostupan (dnevni limit usluge). Pokušaj ponovno za nekoliko minuta.";
       }
       setMessages((m) => {
         const next = [...m];
-        next[assistantIdx] = { role: "assistant", content: msg };
+        next[assistantIdx] = { role: "assistant", content: msg, source };
         return next;
       });
     } finally {
@@ -755,6 +767,7 @@ const Chatbot = () => {
 
   return (
     <Layout>
+      <PageSeo title="Dražen – pomoćnik za upis na fakultet | MojPut" description="Pitaj o fakultetima, pragovima, rokovima upisa i studentskim domovima. Odgovori se temelje na MojPut bazi podataka." />
       <Dialog open={premiumOpen} onOpenChange={setPremiumOpen}>
         <DialogContent className="sm:max-w-lg">
           <DialogHeader>
@@ -840,7 +853,7 @@ const Chatbot = () => {
                         ? "Lokalni način (bez API)"
                         : showLoginGate
                           ? "Samo za prijavljene korisnike"
-                          : "Online · baza + OpenAI"}
+                          : "Online"}
                   </p>
                 </div>
                 {user && !STATIC_NO_API && !authLoading && (quotaLoading || quotaError || quota?.authenticated) && (
@@ -927,9 +940,18 @@ const Chatbot = () => {
                     <span className="hidden sm:inline">Novi razgovor</span>
                     <span className="sm:hidden">Novi</span>
                   </Button>
-                  <div className="chat-badge" title="Podaci iz baze u promptu; tekst generira OpenAI">
+                  <div
+                    className="chat-badge"
+                    title={
+                      lastReplySource === "openai"
+                        ? "Zadnji odgovor: podaci iz baze, tekst sastavio AI (OpenAI)"
+                        : lastReplySource === "local"
+                          ? "Zadnji odgovor: izravno iz lokalne baze, bez AI-ja"
+                          : "Odgovori koriste MojPut bazu podataka"
+                    }
+                  >
                     <Sparkles className="h-3 w-3" aria-hidden />
-                    Baza + AI
+                    {lastReplySource === "openai" ? "Baza + AI" : lastReplySource === "local" ? "Lokalna baza" : "Baza"}
                   </div>
                 </div>
               </div>
@@ -993,13 +1015,13 @@ const Chatbot = () => {
                     <div className={`chat-bubble ${msg.role}`}>
                       {msg.role === "assistant" ? (
                         <>
-                          <span dangerouslySetInnerHTML={{ __html: formatMessage(msg.content) }} />
-                          {i > 0 &&
-                            msg.content &&
-                            !msg.content.includes("Backend nije") &&
-                            !msg.content.includes("Greška pri") && (
+                          <span dangerouslySetInnerHTML={{ __html: formatChatMessage(msg.content) }} />
+                          {i > 0 && msg.content && msg.source && (
                             <div className="chat-source-tag">
-                              📚 Podaci iz {isJunior ? "baze srednjih škola" : "baze"} u kontekstu · ✨ tekst (OpenAI) — provjeri službene uvjete na {isJunior ? "školi" : "fakultetu"}
+                              {msg.source === "openai"
+                                ? `📚 Podaci iz ${isJunior ? "baze srednjih škola" : "baze"} · ✨ tekst sastavio AI (OpenAI)`
+                                : `📚 Odgovor iz lokalne ${isJunior ? "baze srednjih škola" : "baze"}, bez AI-ja`}
+                              {" "}— provjeri službene uvjete na {isJunior ? "školi" : "fakultetu"}
                             </div>
                           )}
                         </>

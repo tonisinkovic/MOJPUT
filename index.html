@@ -7,19 +7,19 @@
       window.dataLayer = window.dataLayer || [];
       function gtag(){dataLayer.push(arguments);}
       gtag('consent', 'default', {
-        analytics_storage: 'granted',
-        ad_storage: 'denied',
-        ad_user_data: 'denied',
-        ad_personalization: 'denied'
-      });
-      gtag('consent', 'update', {
-        analytics_storage: 'granted',
+        analytics_storage: 'denied',
         ad_storage: 'denied',
         ad_user_data: 'denied',
         ad_personalization: 'denied'
       });
       gtag('js', new Date());
-      gtag('config', 'G-9N7061Q2JN', { send_page_view: true });
+      try {
+        if (localStorage.getItem('mojput_analytics_consent') === 'granted') {
+          gtag('consent', 'update', { analytics_storage: 'granted' });
+          gtag('config', 'G-9N7061Q2JN', { send_page_view: true });
+          window.__mojputGaConfigured = true;
+        }
+      } catch (e) {}
     </script>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/png" sizes="32x32" href="%BASE_URL%favicon.png?v=3" />
@@ -32,25 +32,26 @@
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-title" content="MojPut" />
-    <!-- TODO: Set the document title to the name of your application -->
-    <title>MojPut</title>
-    <meta name="description" content="Karijerni usmjerivač">
-    <meta name="author" content="Lovable" />
+    <title>MojPut – karijerni usmjerivač za upis u srednju školu i na fakultet</title>
+    <meta name="description" content="MojPut pomaže učenicima i roditeljima: kviz interesa, kalkulator bodova za srednje škole i fakultete, karta fakulteta, rokovi upisa i forum.">
+    <meta name="author" content="MojPut" />
+    <link rel="canonical" href="https://www.mojput.com/" />
 
-    <!-- TODO: Update og:title to match your application name -->
-    
-    
     <meta property="og:type" content="website" />
-    <meta property="og:image" content="https://www.mojput.com/favicon.png?v=3">
+    <meta property="og:site_name" content="MojPut" />
+    <meta property="og:locale" content="hr_HR" />
+    <meta property="og:url" content="https://www.mojput.com/" />
+    <meta property="og:title" content="MojPut – karijerni usmjerivač">
+    <meta property="og:description" content="Kviz interesa, kalkulator bodova, karta fakulteta i rokovi upisa na jednom mjestu.">
+    <meta property="og:image" content="https://www.mojput.com/og-image.png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
 
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:site" content="@Lovable" />
-    <meta name="twitter:image" content="https://www.mojput.com/favicon.png?v=3">
-    <meta property="og:title" content="MojPut">
-  <meta name="twitter:title" content="MojPut">
-  <meta property="og:description" content="Karijerni usmjerivač">
-  <meta name="twitter:description" content="Karijerni usmjerivač">
-</head>
+    <meta name="twitter:title" content="MojPut – karijerni usmjerivač">
+    <meta name="twitter:description" content="Kviz interesa, kalkulator bodova, karta fakulteta i rokovi upisa na jednom mjestu.">
+    <meta name="twitter:image" content="https://www.mojput.com/og-image.png">
+  </head>
 
   <body>
     <div id="root"></div>

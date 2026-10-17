@@ -71,7 +71,7 @@ export default function Razred() {
 
   const load = async (code: string) => {
     const res = await fetchJuniorClass(code);
-    if (!res.ok) {
+    if ("message" in res) {
       toast.error(res.message);
       return;
     }
@@ -114,7 +114,7 @@ export default function Razred() {
     setBusy(true);
     const res = await createJuniorClass(label);
     setBusy(false);
-    if (!res.ok) {
+    if ("message" in res) {
       toast.error(res.message);
       return;
     }

@@ -31,6 +31,55 @@ if (String(process.env.OPENAI_API_KEY || "").trim()) {
   console.log("[chatService] Chat: OpenAI + RAG | model:", m, "| max_out:", out, "| history msgs:", h);
 }
 
+/** Isti izvor kao /kalendar (src/data/calendarEvents.json). */
+let calendarData = null;
+function loadCalendar() {
+  if (calendarData) return calendarData;
+  try {
+    const file = path.join(__dirname, "..", "..", "src", "data", "calendarEvents.json");
+    calendarData = JSON.parse(fs.readFileSync(file, "utf8"));
+  } catch (e) {
+    console.warn("[chatService] calendarEvents.json:", e?.message || e);
+    calendarData = { sources: {}, senior: [] };
+  }
+  return calendarData;
+}
+
+const CALENDAR_QUESTION = /\brok|kalendar|rang-?list|prijav[ae] (na )?studij|natječaj|kad (su|je|počinj)|upisi na fakultet/i;
+
+function isCalendarQuestion(query) {
+  return CALENDAR_QUESTION.test(String(query || ""));
+}
+
+function upcomingSeniorEvents(query, now = new Date(), limit = 6) {
+  const { senior = [], sources = {} } = loadCalendar();
+  const dormOnly = /\bdom|smještaj/i.test(String(query || ""));
+  const today = now.toISOString().slice(0, 10);
+  return senior
+    .filter((e) => e.date >= today && (!dormOnly || e.type === "Dom"))
+    .sort((a, b) => a.date.localeCompare(b.date))
+    .slice(0, limit)
+    .map((e) => {
+      const [y, m, d] = e.date.split("-").map(Number);
+      const src = sources[e.source];
+      return `${d}. ${m}. ${y}. — ${e.title}${e.estimated ? " (okvirno)" : ""}${src ? ` [izvor: ${src.label}]` : ""}`;
+    });
+}
+
+function calendarSnippet(query) {
+  const lines = upcomingSeniorEvents(query);
+  if (!lines.length) return "";
+  return `=== Sljedeći rokovi (MojPut kalendar; „okvirno” = procjena prema prošloj godini) ===\n${lines.join("\n")}`;
+}
+
+function calendarReply(query) {
+  const lines = upcomingSeniorEvents(query);
+  if (!lines.length) return "";
+  return `Sljedeći rokovi iz MojPut kalendara:\n- ${lines.join(
+    "\n- ",
+  )}\n\n„Okvirno” znači da je datum procijenjen prema prošloj godini dok službeni nije objavljen. Sve rokove vidiš na stranici Kalendar.`;
+}
+
 function loadFromJson() {
   const jsonPath = path.join(__dirname, "..", "..", "universities_data.json");
   if (!fs.existsSync(jsonPath)) return { gradovi: [], fakulteti: [], studiji: [] };
@@ -878,7 +927,11 @@ Mogu ti pomoći pronaći:
 Pitaj me konkretno, npr: "Koje gimnazije ima u Osijeku?" ili "Strukovne škole u Zadru"`;
 }
 
-async function chatLocal(messages, mode = "senior") {
+const fromOpenAI = (content) => ({ content, source: "openai" });
+const fromLocal = (content) => ({ content, source: "local" });
+
+/** @returns {Promise<{ content: string, source: "openai" | "local" }>} */
+async function chatWithSource(messages, mode = "senior") {
   if (mode === "junior") {
     const lastUserMsg = [...messages].reverse().find((m) => m.role === "user");
     const query = getMessageTextForRag(lastUserMsg) || "";
@@ -894,15 +947,15 @@ async function chatLocal(messages, mode = "senior") {
     const useOpenAI = Boolean(String(process.env.OPENAI_API_KEY || "").trim());
     if (useOpenAI) {
       try {
-        return await chatOpenAI(messages, dbSnippet, "junior");
+        return fromOpenAI(await chatOpenAI(messages, dbSnippet, "junior"));
       } catch (err) {
         console.warn("[chatLocal] Junior OpenAI neuspjeh, padam na bazu:", err?.message || err);
-        if (dbSnippet) return dbSnippet;
+        if (dbSnippet) return fromLocal(dbSnippet);
         throw err;
       }
     }
 
-    return dbSnippet || juniorCatalogFallback();
+    return fromLocal(dbSnippet || juniorCatalogFallback());
   }
 
   // Senior mode: Universities/faculties
@@ -918,9 +971,10 @@ async function chatLocal(messages, mode = "senior") {
       console.warn("[chatLocal] searchRelevantData (OpenAI put):", e0?.message || e0);
       relevantData = { fakulteti: [], studiji: [], gradovi: [], parsed: {} };
     }
-    const dbSnippet = buildDatabaseContextSnippet(relevantData);
+    const calendarBlock = isCalendarQuestion(query) ? calendarSnippet(query) : "";
+    const dbSnippet = [buildDatabaseContextSnippet(relevantData), calendarBlock].filter(Boolean).join("\n\n");
     try {
-      return await chatOpenAI(messages, dbSnippet);
+      return fromOpenAI(await chatOpenAI(messages, dbSnippet));
     } catch (err) {
       console.warn("[chatLocal] OpenAI neuspjeh, padam na odgovor iz lokalne baze:", err?.message || err);
       let relevantData;
@@ -930,13 +984,22 @@ async function chatLocal(messages, mode = "senior") {
         console.error("[chatLocal] searchRelevantData", e2);
         throw new Error(err?.message || "Greška pri generiranju odgovora.");
       }
+      if (isCalendarQuestion(query)) {
+        const reply = calendarReply(query);
+        if (reply) return fromLocal(reply);
+      }
       try {
-        return generateResponse(query, relevantData);
+        return fromLocal(generateResponse(query, relevantData));
       } catch (e2) {
         console.error("[chatLocal]", e2);
         throw new Error(err?.message || "Greška pri generiranju odgovora.");
       }
     }
+  }
+
+  if (isCalendarQuestion(query)) {
+    const reply = calendarReply(query);
+    if (reply) return fromLocal(reply);
   }
 
   let relevantData;
@@ -948,11 +1011,15 @@ async function chatLocal(messages, mode = "senior") {
   }
 
   try {
-    return generateResponse(query, relevantData);
+    return fromLocal(generateResponse(query, relevantData));
   } catch (err) {
     console.error("[chatLocal]", err);
     throw new Error("Greška pri pretraživanju baze. Provjeri je li baza postavljena (npm run db:seed).");
   }
+}
+
+async function chatLocal(messages, mode = "senior") {
+  return (await chatWithSource(messages, mode)).content;
 }
 
 const prismaOrFallback = prisma || {
@@ -971,4 +1038,11 @@ const prismaOrFallback = prisma || {
   }},
 };
 
-module.exports = { chatLocal, searchRelevantData, prisma: prismaOrFallback };
+module.exports = {
+  chatLocal,
+  chatWithSource,
+  searchRelevantData,
+  prisma: prismaOrFallback,
+  isCalendarQuestion,
+  upcomingSeniorEvents,
+};

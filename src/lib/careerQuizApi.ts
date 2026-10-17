@@ -12,6 +12,9 @@ export type CareerQuizResultPayloadV1 = {
     topTraits: { id: string; label: string; score: number }[];
     matchThresholdPercent: number;
     savedAt: string;
+    /** Preporučeni studiji (v3 engine) — za profil i povratak na sljedeće korake. */
+    topStudyPrograms?: { id: number; name: string; matchPercentage: number; faculties: string[] }[];
+    location?: { homeCity: string; plan: "stay" | "move" | "anywhere"; targetCity: string | null } | null;
   };
 };
 
@@ -281,6 +284,10 @@ export function buildCareerQuizPayload(
   competencyAnswers: number[],
   analysis: HzzV2Analysis,
   topTraitsSnapshot: { id: string; label: string; score: number }[],
+  extras?: {
+    studyPrograms?: { program: { id: number; name: string; faculties: string[] }; matchPercentage: number }[];
+    location?: CareerQuizResultPayloadV1["summary"]["location"];
+  },
 ): CareerQuizResultPayloadV1 {
   return {
     version: 1,
@@ -293,6 +300,17 @@ export function buildCareerQuizPayload(
       topTraits: topTraitsSnapshot,
       matchThresholdPercent: analysis.matchThresholdPercent,
       savedAt: new Date().toISOString(),
+      ...(extras?.studyPrograms
+        ? {
+            topStudyPrograms: extras.studyPrograms.slice(0, 8).map((m) => ({
+              id: m.program.id,
+              name: m.program.name,
+              matchPercentage: m.matchPercentage,
+              faculties: m.program.faculties,
+            })),
+          }
+        : {}),
+      ...(extras?.location !== undefined ? { location: extras.location } : {}),
     },
   };
 }

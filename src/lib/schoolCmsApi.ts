@@ -200,7 +200,7 @@ export async function schoolLogin(params: {
   });
   const json = await parseRes<{ user: AuthUser; token?: string }>(res, "/api/schools/login");
   if (json.success) {
-    const body = json as { user?: AuthUser; token?: string; data?: { user?: AuthUser; token?: string } };
+    const body = json as unknown as { user?: AuthUser; token?: string; data?: { user?: AuthUser; token?: string } };
     const token = body.token || body.data?.token;
     if (token) setStoredAuthToken(token);
     notifyAuthChanged();

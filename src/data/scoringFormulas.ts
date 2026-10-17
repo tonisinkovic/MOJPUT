@@ -1,9 +1,7 @@
 /**
- * Bodovne formule za SVE studijske programe u Hrvatskoj (943 programa).
- *
- * Generirano iz universities_data.json pomoću scripts/generate_scoring.py
- * - 60 programa s točnim formulama (ručno verificirano sa stranica fakulteta)
- * - 883 programa s formulama iz šablona (bazirano na tipu programa)
+ * Bodovne formule studijskih programa (elementi vrednovanja s postani-student.hr, upisi 2025.).
+ * Provjera podataka: `node scripts/audit-scoring-formulas.cjs`; popravci: `scripts/fix-scoring-formulas.cjs`.
+ * `potpuna: false` znači da dio bodovnog fonda nije raspisan (komponenta „ostali_elementi”).
  *
  * Formula za pretvorbu:
  *   Ocjene:  (prosjek / 5.0) × maxBodovi
@@ -58,6 +56,11 @@ export type ProgramScoring = {
   natjecanja?: Natjecanje[];
   /** Napomene uz program */
   napomene?: string[];
+  /** false = komponente ne pokrivaju cijeli bodovni fond */
+  potpuna?: boolean;
+  /** Formula ručno uspoređena sa službenim izvorom */
+  provjereno?: boolean;
+  izvorUrl?: string;
 };
 
 // Parse JSON into typed array

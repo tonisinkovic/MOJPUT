@@ -1,11 +1,11 @@
 import Layout from "@/components/Layout";
 import { motion, AnimatePresence } from "framer-motion";
 import { useEffect, useMemo, useState } from "react";
+import { Link, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
-import { Checkbox } from "@/components/ui/checkbox";
 import {
   ArrowLeft,
   Award,
@@ -63,10 +63,19 @@ import {
   scoringFormulas,
   calculateTotal,
   usesWeightedPrijemni,
+  type MaturaRazina,
   type ProgramScoring,
   type ScoringComponent,
 } from "@/data/scoringFormulas";
-import { componentInputKey } from "@/lib/admissionCalculator";
+import {
+  chanceFromCutoff,
+  componentInputKey,
+  natjecanjePoints,
+  parseNatjecanje,
+  type ChanceLevel,
+} from "@/lib/admissionCalculator";
+import { saveCompareIds, loadCompareIds, MAX_COMPARE } from "@/lib/programCompare";
+import { expandAliasQuery } from "@/lib/facultyAliases";
 import { cutoffFromUniversitiesDataset } from "@/lib/upisPragFromDataset";
 
 // ─── Types ───
@@ -77,8 +86,6 @@ type ProgramOption = {
   /** Istovjetan izvor kao kartu fakulteta (universities_data) kad je postavljen */
   cutoffSource: "universities_dataset" | "scoring_json";
 };
-
-type ChanceLevel = "high" | "medium" | "low";
 
 type InstitutionType = "all" | "sveuciliste" | "veleuciliste";
 
@@ -118,17 +125,6 @@ function getInstitutionType(name: string): InstitutionType {
   return "sveuciliste";
 }
 
-// ─── Additional points options ───
-
-const ADDITIONAL_OPTIONS = [
-  { key: "natjecanje_znanost", label: "Natjecanje iz znanosti", maxPoints: 10 },
-  { key: "natjecanje_sport", label: "Natjecanje iz sporta", maxPoints: 5 },
-  { key: "volonterstvo", label: "Volonterstvo (potvrđeno)", maxPoints: 5 },
-  { key: "ostalo", label: "Ostala postignuća", maxPoints: 10 },
-] as const;
-
-const MAX_POINTS = 1000;
-
 const WIZARD_STEPS = [
   { step: 0, label: "Program", sub: "Smjer i formula" },
   { step: 1, label: "Ocjene", sub: "Srednja škola" },
@@ -152,14 +148,6 @@ function parseGradeString(raw: string): number | null {
   return Math.min(5, Math.max(1, Math.round(v * 100) / 100));
 }
 
-function getChanceLevel(totalPoints: number, cutoff: number | null): ChanceLevel {
-  if (!cutoff) return "medium";
-  const diff = totalPoints - cutoff;
-  if (diff >= 50) return "high";
-  if (diff >= 0) return "medium";
-  return "low";
-}
-
 // ═══════════════════════════════════════════════════════════════
 //  COMPONENT
 // ═══════════════════════════════════════════════════════════════
@@ -181,20 +169,19 @@ const Kalkulator = () => {
   /** Postotak ili bodovi prijemnog kad program ima weightMatura/weightPrijemni; null = još nije uneseno */
   const [prijemniInput, setPrijemniInput] = useState<number | null>(0);
 
-  // ─── State: additional points ───
-  const [additionalPoints, setAdditionalPoints] = useState<Record<string, number>>({});
+  /** Položena razina mature po komponenti (samo gdje studij traži A). */
+  const [levels, setLevels] = useState<Record<string, MaturaRazina>>({});
+  /** Indeks odabranog natjecanja u formula.natjecanja (vrednuje se jedno). */
+  const [natjecanjeIndex, setNatjecanjeIndex] = useState<number | null>(null);
+  const [searchParams] = useSearchParams();
+  const [compareIds, setCompareIds] = useState<string[]>(() => loadCompareIds());
 
   // ─── State: UI ───
   const [showBreakdown, setShowBreakdown] = useState(true);
   /** 0 = fakultet, 1 = ocjene, 2 = matura obavezni (+ dodatne provjere), 3 = izborni + ostalo, 4 = rezultat */
   const [wizardStep, setWizardStep] = useState(0);
   /** Za jedan „Prosjek svih ocjena” unos: tekstualno polje da se mogu unijeti decimale tijekom tipkanja */
-  const [gradeYearStr, setGradeYearStr] = useState<[string, string, string, string]>([
-    "4",
-    "4",
-    "4",
-    "4",
-  ]);
+  const [gradeYearStr, setGradeYearStr] = useState<[string, string, string, string]>(["", "", "", ""]);
 
   // ─── Current formula (always available when program selected) ───
   const selectedFormula = selectedProgram?.formula ?? null;
@@ -204,50 +191,65 @@ const Kalkulator = () => {
     setSelectedProgram(opt);
     setFacultyOpen(false);
     setWizardStep(0);
-    setGradeYearStr(["4", "4", "4", "4"]);
+    setGradeYearStr(["", "", "", ""]);
+    setLevels({});
+    setNatjecanjeIndex(null);
 
     const defaults: Record<string, number> = {};
     for (let i = 0; i < opt.formula.komponente.length; i++) {
       const comp = opt.formula.komponente[i];
       const k = componentInputKey(i);
-      const prev = formulaInputs[k] ?? formulaInputs[comp.id];
-      if (comp.type === "ocjena") {
-        defaults[k] = prev ?? 4;
-      } else if (comp.type === "matura") {
-        defaults[k] = prev ?? 70;
-      } else if (comp.type === "matura_izborni") {
-        defaults[k] = prev ?? 0;
-      } else {
-        defaults[k] = prev ?? 0;
-      }
+      defaults[k] = formulaInputs[k] ?? formulaInputs[comp.id] ?? 0;
     }
     setPrijemniInput(usesWeightedPrijemni(opt.formula) ? null : 0);
 
     setFormulaInputs(defaults);
   };
 
-  // ─── Calculation ───
-  const totalAdditional = useMemo(() => {
-    return Object.values(additionalPoints).reduce((a, b) => a + b, 0);
-  }, [additionalPoints]);
+  useEffect(() => {
+    const q = searchParams.get("q");
+    if (q) {
+      setSearchQuery(q);
+      setFacultyOpen(true);
+    }
+    const id = searchParams.get("program");
+    if (!id || selectedProgram?.formula.programId === id) return;
+    const opt = PROGRAM_OPTIONS.find((o) => o.formula.programId === id);
+    if (opt) handleSelectProgram(opt);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams]);
 
+  const toggleCompare = (programId: string) => {
+    setCompareIds((prev) => {
+      const next = prev.includes(programId)
+        ? prev.filter((x) => x !== programId)
+        : [...prev, programId].slice(-MAX_COMPARE);
+      saveCompareIds(next);
+      return next;
+    });
+  };
+
+  // ─── Calculation ───
   const admissionResult = useMemo(() => {
     if (!selectedFormula) return null;
     const weighted = usesWeightedPrijemni(selectedFormula);
     return calculateTotal(selectedFormula, formulaInputs, {
       prijemniInput: weighted ? prijemniInput : 0,
-      additionalPointsFromUi: totalAdditional,
+      levels,
+      natjecanjeIndex,
     });
-  }, [selectedFormula, formulaInputs, prijemniInput, totalAdditional]);
+  }, [selectedFormula, formulaInputs, prijemniInput, levels, natjecanjeIndex]);
+
+  const maxPoints = selectedFormula?.maxBodovi ?? 1000;
 
   const totalPoints = useMemo(() => {
     if (!admissionResult || admissionResult.blocked) return null;
-    return Math.min(MAX_POINTS, Math.round(admissionResult.total));
+    return Math.round(admissionResult.total);
   }, [admissionResult]);
 
   const cutoff = selectedProgram?.cutoff ?? null;
   const cutoffSource = selectedProgram?.cutoffSource ?? "scoring_json";
-  const chanceLevel = getChanceLevel(totalPoints ?? 0, cutoff);
+  const chanceLevel: ChanceLevel = chanceFromCutoff(totalPoints ?? 0, cutoff);
 
   // ─── Pre-filter by city and institution type ───
   const preFilteredPrograms = useMemo(() => {
@@ -307,8 +309,7 @@ const Kalkulator = () => {
       vern: "vern",
     };
 
-    // Expand aliases
-    let expanded = q;
+    let expanded = expandAliasQuery(q);
     for (const [alias, full] of Object.entries(aliases)) {
       if (q === alias || q.startsWith(alias + " ")) {
         expanded = q.replace(alias, full);
@@ -434,9 +435,9 @@ const Kalkulator = () => {
 
   useEffect(() => {
     if (singleOcjenaProsjekIndex == null) return;
-    const nums = gradeYearStr.map((s) => parseGradeString(s) ?? 4);
-    const avg = (nums[0] + nums[1] + nums[2] + nums[3]) / 4;
-    const rounded = Math.round(avg * 10) / 10;
+    const nums = gradeYearStr.map((s) => parseGradeString(s)).filter((n): n is number => n !== null);
+    const avg = nums.length > 0 ? nums.reduce((a, b) => a + b, 0) / nums.length : 0;
+    const rounded = Math.round(avg * 100) / 100;
     const k = componentInputKey(singleOcjenaProsjekIndex);
     setFormulaInputs((prev) => ({ ...prev, [k]: rounded }));
   }, [gradeYearStr, singleOcjenaProsjekIndex]);
@@ -447,6 +448,36 @@ const Kalkulator = () => {
     const [a, b, c, d] = parsed as [number, number, number, number];
     return Math.round(((a + b + c + d) / 4) * 100) / 100;
   }, [gradeYearStr]);
+
+  const renderLevelToggle = (idx: number, comp: ScoringComponent) => {
+    if (comp.razina !== "A") return null;
+    const key = componentInputKey(idx);
+    const chosen = levels[key] ?? "A";
+    return (
+      <div className="flex flex-wrap items-center gap-2 text-xs">
+        <span className="text-muted-foreground">Polažem na razini:</span>
+        {(["A", "B"] as const).map((lvl) => (
+          <button
+            key={lvl}
+            type="button"
+            aria-pressed={chosen === lvl}
+            onClick={() => setLevels((p) => ({ ...p, [key]: lvl }))}
+            className={cn(
+              "min-h-8 min-w-10 rounded-lg border px-3 font-semibold touch-manipulation",
+              chosen === lvl ? "border-primary bg-primary text-primary-foreground" : "bg-background",
+            )}
+          >
+            {lvl}
+          </button>
+        ))}
+        {chosen === "B" && (
+          <span className="text-rose-700 dark:text-rose-300">
+            {comp.obavezno ? "Studij traži A razinu — s B se ne možeš prijaviti." : "B razina ovdje ne donosi bodove."}
+          </span>
+        )}
+      </div>
+    );
+  };
 
   const canWizardNext =
     wizardStep === 0 ? selectedProgram != null : wizardStep < 4;
@@ -854,23 +885,55 @@ const Kalkulator = () => {
                         animate={{ opacity: 1, height: "auto" }}
                         className={cn(
                           "flex items-start gap-2 p-3 rounded-xl border",
-                          selectedFormula.izvor === "tocna_formula"
-                            ? "bg-emerald-50 dark:bg-emerald-950/30 border-emerald-200 dark:border-emerald-800"
-                            : "bg-blue-50 dark:bg-blue-950/30 border-blue-200 dark:border-blue-800"
+                          selectedFormula.potpuna !== false
+                            ? "bg-blue-50 dark:bg-blue-950/30 border-blue-200 dark:border-blue-800"
+                            : "bg-amber-50 dark:bg-amber-950/30 border-amber-200 dark:border-amber-800",
                         )}
                       >
-                        <Info className={cn("w-4 h-4 mt-0.5 shrink-0", selectedFormula.izvor === "tocna_formula" ? "text-emerald-600" : "text-blue-600")} />
-                        <div className="text-sm">
-                          <p className={cn("font-medium", selectedFormula.izvor === "tocna_formula" ? "text-emerald-700 dark:text-emerald-400" : "text-blue-700 dark:text-blue-400")}>
-                            {selectedFormula.izvor === "tocna_formula"
-                              ? "Verificirana formula bodovanja"
-                              : `Formula za tip: ${selectedFormula.kategorija ?? "opći"}`}
+                        <Info className="w-4 h-4 mt-0.5 shrink-0 text-blue-600" />
+                        <div className="text-sm space-y-1">
+                          <p className="font-medium">
+                            Elementi vrednovanja s postani-student.hr (upisi 2025.)
                           </p>
-                          {selectedFormula.napomena && (
-                            <p className="text-muted-foreground mt-1 italic">
-                              {selectedFormula.napomena}
+                          {selectedFormula.potpuna === false && (
+                            <p className="text-amber-900 dark:text-amber-200">
+                              Dio bodova ({selectedFormula.komponente.find((c) => c.id === "ostali_elementi")?.max ?? 0}{" "}
+                              od {selectedFormula.maxBodovi}) nije raspisan u našim podacima — obično dodatna provjera ili
+                              izborni predmet. Rezultat je zato približan; točne elemente provjeri na postani-student.hr.
                             </p>
                           )}
+                          <p className="text-muted-foreground">
+                            Elementi za iduću godinu objavljuju se početkom godine i mogu se promijeniti.{" "}
+                            <a
+                              href={selectedFormula.izvorUrl ?? "https://www.postani-student.hr/Ucilista/Nositelji.aspx"}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="underline text-primary"
+                            >
+                              Službeni izvor
+                            </a>
+                          </p>
+                          {selectedFormula.napomena && (
+                            <p className="text-muted-foreground italic">{selectedFormula.napomena}</p>
+                          )}
+                          <div className="flex flex-wrap gap-2 pt-1">
+                            <Button
+                              type="button"
+                              size="sm"
+                              variant={compareIds.includes(selectedFormula.programId) ? "default" : "outline"}
+                              onClick={() => toggleCompare(selectedFormula.programId)}
+                              className="rounded-lg"
+                            >
+                              {compareIds.includes(selectedFormula.programId) ? "U usporedbi" : "Dodaj u usporedbu"}
+                            </Button>
+                            {compareIds.length >= 2 && (
+                              <Button asChild size="sm" variant="ghost" className="rounded-lg">
+                                <Link to={`/usporedi-studije?p=${compareIds.map(encodeURIComponent).join(",")}`}>
+                                  Usporedi ({compareIds.length})
+                                </Link>
+                              </Button>
+                            )}
+                          </div>
                         </div>
                       </motion.div>
                     )}
@@ -940,11 +1003,7 @@ const Kalkulator = () => {
                                       setGradeYearStr((prev) => {
                                         const copy = [...prev] as [string, string, string, string];
                                         const p = parseGradeString(copy[i]);
-                                        if (p !== null) {
-                                          copy[i] = String(p).replace(".", ",");
-                                        } else {
-                                          copy[i] = "4";
-                                        }
+                                        copy[i] = p !== null ? String(p).replace(".", ",") : "";
                                         return copy;
                                       });
                                     }}
@@ -969,7 +1028,7 @@ const Kalkulator = () => {
                           {groupedComponents.ocjene.map((comp) => {
                             const idx = indexOfComponent(comp);
                             const raw = getRawAtIndex(idx);
-                            const sliderVal = raw >= 1 && raw <= 5 ? raw : 4;
+                            const sliderVal = raw >= 1 && raw <= 5 ? raw : 1;
                             return (
                             <div key={`${comp.id}-${idx}`} className={softField}>
                               <div className="flex justify-between text-sm gap-2">
@@ -987,7 +1046,7 @@ const Kalkulator = () => {
                                 className="py-2"
                               />
                               <p className="text-center text-sm font-medium">
-                                {sliderVal.toFixed(1)}
+                                {raw >= 1 ? sliderVal.toFixed(1) : "nije uneseno"}
                               </p>
                             </div>
                             );
@@ -1057,6 +1116,7 @@ const Kalkulator = () => {
                                   {pct}% → {displayPts.toFixed(1)} / {comp.max} bod.
                                 </span>
                               </div>
+                              {renderLevelToggle(idx, comp)}
                               <Slider
                                 value={[pct]}
                                 onValueChange={([v]) => updateInputAtIndex(idx, v)}
@@ -1179,15 +1239,36 @@ const Kalkulator = () => {
                             </CardTitle>
                           </div>
                           <CardDescription>
-                            Nagrade s natjecanja koje donose bodove ili izravan upis
+                            Pravila ovog studija. Ako imaš nagradu, odaberi najbolju — vrednuje se jedno postignuće.
                           </CardDescription>
                         </CardHeader>
                         <CardContent>
-                          <div className="space-y-1.5">
+                          <div className="space-y-1.5" role="radiogroup" aria-label="Natjecanje">
+                            <button
+                              type="button"
+                              role="radio"
+                              aria-checked={natjecanjeIndex == null}
+                              onClick={() => setNatjecanjeIndex(null)}
+                              className={cn(
+                                "flex w-full items-center gap-2 rounded-lg border px-3 py-2 text-left text-sm",
+                                natjecanjeIndex == null ? "border-primary bg-primary/10" : "border-transparent bg-secondary/50",
+                              )}
+                            >
+                              Nemam nagradu s natjecanja
+                            </button>
                             {selectedFormula.natjecanja.map((natj, i) => (
-                              <div
+                              <button
+                                type="button"
+                                role="radio"
+                                aria-checked={natjecanjeIndex === i}
+                                onClick={() => setNatjecanjeIndex(i)}
                                 key={i}
-                                className="flex items-center justify-between gap-3 rounded-lg bg-secondary/50 px-3 py-2 transition-colors hover:bg-secondary/80"
+                                className={cn(
+                                  "flex w-full items-center justify-between gap-3 rounded-lg border px-3 py-2 text-left transition-colors",
+                                  natjecanjeIndex === i
+                                    ? "border-primary bg-primary/10"
+                                    : "border-transparent bg-secondary/50 hover:bg-secondary/80",
+                                )}
                               >
                                 <div className="flex min-w-0 items-center gap-2">
                                   <Trophy className="h-3.5 w-3.5 shrink-0 text-amber-600" />
@@ -1205,9 +1286,11 @@ const Kalkulator = () => {
                                       : "border-blue-200 bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300",
                                   )}
                                 >
-                                  {natj.vrednovanje}
+                                  {parseNatjecanje(natj)?.kind === "percent"
+                                    ? `${natj.vrednovanje} = +${natjecanjePoints(selectedFormula, natj)} bod.`
+                                    : natj.vrednovanje}
                                 </Badge>
-                              </div>
+                              </button>
                             ))}
                           </div>
                         </CardContent>
@@ -1269,6 +1352,7 @@ const Kalkulator = () => {
                                   {pct}% → {displayPts.toFixed(1)} / {comp.max} bod.
                                 </span>
                               </div>
+                              {renderLevelToggle(idx, comp)}
                               <Slider
                                 value={[pct]}
                                 onValueChange={([v]) => updateInputAtIndex(idx, v)}
@@ -1379,7 +1463,7 @@ const Kalkulator = () => {
                           <div className="flex items-center gap-2">
                             <Award className="w-5 h-5 text-primary" />
                             <CardTitle className="text-lg">
-                              Prijemni ispit / posebne provjere
+                              Prijemni, posebne provjere i ostali elementi
                             </CardTitle>
                           </div>
                         </CardHeader>
@@ -1439,69 +1523,6 @@ const Kalkulator = () => {
                       </p>
                     </CardContent>
                   </Card>
-                )}
-
-                {/* Dodatni bodovi — korak 3 */}
-                {wizardStep === 3 && (
-                <Card className={cardShell}>
-                  <CardHeader className="pb-3">
-                    <div className="flex items-center gap-2">
-                      <Plus className="w-5 h-5 text-primary" />
-                      <CardTitle className="text-lg">
-                        Dodatni bodovi (natjecanja, volonterstvo)
-                      </CardTitle>
-                    </div>
-                    <CardDescription>
-                      Označi i unesi bodove ako imaš
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent className="space-y-3">
-                    {ADDITIONAL_OPTIONS.map((opt) => (
-                      <div
-                        key={opt.key}
-                        className="flex items-center justify-between gap-4"
-                      >
-                        <div className="flex items-center gap-2">
-                          <Checkbox
-                            id={opt.key}
-                            checked={(additionalPoints[opt.key] ?? 0) > 0}
-                            onCheckedChange={(v) => {
-                              setAdditionalPoints((prev) => ({
-                                ...prev,
-                                [opt.key]: v ? opt.maxPoints : 0,
-                              }));
-                            }}
-                          />
-                          <Label htmlFor={opt.key} className="cursor-pointer text-sm">
-                            {opt.label}
-                          </Label>
-                        </div>
-                        {(additionalPoints[opt.key] ?? 0) > 0 && (
-                          <Input
-                            type="number"
-                            min={0}
-                            max={opt.maxPoints}
-                            value={additionalPoints[opt.key] ?? opt.maxPoints}
-                            onChange={(e) => {
-                              const v = parseInt(e.target.value, 10);
-                              if (!Number.isNaN(v))
-                                setAdditionalPoints((prev) => ({
-                                  ...prev,
-                                  [opt.key]: Math.min(opt.maxPoints, Math.max(0, v)),
-                                }));
-                            }}
-                            className="w-16 h-8 text-center rounded-lg"
-                          />
-                        )}
-                      </div>
-                    ))}
-                    {totalAdditional > 0 && (
-                      <p className="text-sm text-muted-foreground pt-1">
-                        Ukupno dodatnih bodova: {totalAdditional}
-                      </p>
-                    )}
-                  </CardContent>
-                </Card>
                 )}
 
                 {wizardStep === 4 && selectedFormula && (
@@ -1674,29 +1695,36 @@ const Kalkulator = () => {
                           </motion.p>
                         </AnimatePresence>
                         <p className="text-sm text-muted-foreground mt-1">
-                          od {MAX_POINTS} maksimalnih
+                          od {maxPoints} maksimalnih
+                          {admissionResult && admissionResult.natjecanjePoints > 0 && " (+ natjecanje)"}
                         </p>
                       </div>
+                      {admissionResult?.izravanUpis && (
+                        <div className="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-900 dark:border-emerald-800 dark:bg-emerald-950/30 dark:text-emerald-100">
+                          Odabrana nagrada donosi <strong>izravan upis</strong> na ovaj studij (uz ispunjene ostale uvjete).
+                          Prijavi studij na postani-student.hr i priloži dokaz o nagradi.
+                        </div>
+                      )}
 
                       {/* Progress bar */}
                       <div className="space-y-2">
                         <div className="flex justify-between text-xs text-muted-foreground">
                           <span>0</span>
-                          <span>{MAX_POINTS}</span>
+                          <span>{maxPoints}</span>
                         </div>
                         <div className="h-3 rounded-full bg-secondary overflow-hidden relative">
                           {/* Cutoff marker */}
                           {cutoff != null && (
                             <div
                               className="absolute top-0 bottom-0 w-0.5 bg-foreground/40 z-10"
-                              style={{ left: `${(cutoff / MAX_POINTS) * 100}%` }}
+                              style={{ left: `${Math.min(100, (cutoff / maxPoints) * 100)}%` }}
                             />
                           )}
                           <motion.div
                             className={cn("h-full rounded-full", config.bg)}
                             initial={{ width: 0 }}
                             animate={{
-                              width: `${((totalPoints ?? 0) / MAX_POINTS) * 100}%`,
+                              width: `${Math.min(100, ((totalPoints ?? 0) / maxPoints) * 100)}%`,
                             }}
                             transition={{ type: "spring", stiffness: 100 }}
                           />
@@ -1853,28 +1881,23 @@ const Kalkulator = () => {
                                   </div>
                                 );
                               })}
-                              {totalAdditional > 0 && (
-                                <div className="space-y-1">
-                                  <div className="flex justify-between text-xs">
-                                    <span className="text-muted-foreground">
-                                      Natjecanja / volonterstvo
-                                    </span>
-                                    <span className="font-medium">
-                                      +{totalAdditional}
-                                    </span>
-                                  </div>
-                                  <div className="h-2 rounded-full bg-secondary overflow-hidden">
-                                    <div
-                                      className="h-full rounded-full bg-violet-500"
-                                      style={{ width: `${Math.min(100, (totalAdditional / 30) * 100)}%` }}
-                                    />
-                                  </div>
+                              {admissionResult.natjecanjePoints > 0 && (
+                                <div className="flex justify-between text-xs">
+                                  <span className="text-muted-foreground">Natjecanje (pravilo studija)</span>
+                                  <span className="font-medium">+{admissionResult.natjecanjePoints}</span>
                                 </div>
                               )}
                               <div className="pt-2 border-t flex justify-between text-sm font-semibold">
                                 <span>Ukupno</span>
-                                <span>{totalPoints ?? "—"} / {MAX_POINTS}</span>
+                                <span>{totalPoints ?? "—"} / {maxPoints}</span>
                               </div>
+                              {selectedFormula && (
+                                <div className="flex flex-wrap gap-2 pt-2">
+                                  <Button asChild size="sm" variant="outline" className="rounded-lg">
+                                    <Link to="/kalkulator-doma">Trebaš studentski dom? Izračunaj bodove ({selectedFormula.grad})</Link>
+                                  </Button>
+                                </div>
+                              )}
                             </CardContent>
                           </motion.div>
                         )}

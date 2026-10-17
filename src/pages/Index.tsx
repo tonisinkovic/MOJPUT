@@ -1,14 +1,21 @@
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
-import { motion, AnimatePresence, useScroll, useTransform } from "framer-motion";
+import { motion, AnimatePresence, useScroll, useTransform, type Variants } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import Layout from "@/components/Layout";
+import PageSeo from "@/components/seo/PageSeo";
 import AnimatedStatsGrid, { type StatItem } from "@/components/AnimatedStatsGrid";
 import { scrollDocumentToTopInstant } from "@/components/ScrollToTop";
 import {
   JUNIOR_MAP_SCHOOL_COUNT,
   JUNIOR_QUIZ_QUESTION_COUNT,
 } from "@/lib/juniorHonesty";
+import {
+  SENIOR_CALCULATOR_PROGRAM_COUNT,
+  SENIOR_INSTITUTION_COUNT,
+  SENIOR_QUIZ_STUDY_AREA_COUNT,
+  SENIOR_VIDEO_COUNT,
+} from "@/lib/seniorHonesty";
 import {
   storeExperience,
   storePreferredExperience,
@@ -35,7 +42,8 @@ import {
   User,
   School,
 } from "lucide-react";
-import type { LucideIcon, ReactNode } from "react";
+import type { LucideIcon } from "lucide-react";
+import type { ReactNode } from "react";
 import { cn } from "@/lib/utils";
 
 type HeroQuickAction = {
@@ -115,7 +123,7 @@ const HERO_QUICK_ACTIONS: HeroQuickAction[] = [
   },
 ];
 
-const heroQuickStagger = {
+const heroQuickStagger: Variants = {
   hidden: { opacity: 0 },
   show: {
     opacity: 1,
@@ -123,7 +131,7 @@ const heroQuickStagger = {
   },
 };
 
-const heroQuickItem = {
+const heroQuickItem: Variants = {
   hidden: { opacity: 0, y: 18, scale: 0.9 },
   show: {
     opacity: 1,
@@ -303,13 +311,25 @@ function featureTone(path: string): string {
 const JUNIOR_HIDDEN_QUICK = new Set(["/samoprocjena"]);
 
 const seniorStats: StatItem[] = [
-  { value: 120, suffix: "+", label: "Fakulteta", icon: <GraduationCap className="w-5 h-5" /> },
-  { value: 600, suffix: "+", label: "Korisnika", icon: <Users className="w-5 h-5" /> },
-  { value: 1, label: "Video lekcija", icon: <Video className="w-5 h-5" /> },
-  { value: 95, suffix: "%", label: "Zadovoljstvo", icon: <Award className="w-5 h-5" /> },
+  { value: SENIOR_INSTITUTION_COUNT, label: "Fakulteta i veleučilišta", icon: <GraduationCap className="w-5 h-5" /> },
+  { value: SENIOR_CALCULATOR_PROGRAM_COUNT, label: "Programa u kalkulatoru", icon: <Calculator className="w-5 h-5" /> },
+  { value: SENIOR_QUIZ_STUDY_AREA_COUNT, label: "Područja studija u kvizu", icon: <Target className="w-5 h-5" /> },
+  { value: SENIOR_VIDEO_COUNT, label: "Videa o studiju", icon: <Video className="w-5 h-5" /> },
 ];
 
 type MojPutExperience = "junior" | "senior";
+
+const HOME_SEO_TITLE = "MojPut – karijerni usmjerivač za upis u srednju školu i na fakultet";
+const HOME_SEO_DESCRIPTION =
+  "Kviz interesa, kalkulator bodova za srednje škole i fakultete, karta fakulteta, rokovi upisa i forum — besplatno, na jednom mjestu.";
+const HOME_JSON_LD = {
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  name: "MojPut",
+  url: "https://www.mojput.com/",
+  inLanguage: "hr",
+  description: HOME_SEO_DESCRIPTION,
+};
 
 const Index = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -525,18 +545,24 @@ const Index = () => {
   const otherFeatures = featureList.filter((f) => !(featurePathname(f.path) in LEAD_RANK));
   const readyCount = featureList.filter((f) => !f.locked).length;
   const lockedCount = featureList.filter((f) => f.locked).length;
+  const seo = <PageSeo title={HOME_SEO_TITLE} description={HOME_SEO_DESCRIPTION} jsonLd={HOME_JSON_LD} />;
+
   if (showEntryIntro) {
   return (
-      <MojPutEntryIntro
-        onEnterJunior={() => openExperience("junior")}
-        onEnterSenior={() => openExperience("senior")}
-      />
+      <>
+        {seo}
+        <MojPutEntryIntro
+          onEnterJunior={() => openExperience("junior")}
+          onEnterSenior={() => openExperience("senior")}
+        />
+      </>
     );
   }
 
   return (
     <div data-mojput-experience={selectedExperience}>
     <Layout>
+      {seo}
       <motion.div
         className="fixed left-0 top-0 z-[80] h-[3px] w-full origin-left bg-gradient-to-r from-primary via-sky-400 to-amber-400 shadow-[0_0_18px_hsl(174_62%_42%/0.45)]"
         style={{ scaleX: pageProgressScale }}
@@ -941,10 +967,10 @@ const Index = () => {
                     </span>
                     <div>
                       <div className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
-                        {isJunior ? "Srednjih škola" : "Fakulteta"}
+                        {isJunior ? "Srednjih škola" : "Učilišta"}
                       </div>
                       <div className="text-lg font-extrabold tracking-tight text-foreground leading-none">
-                        {isJunior ? String(JUNIOR_MAP_SCHOOL_COUNT) : "120+"}
+                        {isJunior ? String(JUNIOR_MAP_SCHOOL_COUNT) : String(SENIOR_INSTITUTION_COUNT)}
                       </div>
                     </div>
                   </div>
@@ -958,10 +984,12 @@ const Index = () => {
                     </span>
                     <div>
                       <div className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
-                        {isJunior ? "Kviz" : "Zadovoljstvo"}
+                        {isJunior ? "Kviz" : "Kalkulator"}
                       </div>
                       <div className="text-lg font-extrabold tracking-tight text-foreground leading-none">
-                        {isJunior ? `${JUNIOR_QUIZ_QUESTION_COUNT} pitanja` : "95%"}
+                        {isJunior
+                          ? `${JUNIOR_QUIZ_QUESTION_COUNT} pitanja`
+                          : `${SENIOR_CALCULATOR_PROGRAM_COUNT} studija`}
                       </div>
                     </div>
                   </div>

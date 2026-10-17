@@ -31,22 +31,21 @@ function upsertLink(rel: string, href: string) {
 export default function PageSeo({ title, description, canonical, image, jsonLd }: PageSeoProps) {
   useEffect(() => {
     const prev = document.title;
+    const origin = window.location.origin;
+    const url = canonical || `${origin}${window.location.pathname}`;
+    const ogImage = image || `${origin}/og-image.png`;
     document.title = title;
     upsertMeta('meta[name="description"]', "name", "description", description);
     upsertMeta('meta[property="og:title"]', "property", "og:title", title);
     upsertMeta('meta[property="og:description"]', "property", "og:description", description);
     upsertMeta('meta[property="og:type"]', "property", "og:type", "website");
-    upsertMeta('meta[name="twitter:card"]', "name", "twitter:card", image ? "summary_large_image" : "summary");
+    upsertMeta('meta[name="twitter:card"]', "name", "twitter:card", "summary_large_image");
     upsertMeta('meta[name="twitter:title"]', "name", "twitter:title", title);
     upsertMeta('meta[name="twitter:description"]', "name", "twitter:description", description);
-    if (canonical) {
-      upsertLink("canonical", canonical);
-      upsertMeta('meta[property="og:url"]', "property", "og:url", canonical);
-    }
-    if (image) {
-      upsertMeta('meta[property="og:image"]', "property", "og:image", image);
-      upsertMeta('meta[name="twitter:image"]', "name", "twitter:image", image);
-    }
+    upsertLink("canonical", url);
+    upsertMeta('meta[property="og:url"]', "property", "og:url", url);
+    upsertMeta('meta[property="og:image"]', "property", "og:image", ogImage);
+    upsertMeta('meta[name="twitter:image"]', "name", "twitter:image", ogImage);
     return () => {
       document.title = prev;
     };
@@ -54,6 +53,9 @@ export default function PageSeo({ title, description, canonical, image, jsonLd }
 
   if (!jsonLd) return null;
   return (
-    <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+    <script
+      type="application/ld+json"
+      dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }}
+    />
   );
 }

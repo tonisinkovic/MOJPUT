@@ -1246,7 +1246,7 @@ const ensureFacultyDoors = (
 ): JuniorProgramMatch[] => {
   const leader = recommendations[0]?.rankScore ?? matches[0]?.rankScore ?? 0;
   const closeEnough = (item: JuniorProgramMatch) => leader - item.rankScore <= 14;
-  let next = [...recommendations];
+  const next = [...recommendations];
   const offer = generalGymnasiumOffer(profile, matches, priority);
   const economy = economyDoor(profile) ? (matches.find((item) => item.program.id === 18) ?? null) : null;
   const named = namedIdeaMatch(profile, matches);

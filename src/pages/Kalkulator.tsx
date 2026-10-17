@@ -1,10 +1,12 @@
 import Layout from "@/components/Layout";
+import PageSeo from "@/components/seo/PageSeo";
 import SrednjaKalkulator from "@/components/SrednjaKalkulator";
 import { ArrowLeft } from "lucide-react";
 
 export default function Kalkulator() {
   return (
     <Layout>
+      <PageSeo title="Kalkulator bodova za upis u srednju školu – MojPut" description="Izračunaj bodove za upis u srednju školu iz ocjena i usporedi ih s lanjskim pragovima škola." />
       <section className="container relative mx-auto max-w-7xl overflow-x-hidden px-3 py-5 pb-[max(6.5rem,calc(5rem+env(safe-area-inset-bottom)))] sm:px-4 sm:py-10 sm:pb-14 md:py-14">
         {/* Back button */}
         <button

@@ -79,6 +79,7 @@ import {
   type SeniorLocationPlan,
 } from "@/lib/seniorQuizGeo";
 import { trackEvent } from "@/lib/analytics";
+import { facultySearchQuery, pickSearchableFaculty } from "@/lib/facultyAliases";
 import { cn } from "@/lib/utils";
 
 /**
@@ -160,6 +161,30 @@ function careerNamesPreview(names: string[], max = 2): string {
   if (names.length === 0) return "";
   if (names.length <= max) return names.join(", ");
   return `${names.slice(0, max).join(", ")} +${names.length - max}`;
+}
+
+function StudyNextSteps({ facultyLabel, needsDorm }: { facultyLabel?: string; needsDorm: boolean }) {
+  if (!facultyLabel && !needsDorm) return null;
+  const q = facultyLabel ? encodeURIComponent(facultySearchQuery(facultyLabel)) : "";
+  return (
+    <div className="mt-3 flex flex-wrap gap-2">
+      {q && (
+        <>
+          <Button asChild size="sm" className="rounded-lg">
+            <Link to={`/kalkulator-fakulteti?q=${q}`}>Izračunaj bodove za upis</Link>
+          </Button>
+          <Button asChild size="sm" variant="outline" className="rounded-lg">
+            <Link to={`/fakulteti?q=${q}`}>Profil fakulteta</Link>
+          </Button>
+        </>
+      )}
+      {needsDorm && (
+        <Button asChild size="sm" variant="ghost" className="rounded-lg">
+          <Link to="/kalkulator-doma">Bodovi za studentski dom</Link>
+        </Button>
+      )}
+    </div>
+  );
 }
 
 function sectionIntroAt<T extends { startIndex: number; title: string; blurb: string }>(
@@ -304,7 +329,7 @@ export default function CareerQuizFlow({
     if (phase === "intro") return;
     if (!quizStartedRef.current) quizStartedRef.current = true;
 
-    let stepName = phase;
+    let stepName: string = phase;
     let stepNumber = 0;
     if (phase === "interests") {
       stepName = "interests_question";
@@ -403,7 +428,10 @@ export default function CareerQuizFlow({
     const hash = `${interestAnswers.join(",")}|${competencyAnswers.join(",")}`;
     const traits = computeHolisticTraits(analysis.interestScoresNormalized, analysis.competencyScoresNormalized);
     const top5 = topTraits(traits, 5);
-    const payload = buildCareerQuizPayload(interestAnswers, competencyAnswers, analysis, top5);
+    const payload = buildCareerQuizPayload(interestAnswers, competencyAnswers, analysis, top5, {
+      studyPrograms: studyAnalysis?.matches,
+      location,
+    });
     try {
       sessionStorage.setItem(PENDING_CAREER_QUIZ_STORAGE_KEY, JSON.stringify(payload));
     } catch {
@@ -447,7 +475,7 @@ export default function CareerQuizFlow({
       guestPromptedHashRef.current = hash;
       setGuestSaveDialogOpen(true);
     });
-  }, [phase, analysis, interestAnswers, competencyAnswers]);
+  }, [phase, analysis, studyAnalysis, location, interestAnswers, competencyAnswers]);
 
   useEffect(() => {
     const reportAbandonment = () => {
@@ -2086,6 +2114,17 @@ export default function CareerQuizFlow({
                           </p>
                         )}
                       </div>
+                      <StudyNextSteps
+                        facultyLabel={pickSearchableFaculty([
+                          ...rec.localFaculties.map((f) => f.label),
+                          ...rec.program.faculties,
+                        ])}
+                        needsDorm={Boolean(
+                          location &&
+                            (location.plan === "move" ||
+                              (location.plan === "stay" && rec.localFaculties.length === 0)),
+                        )}
+                      />
                     </li>
                   ))}
                 </ol>

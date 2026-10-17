@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import { ArrowUpRight, Building2, Calculator, GraduationCap, MapPin, ShieldCheck } from "lucide-react";
+import { ArrowUpRight, Building2, Calculator, ChevronDown, GraduationCap, MapPin, ShieldCheck } from "lucide-react";
 import Layout from "@/components/Layout";
 import PageSeo from "@/components/seo/PageSeo";
 import { Badge } from "@/components/ui/badge";
@@ -15,17 +15,54 @@ import {
 import InfoPill from "@/components/faculty/InfoPill";
 import FacultyPostCard from "@/components/faculty/FacultyPostCard";
 import FacultyMediaCard from "@/components/faculty/FacultyMediaCard";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { facultyInitial } from "@/lib/facultyCatalog";
+import { facultySummaryText, getFacultyPrograms, type FacultyProgramRow } from "@/lib/facultyPrograms";
 import { getFacultyById, getFacultyPosts } from "@/lib/facultyStore";
+
+function ProgramRow({ program, homeCity }: { program: FacultyProgramRow; homeCity: string }) {
+  return (
+    <li className="flex flex-col gap-2 p-3 sm:flex-row sm:items-center sm:justify-between">
+      <div className="min-w-0">
+        <p className="text-sm font-semibold leading-snug">{program.name}</p>
+        <p className="mt-0.5 flex flex-wrap items-center gap-x-2 text-xs text-muted-foreground">
+          {program.city !== homeCity && (
+            <span className="inline-flex items-center gap-1">
+              <MapPin className="h-3 w-3" />
+              {program.city}
+            </span>
+          )}
+          <span>
+            {program.cutoff2025 !== null
+              ? `Prag 2025.: ${program.cutoff2025}${program.maxBodovi ? ` / ${program.maxBodovi}` : ""} bod.`
+              : "Prag 2025. nije objavljen"}
+          </span>
+        </p>
+      </div>
+      {program.programId && (
+        <Button asChild size="sm" variant="outline" className="shrink-0 rounded-lg">
+          <Link to={`/kalkulator-fakulteti?program=${encodeURIComponent(program.programId)}`}>
+            Izračunaj bodove
+            <Calculator className="ml-1 h-3.5 w-3.5" />
+          </Link>
+        </Button>
+      )}
+    </li>
+  );
+}
 
 const FacultyProfile = () => {
   const { facultyId = "" } = useParams();
   const faculty = useMemo(() => getFacultyById(facultyId), [facultyId]);
   const posts = useMemo(() => getFacultyPosts(facultyId), [facultyId]);
+  const programSummary = useMemo(
+    () => (faculty ? getFacultyPrograms(faculty) : null),
+    [faculty],
+  );
   const [descriptionExpanded, setDescriptionExpanded] = useState(false);
   const [activeMediaId, setActiveMediaId] = useState<string | null>(null);
 
-  if (!faculty) {
+  if (!faculty || !programSummary) {
     return (
       <Layout>
         <PageSeo
@@ -45,15 +82,22 @@ const FacultyProfile = () => {
 
   const media = faculty.media ?? [];
   const activeMedia = media.find((item) => item.id === activeMediaId) || null;
-  const about = faculty.longDescription || faculty.description;
-  const levelsLabel = faculty.levels.length ? faculty.levels.join(" · ") : "nije navedeno";
+  const about = faculty.longDescription || facultySummaryText(faculty, programSummary);
+  const regularPrograms = programSummary.programs.filter((p) => p.tags.length === 0);
+  const variantPrograms = programSummary.programs.filter((p) => p.tags.length > 0);
+  const levelsLabel = faculty.levels.length
+    ? faculty.levels.join(" · ")
+    : regularPrograms.length
+      ? `${regularPrograms.length} programa`
+      : "nije navedeno";
+  const calculatorSearch = `/kalkulator-fakulteti?q=${encodeURIComponent(faculty.name.toLowerCase())}`;
   const canonical = `https://mojput.com/fakulteti/${faculty.id}`;
 
   return (
     <Layout>
       <PageSeo
         title={`${faculty.name} – ${faculty.city} | MojPut`}
-        description={`${faculty.name} pri ${faculty.university} u gradu ${faculty.city}. Opis, kontakti i novosti ustanove.`}
+        description={`${faculty.name} (${faculty.city}): studijski programi, pragovi za upis 2025. i izračun bodova.`}
         canonical={canonical}
         image={faculty.coverImageUrl || faculty.logoUrl}
       />
@@ -100,7 +144,7 @@ const FacultyProfile = () => {
                   <Link to="/fakulteti">Svi fakulteti</Link>
                 </Button>
                 <Button className="rounded-full" asChild>
-                  <Link to="/kalkulator-fakulteti">
+                  <Link to={calculatorSearch}>
                     Kalkulator
                     <Calculator className="ml-1 h-4 w-4" />
                   </Link>
@@ -121,7 +165,11 @@ const FacultyProfile = () => {
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-3 md:gap-4">
           <InfoPill icon={<MapPin className="h-4 w-4" />} label="Grad" value={faculty.city} />
           <InfoPill icon={<Building2 className="h-4 w-4" />} label="Ustanova" value={faculty.universityType} />
-          <InfoPill icon={<GraduationCap className="h-4 w-4" />} label="Razina" value={levelsLabel} />
+          <InfoPill
+            icon={<GraduationCap className="h-4 w-4" />}
+            label={faculty.levels.length ? "Razina" : "Studiji"}
+            value={levelsLabel}
+          />
         </div>
 
         <article id="o-fakultetu" className="scroll-mt-24 rounded-2xl border bg-card p-5 shadow-card md:p-7">
@@ -141,6 +189,52 @@ const FacultyProfile = () => {
             </Button>
           ) : null}
         </article>
+
+        <section id="programi" className="scroll-mt-24 rounded-2xl border bg-card p-5 shadow-card md:p-7">
+          <div className="mb-4">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-primary">Upisi</p>
+            <h2 className="mt-1 text-xl font-extrabold tracking-tight md:text-2xl">Studijski programi i pragovi</h2>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Prag je broj bodova zadnjeg upisanog kandidata na upisima 2025. (izvor: postani-student.hr). Pragovi se
+              mijenjaju svake godine — uzmi ih kao orijentir.
+            </p>
+          </div>
+          {regularPrograms.length === 0 && variantPrograms.length === 0 ? (
+            <div className="rounded-xl border border-dashed bg-muted/20 p-5 text-sm text-muted-foreground">
+              Za ovo učilište još nemamo popis programa. Provjeri na{" "}
+              <a href="https://www.postani-student.hr" target="_blank" rel="noreferrer" className="text-primary underline">
+                postani-student.hr
+              </a>
+              .
+            </div>
+          ) : (
+            <ul className="divide-y rounded-xl border">
+              {regularPrograms.map((p) => (
+                <ProgramRow key={`${p.city}|${p.name}`} program={p} homeCity={faculty.city} />
+              ))}
+            </ul>
+          )}
+          {variantPrograms.length > 0 && (
+            <Collapsible className="mt-4">
+              <CollapsibleTrigger asChild>
+                <Button type="button" variant="ghost" className="gap-1 px-0 text-primary hover:text-primary">
+                  Izvanredni, stručni i posebni natječaji ({variantPrograms.length})
+                  <ChevronDown className="h-4 w-4" />
+                </Button>
+              </CollapsibleTrigger>
+              <CollapsibleContent>
+                <p className="mb-2 text-xs text-muted-foreground">
+                  Ovi natječaji imaju vlastite uvjete — kalkulator za njih ne računa bodove.
+                </p>
+                <ul className="divide-y rounded-xl border">
+                  {variantPrograms.map((p) => (
+                    <ProgramRow key={`${p.city}|${p.name}`} program={p} homeCity={faculty.city} />
+                  ))}
+                </ul>
+              </CollapsibleContent>
+            </Collapsible>
+          )}
+        </section>
 
         <section className="rounded-2xl border bg-card p-5 shadow-card md:p-7">
           <div className="mb-4">

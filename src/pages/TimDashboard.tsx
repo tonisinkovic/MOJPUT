@@ -2,6 +2,7 @@ import { useEffect, useState, type ReactNode } from "react";
 import { Link } from "react-router-dom";
 import Layout from "@/components/Layout";
 import SchoolAdminPanel from "@/components/school/SchoolAdminPanel";
+import ForumReportsPanel from "@/components/admin/ForumReportsPanel";
 import { fetchAdminStats, type AdminStats } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
 import {
@@ -158,6 +159,7 @@ const TimDashboard = () => {
           </div>
         )}
 
+        {!loading && !error && <ForumReportsPanel />}
         {!loading && !error && <SchoolAdminPanel />}
       </section>
     </Layout>

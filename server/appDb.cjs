@@ -137,6 +137,7 @@ const INSERT_RETURNING_TABLES = new Set([
   "forum_conversations",
   "forum_messages",
   "forum_likes",
+  "forum_reports",
   "career_quiz_results",
   "site_feedback",
   "user_saved_faculties",
@@ -354,6 +355,21 @@ function migrateSqlite(db) {
   if (!forumMsgCols.includes("deleted_by_user_at")) {
     db.exec("ALTER TABLE forum_messages ADD COLUMN deleted_by_user_at TEXT");
   }
+  if (!forumMsgCols.includes("hidden_at")) {
+    db.exec("ALTER TABLE forum_messages ADD COLUMN hidden_at TEXT");
+  }
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS forum_reports (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      message_id INTEGER NOT NULL,
+      reporter_user_id INTEGER NOT NULL,
+      reason TEXT NOT NULL DEFAULT 'ostalo',
+      created_at TEXT NOT NULL DEFAULT (datetime('now')),
+      UNIQUE(message_id, reporter_user_id),
+      FOREIGN KEY (message_id) REFERENCES forum_messages(id),
+      FOREIGN KEY (reporter_user_id) REFERENCES users(id)
+    )
+  `);
 
   const forumConvCols = db.prepare("PRAGMA table_info(forum_conversations)").all().map((c) => c.name);
   if (!forumConvCols.includes("audience")) {
@@ -725,6 +741,15 @@ async function migratePg(pool) {
   await run(
     "ALTER TABLE forum_conversations ADD COLUMN IF NOT EXISTS category TEXT NOT NULL DEFAULT 'opce'",
   );
+  await run("ALTER TABLE forum_messages ADD COLUMN IF NOT EXISTS hidden_at TIMESTAMPTZ");
+  await run(`CREATE TABLE IF NOT EXISTS forum_reports (
+      id SERIAL PRIMARY KEY,
+      message_id INTEGER NOT NULL REFERENCES forum_messages(id),
+      reporter_user_id INTEGER NOT NULL REFERENCES users(id),
+      reason TEXT NOT NULL DEFAULT 'ostalo',
+      created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      UNIQUE(message_id, reporter_user_id)
+    )`);
 
   let migrated;
   try {

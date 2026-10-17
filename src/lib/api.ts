@@ -1,6 +1,17 @@
 import { API_BASE_URL } from "@/config/apiBase";
 
-export type ApiOk<T> = { success: true; data?: T; user?: T };
+/**
+ * Projekt nema strictNullChecks, pa `if (!res.success)` ne sužava uniju — zato i ApiOk nosi
+ * opcionalne `message`/`code`, a server uz `data` često šalje i druga polja na vrhu (npr. `liked`).
+ */
+export type ApiOk<T> = {
+  success: true;
+  data?: T;
+  user?: T;
+  message?: string;
+  code?: string;
+  [extra: string]: unknown;
+};
 export type ApiErr = { success: false; message: string; code?: string };
 export type ApiResponse<T> = ApiOk<T> | ApiErr;
 

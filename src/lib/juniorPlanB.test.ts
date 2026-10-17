@@ -74,6 +74,7 @@ describe("junior Plan B", () => {
         {
           program: electro,
           matchPercentage: 70,
+          rankScore: 70,
           overallScore: 70,
           interestScore: 70,
           learningFitScore: 70,
@@ -98,6 +99,7 @@ describe("junior Plan B", () => {
         {
           program: highSchoolPrograms.find((p) => p.name === "Električar / elektroinstalater")!,
           matchPercentage: 64,
+          rankScore: 64,
           overallScore: 64,
           interestScore: 60,
           learningFitScore: 60,

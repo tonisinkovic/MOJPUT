@@ -14,7 +14,8 @@ const interests = interestsJson.interests as InterestQuestion[];
 const competencies = competenciesJson.competencies as CompetencyQuestion[];
 const programs = programsJson.programs as StudyProgramRow[];
 
-type InterestProfile = Partial<Record<string, number>> & {
+type RiasecKey = "realistic" | "investigative" | "artistic" | "social" | "enterprising" | "conventional";
+type InterestProfile = Partial<Record<RiasecKey, number>> & {
   signals?: Partial<Record<CareerInterestSignalKey, number>>;
 };
 
@@ -23,7 +24,7 @@ function buildInterestAnswers(profile: InterestProfile): number[] {
   return interests.map((q) => {
     const signalOverride = q.signalKey ? profile.signals?.[q.signalKey as CareerInterestSignalKey] : undefined;
     if (signalOverride !== undefined) return signalOverride;
-    return profile[q.category] ?? 2;
+    return profile[q.category as RiasecKey] ?? 2;
   });
 }
 
@@ -34,6 +35,38 @@ function buildCompetencyAnswers(profile: Partial<Record<string, number>>): numbe
 function topNames(matches: { program: StudyProgramRow }[], n = 5): string[] {
   return matches.slice(0, n).map((m) => m.program.name);
 }
+
+describe("analyzeStudyPrograms — dodani studiji", () => {
+  it("profil za rad s djecom i govorom dobiva logopediju ili predškolski odgoj u top 5", () => {
+    const ia = buildInterestAnswers({
+      social: 5,
+      investigative: 3,
+      realistic: 1,
+      enterprising: 2,
+      conventional: 2,
+      artistic: 3,
+      signals: { social_help_interest: 5, teaching_mentoring_interest: 5, medicine_health_interest: 3 },
+    });
+    const ca = buildCompetencyAnswers({ patience: 5, communication: 5, emotional_intelligence: 5 });
+    const names = topNames(analyzeStudyPrograms(interests, competencies, ia, ca, programs).matches);
+    expect(
+      names.some((n) => n === "Logopedija i edukacijska rehabilitacija" || n === "Rani i predškolski odgoj"),
+    ).toBe(true);
+  });
+
+  it("tehnički profil s interesom za more i strojeve vidi nautiku ili brodogradnju u top 8", () => {
+    const ia = buildInterestAnswers({
+      realistic: 5,
+      investigative: 3,
+      social: 1,
+      artistic: 1,
+      signals: { machines_tech_interest: 5, nature_outdoor_interest: 5, materials_construction_interest: 4 },
+    });
+    const ca = buildCompetencyAnswers({ technical: 5, safety: 5, stress_management: 4, problem_solving: 4 });
+    const names = topNames(analyzeStudyPrograms(interests, competencies, ia, ca, programs).matches, 8);
+    expect(names.some((n) => n === "Nautika i brodostrojarstvo" || n === "Brodogradnja")).toBe(true);
+  });
+});
 
 describe("analyzeStudyPrograms — simulirani profili", () => {
   it("IT profil dobiva računarstvo na vrhu (ispred strojarstva)", () => {
@@ -247,6 +280,11 @@ describe("konzistentnost baze programa", () => {
         expect(validCompetencyKeys.has(key), `${p.name}: kompetencija ${key}`).toBe(true);
       }
     }
+  });
+
+  it("id-jevi i nazivi studija su jedinstveni", () => {
+    expect(new Set(programs.map((p) => p.id)).size).toBe(programs.length);
+    expect(new Set(programs.map((p) => p.name)).size).toBe(programs.length);
   });
 
   it("svi boost/requires signali imaju barem jedno pitanje sa signalKey", () => {
