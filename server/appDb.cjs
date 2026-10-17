@@ -33,30 +33,19 @@ function pgHostLabel(connectionString) {
   }
 }
 
-function isOnRenderHost() {
-  const r = String(process.env.RENDER || "").toLowerCase();
-  if (r === "true" || r === "1") return true;
-  if (String(process.env.RENDER_SERVICE_ID || "").trim()) return true;
-  return String(process.env.RENDER_EXTERNAL_URL || "").includes("onrender.com");
-}
-
 /**
- * Render Postgres: iz web servisa koristi Internal host (dpg-xxx-a), ne External (*.postgres.render.com).
- * SSL: ne stavljaј gol sslmode=require — noviji node-pg ga tretira kao verify-full i veza puca
- * s «Connection terminated unexpectedly». Oslanjamo se na ssl: { rejectUnauthorized: false }.
+ * SSL: ne stavljaј gol sslmode=require u URI — noviji node-pg ga tretira kao verify-full
+ * i veza s Render Postgresom puca («Connection terminated unexpectedly»).
+ * SSL ide preko Pool { ssl: { rejectUnauthorized: false } }.
+ *
+ * Internal host (samo dpg-xxx-a) na Docker web servisu često daje ENOTFOUND —
+ * ostavi External URL (*.postgres.render.com) kako je u Render dashboardu.
  */
 function normalizePgConnectionString(raw) {
   const trimmed = String(raw || "").trim();
   try {
     const u = new URL(trimmed.replace(/^postgresql:/, "postgres:"));
     const host = u.hostname.toLowerCase();
-
-    const renderExt = /^(dpg-[a-z0-9]+-a)\.[a-z0-9.-]*render\.com$/i.exec(host);
-    if (renderExt && isOnRenderHost()) {
-      const internal = renderExt[1];
-      console.log(`[config] Render Postgres External → Internal: ${host} → ${internal}`);
-      u.hostname = internal;
-    }
 
     if (/^db\.[a-z0-9]+\.supabase\.co$/i.test(host)) {
       console.warn(
@@ -65,7 +54,14 @@ function normalizePgConnectionString(raw) {
       );
     }
 
-    // Makni sslmode iz URI-ja da ne forsira verify-full; SSL ide preko Pool { ssl }.
+    if (/^dpg-[a-z0-9]+-a$/i.test(host)) {
+      console.warn(
+        "[config] Postgres host je kratki Internal (%s) koji se ovdje ne razrješava. U Render Environment stavi External Database URL (…postgres.render.com).",
+        host,
+      );
+    }
+
+    // Makni sslmode iz URI-ja da ne forsira verify-full.
     if (u.searchParams.get("sslmode") !== "disable") {
       u.searchParams.delete("sslmode");
       u.searchParams.delete("uselibpqcompat");
@@ -108,7 +104,7 @@ async function migratePgWithRetry(pool, connectionString, attempts = 4) {
   }
   const host = pgHostLabel(connectionString);
   console.error(
-    `[config] Postgres nedostupan na ${host}. Render Postgres: provjeri da je baza Available i da MOJPUT_DATABASE_URL koristi Internal Database URL (host dpg-…-a). Neon/Supabase: aktivan projekt + ispravan URI.`,
+    `[config] Postgres nedostupan na ${host}. Render: baza mora biti Available; MOJPUT_DATABASE_URL = External Database URL (…postgres.render.com). Ako External i dalje pada, baza je vjerojatno ugašena — napravi novu (Neon) i zamijeni URL.`,
   );
   throw lastErr;
 }
@@ -832,13 +828,34 @@ function createPgDriver(connectionString) {
   const normalized = normalizePgConnectionString(connectionString);
   const ssl = pgSslOption(normalized);
   console.log("[config] Postgres host:", pgHostLabel(normalized));
-  const pool = new Pool({
+
+  /** Eksplicitni host/user/ssl — izbjegava da pg-connection-string forsira verify-full. */
+  let poolConfig = {
     connectionString: normalized,
     max: 10,
     connectionTimeoutMillis: 15_000,
     keepAlive: true,
     ...(ssl ? { ssl } : {}),
-  });
+  };
+  try {
+    const u = new URL(normalized.replace(/^postgresql:/, "postgres:"));
+    const database = decodeURIComponent((u.pathname || "/").replace(/^\//, "") || "postgres");
+    poolConfig = {
+      host: u.hostname,
+      port: u.port ? Number(u.port) : 5432,
+      user: decodeURIComponent(u.username || ""),
+      password: decodeURIComponent(u.password || ""),
+      database,
+      max: 10,
+      connectionTimeoutMillis: 15_000,
+      keepAlive: true,
+      ...(ssl ? { ssl } : {}),
+    };
+  } catch {
+    /* ostavi connectionString fallback */
+  }
+
+  const pool = new Pool(poolConfig);
 
   const driver = {
     isPostgres: true,
