@@ -1336,8 +1336,8 @@ async function main() {
 
   const db = await createAppDb();
   await db.migrate();
-  const { seedJuniorThirdYearForum } = require("./server/juniorThirdYearSeed.cjs");
-  await seedJuniorThirdYearForum(db);
+  const { removeJuniorThirdYearForum } = require("./server/juniorThirdYearRemove.cjs");
+  await removeJuniorThirdYearForum(db);
   await loadUniversitiesData(); // ensures file exists on first run
 
   /** Besplatne poruke chata po korisniku i danu (Europe/Zagreb). */
