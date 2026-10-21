@@ -2,7 +2,7 @@ export type TeamMember = {
   name: string;
   role: string;
   bio: string;
-  avatar: string;
+  avatar?: string;
 };
 
 export const teamMembers: TeamMember[] = [
@@ -23,5 +23,11 @@ export const teamMembers: TeamMember[] = [
     role: "Full-stack developer",
     bio: "Povezuje backend i frontend sustav u cjelinu koja je jednostavna za korištenje i laka za nadogradnju.",
     avatar: "/team/josip-sinkovic.png",
+  },
+  {
+    name: "Stipe Miličević",
+    role: "Komunikacija i dogovori",
+    bio: "Vodi razgovore i dogovore oko web stranice kako bi sve što se planira bilo jasno dogovoreno i provedeno na vrijeme.",
+    avatar: "/team/stipe-milicevic.jpg",
   },
 ];

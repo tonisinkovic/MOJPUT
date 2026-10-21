@@ -2,6 +2,7 @@ import Layout from "@/components/Layout";
 import { motion } from "framer-motion";
 import { Copy, Mail, MessageSquare, Send, Sparkles, Users } from "lucide-react";
 import { teamMembers } from "@/data/team";
+import TeamMemberAvatar from "@/components/TeamMemberAvatar";
 import { toast } from "sonner";
 
 const CONTACT_EMAIL = "mojputhr@gmail.com";
@@ -120,11 +121,7 @@ const Kontakt = () => {
                     aria-hidden
                     className="pointer-events-none absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-primary/60 via-primary/30 to-transparent opacity-0 transition-opacity group-hover:opacity-100"
                   />
-                  <img
-                    src={member.avatar}
-                    alt={member.name}
-                    className="h-16 w-16 rounded-xl border-2 border-border object-cover shadow-sm"
-                  />
+                  <TeamMemberAvatar member={member} />
                   <h3 className="mt-4 text-lg font-semibold leading-snug">{member.name}</h3>
                   <p className="mt-1 inline-flex items-center gap-1 rounded-full border border-primary/25 bg-primary/10 px-2 py-0.5 text-xs font-semibold text-primary">
                     {member.role}

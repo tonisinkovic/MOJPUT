@@ -11,11 +11,14 @@ import {
   ListChecks,
   Lock,
   MessageCircle,
+  Search,
   ShieldCheck,
   Sparkles,
   Target,
+  X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Link } from "react-router-dom";
 import { forwardRef, useEffect, useMemo, useRef, useState } from "react";
 import { authMe, userFromAuthMe } from "@/lib/auth";
@@ -57,7 +60,15 @@ import {
   psychotherapyNeedTier,
 } from "@/data/psychotherapyMiniItems";
 import { cn } from "@/lib/utils";
-import { QUIZ_CARDS, QUIZ_TITLES, type QuizId } from "@/lib/samoprocjenaQuizMeta";
+import {
+  matchesQuizSearch,
+  QUIZ_CARDS,
+  QUIZ_GROUPS,
+  QUIZ_TITLES,
+  type QuizCard,
+  type QuizGroupId,
+  type QuizId,
+} from "@/lib/samoprocjenaQuizMeta";
 import { useSamoprocjenaSaveConsent } from "@/lib/samoprocjenaConsent";
 import { CrisisLines, SaveResultsConsent } from "@/components/samoprocjena/SelfAssessmentSafety";
 
@@ -3208,6 +3219,127 @@ const Samoprocjena = () => {
     [visibleQuizCards],
   );
 
+  const [query, setQuery] = useState("");
+  const [activeGroup, setActiveGroup] = useState<QuizGroupId | "all">("all");
+  const searchedCards = useMemo(
+    () => visibleQuizCards.filter((c) => matchesQuizSearch(c, query)),
+    [visibleQuizCards, query],
+  );
+  const filteredCards = useMemo(
+    () => (activeGroup === "all" ? searchedCards : searchedCards.filter((c) => c.group === activeGroup)),
+    [searchedCards, activeGroup],
+  );
+  const groupCounts = useMemo(() => {
+    const counts = new Map<QuizGroupId, number>();
+    for (const c of searchedCards) counts.set(c.group, (counts.get(c.group) ?? 0) + 1);
+    return counts;
+  }, [searchedCards]);
+  const isFiltering = query.trim() !== "" || activeGroup !== "all";
+  const resetFilters = () => {
+    setQuery("");
+    setActiveGroup("all");
+  };
+
+  const renderCard = (card: QuizCard, i: number) => {
+    const locked = Boolean(card.locked);
+    const isActive = selectedQuiz === card.id;
+    const group = QUIZ_GROUPS.find((g) => g.id === card.group);
+    return (
+      <motion.article
+        key={card.id}
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3, delay: i * 0.04 }}
+        className={cn(
+          "group relative flex flex-col overflow-hidden rounded-2xl border-2 bg-card shadow-card transition-all",
+          locked
+            ? "cursor-not-allowed border-dashed border-muted-foreground/30 opacity-80"
+            : isActive
+              ? "border-primary/60 ring-2 ring-primary/20"
+              : "border-border/70 sm:hover:-translate-y-0.5 sm:hover:border-primary/30 sm:hover:shadow-card-hover",
+        )}
+      >
+        <div className={cn("h-1 w-full", locked ? "bg-muted-foreground/20" : "gradient-hero")} aria-hidden />
+
+        <div className="flex flex-1 flex-col p-4 sm:p-5">
+          <div className="flex items-start justify-between gap-2">
+            <div
+              className={cn(
+                "flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl text-2xl shadow-sm sm:h-14 sm:w-14 sm:text-3xl",
+                locked ? "bg-muted grayscale" : "gradient-hero",
+              )}
+              aria-hidden
+            >
+              {card.icon}
+            </div>
+            {locked ? (
+              <span className="inline-flex items-center gap-1 rounded-full border border-muted-foreground/30 bg-muted/60 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-muted-foreground">
+                <Lock className="h-3 w-3" aria-hidden />
+                U izradi
+              </span>
+            ) : isActive ? (
+              <span className="inline-flex items-center gap-1 rounded-full bg-primary px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-primary-foreground">
+                <CheckCircle2 className="h-3 w-3" aria-hidden />
+                Aktivno
+              </span>
+            ) : null}
+          </div>
+
+          <h3 className="mt-3 text-balance text-base font-semibold leading-snug sm:text-lg">{card.title}</h3>
+          <p className="mt-1.5 flex-1 text-pretty text-sm leading-relaxed text-muted-foreground line-clamp-4">
+            {card.description}
+          </p>
+
+          <div className="mt-3 flex flex-wrap gap-1.5">
+            {isFiltering && group ? (
+              <span className="inline-flex items-center rounded-full bg-primary/10 px-2 py-0.5 text-[11px] font-semibold text-primary">
+                {group.label}
+              </span>
+            ) : null}
+            <span className="inline-flex items-center gap-1 rounded-full bg-muted px-2 py-0.5 text-[11px] font-medium text-muted-foreground">
+              <HelpCircle className="h-3 w-3" aria-hidden />
+              {card.questionCount} pitanja
+            </span>
+            <span className="inline-flex items-center gap-1 rounded-full bg-muted px-2 py-0.5 text-[11px] font-medium text-muted-foreground">
+              <Clock className="h-3 w-3" aria-hidden />
+              {card.minutes}
+            </span>
+          </div>
+
+          <button
+            type="button"
+            disabled={locked}
+            onClick={() => openQuiz(card.id)}
+            className={cn(
+              "mt-4 inline-flex w-full items-center justify-center gap-1.5 rounded-xl px-3 py-2.5 text-sm font-semibold shadow-sm transition-all",
+              locked
+                ? "cursor-not-allowed border border-border bg-muted/50 text-muted-foreground"
+                : isActive
+                  ? "border border-primary/40 bg-primary/10 text-primary hover:bg-primary/15"
+                  : "gradient-hero text-primary-foreground hover:opacity-90 hover:shadow-md",
+            )}
+          >
+            {locked ? (
+              "Uskoro dostupno"
+            ) : isActive ? (
+              <>
+                <CheckCircle2 className="h-4 w-4" />
+                Otvoreno ispod
+              </>
+            ) : (
+              <>
+                Riješi kviz
+                <ArrowRight className="h-4 w-4" />
+              </>
+            )}
+          </button>
+        </div>
+      </motion.article>
+    );
+  };
+
+  const gridClass = "grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4";
+
   return (
     <Layout>
       <PageSeo title="Samoprocjena – raspoloženje, stres i osobnost | MojPut" description="Kratki upitnici o raspoloženju, stresu, osobnosti i samopouzdanju. Rezultati se ne spremaju bez tvog pristanka." />
@@ -3326,109 +3458,97 @@ const Samoprocjena = () => {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            {visibleQuizCards.map((card, i) => {
-              const locked = Boolean(card.locked);
-              const isActive = selectedQuiz === card.id;
-              return (
-                <motion.article
-                  key={card.id}
-                  initial={{ opacity: 0, y: 12 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.3, delay: i * 0.04 }}
-                  className={cn(
-                    "group relative flex flex-col overflow-hidden rounded-2xl border-2 bg-card shadow-card transition-all",
-                    locked
-                      ? "cursor-not-allowed border-dashed border-muted-foreground/30 opacity-80"
-                      : isActive
-                        ? "border-primary/60 ring-2 ring-primary/20"
-                        : "border-border/70 sm:hover:-translate-y-0.5 sm:hover:border-primary/30 sm:hover:shadow-card-hover",
-                  )}
+          <div className="space-y-3 rounded-2xl border-2 border-border/70 bg-card p-3 shadow-card sm:p-4">
+            <div className="relative">
+              <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" aria-hidden />
+              <Input
+                type="search"
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder="Traži kviz, npr. stres, osobnost, empatija…"
+                aria-label="Traži kviz"
+                className="h-11 rounded-xl pl-10 pr-10 text-base sm:text-sm [&::-webkit-search-cancel-button]:hidden"
+              />
+              {query ? (
+                <button
+                  type="button"
+                  onClick={() => setQuery("")}
+                  aria-label="Očisti pretragu"
+                  className="absolute right-2 top-1/2 flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground"
                 >
-                  {/* Accent bar */}
-                  <div
-                    className={cn("h-1 w-full", locked ? "bg-muted-foreground/20" : "gradient-hero")}
-                    aria-hidden
-                  />
-
-                  <div className="flex flex-1 flex-col p-4 sm:p-5">
-                    {/* Icon + status pill */}
-                    <div className="flex items-start justify-between gap-2">
-                      <div
-                        className={cn(
-                          "flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl text-2xl shadow-sm sm:h-14 sm:w-14 sm:text-3xl",
-                          locked ? "bg-muted grayscale" : "gradient-hero",
-                        )}
-                        aria-hidden
-                      >
-                        {card.icon}
-                      </div>
-                      {locked ? (
-                        <span className="inline-flex items-center gap-1 rounded-full border border-muted-foreground/30 bg-muted/60 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-muted-foreground">
-                          <Lock className="h-3 w-3" aria-hidden />
-                          U izradi
-                        </span>
-                      ) : isActive ? (
-                        <span className="inline-flex items-center gap-1 rounded-full bg-primary px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-primary-foreground">
-                          <CheckCircle2 className="h-3 w-3" aria-hidden />
-                          Aktivno
-                        </span>
-                      ) : null}
-                    </div>
-
-                    {/* Title + description */}
-                    <h3 className="mt-3 text-balance text-base font-semibold leading-snug sm:text-lg">
-                      {card.title}
-                    </h3>
-                    <p className="mt-1.5 flex-1 text-pretty text-sm leading-relaxed text-muted-foreground line-clamp-4">
-                      {card.description}
-                    </p>
-
-                    {/* Meta chips */}
-                    <div className="mt-3 flex flex-wrap gap-1.5">
-                      <span className="inline-flex items-center gap-1 rounded-full bg-muted px-2 py-0.5 text-[11px] font-medium text-muted-foreground">
-                        <HelpCircle className="h-3 w-3" aria-hidden />
-                        {card.questionCount} pitanja
-                      </span>
-                      <span className="inline-flex items-center gap-1 rounded-full bg-muted px-2 py-0.5 text-[11px] font-medium text-muted-foreground">
-                        <Clock className="h-3 w-3" aria-hidden />
-                        {card.minutes}
-                      </span>
-                    </div>
-
-                    {/* CTA */}
-                    <button
-                      type="button"
-                      disabled={locked}
-                      onClick={() => openQuiz(card.id)}
+                  <X className="h-4 w-4" />
+                </button>
+              ) : null}
+            </div>
+            <div className="-mx-1 flex gap-1.5 overflow-x-auto px-1 pb-0.5 sm:flex-wrap sm:overflow-visible" role="group" aria-label="Skupine kvizova">
+              {[{ id: "all" as const, label: "Sve", count: searchedCards.length }, ...QUIZ_GROUPS.map((g) => ({ id: g.id, label: g.label, count: groupCounts.get(g.id) ?? 0 }))].map((chip) => {
+                const on = activeGroup === chip.id;
+                return (
+                  <button
+                    key={chip.id}
+                    type="button"
+                    aria-pressed={on}
+                    onClick={() => setActiveGroup(chip.id)}
+                    className={cn(
+                      "inline-flex shrink-0 items-center gap-1.5 rounded-full border px-3 py-1.5 text-sm font-semibold transition-colors",
+                      on
+                        ? "border-primary bg-primary text-primary-foreground shadow-sm"
+                        : "border-border bg-background text-muted-foreground hover:border-primary/40 hover:text-foreground",
+                    )}
+                  >
+                    {chip.label}
+                    <span
                       className={cn(
-                        "mt-4 inline-flex w-full items-center justify-center gap-1.5 rounded-xl px-3 py-2.5 text-sm font-semibold shadow-sm transition-all",
-                        locked
-                          ? "cursor-not-allowed border border-border bg-muted/50 text-muted-foreground"
-                          : isActive
-                            ? "border border-primary/40 bg-primary/10 text-primary hover:bg-primary/15"
-                            : "gradient-hero text-primary-foreground hover:opacity-90 hover:shadow-md",
+                        "rounded-full px-1.5 text-[11px] tabular-nums",
+                        on ? "bg-primary-foreground/20" : "bg-muted",
                       )}
                     >
-                      {locked ? (
-                        "Uskoro dostupno"
-                      ) : isActive ? (
-                        <>
-                          <CheckCircle2 className="h-4 w-4" />
-                          Otvoreno ispod
-                        </>
-                      ) : (
-                        <>
-                          Riješi kviz
-                          <ArrowRight className="h-4 w-4" />
-                        </>
-                      )}
-                    </button>
-                  </div>
-                </motion.article>
-              );
-            })}
+                      {chip.count}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
           </div>
+
+          {filteredCards.length === 0 ? (
+            <div className="rounded-2xl border-2 border-dashed border-border p-8 text-center">
+              <p className="font-semibold text-foreground">Nema kviza za „{query.trim() || "odabranu skupinu"}“.</p>
+              <p className="mt-1 text-sm text-muted-foreground">Probaj drugu riječ, npr. „stres“, „osobnost“ ili „psiholog“.</p>
+              <Button type="button" variant="outline" size="sm" onClick={resetFilters} className="mt-4 rounded-xl">
+                Prikaži sve kvizove
+              </Button>
+            </div>
+          ) : isFiltering ? (
+            <div className="space-y-2">
+              <p className="text-sm text-muted-foreground" aria-live="polite">
+                {filteredCards.length === 1 ? "1 kviz" : `${filteredCards.length} kvizova`}
+                {activeGroup !== "all" ? ` u skupini ${QUIZ_GROUPS.find((g) => g.id === activeGroup)?.label}` : ""}
+              </p>
+              <div className={gridClass}>{filteredCards.map(renderCard)}</div>
+            </div>
+          ) : (
+            <div className="space-y-6 sm:space-y-8">
+              {QUIZ_GROUPS.map((g) => {
+                const cards = filteredCards.filter((c) => c.group === g.id);
+                if (cards.length === 0) return null;
+                return (
+                  <div key={g.id} className="space-y-3">
+                    <div className="flex items-baseline justify-between gap-3 border-b border-border/60 pb-2">
+                      <div className="min-w-0">
+                        <h3 className="text-base font-bold leading-tight sm:text-lg">{g.label}</h3>
+                        <p className="text-xs text-muted-foreground sm:text-sm">{g.description}</p>
+                      </div>
+                      <span className="shrink-0 rounded-full bg-muted px-2 py-0.5 text-xs font-semibold tabular-nums text-muted-foreground">
+                        {cards.length}
+                      </span>
+                    </div>
+                    <div className={gridClass}>{cards.map(renderCard)}</div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </div>
 
         {selectedQuiz && (
