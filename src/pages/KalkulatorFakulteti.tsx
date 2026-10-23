@@ -491,9 +491,9 @@ const Kalkulator = () => {
       <TooltipProvider delayDuration={300}>
         <section
           className={cn(
-            "container relative mx-auto max-w-6xl overflow-x-hidden px-3 py-10 sm:px-4 md:py-14",
+            "container relative mx-auto max-w-6xl px-3 py-10 sm:px-4 md:py-14",
             wizardStep < 4 &&
-              "pb-[max(8.5rem,calc(6.5rem+env(safe-area-inset-bottom)))] sm:pb-14",
+              "pb-[max(7.5rem,calc(6rem+env(safe-area-inset-bottom)))] sm:pb-24",
             wizardStep >= 4 && "pb-10 sm:pb-14",
           )}
         >
@@ -519,7 +519,7 @@ const Kalkulator = () => {
             className="relative min-w-0 w-full space-y-6 sm:space-y-8"
           >
             {/* Hero header */}
-            <div className="relative overflow-hidden rounded-2xl border-2 border-primary/20 bg-gradient-to-br from-primary/[0.12] via-primary/[0.04] to-card p-4 shadow-card sm:rounded-3xl sm:p-6 md:p-7">
+            <div className="relative overflow-hidden rounded-2xl border-2 border-primary/20 bg-gradient-to-br from-primary/[0.12] via-primary/[0.04] to-card p-3 shadow-card sm:rounded-3xl sm:p-6 md:p-7">
               <div
                 aria-hidden
                 className="pointer-events-none absolute -right-10 -top-10 h-36 w-36 rounded-full bg-primary/15 blur-3xl sm:h-52 sm:w-52"
@@ -549,23 +549,23 @@ const Kalkulator = () => {
             </div>
 
             {/* Stepper — wizard progress */}
-            <div className="rounded-2xl border-2 border-border bg-card p-4 shadow-card sm:p-5 md:p-6">
+            <div className="rounded-2xl border-2 border-border bg-card p-3 shadow-card sm:p-5 md:p-6">
               {/* Meta row */}
-              <div className="mb-5 flex flex-col gap-3 sm:mb-6 sm:flex-row sm:items-start sm:justify-between sm:gap-3">
+              <div className="mb-3 flex items-center justify-between gap-3 sm:mb-6 sm:items-start">
                 <div className="min-w-0 flex-1">
-                  <div className="flex items-start gap-2 sm:items-center">
+                  <div className="flex items-center gap-2">
                     <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
                       <CalcIcon className="h-4 w-4" aria-hidden />
                     </div>
                     <p className="min-w-0 text-sm font-semibold leading-snug text-foreground sm:text-base">
                       {WIZARD_STEPS[wizardStep]?.label}
-                      <span className="font-normal text-muted-foreground">
+                      <span className="hidden font-normal text-muted-foreground sm:inline">
                         {" "}
                         — {WIZARD_STEPS[wizardStep]?.sub}
                       </span>
                     </p>
                   </div>
-                  <p className="mt-1 text-xs text-muted-foreground sm:ml-10">
+                  <p className="mt-1 hidden text-xs text-muted-foreground sm:ml-10 sm:block">
                     Možeš se uvijek vratiti i prilagoditi unos.
                   </p>
                 </div>
@@ -574,92 +574,52 @@ const Kalkulator = () => {
                 </span>
               </div>
 
-              {/* Stepper: vertikalno na mobitelu, horizontalno od sm */}
+              {/* Isti horizontalni koraci na mobitelu i laptopu */}
               <div className="relative">
-                {/* Mobitel — puna širina, vertikalni popis */}
-                <ol className="flex flex-col gap-0 sm:hidden">
+                <div
+                  className="pointer-events-none absolute left-[8%] right-[8%] top-[16px] h-[3px] -translate-y-1/2 overflow-hidden rounded-full bg-border/60 sm:left-[10%] sm:right-[10%] sm:top-[18px]"
+                  aria-hidden
+                >
+                  <motion.div
+                    className="h-full rounded-full gradient-hero"
+                    initial={false}
+                    animate={{ width: `${(wizardStep / 4) * 100}%` }}
+                    transition={{ type: "spring", stiffness: 120, damping: 22 }}
+                  />
+                </div>
+
+                <ol className="relative grid grid-cols-5">
                   {WIZARD_STEPS.map((s) => {
                     const active = wizardStep === s.step;
                     const done = wizardStep > s.step;
                     return (
-                      <li
-                        key={s.step}
-                        className="flex gap-3 border-b border-border/50 py-3 first:pt-0 last:border-b-0 last:pb-0"
-                      >
+                      <li key={s.step} className="flex min-w-0 flex-col items-center gap-1 sm:gap-2">
                         <span
                           className={cn(
-                            "relative z-10 flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-xs font-bold transition-all duration-300",
+                            "relative z-10 flex h-8 w-8 items-center justify-center rounded-full text-[11px] font-bold transition-all duration-300 sm:h-9 sm:w-9 sm:text-xs",
                             done && "gradient-hero text-primary-foreground shadow-sm",
                             active &&
                               "border-2 border-primary bg-card text-primary shadow-md ring-4 ring-primary/20",
                             !active && !done && "border-2 border-border bg-muted/50 text-muted-foreground",
                           )}
                         >
-                          {done ? <Check className="h-4 w-4" strokeWidth={3} /> : s.step + 1}
+                          {done ? <Check className="h-3.5 w-3.5 sm:h-4 sm:w-4" strokeWidth={3} /> : s.step + 1}
                         </span>
-                        <div className="min-w-0 flex-1 pt-0.5">
-                          <p
-                            className={cn(
-                              "text-sm font-semibold leading-snug",
-                              active ? "text-foreground" : done ? "text-primary" : "text-muted-foreground",
-                            )}
-                          >
-                            {s.label}
-                          </p>
-                          <p className="text-xs leading-snug text-muted-foreground">{s.sub}</p>
-                        </div>
+                        <span
+                          className={cn(
+                            "max-w-full px-0.5 text-center text-[10px] font-semibold leading-tight sm:text-[11px]",
+                            active ? "text-foreground" : done ? "text-primary" : "text-muted-foreground",
+                          )}
+                        >
+                          {s.label}
+                        </span>
+                        <span className="hidden text-center text-[9px] leading-snug text-muted-foreground sm:block">
+                          {s.sub}
+                        </span>
                       </li>
                     );
                   })}
                 </ol>
-
-                {/* Tablet+ — povezani točkasti koraci */}
-                <div className="hidden sm:block">
-                  <div
-                    className="pointer-events-none absolute left-[10%] right-[10%] top-[18px] h-[3px] -translate-y-1/2 overflow-hidden rounded-full bg-border/60"
-                    aria-hidden
-                  >
-                    <motion.div
-                      className="h-full rounded-full gradient-hero"
-                      initial={false}
-                      animate={{ width: `${(wizardStep / 4) * 100}%` }}
-                      transition={{ type: "spring", stiffness: 120, damping: 22 }}
-                    />
-                  </div>
-
-                  <ol className="relative grid grid-cols-5">
-                    {WIZARD_STEPS.map((s) => {
-                      const active = wizardStep === s.step;
-                      const done = wizardStep > s.step;
-                      return (
-                        <li key={s.step} className="flex flex-col items-center gap-1.5 sm:gap-2">
-                          <span
-                            className={cn(
-                              "relative z-10 flex h-9 w-9 items-center justify-center rounded-full text-xs font-bold transition-all duration-300",
-                              done && "gradient-hero text-primary-foreground shadow-sm",
-                              active &&
-                                "border-2 border-primary bg-card text-primary shadow-md ring-4 ring-primary/20",
-                              !active && !done && "border-2 border-border bg-muted/50 text-muted-foreground",
-                            )}
-                          >
-                            {done ? <Check className="h-4 w-4" strokeWidth={3} /> : s.step + 1}
-                          </span>
-                          <span
-                            className={cn(
-                              "text-center text-[10px] font-semibold leading-tight sm:text-[11px]",
-                              active ? "text-foreground" : done ? "text-primary" : "text-muted-foreground",
-                            )}
-                          >
-                            {s.label}
-                          </span>
-                          <span className="hidden text-center text-[9px] leading-snug text-muted-foreground sm:block">
-                            {s.sub}
-                          </span>
-                        </li>
-                      );
-                    })}
-                  </ol>
-                </div>
               </div>
             </div>
 
@@ -685,15 +645,15 @@ const Kalkulator = () => {
                 <>
                 {/* 1. Odabir fakulteta i smjera */}
                 <Card className={cardShell}>
-                  <CardHeader className="pb-3">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <GraduationCap className="w-5 h-5 text-primary" />
-                        <CardTitle className="text-lg">
+                  <CardHeader className="p-4 pb-3 sm:p-6 sm:pb-3">
+                    <div className="flex flex-wrap items-start justify-between gap-2">
+                      <div className="flex min-w-0 items-center gap-2">
+                        <GraduationCap className="h-5 w-5 shrink-0 text-primary" />
+                        <CardTitle className="text-base leading-snug sm:text-lg">
                           Odabir fakulteta i smjera
                         </CardTitle>
                       </div>
-                      <Badge variant="secondary" className="text-xs">
+                      <Badge variant="secondary" className="shrink-0 text-xs">
                         {preFilteredPrograms.length} programa
                       </Badge>
                     </div>
@@ -701,7 +661,7 @@ const Kalkulator = () => {
                       Filtriraj po gradu ili vrsti, pa pretraži
                     </CardDescription>
                   </CardHeader>
-                  <CardContent className="space-y-4">
+                  <CardContent className="space-y-4 p-4 pt-0 sm:p-6 sm:pt-0">
                     {/* ── City filter chips ── */}
                     <div className="space-y-2">
                       <div className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
@@ -754,7 +714,7 @@ const Kalkulator = () => {
                         <Building2 className="w-3.5 h-3.5" />
                         Vrsta ustanove
                       </div>
-                      <div className="flex gap-1.5">
+                      <div className="flex flex-wrap gap-1.5">
                         {([
                           { value: "all", label: "Sve" },
                           { value: "sveuciliste", label: "Sveučilišta i fakulteti" },
@@ -1540,81 +1500,6 @@ const Kalkulator = () => {
                   </motion.div>
                 </AnimatePresence>
 
-                {wizardStep < 4 && (
-                  <nav
-                    className="mt-4 w-full max-w-full overflow-hidden rounded-2xl border border-border/80 bg-card/95 px-2 py-2.5 shadow-sm backdrop-blur-[2px] sm:px-3 sm:py-3"
-                    aria-label="Koraci kalkulatora bodova"
-                  >
-                    <>
-                      <div className="flex w-full min-w-0 flex-col gap-3 sm:hidden">
-                        <div className="min-w-0 px-0 text-center">
-                          <p className="text-[13px] font-medium text-foreground">
-                            {WIZARD_STEPS[wizardStep]?.label}
-                          </p>
-                          <p className="text-[11px] text-muted-foreground">
-                            {(() => {
-                              const r = 4 - wizardStep;
-                              if (r === 1) return "Još 1 korak do rezultata";
-                              if (r >= 2) return `Još ${r} koraka do rezultata`;
-                              return "";
-                            })()}
-                          </p>
-                        </div>
-                        <div className="grid w-full grid-cols-2 gap-2">
-                          <Button
-                            type="button"
-                            variant="outline"
-                            disabled={wizardStep === 0}
-                            onClick={() => setWizardStep((s) => Math.max(0, s - 1))}
-                            className="min-h-10 w-full rounded-xl px-3 text-sm touch-manipulation"
-                          >
-                            Natrag
-                          </Button>
-                          <Button
-                            type="button"
-                            disabled={!canWizardNext}
-                            onClick={() => setWizardStep((s) => Math.min(4, s + 1))}
-                            className="min-h-10 w-full rounded-xl border-0 bg-primary px-3 text-sm font-semibold text-primary-foreground shadow-md transition-all hover:bg-primary/90 hover:shadow-lg disabled:opacity-50 touch-manipulation"
-                          >
-                            Dalje
-                          </Button>
-                        </div>
-                      </div>
-                      <div className="hidden w-full min-w-0 flex-row items-center justify-between gap-2 md:gap-3 sm:flex">
-                        <Button
-                          type="button"
-                          variant="outline"
-                          disabled={wizardStep === 0}
-                          onClick={() => setWizardStep((s) => Math.max(0, s - 1))}
-                          className="min-h-10 shrink-0 rounded-xl px-3 text-sm touch-manipulation md:min-h-11 md:px-4"
-                        >
-                          Natrag
-                        </Button>
-                        <div className="min-w-0 flex-1 px-1 text-center">
-                          <p className="truncate text-[13px] font-medium text-foreground sm:text-sm">
-                            {WIZARD_STEPS[wizardStep]?.label}
-                          </p>
-                          <p className="truncate text-[11px] text-muted-foreground sm:text-xs">
-                            {(() => {
-                              const r = 4 - wizardStep;
-                              if (r === 1) return "Još 1 korak do rezultata";
-                              if (r >= 2) return `Još ${r} koraka do rezultata`;
-                              return "";
-                            })()}
-                          </p>
-                        </div>
-                        <Button
-                          type="button"
-                          disabled={!canWizardNext}
-                          onClick={() => setWizardStep((s) => Math.min(4, s + 1))}
-                          className="min-h-10 shrink-0 rounded-xl border-0 bg-primary px-3 text-sm font-semibold text-primary-foreground shadow-md transition-all hover:bg-primary/90 hover:shadow-lg disabled:opacity-50 touch-manipulation md:min-h-11 md:min-w-[7.5rem] md:px-4"
-                        >
-                          Dalje
-                        </Button>
-                      </div>
-                    </>
-                  </nav>
-                )}
                 {wizardStep === 4 && (
                   <div className="mt-4 flex justify-center border-t border-border pt-6">
                     <Button
@@ -1909,6 +1794,46 @@ const Kalkulator = () => {
               )}
             </div>
           </motion.div>
+
+          {wizardStep < 4 && (
+            <nav
+              className="fixed inset-x-0 bottom-0 z-40 w-full px-3 pb-[max(0.65rem,env(safe-area-inset-bottom))] pt-2 sm:px-4"
+              aria-label="Koraci kalkulatora bodova"
+            >
+              <div className="mx-auto flex w-full min-w-0 max-w-6xl flex-row items-center justify-between gap-2 rounded-2xl border border-border/80 bg-card/95 px-3 py-2.5 pr-16 shadow-lg backdrop-blur-[2px] sm:gap-3 sm:px-3 sm:py-3 sm:pr-3">
+                <Button
+                  type="button"
+                  variant="outline"
+                  disabled={wizardStep === 0}
+                  onClick={() => setWizardStep((s) => Math.max(0, s - 1))}
+                  className="min-h-11 shrink-0 rounded-xl px-3 text-sm touch-manipulation sm:min-h-10 md:min-h-11 md:px-4"
+                >
+                  Natrag
+                </Button>
+                <div className="min-w-0 flex-1 px-1 text-center">
+                  <p className="truncate text-[13px] font-medium text-foreground sm:text-sm">
+                    {WIZARD_STEPS[wizardStep]?.label}
+                  </p>
+                  <p className="truncate text-[11px] text-muted-foreground sm:text-xs">
+                    {(() => {
+                      const r = 4 - wizardStep;
+                      if (r === 1) return "Još 1 korak do rezultata";
+                      if (r >= 2) return `Još ${r} koraka do rezultata`;
+                      return "";
+                    })()}
+                  </p>
+                </div>
+                <Button
+                  type="button"
+                  disabled={!canWizardNext}
+                  onClick={() => setWizardStep((s) => Math.min(4, s + 1))}
+                  className="min-h-11 shrink-0 rounded-xl border-0 bg-primary px-3 text-sm font-semibold text-primary-foreground shadow-md transition-all hover:bg-primary/90 hover:shadow-lg disabled:opacity-50 touch-manipulation sm:min-h-10 md:min-h-11 md:min-w-[7.5rem] md:px-4"
+                >
+                  Dalje
+                </Button>
+              </div>
+            </nav>
+          )}
         </section>
       </TooltipProvider>
     </Layout>
