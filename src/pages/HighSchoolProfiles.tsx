@@ -11,6 +11,7 @@ import { highSchools, type HighSchool, type HighSchoolCategory } from "@/data/hi
 import { getSchoolPrograms } from "@/lib/schoolPrograms";
 import { slugForSchool } from "@/lib/schoolSlug";
 import { cn } from "@/lib/utils";
+import { JBack, JuniorBlobs, PageHero, SecondaryButton } from "@/components/junior-kit";
 
 const CATEGORIES: HighSchoolCategory[] = [
   "Gimnazija",
@@ -179,36 +180,34 @@ export default function HighSchoolProfiles() {
         description="Pronađi srednju školu po nazivu, gradu ili vrsti i otvori profil — programi, kontakti i novosti."
         canonical="https://mojput.com/srednje-skole/profili"
       />
-      <section className="relative overflow-hidden">
-        <div
-          aria-hidden
-          className="pointer-events-none absolute -top-24 left-1/2 h-64 w-[min(90vw,40rem)] -translate-x-1/2 rounded-full bg-[var(--hero-gradient-soft)] opacity-70 blur-3xl"
-        />
-        <div className="container relative py-6 md:py-10">
-              <header className="mb-5 md:mb-6">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-primary">MojPut Junior</p>
-                <div className="mt-1 flex items-center justify-between gap-3">
-                  <h1 className="min-w-0 text-[1.65rem] font-extrabold tracking-tight md:text-4xl">Pronađi školu</h1>
-                  <Link
-                    to="/srednje-skole/prijava"
-                    id="prijava-skole"
-                    className="inline-flex shrink-0 items-center gap-2.5 rounded-2xl border border-border/70 bg-card py-2 pl-2 pr-4 shadow-sm transition hover:border-primary/40"
-                  >
-                    <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary text-primary-foreground">
-                      <School className="h-5 w-5" />
-                    </span>
-                    <span className="text-left leading-tight">
-                      <span className="block text-sm font-bold text-foreground">Prijava za škole</span>
-                      <span className="hidden text-xs text-muted-foreground sm:block">Uredi svoj profil</span>
-                    </span>
+      <section className="jh-page relative overflow-hidden">
+        <JuniorBlobs />
+        <div className="container relative py-6 pb-[max(6.5rem,calc(5rem+env(safe-area-inset-bottom)))] md:py-10">
+              <JBack crumb="Profili škola" />
+              <PageHero
+                icon={School}
+                tone="teal"
+                kicker="Škole"
+                badge="MojPut Junior"
+                title={
+                  <>
+                    Pronađi <span className="text-[hsl(var(--jh-teal))]">školu</span>
+                  </>
+                }
+                lead="Upiši naziv ili grad — pa otvori profil."
+                actions={
+                  <Link to="/srednje-skole/prijava" id="prijava-skole">
+                    <SecondaryButton type="button" className="gap-2.5">
+                      <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-[hsl(var(--jh-teal)/0.12)] text-[hsl(var(--jh-teal-t))]">
+                        <School className="h-4 w-4" />
+                      </span>
+                      Prijava za škole
+                    </SecondaryButton>
                   </Link>
-                </div>
-                <p className="mt-1.5 text-sm text-muted-foreground md:text-base">
-                  Upiši naziv ili grad — pa otvori profil.
-                </p>
-              </header>
+                }
+              />
 
-              <div className="rounded-3xl border border-border/70 bg-card/90 p-3 shadow-[var(--shadow-elevated)] backdrop-blur-sm sm:p-4 md:p-5">
+              <div className="mt-8 rounded-[1.75rem] border border-border/70 bg-card/90 p-3 shadow-[0_30px_60px_-38px_hsl(var(--jh-ink)/0.45)] backdrop-blur-sm sm:mt-10 sm:p-4 md:p-5">
                 <label className="relative block">
                   <span className="sr-only">Pretraži škole</span>
                   <Search className="pointer-events-none absolute left-3.5 top-1/2 h-5 w-5 -translate-y-1/2 text-primary/70" />

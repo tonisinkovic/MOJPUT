@@ -11,7 +11,7 @@ import { juniorQuickTopics, parentArticlesFor, type JuniorQuickTopic, type Paren
 import { parentForumAudience, parentForumBoardTitle, parentForumBoards } from "@/data/parentForumBoards";
 import { apiGet } from "@/lib/api";
 import { juniorUpisKalendar, nextUpcomingUpisDate } from "@/data/parentJuniorCalendar";
-import { resolveExperienceMode } from "@/lib/experience";
+import { experiencePageClass, resolveExperienceMode } from "@/lib/experience";
 import { getTotalViews, readParentHubState, setLastVisited, toggleFavorite } from "@/lib/parentHubStore";
 import { motion, type Variants } from "framer-motion";
 import {
@@ -32,8 +32,10 @@ import {
   X,
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
+import { cn } from "@/lib/utils";
 import { Link, useSearchParams } from "react-router-dom";
-import HeaderDecor, { HeaderHero } from "@/components/header-animations/HeaderDecor";
+import { JBack, JuniorBlobs, PageHero } from "@/components/junior-kit";
+import { PageHero as SeniorHero, SBack, SCARD, SeniorBlobs } from "@/components/senior-kit";
 
 /** Dvoje roditelja i dijete — prepoznatljivi likovi (glava, tijelo, ruke, noge). */
 function FamilyAnimation() {
@@ -396,49 +398,37 @@ const Roditelji = () => {
   return (
     <Layout>
       <PageSeo title="Roditeljski kutak – MojPut" description="Vodič za roditelje kroz upis u srednju školu i na fakultet: kontrolna lista, mentalno zdravlje, zajednička procjena i forum za roditelje." />
-      <section className="mx-auto max-w-6xl space-y-5 px-3 pb-10 pt-6 sm:space-y-8 sm:px-4 sm:pb-12 sm:pt-8 md:py-14 md:pb-16 [padding-bottom:max(2.5rem,env(safe-area-inset-bottom))]">
+      <section className={cn(experiencePageClass(isJunior), "relative mx-auto max-w-6xl space-y-5 px-3 pb-[max(6.5rem,calc(5rem+env(safe-area-inset-bottom)))] pt-6 sm:space-y-8 sm:px-4 sm:pb-12 sm:pt-8 md:py-14")}>
+        {isJunior ? <JuniorBlobs /> : <SeniorBlobs />}
+        {isJunior ? <JBack crumb="Roditeljski kutak" /> : <SBack crumb="Roditeljski kutak" />}
         {/* Hero */}
-        <motion.div
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.3 }}
-          className="relative overflow-hidden rounded-2xl border-2 border-primary/20 bg-gradient-to-br from-primary/[0.12] via-primary/[0.04] to-card p-4 shadow-card sm:rounded-3xl sm:p-5 md:p-6"
-        >
-          <div
-            aria-hidden
-            className="pointer-events-none absolute -right-10 -top-10 h-36 w-36 rounded-full bg-primary/15 blur-3xl sm:h-52 sm:w-52"
-          />
-          <div
-            aria-hidden
-            className="pointer-events-none absolute -bottom-14 -left-10 h-32 w-32 rounded-full bg-primary/10 blur-3xl sm:h-48 sm:w-48"
-          />
-
-          <HeaderHero
-            icon={
-              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl gradient-hero text-primary-foreground shadow-md sm:h-14 sm:w-14">
-                <Users className="h-6 w-6 sm:h-7 sm:w-7" />
-              </div>
+        {isJunior ? (
+          <PageHero
+            icon={Users}
+            tone="violet"
+            kicker="Roditelji"
+            badge="Za roditelje učenika osnovne škole"
+            title={
+              <>
+                Roditeljski <span className="text-[hsl(var(--jh-violet))]">kutak</span>
+              </>
             }
-            decor={
-              <HeaderDecor className="opacity-[0.48] sm:opacity-[0.26]">
-                <FamilyAnimation />
-              </HeaderDecor>
+            lead="Praktični savjeti, podrška i alati — kako pomoći djetetu da odabere pravu srednju školu bez stresa."
+          />
+        ) : (
+          <SeniorHero
+            icon={Users}
+            tone="rose"
+            kicker="Roditelji"
+            badge="Za roditelje maturanata"
+            title={
+              <>
+                Roditeljski <span className="text-[hsl(var(--sr-rose))]">kutak</span>
+              </>
             }
-          >
-              <span className="inline-flex items-center gap-1 rounded-full border border-primary/25 bg-primary/10 px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-primary">
-                <Sparkles className="h-3 w-3" />
-                {isJunior ? "Za roditelje učenika osnovne škole" : "Za roditelje maturanata"}
-              </span>
-              <h1 className="mt-2 text-balance text-2xl font-bold leading-tight tracking-tight sm:text-3xl md:text-4xl">
-                Roditeljski kutak
-              </h1>
-              <p className="mt-1.5 max-w-2xl text-pretty text-sm leading-relaxed text-muted-foreground sm:text-base">
-                {isJunior
-                  ? "Praktični savjeti, podrška i alati — kako pomoći djetetu da odabere pravu srednju školu bez stresa."
-                  : "Vodiči, mentalno zdravlje, forum i zajednička procjena — sve na jednom mjestu."}
-              </p>
-          </HeaderHero>
-        </motion.div>
+            lead="Vodiči, mentalno zdravlje, forum i zajednička procjena — sve na jednom mjestu."
+          />
+        )}
 
         {isJunior ? (
           <>
@@ -465,7 +455,7 @@ const Roditelji = () => {
                       <span className="text-xs font-semibold text-foreground">{topic.title}</span>
                     </div>
                     <p className="mt-1 text-[11px] leading-snug text-muted-foreground">{topic.tip}</p>
-                    <span className="mt-1.5 inline-flex items-center gap-1 text-[10px] font-medium text-emerald-600 opacity-0 transition-opacity group-hover:opacity-100 dark:text-emerald-400">
+                    <span className="mt-1.5 inline-flex items-center gap-1 text-[10px] font-medium text-emerald-700 opacity-0 transition-opacity group-hover:opacity-100 dark:text-emerald-400">
                       Saznaj više <ChevronRight className="h-3 w-3" />
                     </span>
                   </button>
@@ -476,8 +466,8 @@ const Roditelji = () => {
             <ParentForumSpotlight isJunior={isJunior} expQ={expQ} />
 
             {/* Action cards */}
-            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-              <div className="rounded-2xl border border-primary/20 bg-primary/[0.04] px-4 py-3 text-sm">
+            <div className="grid gap-4 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3">
+              <div className="rounded-2xl border border-primary/20 bg-primary/[0.04] p-5 text-sm sm:p-6">
                 <p className="font-semibold">Dijete je riješilo kviz?</p>
                 <p className="mt-1 text-muted-foreground">
                   Pogledajte isti rezultat drugim jezikom — programi, škole u blizini i 4 pitanja za razgovor.
@@ -486,7 +476,7 @@ const Roditelji = () => {
                   <Link to="/roditeljski-rezultat">Otvori rezultat za roditelje</Link>
                 </Button>
               </div>
-              <div className="rounded-2xl border border-sky-500/25 bg-sky-500/[0.06] px-4 py-3 text-sm">
+              <div className="rounded-2xl border border-sky-500/25 bg-sky-500/[0.06] p-5 text-sm sm:p-6">
                 <p className="font-semibold">Pedagog / razrednik?</p>
                 <p className="mt-1 text-muted-foreground">
                   Jedan kod za cijeli 8. razred: tko je riješio kviz i koji smjerovi iskaču.
@@ -495,7 +485,7 @@ const Roditelji = () => {
                   <Link to="/razred">Otvori ploču razreda</Link>
                 </Button>
               </div>
-              <div className="rounded-2xl border border-amber-500/25 bg-amber-500/[0.06] px-4 py-3 text-sm sm:col-span-2 lg:col-span-1">
+              <div className="rounded-2xl border border-amber-500/25 bg-amber-500/[0.06] p-5 text-sm sm:col-span-2 sm:p-6 lg:col-span-1">
                 <p className="font-semibold">Dnevnik razgovora</p>
                 <p className="mt-1 text-muted-foreground">
                   Zapišite ukratko što ste pričali s djetetom o srednjoj — korisno kad idete kod pedagoga.
@@ -694,7 +684,7 @@ const Roditelji = () => {
           </div>
 
           <motion.div
-            className="grid grid-cols-1 gap-3 md:grid-cols-3 md:gap-4"
+            className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3"
             variants={listStagger}
             initial="hidden"
             animate="show"
@@ -792,7 +782,7 @@ const Roditelji = () => {
           </div>
 
           <motion.div
-            className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4"
+            className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6"
             variants={listStagger}
             initial="hidden"
             whileInView="show"

@@ -3,7 +3,8 @@ import VideoCard from "@/components/VideoCard";
 import { VIDEOS_SREDNJE, CATEGORIES_SREDNJE } from "@/data/videosSrednje";
 import { motion, AnimatePresence } from "framer-motion";
 import { useMemo, useState } from "react";
-import { ArrowLeft, Film, Radio, School, Search, Video, X } from "lucide-react";
+import { Film, Radio, School, Search, Video, X } from "lucide-react";
+import { JBack, JuniorBlobs, PageHero } from "@/components/junior-kit";
 
 type ContentView = "videozapisi" | "predavanja";
 
@@ -28,32 +29,24 @@ const VideoSrednje = () => {
 
   return (
     <Layout>
-      <section className="container mx-auto max-w-6xl px-3 py-3 pb-[max(1.5rem,env(safe-area-inset-bottom))] sm:px-4 sm:py-6">
-        <button
-          type="button"
-          onClick={() => window.history.back()}
-          className="mb-3 inline-flex items-center gap-1.5 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
-        >
-          <ArrowLeft className="h-4 w-4" />
-          <span>Natrag</span>
-        </button>
+      <section className="jh-page relative mx-auto max-w-6xl px-3 pb-[max(6.5rem,calc(5rem+env(safe-area-inset-bottom)))] pt-5 sm:px-4 sm:py-6">
+        <JuniorBlobs />
+        <JBack crumb="Video" />
 
-        <div className="mb-4 rounded-2xl border border-primary/20 bg-gradient-to-br from-primary/10 via-card to-card p-4 shadow-card sm:p-5">
-          <div className="flex items-center gap-3">
-            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-primary text-primary-foreground shadow-sm">
-              <School className="h-5 w-5" />
-            </div>
-            <div className="min-w-0">
-              <h1 className="text-xl font-bold tracking-tight text-foreground sm:text-2xl">
-                {contentView === "predavanja" ? "Predavanja" : "Videozapisi o srednjoj"}
-              </h1>
-              <p className="mt-0.5 text-sm text-muted-foreground">
-                {contentView === "predavanja"
-                  ? "Uživo sati stižu ovdje. Videozapisi su već spremni."
-                  : "Kako odabrati školu, kako se računaju bodovi i što znači upis."}
-              </p>
-            </div>
-          </div>
+        <PageHero
+          icon={School}
+          tone="sky"
+          kicker="Video"
+          badge="Srednja škola"
+          title={contentView === "predavanja" ? "Predavanja" : <>Videozapisi o <span className="text-[hsl(var(--jh-sky))]">srednjoj</span></>}
+          lead={
+            contentView === "predavanja"
+              ? "Uživo sati stižu ovdje. Videozapisi su već spremni."
+              : "Kako odabrati školu, kako se računaju bodovi i što znači upis."
+          }
+        />
+
+        <div className="mb-4 rounded-[1.75rem] border border-border/70 bg-card p-4 shadow-[0_24px_50px_-34px_hsl(var(--jh-ink)/0.45)] sm:p-5">
 
           <div
             role="tablist"
@@ -178,7 +171,7 @@ const VideoSrednje = () => {
                   transition={{ duration: 0.2 }}
                   className="space-y-4"
                 >
-                  <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                  <div className="grid gap-4 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3">
                     {filteredVideos.map((video) => (
                       <VideoCard
                         key={video.id}

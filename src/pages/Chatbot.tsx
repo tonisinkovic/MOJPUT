@@ -4,7 +4,6 @@ import Layout from "@/components/Layout";
 import PageSeo from "@/components/seo/PageSeo";
 import { motion } from "framer-motion";
 import {
-  ArrowLeft,
   Bot,
   ChevronRight,
   Crown,
@@ -31,11 +30,13 @@ import {
 import { facultyInstitutions } from "@/data/faculties";
 import { formatEventLine, seniorEvents, upcomingEvents } from "@/data/calendarEvents";
 import { highSchools } from "@/data/highSchools";
-import { resolveExperienceMode } from "@/lib/experience";
+import { experiencePageClass, resolveExperienceMode } from "@/lib/experience";
 import { API_BASE_URL } from "@/config/apiBase";
 import { apiGet, getStoredAuthToken, setStoredAuthToken } from "@/lib/api";
 import { authMe, userFromAuthMe, type AuthUser } from "@/lib/auth";
 import { cn } from "@/lib/utils";
+import { Chip, JBack, JuniorBlobs, PageHero } from "@/components/junior-kit";
+import { PageHero as SeniorHero, SBack, SeniorBlobs } from "@/components/senior-kit";
 import { formatChatMessage, normalizeChatSource, type ChatReplySource } from "@/lib/chatFormat";
 
 const API_BASE = API_BASE_URL;
@@ -819,16 +820,42 @@ const Chatbot = () => {
         </DialogContent>
       </Dialog>
 
-      <section className="mx-auto max-w-6xl px-3 pb-10 pt-6 sm:px-4 sm:pb-12 sm:pt-8 md:py-14 md:pb-16 [padding-bottom:max(2.5rem,env(safe-area-inset-bottom))]">
-        {/* Back button */}
-        <button
-          type="button"
-          onClick={() => window.history.back()}
-          className="mb-4 inline-flex items-center gap-1.5 text-sm font-medium text-slate-500 transition-colors hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100"
-        >
-          <ArrowLeft className="h-4 w-4" />
-          <span>Natrag</span>
-        </button>
+      <section className={cn(experiencePageClass(isJunior), "relative mx-auto max-w-6xl px-3 pb-[max(6.5rem,calc(5rem+env(safe-area-inset-bottom)))] pt-6 sm:px-4 sm:pb-12 sm:pt-8 md:py-14")}>
+        {isJunior ? <JuniorBlobs /> : <SeniorBlobs />}
+        {isJunior ? (
+          <>
+            <JBack crumb="Chatbot Dražen" />
+            <PageHero
+              icon={Bot}
+              tone="sky"
+              kicker="Chatbot"
+              badge="Dražen"
+              title={
+                <>
+                  Pitaj <span className="text-[hsl(var(--jh-sky))]">Dražena</span>
+                </>
+              }
+              lead="Pitaj o srednjim školama, smjerovima, bodovima i upisima. Odgovori se temelje na MojPut bazi."
+            />
+          </>
+        ) : (
+          <SBack crumb="Chatbot Dražen" />
+        )}
+        {isJunior ? null : (
+          <SeniorHero
+            icon={Bot}
+            tone="indigo"
+            index="09"
+            kicker="Chatbot"
+            badge="Dražen"
+            title={
+              <>
+                Pitaj <span className="text-[hsl(var(--sr-indigo))]">Dražena</span>
+              </>
+            }
+            lead="Pitaj o fakultetima, pragovima, rokovima upisa i studentskim domovima. Odgovori se temelje na MojPut bazi podataka."
+          />
+        )}
 
         <div className="flex flex-col lg:flex-row gap-6">
           {/* Chat */}
@@ -838,7 +865,7 @@ const Chatbot = () => {
             transition={{ delay: 0.1 }}
             className="flex-1 min-w-0"
           >
-            <div className="chat-container">
+            <div className={cn("chat-container", !isJunior && "chat-container--senior")}>
               <div className="chat-header">
                 <div className="chat-avatar">
                   <Bot className="w-5 h-5 text-primary-foreground" />
@@ -985,9 +1012,14 @@ const Chatbot = () => {
                     <p className="text-sm text-muted-foreground max-w-[340px]">
                       Odgovori su u razgovornom tonu i koriste podatke iz baze kad odgovaraju na tvoje pitanje.
                     </p>
-                    <div className="chat-suggestions">
-                      <p className="chat-suggestions-label">Brzi primjeri</p>
-                      {suggestions.map((s) => (
+                    <div className={isJunior ? "flex flex-wrap gap-2" : "chat-suggestions"}>
+                      <p className={isJunior ? "w-full text-xs font-bold uppercase tracking-wide text-muted-foreground" : "chat-suggestions-label"}>Brzi primjeri</p>
+                      {suggestions.map((s) =>
+                        isJunior ? (
+                          <Chip key={s} onClick={canSendChat ? () => sendMessage(s) : undefined}>
+                            {s}
+                          </Chip>
+                        ) : (
                         <button
                           key={s}
                           type="button"
@@ -998,7 +1030,8 @@ const Chatbot = () => {
                           <ChevronRight className="w-3.5 h-3.5 shrink-0 text-primary" />
                           <span className="chat-sug-btn-text">{s}</span>
                         </button>
-                      ))}
+                        ),
+                      )}
                     </div>
                   </div>
                 )}
@@ -1213,12 +1246,43 @@ const Chatbot = () => {
           height: min(720px, 78dvh);
           background: hsl(var(--card));
           border: 2px solid hsl(var(--border));
-          border-radius: 1.25rem;
+          border-radius: 1.75rem 0.55rem 1.75rem 1.75rem;
           overflow: hidden;
-          box-shadow: var(--card-shadow);
+          box-shadow:
+            inset 0 3px 0 hsl(var(--jh-teal)),
+            0 22px 40px -28px hsl(var(--jh-teal) / 0.4);
+        }
+        .chat-container--senior {
+          background: hsl(var(--sr-night));
+          border-color: hsl(var(--sr-cyan) / 0.28);
+          border-radius: 1.5rem 0.3rem 1.5rem 0.3rem;
+          color: white;
+          box-shadow:
+            inset 3px 0 0 hsl(var(--sr-cyan)),
+            0 40px 80px -40px hsl(var(--sr-night) / 0.9);
+        }
+        .chat-container--senior .chat-header {
+          background:
+            linear-gradient(90deg, hsl(var(--sr-indigo) / 0.22), transparent 60%),
+            hsl(0 0% 100% / 0.04);
+          border-bottom-color: hsl(0 0% 100% / 0.1);
+        }
+        .chat-container--senior .chat-avatar {
+          background: linear-gradient(135deg, hsl(var(--sr-indigo)), hsl(262 90% 72%));
+          box-shadow: 0 10px 20px -10px hsl(var(--sr-indigo) / 0.9);
+        }
+        .chat-container--senior .chat-status { color: hsl(var(--sr-cyan)); }
+        .chat-container--senior .chat-status-dot {
+          background: hsl(var(--sr-cyan));
+          box-shadow: 0 0 0 3px hsl(var(--sr-cyan) / 0.2);
+        }
+        .chat-container--senior .chat-messages {
+          background:
+            radial-gradient(ellipse at top, hsl(var(--sr-indigo) / 0.18), transparent 60%),
+            hsl(var(--sr-night-2));
         }
         @media (min-width: 640px) {
-          .chat-container { border-radius: 1.5rem; }
+          .chat-container:not(.chat-container--senior) { border-radius: 2rem 0.6rem 2rem 2rem; }
         }
 
         /* ── Header ──────────────────────────────────────────────── */
@@ -1435,7 +1499,7 @@ const Chatbot = () => {
         .chat-sug-btn {
           background: hsl(var(--card));
           border: 1.5px solid hsl(var(--border));
-          border-radius: 0.75rem;
+          border-radius: 999px;
           padding: 0.75rem 0.875rem;
           color: hsl(var(--foreground));
           font-size: 0.8125rem;
@@ -1457,6 +1521,15 @@ const Chatbot = () => {
         }
         .chat-sug-btn:disabled { opacity: 0.6; cursor: not-allowed; }
         .chat-sug-btn-text { min-width: 0; }
+        .chat-container--senior .chat-sug-btn {
+          background: hsl(0 0% 100% / 0.06);
+          border-color: hsl(var(--sr-indigo) / 0.45);
+          color: white;
+        }
+        .chat-container--senior .chat-sug-btn:hover:not(:disabled) {
+          background: hsl(var(--sr-indigo) / 0.2);
+          border-color: hsl(var(--sr-indigo) / 0.7);
+        }
 
         /* ── Message bubbles ─────────────────────────────────────── */
         .chat-message {
@@ -1480,6 +1553,7 @@ const Chatbot = () => {
           box-shadow: 0 2px 6px hsl(var(--primary) / 0.3);
         }
         .chat-bubble {
+          position: relative;
           max-width: min(82%, 640px);
           padding: 0.75rem 1rem;
           border-radius: 1rem;
@@ -1498,11 +1572,51 @@ const Chatbot = () => {
           color: hsl(var(--foreground));
           box-shadow: 0 1px 2px hsl(var(--foreground) / 0.04);
         }
+        .chat-container--senior .chat-message.assistant .chat-bubble {
+          background: hsl(0 0% 100% / 0.06);
+          border-color: hsl(var(--sr-cyan) / 0.28);
+          border-radius: 0.35rem 1.2rem 1.2rem 1.2rem;
+          color: white;
+        }
         .chat-message.user .chat-bubble {
           background: linear-gradient(135deg, hsl(var(--primary) / 0.18), hsl(var(--primary) / 0.08));
           border: 1px solid hsl(var(--primary) / 0.35);
           border-radius: 1rem 4px 1rem 1rem;
           color: hsl(var(--foreground));
+        }
+        .chat-container--senior .chat-bubble.user {
+          background: linear-gradient(135deg, hsl(var(--sr-indigo)), hsl(var(--sr-fuchsia)));
+          border-color: transparent;
+          color: white;
+          border-radius: 1.2rem 0.35rem 1.2rem 1.2rem;
+        }
+        .chat-bubble::before {
+          content: "";
+          position: absolute;
+          top: 0;
+          width: 8px;
+          height: 12px;
+          pointer-events: none;
+        }
+        .chat-message.assistant .chat-bubble::before {
+          left: -7px;
+          background: hsl(var(--card));
+          border-top: 1px solid hsl(var(--border));
+          clip-path: polygon(100% 0, 0 0, 100% 100%);
+        }
+        .chat-message.user .chat-bubble::before {
+          right: -7px;
+          background: hsl(var(--primary) / 0.13);
+          border-top: 1px solid hsl(var(--primary) / 0.35);
+          clip-path: polygon(0 0, 100% 0, 0 100%);
+        }
+        .chat-container--senior .chat-message.assistant .chat-bubble::before {
+          background: hsl(0 0% 100% / 0.06);
+          border-top-color: hsl(var(--sr-cyan) / 0.28);
+        }
+        .chat-container--senior .chat-bubble.user::before {
+          background: color-mix(in srgb, hsl(var(--sr-indigo)) 55%, hsl(var(--sr-fuchsia)));
+          border-top-color: transparent;
         }
         .chat-code {
           background: hsl(var(--primary) / 0.15);

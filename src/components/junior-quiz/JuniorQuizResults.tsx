@@ -24,6 +24,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
 import { cn } from "@/lib/utils";
+import { CARD, PageHero } from "@/components/junior-kit";
 import JuniorSchoolRow from "@/components/junior-quiz/JuniorSchoolRow";
 import JuniorNumbersNote from "@/components/junior/JuniorNumbersNote";
 import JuniorPlanBCard from "@/components/junior/JuniorPlanBCard";
@@ -244,7 +245,7 @@ function ProgramCard({
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: rank * 0.04 }}
-      className="rounded-2xl border border-border/60 bg-card px-4 py-4 sm:px-5"
+      className={cn(CARD, "px-4 py-4 sm:px-5")}
     >
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="flex min-w-0 items-start gap-3">
@@ -455,17 +456,22 @@ export default function JuniorQuizResults({
 
   return (
     <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }} className="mx-auto max-w-3xl space-y-8">
-      <header>
-        <p className="text-sm text-muted-foreground">Ovo nisu upute za upis. Smjerovi koje možeš razmotriti.</p>
-        <h2 className="mt-2 text-2xl font-semibold tracking-tight sm:text-3xl">
-          {analysis.insufficientData
+      <PageHero
+        icon={Sparkles}
+        tone="teal"
+        badge={conf.label}
+        title={
+          analysis.insufficientData
             ? "Još par odgovora pa možemo predložiti"
             : analysis.indecisive
               ? "Nemaš jedan jasan smjer"
-              : orientationPitch(analysis).title}
-        </h2>
+              : orientationPitch(analysis).title
+        }
+        lead="Ovo nisu upute za upis. Smjerovi koje možeš razmotriti."
+      />
+      <header>
         {!analysis.insufficientData ? (
-          <p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted-foreground">{orientationPitch(analysis).text}</p>
+          <p className="max-w-2xl text-sm leading-relaxed text-muted-foreground">{orientationPitch(analysis).text}</p>
         ) : null}
         {analysis.consideringNote ? (
           <p className="mt-2 max-w-2xl text-sm leading-relaxed">{analysis.consideringNote}</p>

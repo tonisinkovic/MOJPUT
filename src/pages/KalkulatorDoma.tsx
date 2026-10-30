@@ -33,7 +33,6 @@ import {
 import { toast } from "sonner";
 import {
   AlertCircle,
-  ArrowLeft,
   Bookmark,
   Calculator,
   CheckCircle2,
@@ -47,6 +46,7 @@ import {
   TrendingUp,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { PageHero, SBack, SCARD, SeniorBlobs, STONE } from "@/components/senior-kit";
 import {
   dorms,
   INCOME_BANDS,
@@ -302,54 +302,26 @@ export default function KalkulatorDoma() {
   return (
     <Layout>
       <PageSeo title="Kalkulator bodova za studentski dom – MojPut" description="Procijeni bodove za studentski dom u Zagrebu, Splitu, Rijeci i Osijeku prema kriterijima natječaja." />
-      <div className="mx-auto max-w-lg px-4 pb-10 pt-6 md:max-w-3xl md:pt-10 [padding-bottom:max(2.5rem,env(safe-area-inset-bottom))]">
-        {/* Back button */}
-        <button
-          type="button"
-          onClick={() => window.history.back()}
-          className="mb-4 inline-flex items-center gap-1.5 text-sm font-medium text-slate-500 transition-colors hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100"
-        >
-          <ArrowLeft className="h-4 w-4" />
-          <span>Natrag</span>
-        </button>
+      <div className="sr-page relative mx-auto max-w-lg px-4 pb-[max(6.5rem,calc(5rem+env(safe-area-inset-bottom)))] pt-5 md:max-w-3xl sm:pt-8 md:pt-10">
+        <SeniorBlobs />
+        <SBack crumb="Studentski domovi" />
 
-        {/* Hero header */}
-        <motion.header
-          initial={{ opacity: 0, y: 14 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
-          className="relative mb-5 overflow-hidden rounded-2xl border-2 border-primary/20 bg-gradient-to-br from-primary/[0.12] via-primary/[0.04] to-card p-4 shadow-card sm:rounded-3xl sm:p-5 md:p-6"
-        >
-          <div
-            aria-hidden
-            className="pointer-events-none absolute -right-10 -top-10 h-36 w-36 rounded-full bg-primary/15 blur-3xl sm:h-52 sm:w-52"
-          />
-          <div
-            aria-hidden
-            className="pointer-events-none absolute -bottom-14 -left-10 h-32 w-32 rounded-full bg-primary/10 blur-3xl sm:h-48 sm:w-48"
-          />
+        <PageHero
+          icon={Home}
+          tone="emerald"
+          index="06"
+          kicker="Domovi"
+          badge="Natječaj · studentski smještaj"
+          title={
+            <>
+              Kalkulator bodova za{" "}
+              <span className="text-[hsl(var(--sr-emerald))]">studentske domove</span>
+            </>
+          }
+          lead="Okvirni broj bodova za natječaj prema Pravilniku MZOM-a. Za Zagreb i Split usporedba s pragom 2026./2027.; za ostale gradove procjena šanse."
+        />
 
-          <div className="relative flex flex-col gap-4 sm:flex-row sm:items-start sm:gap-5">
-            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl gradient-hero text-primary-foreground shadow-md sm:h-14 sm:w-14">
-              <Home className="h-6 w-6 sm:h-7 sm:w-7" strokeWidth={2} aria-hidden />
-            </div>
-            <div className="min-w-0 flex-1">
-              <span className="inline-flex items-center gap-1 rounded-full border border-primary/25 bg-primary/10 px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-primary">
-                <Sparkles className="h-3 w-3" aria-hidden />
-                Natječaj · studentski smještaj
-              </span>
-              <h1 className="mt-2 text-balance text-2xl font-bold leading-tight tracking-tight sm:text-3xl md:text-4xl">
-                Kalkulator bodova za{" "}
-                <span className="text-gradient">studentske domove</span>
-              </h1>
-              <p className="mt-1.5 max-w-2xl text-pretty text-sm leading-relaxed text-muted-foreground sm:text-base">
-                Okvirni broj bodova za natječaj prema Pravilniku MZOM-a. Za Zagreb i Split usporedba s pragom
-                2026./2027.; za ostale gradove procjena šanse.
-              </p>
-            </div>
-          </div>
-        </motion.header>
-
+        <div className="mx-auto w-full max-w-3xl">
         {/* Važna napomena */}
         <motion.div
           initial={{ opacity: 0, y: 10 }}
@@ -382,13 +354,13 @@ export default function KalkulatorDoma() {
 
         {/* Step progress */}
         <div
-          className="mb-6 rounded-2xl border-2 border-border bg-card p-4 shadow-card sm:p-5"
+          className={cn(SCARD, "mb-6 p-4 sm:p-5")}
           aria-label="Napredak kroz korake"
         >
           <div className="mb-3 flex items-start justify-between gap-3">
             <div className="min-w-0 flex-1">
               <div className="flex items-center gap-2">
-                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                <div className={cn("flex h-8 w-8 shrink-0 items-center justify-center rounded-xl text-white", STONE.emerald.grad)}>
                   <Calculator className="h-4 w-4" aria-hidden />
                 </div>
                 <p className="truncate text-sm font-semibold text-foreground sm:text-base">
@@ -397,7 +369,7 @@ export default function KalkulatorDoma() {
                 </p>
               </div>
             </div>
-            <span className="shrink-0 rounded-full border border-primary/25 bg-primary/10 px-2.5 py-1 text-[11px] font-bold uppercase tracking-wide text-primary sm:text-xs">
+            <span className="shrink-0 rounded-full border border-[hsl(var(--sr-emerald)/0.35)] bg-[hsl(var(--sr-emerald)/0.14)] px-2.5 py-1 text-[11px] font-bold uppercase tracking-wide text-[hsl(var(--sr-emerald-t))] sm:text-xs">
               Korak <span className="tabular-nums">{step + 1} / {STEPS.length}</span>
             </span>
           </div>
@@ -424,8 +396,8 @@ export default function KalkulatorDoma() {
                   onClick={() => setStep(i)}
                   className={cn(
                     "shrink-0 inline-flex items-center gap-1.5 rounded-full border-2 px-3.5 py-2 text-xs font-semibold min-h-[40px] transition-all",
-                    isActive && "gradient-hero border-transparent text-primary-foreground shadow-sm",
-                    isDone && !isActive && "border-primary/30 bg-primary/10 text-primary",
+                    isActive && "border-transparent bg-gradient-to-br from-[hsl(var(--sr-emerald))] to-[hsl(172_70%_40%)] text-white shadow-sm",
+                    isDone && !isActive && "border-[hsl(var(--sr-emerald)/0.35)] bg-[hsl(var(--sr-emerald)/0.12)] text-[hsl(var(--sr-emerald-t))]",
                     !isActive && !isDone && "border-border bg-muted/40 text-muted-foreground hover:border-border hover:bg-muted/60",
                   )}
                 >
@@ -446,9 +418,9 @@ export default function KalkulatorDoma() {
           </div>
         </div>
 
-        <div className="mb-6 rounded-2xl border-2 border-primary/25 bg-gradient-to-br from-primary/[0.08] via-primary/[0.02] to-transparent p-4 shadow-card sm:p-5">
+        <div className={cn(SCARD, "mb-6 border-[hsl(var(--sr-emerald)/0.35)] p-4 sm:p-5")}>
           <div className="flex gap-3">
-            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-primary/15 text-primary shadow-inner ring-1 ring-primary/25">
+            <div className={cn("flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl text-white", STONE.emerald.grad)}>
               <Scale className="h-5 w-5" strokeWidth={2.2} aria-hidden />
             </div>
             <div className="min-w-0 flex-1 space-y-1">
@@ -471,7 +443,7 @@ export default function KalkulatorDoma() {
         </div>
 
         {/* Step panels */}
-        <Card className="rounded-2xl border-2 shadow-card mb-6">
+        <Card className="mb-6 rounded-[1.5rem] border border-border/70 shadow-[var(--sr-page-shadow)]">
           <CardHeader className="pb-2">
             <CardTitle className="text-xl flex items-center gap-2">
               <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
@@ -1302,6 +1274,7 @@ export default function KalkulatorDoma() {
           Spremljeno u pregledniku: {stats.count}
           {stats.lastTotal != null && ` · zadnji: ${stats.lastTotal.toLocaleString("hr-HR")}`}
         </p>
+        </div>
       </div>
     </Layout>
   );

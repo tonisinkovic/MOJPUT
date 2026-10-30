@@ -6,10 +6,12 @@ import { Textarea } from "@/components/ui/textarea";
 import { parentForumAudience, parentForumBoardTitle, parentForumBoards } from "@/data/parentForumBoards";
 import { apiGet, apiPost } from "@/lib/api";
 import { AUTH_CHANGED, authMe, userFromAuthMe, type AuthUser } from "@/lib/auth";
-import { resolveExperienceMode } from "@/lib/experience";
+import { experiencePageClass, resolveExperienceMode } from "@/lib/experience";
 import { cn } from "@/lib/utils";
 import { AnimatePresence, motion } from "framer-motion";
 import { ArrowLeft, LogIn, MessageCircle, Plus, Search, Send, ThumbsUp } from "lucide-react";
+import { JBack, JuniorBlobs, PageHero, PrimaryButton } from "@/components/junior-kit";
+import { SBack, SeniorBlobs } from "@/components/senior-kit";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 
@@ -333,15 +335,38 @@ const ParentForum = () => {
 
   return (
     <Layout>
-      <section className="container max-w-6xl px-3 py-8 sm:px-4 sm:py-10 md:py-14 pb-[max(2rem,env(safe-area-inset-bottom))]">
-        <Link
-          to={hubPath}
-          className="mb-4 inline-flex items-center gap-1 text-sm text-muted-foreground transition-colors hover:text-foreground"
-        >
-          <ArrowLeft className="h-4 w-4" />
-          Natrag na Roditeljski kutak
-        </Link>
+      <section className={cn(experiencePageClass(isJunior), "relative mx-auto max-w-6xl px-3 py-8 pb-[max(6.5rem,calc(5rem+env(safe-area-inset-bottom)))] sm:px-4 sm:py-10 md:py-14")}>
+        {isJunior ? <JuniorBlobs /> : <SeniorBlobs />}
+        {isJunior ? (
+          <JBack to={hubPath} label="Roditeljski kutak" />
+        ) : (
+          <SBack to={hubPath} label="Roditeljski kutak" crumb="Forum" />
+        )}
 
+        {isJunior ? (
+          <PageHero
+            icon={MessageCircle}
+            tone="rose"
+            badge="Zajednica roditelja"
+            title="Forum — odabir srednje škole"
+            lead="Četiri rubrike, jedan razgovor. Svaki prijavljeni MojPut račun može otvoriti objavu i odgovoriti. Ime uz poruku je korisničko ime s računa."
+            actions={
+              user ? (
+                <PrimaryButton type="button" onClick={openComposer}>
+                  <Plus className="h-4 w-4" />
+                  Nova objava
+                </PrimaryButton>
+              ) : (
+                <Link to={loginHref}>
+                  <PrimaryButton type="button">
+                    <LogIn className="h-4 w-4" />
+                    Prijavi se i piši
+                  </PrimaryButton>
+                </Link>
+              )
+            }
+          />
+        ) : (
         <motion.header
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
@@ -351,7 +376,7 @@ const ParentForum = () => {
             <div className="max-w-2xl">
               <p className="text-xs font-semibold uppercase tracking-[0.16em] text-primary">Zajednica roditelja</p>
               <h1 className="mt-2 text-balance text-2xl font-bold tracking-tight sm:text-3xl">
-                {isJunior ? "Forum — odabir srednje škole" : "Forum — odabir studija"}
+                Forum — odabir studija
               </h1>
               <p className="mt-2 text-pretty text-sm leading-relaxed text-muted-foreground sm:text-base">
                 Četiri rubrike, jedan razgovor. Svaki prijavljeni MojPut račun može otvoriti objavu i odgovoriti.
@@ -380,6 +405,16 @@ const ParentForum = () => {
             <p className="mt-4 text-xs text-muted-foreground">Objave možete čitati i bez prijave. Pisanje traži račun.</p>
           )}
         </motion.header>
+        )}
+        {isJunior ? (
+          user ? (
+            <p className="-mt-3 mb-5 text-xs text-muted-foreground">
+              Prijavljeni ste kao <span className="font-semibold text-foreground">{user.username}</span>
+            </p>
+          ) : (
+            <p className="-mt-3 mb-5 text-xs text-muted-foreground">Objave možete čitati i bez prijave. Pisanje traži račun.</p>
+          )
+        ) : null}
 
         <div className="mt-5 grid grid-cols-2 gap-2 md:grid-cols-4">
           {boards.map((board) => {

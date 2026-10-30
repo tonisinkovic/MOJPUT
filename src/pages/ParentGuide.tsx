@@ -11,7 +11,7 @@ import {
   guideVideosFor,
   parentArticlesFor,
 } from "@/data/parentHub";
-import { resolveExperienceMode } from "@/lib/experience";
+import { experiencePageClass, resolveExperienceMode } from "@/lib/experience";
 import { readParentHubState, setLastVisited, toggleChecklist, toggleReadArticle } from "@/lib/parentHubStore";
 import { AUTH_CHANGED, authMe, userFromAuthMe, type AuthUser } from "@/lib/auth";
 import { createParentDnevnik, deleteParentDnevnik, fetchParentDnevnik } from "@/lib/parentDnevnikApi";
@@ -22,9 +22,11 @@ import {
   loadEntries,
   type DnevnikEntry,
 } from "@/lib/parentDnevnikStore";
-import HeaderDecor, { HeaderHero } from "@/components/header-animations/HeaderDecor";
+import { JBack, JuniorBlobs, PageHero } from "@/components/junior-kit";
+import { PageHero as SeniorHero, SBack, SeniorBlobs } from "@/components/senior-kit";
+import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
-import { BookOpen, ChevronRight, ClipboardCopy, NotebookPen, Sparkles, Trash2, Check as CheckIcon } from "lucide-react";
+import { BookOpen, ChevronRight, ClipboardCopy, Trash2, Check as CheckIcon } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 
 const listStagger = {
@@ -174,45 +176,36 @@ const ParentGuide = () => {
 
   return (
     <Layout>
-      <section className="mx-auto max-w-6xl space-y-5 px-3 pb-10 pt-6 sm:space-y-8 sm:px-4 sm:pb-12 sm:pt-8 md:py-14 md:pb-16 [padding-bottom:max(2.5rem,env(safe-area-inset-bottom))]">
-        {/* Hero */}
-        <motion.div
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.3 }}
-          className="relative overflow-hidden rounded-2xl border-2 border-primary/20 bg-gradient-to-br from-primary/[0.12] via-primary/[0.04] to-card p-4 shadow-card sm:rounded-3xl sm:p-5 md:p-6"
-        >
-          <div aria-hidden className="pointer-events-none absolute -right-10 -top-10 h-36 w-36 rounded-full bg-primary/15 blur-3xl sm:h-52 sm:w-52" />
-          <div aria-hidden className="pointer-events-none absolute -bottom-14 -left-10 h-32 w-32 rounded-full bg-primary/10 blur-3xl sm:h-48 sm:w-48" />
-
-          <HeaderHero
-            icon={
-              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl gradient-hero text-primary-foreground shadow-md sm:h-14 sm:w-14">
-                <BookOpen className="h-6 w-6 sm:h-7 sm:w-7" />
-              </div>
+      <section className={cn(experiencePageClass(isJunior), "relative mx-auto max-w-6xl space-y-5 px-3 pb-[max(6.5rem,calc(5rem+env(safe-area-inset-bottom)))] pt-6 sm:space-y-8 sm:px-4 sm:pb-12 sm:pt-8 md:py-14")}>
+        {isJunior ? <JuniorBlobs /> : <SeniorBlobs />}
+        {isJunior ? <JBack to="/roditelji?experience=junior" label="Roditeljski kutak" /> : <SBack to="/roditelji" label="Roditeljski kutak" crumb="Vodič" />}
+        {isJunior ? (
+          <PageHero
+            icon={BookOpen}
+            tone="violet"
+            kicker="Vodič"
+            badge="Vodič za srednju"
+            title={
+              <>
+                Vodič za <span className="text-[hsl(var(--jh-violet))]">roditelje</span>
+              </>
             }
-            decor={
-              <HeaderDecor className="opacity-[0.4] sm:opacity-[0.3]">
-                <div className="flex h-full w-full items-center justify-center">
-                  <NotebookPen className="h-20 w-20 text-primary/70 sm:h-24 sm:w-24" />
-                </div>
-              </HeaderDecor>
+            lead="Praktični sadržaj za odabir srednje škole — kratki ritam razgovora, checklista i dnevnik."
+          />
+        ) : (
+          <SeniorHero
+            icon={BookOpen}
+            tone="rose"
+            kicker="Vodič"
+            badge="Vodič za fakultet"
+            title={
+              <>
+                Vodič za <span className="text-[hsl(var(--sr-rose))]">roditelje</span>
+              </>
             }
-          >
-            <span className="inline-flex items-center gap-1 rounded-full border border-primary/25 bg-primary/10 px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-primary">
-              <Sparkles className="h-3 w-3" />
-              {isJunior ? "Vodič za srednju" : "Vodič za fakultet"}
-            </span>
-            <h1 className="mt-2 text-balance text-2xl font-bold leading-tight tracking-tight sm:text-3xl md:text-4xl">
-              Vodič za roditelje
-            </h1>
-            <p className="mt-1.5 max-w-2xl text-pretty text-sm leading-relaxed text-muted-foreground sm:text-base">
-              {isJunior
-                ? "Praktični sadržaj za odabir srednje škole — kratki ritam razgovora, checklista i dnevnik."
-                : "Praktični sadržaj koji možete odmah primijeniti kod kuće."}
-            </p>
-          </HeaderHero>
-        </motion.div>
+            lead="Praktični sadržaj koji možete odmah primijeniti kod kuće."
+          />
+        )}
 
         <motion.div
           initial={{ opacity: 0, y: 8 }}

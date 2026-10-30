@@ -57,8 +57,11 @@ function ForumRulesNote() {
 }
 import { Link, useLocation, useSearchParams } from "react-router-dom";
 import { authLogout, authMe, userFromAuthMe, type AuthUser } from "@/lib/auth";
-import { resolveExperienceMode, type MojPutExperienceMode } from "@/lib/experience";
+import { experiencePageClass, resolveExperienceMode, type MojPutExperienceMode } from "@/lib/experience";
 import { cn } from "@/lib/utils";
+import { JBack, JuniorBlobs, PageHero, StatTile } from "@/components/junior-kit";
+import { PageHero as SeniorHero, SBack, SeniorBlobs } from "@/components/senior-kit";
+import { MessagesSquare as ForumHeroIcon } from "lucide-react";
 
 type ForumMessage = {
   id: number;
@@ -837,60 +840,52 @@ const Forum = () => {
   return (
     <Layout>
       <PageSeo title="Forum za učenike i studente – MojPut" description="Pitaj učenike i studente o upisu, fakultetima i srednjim školama. Moderirani forum s pravilima i prijavom neprimjerenih objava." />
-      <section className="container mx-auto max-w-6xl px-3 pb-[max(1rem,env(safe-area-inset-bottom))] pt-3 sm:px-4 sm:py-8">
-        <button
-          type="button"
-          onClick={() => window.history.back()}
-          className="mb-2 inline-flex items-center gap-1.5 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground md:mb-4"
-        >
-          <ArrowLeft className="h-4 w-4" />
-          <span>Natrag</span>
-        </button>
-
-        <div
-          className={cn(
-            "mb-3 flex items-center gap-3 rounded-2xl border border-primary/20 bg-gradient-to-r from-primary/10 via-card to-card px-3 py-2.5 shadow-card md:mb-5 md:items-start md:p-5",
-            selectedConversation && "max-md:hidden",
-          )}
-        >
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary text-primary-foreground md:h-12 md:w-12">
-            <MessagesSquare className="h-5 w-5" />
+      <section className={cn(experiencePageClass(isJunior), "relative mx-auto max-w-6xl px-3 pb-[max(6.5rem,calc(5rem+env(safe-area-inset-bottom)))] pt-5 sm:px-4 sm:py-8")}>
+        {isJunior ? <JuniorBlobs /> : <SeniorBlobs />}
+        {isJunior ? (
+          <div className={cn(selectedConversation && "max-md:hidden")}>
+            <JBack crumb="Forum" />
+            <PageHero
+              icon={ForumHeroIcon}
+              tone="rose"
+              kicker="Zajednica"
+              badge="Forum"
+              title={
+                <>
+                  Forum o <span className="text-[hsl(var(--jh-rose))]">srednjoj školi</span>
+                </>
+              }
+              lead="Pitaj o smjerovima, bodovima i upisu. Teme su odmah ispod."
+              stats={[
+                forumStats.totalConversations > 0 ? { label: "Teme", value: forumStats.totalConversations } : null,
+                forumStats.totalMessages > 0 ? { label: "Poruke", value: forumStats.totalMessages } : null,
+                forumStats.uniqueAuthors > 0 ? { label: "Članovi", value: forumStats.uniqueAuthors } : null,
+              ].filter(Boolean) as { label: string; value: number }[]}
+            />
           </div>
-          <div className="min-w-0 flex-1">
-            <h1 className="truncate text-lg font-bold tracking-tight text-foreground md:text-3xl">
-              {isJunior ? "Forum o srednjoj školi" : "Forum za učenike"}
-            </h1>
-            <p className="mt-1 hidden max-w-2xl text-sm leading-relaxed text-muted-foreground md:block">
-              {isJunior
-                ? "Pitaj o smjerovima, bodovima i upisu. Teme su odmah ispod."
-                : "Pitaj o maturi, fakultetima i studentskom životu. Teme su odmah ispod."}
-            </p>
-            {(forumStats.totalConversations > 0 ||
-              forumStats.totalMessages > 0 ||
-              forumStats.uniqueAuthors > 0) && (
-              <div className="mt-3 hidden flex-wrap gap-2 sm:flex">
-                {forumStats.totalConversations > 0 && (
-                  <div className="rounded-xl border border-border/60 bg-background/70 px-3 py-2">
-                    <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">Teme</p>
-                    <p className="mt-0.5 text-lg font-bold leading-none">{forumStats.totalConversations}</p>
-                  </div>
-                )}
-                {forumStats.totalMessages > 0 && (
-                  <div className="rounded-xl border border-border/60 bg-background/70 px-3 py-2">
-                    <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">Poruke</p>
-                    <p className="mt-0.5 text-lg font-bold leading-none">{forumStats.totalMessages}</p>
-                  </div>
-                )}
-                {forumStats.uniqueAuthors > 0 && (
-                  <div className="rounded-xl border border-border/60 bg-background/70 px-3 py-2">
-                    <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">Članovi</p>
-                    <p className="mt-0.5 text-lg font-bold leading-none">{forumStats.uniqueAuthors}</p>
-                  </div>
-                )}
-              </div>
-            )}
+        ) : (
+          <div className={cn(selectedConversation && "max-md:hidden")}>
+            <SBack crumb="Forum" />
+            <SeniorHero
+              icon={ForumHeroIcon}
+              tone="fuchsia"
+              index="08"
+              kicker="Forum"
+              badge="Zajednica"
+              title={
+                <>
+                  Forum za <span className="text-[hsl(var(--sr-fuchsia))]">učenike</span>
+                </>
+              }
+              lead="Pitaj o maturi, fakultetima i studentskom životu. Teme su odmah ispod."
+              stats={[
+                forumStats.totalConversations > 0 ? { label: "Teme", value: forumStats.totalConversations } : null,
+                forumStats.totalMessages > 0 ? { label: "Poruke", value: forumStats.totalMessages } : null,
+                forumStats.uniqueAuthors > 0 ? { label: "Članovi", value: forumStats.uniqueAuthors } : null,
+              ].filter(Boolean) as { label: string; value: number }[]}
+            />
           </div>
-        </div>
+        )}
 
         {authChecked && !canUseForum && (
           <motion.div
@@ -915,7 +910,12 @@ const Forum = () => {
               </div>
               <Link
                 to="/prijava"
-                className="inline-flex min-h-[44px] items-center justify-center gap-2 rounded-xl bg-primary px-4 py-3 text-sm font-semibold text-primary-foreground shadow-md transition-colors hover:bg-primary/90 sm:min-h-0 sm:py-2.5 touch-manipulation"
+                className={cn(
+                  "inline-flex min-h-[44px] items-center justify-center gap-2 rounded-xl px-4 py-3 text-sm font-semibold shadow-md sm:min-h-0 sm:py-2.5 touch-manipulation",
+                  isJunior
+                    ? "bg-primary text-primary-foreground hover:bg-primary/90"
+                    : "sr-gold-btn",
+                )}
               >
                 <LogIn className="h-4 w-4" />
                 Prijavi se
@@ -987,7 +987,10 @@ const Forum = () => {
                   <button
                     type="button"
                     onClick={() => setShowNewConversationModal(true)}
-                    className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-primary px-4 py-3 text-sm font-semibold text-primary-foreground shadow-md transition-all hover:bg-primary/90 hover:shadow-lg active:scale-[0.98] sm:min-h-10 sm:py-2.5 touch-manipulation"
+                    className={cn(
+                      "inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-xl px-4 py-3 text-sm font-semibold shadow-md transition-all hover:shadow-lg active:scale-[0.98] sm:min-h-10 sm:py-2.5 touch-manipulation",
+                      isJunior ? "bg-primary text-primary-foreground hover:bg-primary/90" : "sr-gold-btn",
+                    )}
                   >
                     <Plus className="h-4 w-4" />
                     Novi razgovor
@@ -1025,7 +1028,9 @@ const Forum = () => {
                     className={cn(
                       "inline-flex shrink-0 items-center gap-1.5 rounded-full border-2 px-3 py-2 text-xs font-semibold transition-all touch-manipulation",
                       sortMode === "recent"
-                        ? "border-primary bg-primary text-primary-foreground shadow-sm"
+                        ? isJunior
+                          ? "border-primary bg-primary text-primary-foreground shadow-sm"
+                          : "border-transparent bg-[hsl(var(--sr-night))] text-white shadow-sm"
                         : "border-border bg-background text-foreground hover:bg-muted",
                     )}
                   >
@@ -1038,7 +1043,9 @@ const Forum = () => {
                     className={cn(
                       "inline-flex shrink-0 items-center gap-1.5 rounded-full border-2 px-3 py-2 text-xs font-semibold transition-all touch-manipulation",
                       sortMode === "active"
-                        ? "border-primary bg-primary text-primary-foreground shadow-sm"
+                        ? isJunior
+                          ? "border-primary bg-primary text-primary-foreground shadow-sm"
+                          : "border-transparent bg-[hsl(var(--sr-night))] text-white shadow-sm"
                         : "border-border bg-background text-foreground hover:bg-muted",
                     )}
                   >

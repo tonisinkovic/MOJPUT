@@ -40,6 +40,7 @@ import {
 } from "@/lib/careerAdvisor";
 import { INTEREST_SECTIONS, COMPETENCY_SECTIONS } from "@/lib/careerQuizThemes";
 import { Button } from "@/components/ui/button";
+import { PageHero as SeniorPageHero } from "@/components/senior-kit";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -619,56 +620,29 @@ export default function CareerQuizFlow({
             exit={{ opacity: 0, y: -16, transition: { duration: 0.35, ease: [0.4, 0, 0.2, 1] } }}
             className="relative mx-auto mb-5 sm:mb-8"
           >
-            <div className="relative overflow-hidden rounded-2xl border-2 border-primary/20 bg-gradient-to-br from-primary/[0.12] via-primary/[0.04] to-card p-4 shadow-card sm:rounded-3xl sm:p-6 md:p-7">
-              <div
-                aria-hidden
-                className="pointer-events-none absolute -right-10 -top-10 h-36 w-36 rounded-full bg-primary/15 blur-3xl sm:h-56 sm:w-56"
-              />
-              <div
-                aria-hidden
-                className="pointer-events-none absolute -bottom-14 -left-10 h-32 w-32 rounded-full bg-primary/10 blur-3xl sm:h-52 sm:w-52"
-              />
-
-              <div className="relative flex flex-col gap-4 sm:flex-row sm:items-start sm:gap-5">
-                <motion.div
-                  initial={{ scale: 0.88, opacity: 0 }}
-                  animate={{ scale: 1, opacity: 1 }}
-                  transition={{ delay: 0.08, type: "spring", stiffness: 260, damping: 22 }}
-                  className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-primary to-primary/80 text-primary-foreground shadow-md shadow-primary/25 sm:h-14 sm:w-14"
-                >
-                  <GraduationCap className="h-6 w-6 sm:h-7 sm:w-7" aria-hidden />
-                </motion.div>
-
-                <div className="min-w-0 flex-1">
-                  <span className="inline-flex items-center gap-1 rounded-full border border-primary/25 bg-primary/10 px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-primary">
-                    <Sparkles className="h-3 w-3" aria-hidden />
-                    <span>Kviz za maturante · upis na faks</span>
-                  </span>
-                  <h1 className="mt-2 text-balance text-2xl font-bold leading-tight tracking-tight sm:text-3xl md:text-4xl">
-                    Koji je fakultet za mene?
-                  </h1>
-                  <p className="mt-1.5 max-w-2xl text-pretty text-sm leading-relaxed text-muted-foreground sm:text-base">
-                    Odgovori na pitanja o tipu studija i vještinama za fakultet.{" "}
-                    <span className="font-medium text-foreground">Okvirno</span> nakon prve faze,{" "}
-                    <span className="font-medium text-foreground">jasnije</span> nakon druge.
-                  </p>
-
-                  <div className="mt-3 flex flex-wrap items-center gap-1.5 sm:mt-4 sm:gap-2">
-                    <span className="inline-flex items-center gap-1 rounded-full border border-primary/25 bg-primary/10 px-2.5 py-1 text-[11px] font-semibold text-primary sm:text-xs">
-                      <span className="tabular-nums">
-                        {interests.length} + {competencies.length} pitanja
-                      </span>
-                    </span>
-                    <span className="inline-flex items-center gap-1 rounded-full border border-border bg-card px-2.5 py-1 text-[11px] font-medium text-muted-foreground sm:text-xs">
-                      RIASEC profil
-                    </span>
-                    <span className="inline-flex items-center gap-1 rounded-full border border-border bg-card px-2.5 py-1 text-[11px] font-medium text-muted-foreground sm:text-xs">
-                      Smjerovi i upis u HR
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </div>
+            <SeniorPageHero
+              icon={GraduationCap}
+              tone="indigo"
+              kicker="Kviz"
+              badge="Kviz za maturante · upis na faks"
+              title={
+                <>
+                  Koji je fakultet <span className="text-[hsl(var(--sr-indigo))]">za mene?</span>
+                </>
+              }
+              lead={
+                <>
+                  Odgovori na pitanja o tipu studija i vještinama za fakultet.{" "}
+                  <span className="font-medium text-white">Okvirno</span> nakon prve faze,{" "}
+                  <span className="font-medium text-white">jasnije</span> nakon druge.
+                </>
+              }
+              stats={[
+                { label: "Pitanja", value: `${interests.length} + ${competencies.length}` },
+                { label: "Profil", value: "RIASEC" },
+                { label: "Upis", value: "HR" },
+              ]}
+            />
           </motion.div>
         )}
       </AnimatePresence>

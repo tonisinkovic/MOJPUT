@@ -30,6 +30,7 @@ import { AUTH_CHANGED, authMe, userFromAuthMe, type AuthUser } from "@/lib/auth"
 import { fetchSchoolPublic, schoolMediaUrl, type SchoolPost, type SchoolPublicPayload } from "@/lib/schoolCmsApi";
 import { mergeDemoSchoolPosts } from "@/data/schoolDemoPosts";
 import { cn } from "@/lib/utils";
+import { CARD, EmptyState, JBack, JuniorBlobs, PrimaryButton, SecondaryButton } from "@/components/junior-kit";
 
 type ProgramKind = "gimnazija" | "umjetnost" | "struka";
 
@@ -212,12 +213,19 @@ export default function HighSchoolProfile() {
           title="Škola nije pronađena | MojPut"
           description="Tražena srednja škola ne postoji u MojPut katalogu."
         />
-        <section className="container py-16">
-          <h1 className="text-2xl font-extrabold tracking-tight">Škola nije pronađena</h1>
-          <p className="mt-2 text-muted-foreground">Provjeri poveznicu ili se vrati na popis srednjih škola.</p>
-          <Button className="mt-4" asChild>
-            <Link to="/srednje-skole/profili">Sve srednje škole</Link>
-          </Button>
+        <section className="jh-page relative mx-auto max-w-5xl px-3 py-16 pb-[max(6.5rem,calc(5rem+env(safe-area-inset-bottom)))] sm:px-4">
+          <JuniorBlobs />
+          <JBack to="/srednje-skole/profili" label="Sve škole" />
+          <EmptyState
+            titleAs="h1"
+            title="Škola nije pronađena"
+            text="Provjeri poveznicu ili se vrati na popis srednjih škola."
+            action={
+              <Link to="/srednje-skole/profili">
+                <PrimaryButton type="button">Sve srednje škole</PrimaryButton>
+              </Link>
+            }
+          />
         </section>
       </Layout>
     );
@@ -274,8 +282,10 @@ export default function HighSchoolProfile() {
           email: shownEmails[0] || undefined,
         }}
       />
-      <section className="container space-y-6 py-10 md:space-y-8 md:py-14">
-        <article className="relative overflow-hidden rounded-3xl border bg-card shadow-card">
+      <section className="jh-page relative mx-auto max-w-6xl space-y-6 px-3 py-6 pb-[max(6.5rem,calc(5rem+env(safe-area-inset-bottom)))] sm:px-4 md:space-y-8 md:py-14">
+        <JuniorBlobs />
+        <JBack to="/srednje-skole/profili" label="Sve škole" />
+        <article className={cn(CARD)}>
           {cover ? (
             <img src={cover} alt="" className="h-36 w-full object-cover md:h-48" />
           ) : (
@@ -305,29 +315,29 @@ export default function HighSchoolProfile() {
                 </div>
               </div>
               <div className="flex flex-wrap gap-2">
-                <Button variant="outline" className="rounded-full" asChild>
-                  <Link to="/srednje-skole/profili">Sve škole</Link>
-                </Button>
-                <Button className="rounded-full" asChild>
-                  <Link to={calculatorHref(kalk?.id ?? null)}>
+                <Link to="/srednje-skole/profili">
+                  <SecondaryButton type="button">Sve škole</SecondaryButton>
+                </Link>
+                <Link to={calculatorHref(kalk?.id ?? null)}>
+                  <PrimaryButton type="button">
                     Kalkulator
-                    <Calculator className="ml-1 h-4 w-4" />
-                  </Link>
-                </Button>
+                    <Calculator className="h-4 w-4" />
+                  </PrimaryButton>
+                </Link>
                 {extraWeb && (
-                  <Button variant="outline" className="rounded-full" asChild>
-                    <a href={extraWeb} target="_blank" rel="noreferrer">
+                  <a href={extraWeb} target="_blank" rel="noreferrer">
+                    <SecondaryButton type="button">
                       Web škole
-                      <ArrowUpRight className="ml-1 h-4 w-4" />
-                    </a>
-                  </Button>
+                      <ArrowUpRight className="h-4 w-4" />
+                    </SecondaryButton>
+                  </a>
                 )}
               </div>
             </div>
           </div>
         </article>
 
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-3 md:gap-4">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3 sm:gap-6">
           <InfoPill icon={<MapPin className="h-4 w-4" />} label="Grad" value={school.city} />
           <InfoPill icon={<School className="h-4 w-4" />} label="Vrsta" value={school.category} />
           <InfoPill

@@ -2,7 +2,6 @@ import Layout from "@/components/Layout";
 import PageSeo from "@/components/seo/PageSeo";
 import { motion } from "framer-motion";
 import {
-  ArrowLeft,
   ArrowRight,
   CheckCircle2,
   Clock,
@@ -19,7 +18,10 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
+import { experiencePageClass, resolveExperienceMode } from "@/lib/experience";
+import { InfoBanner, JBack, JuniorBlobs, PageHero } from "@/components/junior-kit";
+import { InfoBanner as SeniorInfoBanner, PageHero as SeniorHero, SBack, SeniorBlobs } from "@/components/senior-kit";
 import { forwardRef, useEffect, useMemo, useRef, useState } from "react";
 import { authMe, userFromAuthMe } from "@/lib/auth";
 import {
@@ -3189,6 +3191,8 @@ const QUIZ_CARDS_LEGACY: {
 ]; */
 
 const Samoprocjena = () => {
+  const [searchParams] = useSearchParams();
+  const isJunior = resolveExperienceMode(searchParams) === "junior";
   const [selectedQuiz, setSelectedQuiz] = useState<QuizId | null>(null);
   const quizContentRef = useRef<HTMLDivElement>(null);
   const hiddenQuizIds = useMemo(() => new Set<QuizId>(["confidence"]), []);
@@ -3338,71 +3342,68 @@ const Samoprocjena = () => {
     );
   };
 
-  const gridClass = "grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4";
+  const gridClass = "grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3";
 
   return (
     <Layout>
       <PageSeo title="Samoprocjena – raspoloženje, stres i osobnost | MojPut" description="Kratki upitnici o raspoloženju, stresu, osobnosti i samopouzdanju. Rezultati se ne spremaju bez tvog pristanka." />
-      <section className="mx-auto max-w-6xl space-y-5 px-3 pb-10 pt-6 sm:space-y-8 sm:px-4 sm:pb-12 sm:pt-8 md:py-14 md:pb-16 [padding-bottom:max(2.5rem,env(safe-area-inset-bottom))]">
-        {/* Back button */}
-        <button
-          type="button"
-          onClick={() => window.history.back()}
-          className="inline-flex items-center gap-1.5 text-sm font-medium text-slate-500 transition-colors hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100"
-        >
-          <ArrowLeft className="h-4 w-4" />
-          <span>Natrag</span>
-        </button>
+      <section className={cn(experiencePageClass(isJunior), "relative mx-auto max-w-6xl space-y-5 px-3 pb-[max(6.5rem,calc(5rem+env(safe-area-inset-bottom)))] pt-6 sm:space-y-8 sm:px-4 sm:pb-12 sm:pt-8 md:py-14")}>
+        {isJunior ? <JuniorBlobs /> : <SeniorBlobs />}
+        {isJunior ? <JBack crumb="Samoprocjena" /> : <SBack crumb="Samoprocjena" />}
 
         {/* Hero */}
-        <motion.div
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.3 }}
-          className="relative overflow-hidden rounded-2xl border-2 border-primary/20 bg-gradient-to-br from-primary/[0.12] via-primary/[0.04] to-card p-4 shadow-card sm:rounded-3xl sm:p-5 md:p-6"
-        >
-          <div
-            aria-hidden
-            className="pointer-events-none absolute -right-10 -top-10 h-36 w-36 rounded-full bg-primary/15 blur-3xl sm:h-52 sm:w-52"
+        {isJunior ? (
+          <PageHero
+            icon={Target}
+            tone="violet"
+            badge="Upoznaj sebe"
+            title="Samoprocjena"
+            lead="Upoznaj svoje interese, vrijednosti i sposobnosti kroz kratke, znanstveno utemeljene kvizove."
+            stats={[
+              { label: "Kvizovi", value: availableCount },
+              { label: "Trajanje", value: "2–10 min" },
+              { label: "Privatnost", value: "Ti biraš" },
+            ]}
           />
-          <div
-            aria-hidden
-            className="pointer-events-none absolute -bottom-14 -left-10 h-32 w-32 rounded-full bg-primary/10 blur-3xl sm:h-48 sm:w-48"
+        ) : (
+          <SeniorHero
+            icon={Target}
+            tone="indigo"
+            kicker="Samoprocjena"
+            badge="Upoznaj sebe"
+            title={
+              <>
+                Samo<span className="text-[hsl(var(--sr-indigo))]">procjena</span>
+              </>
+            }
+            lead="Upoznaj svoje interese, vrijednosti i sposobnosti kroz kratke, znanstveno utemeljene kvizove."
+            stats={[
+              { label: "Kvizovi", value: availableCount },
+              { label: "Trajanje", value: "2–10 min" },
+              { label: "Privatnost", value: "Ti biraš" },
+            ]}
           />
-
-          <div className="relative flex flex-col gap-4 sm:flex-row sm:items-start sm:gap-5">
-            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl gradient-hero text-primary-foreground shadow-md sm:h-14 sm:w-14">
-              <Target className="h-6 w-6 sm:h-7 sm:w-7" />
-            </div>
-            <div className="min-w-0 flex-1">
-              <span className="inline-flex items-center gap-1 rounded-full border border-primary/25 bg-primary/10 px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-primary">
-                <Sparkles className="h-3 w-3" />
-                Upoznaj sebe
-              </span>
-              <h1 className="mt-2 text-balance text-2xl font-bold leading-tight tracking-tight sm:text-3xl md:text-4xl">
-                Samoprocjena
-              </h1>
-              <p className="mt-1.5 max-w-2xl text-pretty text-sm leading-relaxed text-muted-foreground sm:text-base">
-                Upoznaj svoje interese, vrijednosti i sposobnosti kroz kratke, znanstveno utemeljene kvizove.
-              </p>
-
-              <div className="mt-3 rounded-xl border border-primary/15 bg-card/70 p-3 text-sm leading-relaxed text-muted-foreground backdrop-blur-sm sm:mt-4">
-                <p>
-                  Za upis na fakultet koristi zasebnu stranicu{" "}
-                  <Link
-                    to="/kviz"
-                    className="inline-flex items-center gap-1 font-semibold text-primary underline-offset-4 hover:underline"
-                  >
-                    Koji je fakultet za mene?
-                    <ArrowRight className="h-3.5 w-3.5" />
-                  </Link>
-                </p>
-              </div>
-            </div>
-          </div>
-        </motion.div>
+        )}
+        {isJunior ? (
+          <InfoBanner>
+            Za upis na fakultet koristi zasebnu stranicu{" "}
+            <Link to="/kviz" className="inline-flex items-center gap-1 font-semibold underline-offset-4 hover:underline">
+              Koji je fakultet za mene?
+              <ArrowRight className="h-3.5 w-3.5" />
+            </Link>
+          </InfoBanner>
+        ) : (
+          <SeniorInfoBanner tone="indigo">
+            Za upis na fakultet koristi zasebnu stranicu{" "}
+            <Link to="/kviz" className="inline-flex items-center gap-1 font-semibold underline-offset-4 hover:underline">
+              Koji je fakultet za mene?
+              <ArrowRight className="h-3.5 w-3.5" />
+            </Link>
+          </SeniorInfoBanner>
+        )}
 
         {/* Info strip */}
+        {isJunior ? null : (
         <motion.div
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
@@ -3443,6 +3444,7 @@ const Samoprocjena = () => {
             </div>
           </div>
         </motion.div>
+        )}
 
         {/* Quiz grid */}
         <div className="space-y-3 sm:space-y-4">

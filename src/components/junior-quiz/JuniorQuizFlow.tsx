@@ -8,6 +8,7 @@ import { Progress } from "@/components/ui/progress";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
+import { CARD, CheckChip, PrimaryButton, SecondaryButton, TONE } from "@/components/junior-kit";
 import JuniorQuizResults from "@/components/junior-quiz/JuniorQuizResults";
 import { analyzeNearby, listQuizCities } from "@/lib/juniorGeo";
 import { pickQuizResultSchools, saveJuniorSnapshot } from "@/lib/juniorPath";
@@ -395,10 +396,12 @@ const JuniorQuizFlow = () => {
   if (phase === "intro") {
     return (
       <motion.div initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }} className="mx-auto max-w-3xl">
-        <div className="rounded-3xl border border-border/70 bg-card/80 p-6 text-center shadow-xl backdrop-blur sm:p-10">
+        <div className={cn(CARD, "relative overflow-hidden p-6 text-center sm:p-10 md:p-12")}>
+          <div aria-hidden className="pointer-events-none absolute -right-16 -top-20 h-56 w-56 rounded-full bg-[hsl(var(--jh-teal)/0.16)] blur-3xl" />
+          <div aria-hidden className="pointer-events-none absolute -bottom-16 -left-12 h-44 w-44 rounded-full bg-[hsl(var(--jh-violet)/0.12)] blur-3xl" />
           {classCodeFromUrl ? (
-            <div className="mx-auto mb-6 max-w-md">
-              <p className="text-xs font-bold uppercase tracking-[0.18em] text-primary">Razred</p>
+            <div className="relative mx-auto mb-6 max-w-md">
+              <p className="text-xs font-extrabold uppercase tracking-[0.18em] text-[hsl(var(--jh-teal-t))]">Razred</p>
               <p className="mt-1 font-mono text-5xl font-extrabold tracking-[0.22em] text-foreground sm:text-6xl">
                 {classCodeFromUrl}
               </p>
@@ -407,21 +410,33 @@ const JuniorQuizFlow = () => {
               </p>
             </div>
           ) : (
-            <Badge className="mx-auto mb-4 bg-primary/10 text-primary hover:bg-primary/10">KVIZ ZA 8. RAZRED</Badge>
+            <span className={cn("relative mx-auto mb-5 inline-flex items-center gap-2 rounded-full border px-3.5 py-1.5 text-[11px] font-extrabold uppercase tracking-[0.14em]", TONE.violet.border, TONE.violet.soft, TONE.violet.text)}>
+              <span className="relative flex h-2 w-2" aria-hidden>
+                <span className="jh-ring absolute inset-0 rounded-full border-2 border-current" />
+                <span className={cn("relative h-2 w-2 rounded-full", TONE.violet.solid)} />
+              </span>
+              Kviz za 8. razred
+            </span>
           )}
-          <h1 className="text-balance text-3xl font-extrabold tracking-tight sm:text-4xl">Koja je srednja škola za mene?</h1>
-          <p className="mx-auto mt-3 max-w-xl text-pretty text-muted-foreground">
+          <h1 className="relative text-balance text-3xl font-extrabold tracking-[-0.04em] sm:text-5xl">
+            Koja je srednja škola <span className="text-[hsl(var(--jh-teal))]">za mene?</span>
+          </h1>
+          <p className="relative mx-auto mt-4 max-w-xl text-pretty text-base font-medium leading-relaxed text-muted-foreground sm:text-lg">
             Kratak kviz, oko 8 minuta. Nema točnih i netočnih odgovora. Odgovori iskreno — želimo vidjeti što tebi
             odgovara. Na kraju dobiješ škole i smjerove, ne jednu „pravu” školu.
           </p>
+          <div className="relative mt-5 flex flex-wrap justify-center gap-2">
+            <CheckChip>Besplatno</CheckChip>
+            <CheckChip>Kviz bez računa</CheckChip>
+          </div>
 
           <div className="mt-8 grid gap-3 sm:grid-cols-3">
             {juniorSections.slice(0, 3).map((s, i) => {
               const Icon = SECTION_ICONS[s.key];
               return (
-                <div key={s.key} className="rounded-2xl border border-border/60 bg-background/60 p-4 text-left">
+                <div key={s.key} className="rounded-[1.5rem] border border-border/70 bg-card p-4 text-left shadow-[0_18px_40px_-30px_hsl(var(--jh-ink)/0.45)]">
                   <div className="flex items-center gap-2">
-                    <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                    <span className={cn("flex h-9 w-9 items-center justify-center rounded-xl text-white", TONE.teal.grad)}>
                       <Icon className="h-4 w-4" />
                     </span>
                     <span className="text-xs font-bold uppercase tracking-wide text-muted-foreground">{i + 1}. dio</span>
@@ -433,10 +448,10 @@ const JuniorQuizFlow = () => {
           </div>
 
           <div className="mt-8 flex flex-col items-center gap-3">
-            <Button size="lg" className="group min-h-14 px-8 text-base" onClick={startQuiz}>
+            <PrimaryButton className="min-h-14 px-8" onClick={startQuiz} pill={`${JUNIOR_QUIZ_QUESTION_COUNT} pitanja`}>
               {answeredCount > 0 ? "Nastavi kviz" : "Kreni!"}
-              <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
-            </Button>
+              <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-1" />
+            </PrimaryButton>
             <p className="text-xs text-muted-foreground">oko {JUNIOR_QUIZ_QUESTION_COUNT} pitanja · ovo nije test i nije odluka</p>
             <p className="text-xs text-muted-foreground">
               {answeredCount > 0
@@ -464,7 +479,7 @@ const JuniorQuizFlow = () => {
         <motion.div
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
-          className="rounded-3xl border border-border/70 bg-card/80 p-6 text-center shadow-xl backdrop-blur sm:p-10"
+          className={cn(CARD, "p-6 text-center sm:p-10")}
         >
           <p className="text-xs font-bold uppercase tracking-wide text-primary">Mala pauza</p>
           <h2 className="mt-3 text-pretty text-2xl font-extrabold sm:text-3xl">Odlično. Sad samo ono što te više vuče.</h2>
@@ -472,19 +487,18 @@ const JuniorQuizFlow = () => {
             Prvi dio je gotov. Iduća pitanja su kraća i bliža onome što ti je već bliže. {remainingMinutesLabel(remaining)}.
           </p>
           <div className="mt-8 flex flex-col items-center gap-3">
-            <Button size="lg" className="min-h-14 px-8 text-base" onClick={() => setCorePause(false)}>
+            <PrimaryButton className="min-h-14 px-8" onClick={() => setCorePause(false)}>
               Dalje
-              <ArrowRight className="ml-2 h-4 w-4" />
-            </Button>
-            <Button
-              variant="ghost"
+              <ArrowRight className="h-5 w-5" />
+            </PrimaryButton>
+            <SecondaryButton
               onClick={() => {
                 setCorePause(false);
                 setIndex(Math.max(0, CORE_QUESTIONS.length - 1));
               }}
             >
-              <ArrowLeft className="mr-1 h-4 w-4" /> Natrag
-            </Button>
+              <ArrowLeft className="h-4 w-4" /> Natrag
+            </SecondaryButton>
           </div>
         </motion.div>
       </div>
@@ -528,7 +542,7 @@ const JuniorQuizFlow = () => {
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -24 }}
             transition={{ duration: 0.22 }}
-            className="rounded-3xl border border-border/70 bg-card/80 p-5 shadow-lg backdrop-blur sm:p-8"
+            className={cn(CARD, "p-5 sm:p-8")}
           >
             {enteredGrades && question.id === 73 ? (
               <p className="mb-3 rounded-xl bg-primary/5 px-3 py-2 text-sm text-muted-foreground">
@@ -556,8 +570,8 @@ const JuniorQuizFlow = () => {
                       className={cn(
                         "flex min-h-16 flex-col items-center justify-center rounded-2xl border-2 px-0.5 py-2 text-center transition-all active:scale-[0.98] sm:min-h-14",
                         selected === value
-                          ? "border-primary bg-primary text-primary-foreground"
-                          : "border-border/70 bg-background/70 hover:border-primary/50",
+                          ? "border-transparent bg-gradient-to-br from-[hsl(174_66%_36%)] to-[hsl(174_60%_50%)] text-white shadow-[0_10px_22px_-12px_hsl(174_66%_30%/0.75)]"
+                          : "border-border/70 bg-card hover:border-[hsl(var(--jh-teal)/0.5)]",
                       )}
                     >
                       <span className="text-[10px] font-bold leading-tight sm:text-xs">{JUNIOR_SCALE_WORDS[value - 1]}</span>
@@ -580,7 +594,7 @@ const JuniorQuizFlow = () => {
                       }
                       setCraftFamily(family.id);
                     }}
-                    className="min-h-14 rounded-2xl border-2 border-border/60 bg-background/70 px-4 py-3.5 text-left text-[15px] font-semibold leading-snug transition-all hover:border-primary/40 active:scale-[0.98]"
+                    className="min-h-14 rounded-[1.5rem] border-2 border-border/70 bg-card px-4 py-3.5 text-left text-[15px] font-semibold leading-snug shadow-[0_12px_28px_-22px_hsl(var(--jh-ink)/0.45)] transition-all hover:-translate-y-0.5 hover:border-[hsl(var(--jh-teal)/0.45)] active:scale-[0.98]"
                   >
                     {family.label}
                   </button>
@@ -620,8 +634,10 @@ const JuniorQuizFlow = () => {
                     type="button"
                     onClick={() => commitAnswer(opt.id)}
                     className={cn(
-                      "min-h-14 rounded-2xl border-2 bg-background/70 px-4 py-3.5 text-left text-[15px] font-semibold leading-snug transition-all active:scale-[0.98]",
-                      selected === opt.id ? "border-primary ring-2 ring-primary" : "border-border/60 hover:border-primary/40",
+                      "min-h-14 rounded-[1.5rem] border-2 px-4 py-3.5 text-left text-[15px] font-semibold leading-snug shadow-[0_12px_28px_-22px_hsl(var(--jh-ink)/0.45)] transition-all active:scale-[0.98]",
+                      selected === opt.id
+                        ? "border-[hsl(var(--jh-teal))] bg-[hsl(var(--jh-teal)/0.1)] ring-2 ring-[hsl(var(--jh-teal)/0.25)]"
+                        : "border-border/70 bg-card hover:-translate-y-0.5 hover:border-[hsl(var(--jh-teal)/0.45)]",
                     )}
                   >
                     {opt.label}
@@ -632,8 +648,10 @@ const JuniorQuizFlow = () => {
                     type="button"
                     onClick={() => commitAnswer("nije_moje")}
                     className={cn(
-                      "min-h-14 rounded-2xl border-2 bg-background/70 px-4 py-3.5 text-left text-[15px] font-semibold leading-snug transition-all active:scale-[0.98]",
-                      selected === "nije_moje" ? "border-primary ring-2 ring-primary" : "border-border/60 hover:border-primary/40",
+                      "min-h-14 rounded-[1.5rem] border-2 px-4 py-3.5 text-left text-[15px] font-semibold leading-snug shadow-[0_12px_28px_-22px_hsl(var(--jh-ink)/0.45)] transition-all active:scale-[0.98]",
+                      selected === "nije_moje"
+                        ? "border-[hsl(var(--jh-teal))] bg-[hsl(var(--jh-teal)/0.1)] ring-2 ring-[hsl(var(--jh-teal)/0.25)]"
+                        : "border-border/70 bg-card hover:border-[hsl(var(--jh-teal)/0.45)]",
                     )}
                   >
                     Ništa od navedenog

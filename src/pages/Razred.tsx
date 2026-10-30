@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import { Copy, Expand, Link2, RefreshCw, Volume2, VolumeX, Users } from "lucide-react";
 import { toast } from "sonner";
 import Layout from "@/components/Layout";
+import { JuniorBlobs, JBack, PageHero } from "@/components/junior-kit";
 import PageSeo from "@/components/seo/PageSeo";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -149,21 +150,26 @@ export default function Razred() {
       />
       <section
         className={cn(
-          "mx-auto w-full px-3 py-6 sm:px-5",
-          projector ? "max-w-none px-4 py-4 sm:px-8" : "container max-w-6xl md:py-10",
+          "jh-page relative mx-auto w-full px-3 py-6 sm:px-5",
+          projector ? "max-w-none px-4 py-4 sm:px-8" : "container max-w-6xl pb-[max(6.5rem,calc(5rem+env(safe-area-inset-bottom)))] md:py-10",
         )}
       >
+        {projector ? null : <JuniorBlobs />}
         {!(projector && board) && (
           <>
-            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-primary">Za pedagoga i razrednika</p>
-            <h1 className="mt-1 flex items-center gap-2 text-3xl font-bold tracking-tight">
-              <Users className="h-7 w-7 text-primary" />
-              Razred — jedan kod
-            </h1>
-            <p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted-foreground">
-              Učenici riješe kviz na svom mobitelu. Kad potvrde, ovdje se redom pojavi njihov smjer. Imena nisu na
-              ploči — osim ako to sam uključiš.
-            </p>
+            {projector ? null : <JBack crumb="Razred" />}
+            <PageHero
+              icon={Users}
+              tone="violet"
+              kicker="Ploča"
+              badge="Za pedagoga i razrednika"
+              title={
+                <>
+                  Razred — <span className="text-[hsl(var(--jh-violet))]">jedan kod</span>
+                </>
+              }
+              lead="Učenici riješe kviz na svom mobitelu. Kad potvrde, ovdje se redom pojavi njihov smjer. Imena nisu na ploči — osim ako to sam uključiš."
+            />
           </>
         )}
 

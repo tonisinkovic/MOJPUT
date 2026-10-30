@@ -1,7 +1,7 @@
 import Layout from "@/components/Layout";
 import { useMemo, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
-import { ArrowLeft, Scale, X } from "lucide-react";
+import { Scale, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -17,6 +17,7 @@ import {
   type CompareProfile,
 } from "@/lib/programCompare";
 import PageSeo from "@/components/seo/PageSeo";
+import { EmptyState, PageHero, SBack, SCARD, SeniorBlobs } from "@/components/senior-kit";
 
 const parseNum = (v: string, max: number): number | null => {
   const t = v.trim().replace(",", ".");
@@ -62,35 +63,35 @@ export default function UsporediStudije() {
         description="Unesi prosjek i rezultate mature jednom i usporedi bodove za 2–3 studija s prošlogodišnjim pragovima."
         canonical="https://mojput.com/usporedi-studije"
       />
-      <section className="container mx-auto max-w-6xl px-3 py-10 sm:px-4 md:py-14 space-y-6">
-        <Button asChild variant="ghost" size="sm" className="rounded-lg">
-          <Link to="/kalkulator-fakulteti">
-            <ArrowLeft className="mr-1 h-4 w-4" /> Kalkulator bodova
-          </Link>
-        </Button>
-        <div>
-          <h1 className="flex items-center gap-2 text-2xl font-bold md:text-3xl">
-            <Scale className="h-7 w-7 text-primary" /> Usporedba studija
-          </h1>
-          <p className="mt-1 text-muted-foreground">
-            Unesi podatke jednom — bodovi se računaju po formuli svakog studija i uspoređuju s pragom iz 2025.
-          </p>
-        </div>
+      <section className="sr-page relative mx-auto max-w-6xl space-y-6 px-3 pb-[max(6.5rem,calc(5rem+env(safe-area-inset-bottom)))] pt-5 sm:px-4 sm:pt-8 md:py-12">
+        <SeniorBlobs />
+        <SBack to="/kalkulator-fakulteti" label="Kalkulator bodova" crumb="Usporedba" />
+        <PageHero
+          icon={Scale}
+          tone="gold"
+          kicker="Bodovi"
+          badge="Usporedba"
+          title={
+            <>
+              Usporedba <span className="text-[hsl(var(--sr-gold))]">studija</span>
+            </>
+          }
+          lead="Unesi podatke jednom — bodovi se računaju po formuli svakog studija i uspoređuju s pragom iz 2025."
+        />
 
         {formulas.length < 2 ? (
-          <Card className="border-dashed">
-            <CardContent className="py-10 text-center text-muted-foreground">
-              Za usporedbu odaberi barem dva studija u kalkulatoru (gumb „Dodaj u usporedbu”).
-              <div className="mt-4">
-                <Button asChild>
-                  <Link to="/kalkulator-fakulteti">Odaberi studije</Link>
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
+          <EmptyState
+            title="Odaberi barem dva studija"
+            text="Za usporedbu odaberi barem dva studija u kalkulatoru (gumb „Dodaj u usporedbu”)."
+            action={
+              <Link to="/kalkulator-fakulteti" className="inline-flex min-h-12 items-center rounded-xl sr-gold-btn px-6 text-base font-extrabold">
+                Odaberi studije
+              </Link>
+            }
+          />
         ) : (
           <div className="grid gap-6 lg:grid-cols-5">
-            <Card className="lg:col-span-2">
+            <Card className={cn(SCARD, "lg:col-span-2 p-0")}>
               <CardHeader>
                 <CardTitle className="text-lg">Tvoji rezultati</CardTitle>
                 <CardDescription>Prazno polje = 0 bodova za taj element.</CardDescription>
@@ -128,7 +129,7 @@ export default function UsporediStudije() {
                           onClick={() => setLvl((p) => ({ ...p, [s.key]: l }))}
                           className={cn(
                             "h-11 w-11 shrink-0 rounded-xl border font-semibold",
-                            (lvl[s.key] ?? "B") === l ? "border-primary bg-primary text-primary-foreground" : "bg-background",
+                            (lvl[s.key] ?? "B") === l ? "border-transparent bg-[hsl(var(--sr-night))] text-white" : "bg-background",
                           )}
                         >
                           {l}
@@ -142,7 +143,7 @@ export default function UsporediStudije() {
 
             <div className="space-y-4 lg:col-span-3">
               {rows.map((r) => (
-                <Card key={r.formula.programId}>
+                <Card key={r.formula.programId} className={cn(SCARD, "p-0")}>
                   <CardHeader className="pb-2">
                     <div className="flex items-start justify-between gap-2">
                       <div>
@@ -169,7 +170,7 @@ export default function UsporediStudije() {
                     ) : (
                       <div className="flex flex-wrap items-baseline gap-x-6 gap-y-1">
                         <span>
-                          <span className="text-3xl font-extrabold tabular-nums">{Math.round(r.result.total)}</span>
+                          <span className="text-3xl font-extrabold tabular-nums tracking-tight text-[hsl(var(--sr-gold-t))]">{Math.round(r.result.total)}</span>
                           <span className="text-muted-foreground"> / {r.formula.maxBodovi}</span>
                         </span>
                         <span className="text-muted-foreground">

@@ -21,8 +21,7 @@ import {
   type KalkulatorSchool,
 } from "@/data/srednjaKalkulator";
 import { cn } from "@/lib/utils";
-import CalculatorAnimation from "@/components/header-animations/CalculatorAnimation";
-import HeaderDecor, { HeaderHero } from "@/components/header-animations/HeaderDecor";
+import { CARD, PageHero, PrimaryButton, SecondaryButton } from "@/components/junior-kit";
 import JuniorNumbersNote from "@/components/junior/JuniorNumbersNote";
 import {
   chanceForProgram,
@@ -586,28 +585,20 @@ export default function SrednjaKalkulator() {
 
   return (
     <div className="mx-auto w-full max-w-7xl">
-      <header className="relative mb-4 overflow-hidden rounded-2xl border border-primary/20 bg-gradient-to-br from-primary/10 via-card to-card p-4 shadow-card sm:p-5">
-        <HeaderHero
-          decor={
-            <HeaderDecor className="opacity-[0.28] sm:opacity-[0.14]">
-              <CalculatorAnimation />
-            </HeaderDecor>
-          }
-        >
-          <span className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.16em] text-primary">
-            <School className="h-3.5 w-3.5" />
-            Upis u srednju školu
-          </span>
-          <h1 className="mt-2 text-balance text-2xl font-extrabold tracking-tight sm:text-3xl">
-            Kalkulator bodova
-          </h1>
-          <p className="mt-1.5 max-w-2xl text-pretty text-sm leading-relaxed text-muted-foreground">
-            Tri koraka: škola, ocjene, pa usporedba s lanjskim pragom.
-          </p>
-        </HeaderHero>
-      </header>
+      <PageHero
+        icon={School}
+        tone="sky"
+        kicker="Bodovi"
+        badge="Upis u srednju školu"
+        title={
+          <>
+            Kalkulator <span className="text-[hsl(var(--jh-sky))]">bodova</span>
+          </>
+        }
+        lead="Tri koraka: škola, ocjene, pa usporedba s lanjskim pragom."
+      />
 
-      <nav aria-label="Koraci kalkulatora" className="mb-4 grid grid-cols-3 gap-2">
+      <nav aria-label="Koraci kalkulatora" className="mb-4 mt-8 grid grid-cols-3 gap-2 sm:mt-10">
         {(
           [
             { id: 0 as const, label: "1. Škola" },
@@ -624,12 +615,12 @@ export default function SrednjaKalkulator() {
               disabled={locked}
               onClick={() => setStep(item.id)}
               className={cn(
-                "min-h-11 rounded-xl border px-2 py-2 text-center text-xs font-semibold transition sm:text-sm",
+                "min-h-12 rounded-2xl border px-2 py-2 text-center text-xs font-extrabold transition sm:text-sm",
                 active
-                  ? "border-primary bg-primary text-primary-foreground shadow-sm"
+                  ? "border-transparent bg-gradient-to-br from-[hsl(174_66%_36%)] to-[hsl(174_60%_50%)] text-white shadow-[0_10px_22px_-12px_hsl(174_66%_30%/0.75)]"
                   : locked
                     ? "cursor-not-allowed border-border bg-muted/40 text-muted-foreground/50"
-                    : "border-border bg-card text-foreground hover:border-primary/40",
+                    : "border-border bg-card text-foreground hover:border-[hsl(var(--jh-teal)/0.4)]",
               )}
             >
               {item.label}
@@ -641,9 +632,9 @@ export default function SrednjaKalkulator() {
       {step === 0 && (
       <>
       {/* Odabir škole i programa */}
-      <section className="mb-5 rounded-2xl border bg-card p-4 shadow-card sm:p-5">
+      <section className={cn(CARD, "mb-5 p-4 sm:p-5")}>
         <div className="mb-4 flex items-start gap-3">
-          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[hsl(var(--jh-teal)/0.12)] text-[hsl(var(--jh-teal-t))]">
             <GraduationCap className="h-5 w-5" />
           </div>
           <div>
@@ -928,11 +919,11 @@ export default function SrednjaKalkulator() {
       )}
 
       {step === 2 && rezultatIzracunat && (
-        <section className="mb-5 rounded-2xl border border-primary/30 bg-primary/5 p-4 shadow-card sm:p-6">
+        <section className={cn(CARD, "mb-5 bg-gradient-to-br from-[hsl(var(--jh-teal)/0.16)] via-card to-[hsl(var(--jh-violet)/0.1)] p-4 sm:p-6")}>
           <p className="text-center text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
             Ukupno bodova
           </p>
-          <p className="mt-1 text-center text-5xl font-extrabold tabular-nums tracking-tight text-primary sm:text-6xl">
+          <p className="mt-1 text-center text-5xl font-extrabold tabular-nums tracking-tight text-[hsl(var(--jh-teal-t))] sm:text-6xl">
             {rezultat.ukupno.toFixed(2)}
           </p>
           <p className="mt-1 text-center text-sm text-muted-foreground">
@@ -940,6 +931,12 @@ export default function SrednjaKalkulator() {
               ? `Ukupno ${rezultat.ukupno.toFixed(2)} od ${rezultat.scaleMax}`
               : `Zajednički element ${rezultat.zajednicki.toFixed(2)} od ${rezultat.schoolMax}`}
           </p>
+          <div className="mx-auto mt-4 h-2.5 max-w-sm overflow-hidden rounded-full bg-muted">
+            <div
+              className="h-full rounded-full bg-gradient-to-r from-[hsl(var(--jh-teal))] to-[hsl(174_60%_62%)]"
+              style={{ width: `${Math.min(100, (rezultat.ukupno / (extended ? rezultat.scaleMax : rezultat.schoolMax || 1)) * 100)}%` }}
+            />
+          </div>
           <div className="mt-5 border-t border-primary/15 pt-4">
             <h2 className="mb-3 text-base font-bold">Od čega se sastoji</h2>
             {rezultat.includeSchool && (
@@ -1084,7 +1081,7 @@ export default function SrednjaKalkulator() {
           <button
             type="button"
             onClick={() => setStep(0)}
-            className="mt-3 inline-flex min-h-11 items-center justify-center rounded-xl bg-primary px-4 text-sm font-semibold text-primary-foreground"
+            className="jh-shine mt-3 inline-flex min-h-12 items-center justify-center rounded-2xl bg-gradient-to-br from-[hsl(174_66%_36%)] to-[hsl(174_60%_50%)] px-4 text-sm font-extrabold text-white shadow-[0_18px_36px_-14px_hsl(174_66%_30%/0.75)]"
           >
             Odaberi školu
           </button>
@@ -1093,55 +1090,39 @@ export default function SrednjaKalkulator() {
 
       {step === 2 && <JuniorNumbersNote className="mb-4 max-w-2xl" />}
 
-      <div className="sticky bottom-[max(0.75rem,env(safe-area-inset-bottom))] z-20 flex gap-2 rounded-2xl border bg-card/95 p-2 shadow-lg backdrop-blur">
+      <div className="sticky bottom-[max(0.75rem,env(safe-area-inset-bottom))] z-20 flex gap-2 rounded-[1.75rem] border border-border/70 bg-card/95 p-2 shadow-[0_30px_60px_-38px_hsl(var(--jh-ink)/0.45)] backdrop-blur">
         {step === 0 && (
-          <button
-            type="button"
-            onClick={() => setStep(1)}
-            className="flex min-h-12 flex-1 items-center justify-center gap-2 rounded-xl bg-primary px-4 text-sm font-bold text-primary-foreground"
-          >
+          <PrimaryButton type="button" onClick={() => setStep(1)} className="flex-1">
             Dalje: ocjene
-          </button>
+          </PrimaryButton>
         )}
         {step === 1 && (
           <>
-            <button
-              type="button"
-              onClick={() => setStep(0)}
-              className="inline-flex min-h-12 items-center justify-center gap-1.5 rounded-xl border px-3 text-sm font-semibold"
-            >
+            <SecondaryButton type="button" onClick={() => setStep(0)} className="px-3">
               <ArrowLeft className="h-4 w-4" />
               Škola
-            </button>
-            <button
+            </SecondaryButton>
+            <PrimaryButton
               type="button"
+              className="flex-1"
               onClick={() => {
                 setRezultatIzracunat(true);
                 setStep(2);
               }}
-              className="flex min-h-12 flex-1 items-center justify-center gap-2 rounded-xl bg-primary px-4 text-sm font-bold text-primary-foreground"
             >
               <GraduationCap className="h-4 w-4" />
               Izračunaj
-            </button>
+            </PrimaryButton>
           </>
         )}
         {step === 2 && (
           <>
-            <button
-              type="button"
-              onClick={() => setStep(0)}
-              className="inline-flex min-h-12 flex-1 items-center justify-center rounded-xl border px-3 text-sm font-semibold"
-            >
+            <SecondaryButton type="button" onClick={() => setStep(0)} className="flex-1 px-3">
               Škola
-            </button>
-            <button
-              type="button"
-              onClick={() => setStep(1)}
-              className="inline-flex min-h-12 flex-1 items-center justify-center rounded-xl bg-primary px-3 text-sm font-bold text-primary-foreground"
-            >
+            </SecondaryButton>
+            <PrimaryButton type="button" onClick={() => setStep(1)} className="flex-1 px-3">
               Ocjene
-            </button>
+            </PrimaryButton>
           </>
         )}
       </div>
@@ -1245,21 +1226,30 @@ function GradeSelect({
   onChange: (value: string) => void;
 }) {
   return (
-    <label className="block text-sm font-semibold text-foreground">
-      {label}
-      <select
-        value={value}
-        onChange={(event: ChangeEvent<HTMLSelectElement>) => onChange(event.target.value)}
-        className="mt-2 h-11 w-full rounded-xl border border-input bg-background px-3 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20"
-      >
-        <option value="">-</option>
-        {[1, 2, 3, 4, 5].map((grade) => (
-          <option key={grade} value={grade}>
-            {grade}
-          </option>
-        ))}
-      </select>
-    </label>
+    <div>
+      <p className="text-sm font-semibold text-foreground">{label}</p>
+      <div className="mt-2 flex flex-wrap gap-2" role="group" aria-label={label}>
+        {[1, 2, 3, 4, 5].map((grade) => {
+          const selected = value === String(grade);
+          return (
+            <button
+              key={grade}
+              type="button"
+              aria-pressed={selected}
+              onClick={() => onChange(selected ? "" : String(grade))}
+              className={cn(
+                "flex h-11 w-11 items-center justify-center rounded-full text-sm font-extrabold transition-transform focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                selected
+                  ? "bg-gradient-to-br from-[hsl(174_66%_36%)] to-[hsl(174_60%_50%)] text-white shadow-[0_10px_22px_-12px_hsl(174_66%_30%/0.75)]"
+                  : "border border-border/70 bg-card text-foreground hover:-translate-y-0.5",
+              )}
+            >
+              {grade}
+            </button>
+          );
+        })}
+      </div>
+    </div>
   );
 }
 

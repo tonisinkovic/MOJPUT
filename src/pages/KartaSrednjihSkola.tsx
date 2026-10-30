@@ -1,7 +1,6 @@
 import Layout from "@/components/Layout";
 import { motion } from "framer-motion";
 import {
-  ArrowLeft,
   BookOpen,
   ChevronDown,
   ChevronUp,
@@ -60,6 +59,7 @@ import {
 } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 import { slugForSchool } from "@/lib/schoolSlug";
+import { CARD, JBack, JuniorBlobs, PageHero } from "@/components/junior-kit";
 
 const CATEGORY_ORDER: HighSchoolCategory[] = [
   "Gimnazija",
@@ -347,31 +347,29 @@ const KartaSrednjihSkola = () => {
 
   return (
     <Layout>
-      <section className="container mx-auto max-w-7xl px-3 pb-[max(1.5rem,env(safe-area-inset-bottom))] pt-3 sm:px-4 sm:pt-5">
-        <button
-          type="button"
-          onClick={() => window.history.back()}
-          className="mb-2 inline-flex items-center gap-1.5 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
-        >
-          <ArrowLeft className="h-4 w-4" />
-          <span>Natrag</span>
-        </button>
+      <section className="jh-page relative mx-auto max-w-7xl px-3 pb-[max(6.5rem,calc(5rem+env(safe-area-inset-bottom)))] pt-5 sm:px-4 sm:pb-14 sm:pt-5">
+        <JuniorBlobs />
+        <JBack crumb="Karta škola" />
 
-        <div className="mb-3 flex items-center gap-3 rounded-2xl border border-primary/20 bg-gradient-to-r from-primary/10 via-card to-card px-3 py-3 shadow-card sm:px-4">
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary text-primary-foreground">
-            <School className="h-5 w-5" />
-          </div>
-          <div className="min-w-0">
-            <h1 className="truncate text-lg font-bold tracking-tight text-foreground sm:text-2xl">
-              Karta srednjih škola
-            </h1>
-            <p className="truncate text-xs text-muted-foreground sm:text-sm">
-              {totalStats.schools} škola · {totalStats.citiesCount} gradova · {totalStats.countiesCount} županija
-            </p>
-          </div>
-        </div>
+        <PageHero
+          icon={School}
+          tone="teal"
+          kicker="Karta"
+          badge="Pronađi svoju školu"
+          title={
+            <>
+              Karta <span className="text-[hsl(var(--jh-teal))]">srednjih škola</span>
+            </>
+          }
+          lead="Istraži gimnazije, strukovne i umjetničke škole u Hrvatskoj — smjerovi, adrese i kontakti na jednom mjestu."
+          stats={[
+            { label: "Škole", value: totalStats.schools },
+            { label: "Gradovi", value: totalStats.citiesCount },
+            { label: "Županije", value: totalStats.countiesCount },
+          ]}
+        />
 
-        <div className="flex flex-col gap-5 lg:flex-row lg:gap-6">
+        <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:gap-8">
           {/* Filter sidebar */}
           <motion.aside
             initial={{ opacity: 0, x: -12 }}
@@ -380,7 +378,7 @@ const KartaSrednjihSkola = () => {
             className="lg:w-72 shrink-0 lg:sticky lg:top-24 lg:self-start"
           >
             <Collapsible open={filtersOpen} onOpenChange={setFiltersOpen}>
-              <div className="overflow-hidden rounded-2xl border border-border/60 bg-card/50 shadow-sm backdrop-blur-sm">
+              <div className={cn(CARD, "overflow-hidden")}>
                 {/* Mobile trigger */}
                 <CollapsibleTrigger asChild className="lg:hidden w-full">
                   <button
@@ -773,7 +771,7 @@ const KartaSrednjihSkola = () => {
                   </p>
                 </div>
               ) : (
-                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 xl:grid-cols-3">
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6 xl:grid-cols-3">
                   {filtered.map((school, i) => {
                     const initial = school.name.trim().charAt(0).toUpperCase() || "?";
                     const cardPrograms = getSchoolPrograms(school.name, school.city);
@@ -785,10 +783,9 @@ const KartaSrednjihSkola = () => {
                         viewport={{ once: true, margin: "-40px" }}
                         transition={{ delay: Math.min(i * 0.02, 0.2), duration: 0.3 }}
                         className={cn(
-                          "group relative flex cursor-pointer flex-col overflow-hidden rounded-xl border bg-gradient-to-br to-card transition-all duration-200",
-                          "hover:-translate-y-0.5 hover:shadow-lg",
+                          CARD,
+                          "jh-lift group relative flex cursor-pointer flex-col bg-gradient-to-br to-card",
                           CATEGORY_ACCENT[school.category],
-                          "border-border/70 hover:border-primary/40",
                         )}
                         onClick={() => setDetailSchoolId(school.id)}
                       >
@@ -806,7 +803,7 @@ const KartaSrednjihSkola = () => {
                           {/* Header with initial and name */}
                           <div className="mb-2.5 flex items-start gap-3">
                             <div className={cn(
-                              "flex h-10 w-10 shrink-0 items-center justify-center rounded-lg text-sm font-bold text-white shadow-sm transition-transform duration-200 group-hover:scale-105",
+                              "flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl text-sm font-extrabold text-white shadow-sm transition-transform duration-200 group-hover:scale-105",
                               school.category === "Gimnazija" && "bg-primary",
                               school.category === "Strukovna škola" && "bg-sky-500",
                               school.category === "Umjetnička škola" && "bg-violet-500",

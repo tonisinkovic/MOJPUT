@@ -2,7 +2,6 @@ import Layout from "@/components/Layout";
 import PageSeo from "@/components/seo/PageSeo";
 import { motion } from "framer-motion";
 import {
-  ArrowLeft,
   BookOpen,
   Building2,
   Calculator,
@@ -15,9 +14,20 @@ import {
   MapPin,
   School,
   Search,
-  Sparkles,
   X,
 } from "lucide-react";
+import {
+  CategoryTag,
+  EmptyState,
+  FilterChip,
+  PageHero,
+  SBack,
+  SCARD,
+  SeniorBlobs,
+  SNIGHT,
+  STONE,
+  type SrTone,
+} from "@/components/senior-kit";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { lazy, Suspense, useMemo, useState } from "react";
@@ -62,22 +72,10 @@ const faculties: FacultyWithGeo[] = facultyInstitutions
 
 const TYPE_ORDER: FacultyInstitutionType[] = ["Sveučilište", "Veleučilište", "Ostalo"];
 
-const TYPE_STYLE: Record<FacultyInstitutionType, string> = {
-  Sveučilište: "bg-primary/10 text-primary border-primary/25",
-  Veleučilište: "bg-sky-500/10 text-sky-700 border-sky-500/25 dark:text-sky-400",
-  Ostalo: "bg-violet-500/10 text-violet-700 border-violet-500/25 dark:text-violet-400",
-};
-
-const TYPE_CHIP_ACTIVE: Record<FacultyInstitutionType, string> = {
-  Sveučilište: "border-primary bg-primary text-primary-foreground shadow-sm",
-  Veleučilište: "border-sky-500 bg-sky-500 text-white shadow-sm",
-  Ostalo: "border-violet-500 bg-violet-500 text-white shadow-sm",
-};
-
-const TYPE_ACCENT: Record<FacultyInstitutionType, string> = {
-  Sveučilište: "from-primary/20 via-primary/5",
-  Veleučilište: "from-sky-500/20 via-sky-500/5",
-  Ostalo: "from-violet-500/20 via-violet-500/5",
+const TYPE_TONE: Record<FacultyInstitutionType, SrTone> = {
+  Sveučilište: "cyan",
+  Veleučilište: "indigo",
+  Ostalo: "fuchsia",
 };
 
 // Napomena: / unutar /.../ ne smije slobodno stajati; koristimo new RegExp.
@@ -217,86 +215,30 @@ const KartaFakulteta = () => {
   return (
     <Layout>
       <PageSeo title="Karta fakulteta i veleučilišta u Hrvatskoj – MojPut" description="Fakulteti, akademije, veleučilišta i sveučilišni odjeli na karti, s popisom studijskih programa i pragovima bodova." />
-      <section className="container max-w-7xl mx-auto px-3 sm:px-4 py-4 sm:py-8 md:py-12 pb-[max(1.5rem,env(safe-area-inset-bottom))]">
-        {/* Back button */}
-        <button
-          type="button"
-          onClick={() => window.history.back()}
-          className="mb-4 inline-flex items-center gap-1.5 text-sm font-medium text-slate-500 transition-colors hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100"
-        >
-          <ArrowLeft className="h-4 w-4" />
-          <span>Natrag</span>
-        </button>
+      <section className="sr-page relative mx-auto max-w-7xl px-3 pb-[max(6.5rem,calc(5rem+env(safe-area-inset-bottom)))] pt-5 sm:px-4 sm:pb-14 sm:pt-8 md:py-12">
+        <SeniorBlobs />
+        <SBack crumb="Karta fakulteta" />
 
-        {/* Hero */}
-        <motion.div
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.3 }}
-          className="relative mb-5 overflow-hidden rounded-2xl border-2 border-primary/20 bg-gradient-to-br from-primary/[0.12] via-primary/[0.04] to-card p-4 shadow-card sm:mb-7 sm:p-5 md:mb-8 md:p-6"
-        >
-          <div
-            aria-hidden
-            className="pointer-events-none absolute -right-10 -top-10 h-36 w-36 rounded-full bg-primary/15 blur-3xl sm:h-52 sm:w-52"
-          />
-          <div
-            aria-hidden
-            className="pointer-events-none absolute -bottom-14 -left-10 h-32 w-32 rounded-full bg-primary/10 blur-3xl sm:h-48 sm:w-48"
-          />
+        <PageHero
+          icon={GraduationCap}
+          tone="cyan"
+          index="04"
+          kicker="Karta"
+          badge="Pronađi svoj fakultet"
+          title={
+            <>
+              Karta <span className="text-[hsl(var(--sr-cyan))]">fakulteta</span>
+            </>
+          }
+          lead="Istraži sve fakultete, sveučilišta i veleučilišta u Hrvatskoj — studijski programi i bodovni pragovi, sve na jednom mjestu."
+          stats={[
+            { label: "Ustanove", value: totalStats.institutions },
+            { label: "Gradovi", value: totalStats.citiesCount },
+            { label: "Programi", value: totalStats.programsCount },
+          ]}
+        />
 
-          <div className="relative flex flex-col gap-4 sm:flex-row sm:items-start sm:gap-5">
-            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl gradient-hero text-primary-foreground shadow-md sm:h-14 sm:w-14">
-              <GraduationCap className="h-6 w-6 sm:h-7 sm:w-7" />
-            </div>
-            <div className="min-w-0 flex-1">
-              <div className="flex flex-wrap items-center gap-2">
-                <span className="inline-flex items-center gap-1 rounded-full border border-primary/25 bg-primary/10 px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-primary">
-                  <Sparkles className="h-3 w-3" />
-                  Pronađi svoj fakultet
-                </span>
-              </div>
-              <h1 className="mt-2 text-balance text-2xl font-bold tracking-tight text-foreground sm:text-3xl md:text-4xl">
-                <span className="text-gradient">Karta</span> fakulteta
-              </h1>
-              <p className="mt-1.5 max-w-2xl text-pretty text-sm leading-relaxed text-muted-foreground sm:text-base">
-                Istraži sve fakultete, sveučilišta i veleučilišta u Hrvatskoj — studijski programi i
-                bodovni pragovi, sve na jednom mjestu.
-              </p>
-
-              <div className="mt-4 grid grid-cols-3 gap-2 sm:max-w-lg sm:gap-3">
-                <div className="rounded-xl border border-border/60 bg-background/70 px-3 py-2 backdrop-blur-sm">
-                  <div className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
-                    <Building2 className="h-3.5 w-3.5 text-primary" />
-                    Ustanove
-                  </div>
-                  <p className="mt-0.5 text-lg font-bold leading-none text-foreground sm:text-xl">
-                    {totalStats.institutions}
-                  </p>
-                </div>
-                <div className="rounded-xl border border-border/60 bg-background/70 px-3 py-2 backdrop-blur-sm">
-                  <div className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
-                    <MapPin className="h-3.5 w-3.5 text-primary" />
-                    Gradovi
-                  </div>
-                  <p className="mt-0.5 text-lg font-bold leading-none text-foreground sm:text-xl">
-                    {totalStats.citiesCount}
-                  </p>
-                </div>
-                <div className="rounded-xl border border-border/60 bg-background/70 px-3 py-2 backdrop-blur-sm">
-                  <div className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
-                    <BookOpen className="h-3.5 w-3.5 text-primary" />
-                    Programi
-                  </div>
-                  <p className="mt-0.5 text-lg font-bold leading-none text-foreground sm:text-xl">
-                    {totalStats.programsCount}
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </motion.div>
-
-        <div className="flex flex-col gap-5 lg:flex-row lg:gap-6">
+        <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:gap-8">
           {/* Filter sidebar */}
           <motion.aside
             initial={{ opacity: 0, x: -12 }}
@@ -305,19 +247,19 @@ const KartaFakulteta = () => {
             className="lg:w-72 shrink-0 lg:sticky lg:top-24 lg:self-start"
           >
             <Collapsible open={filtersOpen} onOpenChange={setFiltersOpen}>
-              <div className="overflow-hidden rounded-2xl border border-border/60 bg-card/50 shadow-sm backdrop-blur-sm">
+              <div className={cn(SCARD, "overflow-hidden")}>
                 {/* Mobile trigger */}
                 <CollapsibleTrigger asChild className="lg:hidden w-full">
                   <button
                     type="button"
                     className={cn(
                       "flex w-full items-center justify-between gap-3 px-4 py-4 text-left transition-all touch-manipulation",
-                      "bg-gradient-to-r from-primary/10 via-primary/5 to-transparent",
-                      "hover:from-primary/15 hover:via-primary/8",
+                      "bg-gradient-to-r from-[hsl(var(--sr-cyan)/0.12)] via-[hsl(var(--sr-cyan)/0.05)] to-transparent",
+                      "hover:from-[hsl(var(--sr-cyan)/0.18)] hover:via-[hsl(var(--sr-cyan)/0.08)]",
                     )}
                   >
                     <span className="flex items-center gap-3">
-                      <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-primary/80 text-primary-foreground shadow-sm">
+                      <span className={cn("flex h-10 w-10 items-center justify-center rounded-xl text-white", STONE.cyan.grad)}>
                         <Filter className="h-5 w-5" />
                       </span>
                       <span className="flex flex-col">
@@ -329,7 +271,7 @@ const KartaFakulteta = () => {
                     </span>
                     <span className="flex items-center gap-2">
                       {activeFilterCount > 0 && (
-                        <span className="inline-flex h-7 min-w-[28px] items-center justify-center rounded-full bg-primary px-2 text-xs font-bold text-primary-foreground shadow-sm">
+                        <span className="inline-flex h-7 min-w-[28px] items-center justify-center rounded-full bg-[hsl(var(--sr-night))] px-2 text-xs font-bold text-white shadow-sm">
                           {activeFilterCount}
                         </span>
                       )}
@@ -351,8 +293,8 @@ const KartaFakulteta = () => {
                   <div className="space-y-4 p-4 lg:p-5">
                     {/* Desktop header */}
                     <div className="hidden lg:block">
-                      <div className="flex items-center gap-3 rounded-xl bg-gradient-to-r from-primary/10 via-primary/5 to-transparent p-3">
-                        <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-primary/80 text-primary-foreground shadow-sm">
+                      <div className="flex items-center gap-3 rounded-xl bg-gradient-to-r from-[hsl(var(--sr-cyan)/0.12)] via-[hsl(var(--sr-cyan)/0.05)] to-transparent p-3">
+                        <span className={cn("flex h-10 w-10 items-center justify-center rounded-xl text-white", STONE.cyan.grad)}>
                           <Filter className="h-5 w-5" />
                         </span>
                         <div>
@@ -505,7 +447,8 @@ const KartaFakulteta = () => {
             {/* Interactive Map */}
             <div
               className={cn(
-                "rounded-2xl overflow-hidden border-2 border-border bg-card shadow-card",
+                SNIGHT,
+                "overflow-hidden",
                 detailFacultyId && "pointer-events-none",
               )}
             >
@@ -543,12 +486,12 @@ const KartaFakulteta = () => {
                   />
                 </Suspense>
               </div>
-              <div className="flex flex-col gap-2 border-t border-border bg-muted/30 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
-                <p className="text-xs text-muted-foreground">
-                  <span className="font-semibold text-foreground">Savjet:</span> Približi kartu za
+              <div className="flex flex-col gap-2 border-t border-white/10 bg-white/[0.04] px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+                <p className="text-xs text-white/70">
+                  <span className="font-semibold text-white">Savjet:</span> Približi kartu za
                   pojedinačne ustanove. Klikni marker za brzi pregled.
                 </p>
-                <span className="rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-bold text-primary">
+                <span className="rounded-full bg-[hsl(var(--sr-cyan)/0.18)] px-2.5 py-0.5 text-xs font-bold text-[hsl(var(--sr-cyan))]">
                   {filtered.length} {filtered.length === 1 ? "ustanova" : "ustanova"} na karti
                 </span>
               </div>
@@ -559,13 +502,13 @@ const KartaFakulteta = () => {
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.3, delay: 0.1 }}
-              className="rounded-2xl border border-border/60 bg-card/50 p-4 shadow-sm backdrop-blur-sm sm:p-5"
+              className={cn(SCARD, "p-4 sm:p-5")}
             >
               {/* Section header */}
               <div className="mb-4 flex flex-col gap-3 sm:mb-5 sm:flex-row sm:items-center sm:justify-between">
                 <div>
                   <h3 className="flex items-center gap-2.5 text-lg font-bold text-foreground sm:text-xl">
-                    <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-primary/80 text-primary-foreground shadow-sm">
+                    <span className={cn("flex h-9 w-9 items-center justify-center rounded-xl text-white", STONE.cyan.grad)}>
                       <GraduationCap className="h-5 w-5" />
                   </span>
                     Popis ustanova
@@ -594,47 +537,21 @@ const KartaFakulteta = () => {
 
               {/* Quick type filters */}
               <div className="mb-4 flex flex-wrap items-center gap-2 border-b border-border/50 pb-4 sm:mb-5 sm:pb-5">
-                <button
-                  type="button"
-                  onClick={() => setFilterType(null)}
-                  className={cn(
-                    "inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-semibold transition-all",
-                    !filterType
-                      ? "border-primary bg-primary text-primary-foreground shadow-sm"
-                      : "border-border/70 bg-background text-muted-foreground hover:border-primary/40 hover:text-foreground",
-                  )}
-                >
+                <FilterChip active={!filterType} count={faculties.length} onClick={() => setFilterType(null)}>
                   Sve vrste
-                  <span className={cn(
-                    "rounded-full px-1.5 py-0.5 text-[10px] font-bold",
-                    !filterType ? "bg-white/20" : "bg-muted"
-                  )}>
-                    {faculties.length}
-                  </span>
-                </button>
+                </FilterChip>
                 {types.map((type) => {
                   const count = faculties.filter((f) => f.institutionType === type).length;
                   const isActive = filterType === type;
                   return (
-                    <button
+                    <FilterChip
                       key={type}
-                      type="button"
+                      active={isActive}
+                      count={count}
                       onClick={() => setFilterType(isActive ? null : type)}
-                      className={cn(
-                        "inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-semibold transition-all",
-                        isActive
-                          ? TYPE_CHIP_ACTIVE[type]
-                          : "border-border/70 bg-background text-muted-foreground hover:border-primary/40 hover:text-foreground",
-                      )}
                     >
                       {type}
-                      <span className={cn(
-                        "rounded-full px-1.5 py-0.5 text-[10px] font-bold",
-                        isActive ? "bg-white/20" : "bg-muted"
-                      )}>
-                        {count}
-                      </span>
-                    </button>
+                    </FilterChip>
                   );
                 })}
                   </div>
@@ -660,21 +577,13 @@ const KartaFakulteta = () => {
               </div>
 
               {filtered.length === 0 ? (
-                <div className="rounded-2xl border border-dashed border-border bg-muted/20 px-6 py-16 text-center">
-                  <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-muted/60 text-muted-foreground">
-                    <Search className="h-8 w-8" />
-                  </div>
-                  <p className="text-base font-semibold text-foreground">
-                    Nema rezultata
-                  </p>
-                  <p className="mt-1.5 text-sm text-muted-foreground">
-                    Promijeni filtre ili pretraži drugačije
-                  </p>
-                </div>
+                <EmptyState title="Nema rezultata" text="Promijeni filtre ili pretraži drugačije" />
               ) : (
-                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 xl:grid-cols-3">
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6 xl:grid-cols-3">
                   {filtered.map((faculty, i) => {
                     const initial = faculty.name.trim().charAt(0).toUpperCase() || "?";
+                    const tone = TYPE_TONE[faculty.institutionType];
+                    const t = STONE[tone];
                     return (
                       <motion.div
                         key={faculty.id}
@@ -683,29 +592,19 @@ const KartaFakulteta = () => {
                         viewport={{ once: true, margin: "-40px" }}
                         transition={{ delay: Math.min(i * 0.02, 0.2), duration: 0.3 }}
                         className={cn(
-                          "group relative flex cursor-pointer flex-col overflow-hidden rounded-xl border bg-gradient-to-br to-card transition-all duration-200",
-                          "hover:-translate-y-0.5 hover:shadow-lg",
-                          TYPE_ACCENT[faculty.institutionType],
-                          "border-border/70 hover:border-primary/40",
+                          SCARD,
+                          "group relative flex cursor-pointer flex-col transition-transform duration-200 hover:-translate-y-0.5",
+                          t.border,
                         )}
                         onClick={() => setDetailFacultyId(faculty.id)}
                       >
-                        {/* Type color bar */}
-                        <div className={cn(
-                          "h-1 w-full",
-                          faculty.institutionType === "Sveučilište" && "bg-primary",
-                          faculty.institutionType === "Veleučilište" && "bg-sky-500",
-                          faculty.institutionType === "Ostalo" && "bg-violet-500",
-                        )} />
+                        <div className={cn("h-1 w-full", t.solid)} />
 
                         <div className="flex flex-1 flex-col p-4">
-                          {/* Header with initial and name */}
                           <div className="mb-2.5 flex items-start gap-3">
                             <div className={cn(
                               "flex h-10 w-10 shrink-0 items-center justify-center rounded-lg text-sm font-bold text-white shadow-sm transition-transform duration-200 group-hover:scale-105",
-                              faculty.institutionType === "Sveučilište" && "bg-primary",
-                              faculty.institutionType === "Veleučilište" && "bg-sky-500",
-                              faculty.institutionType === "Ostalo" && "bg-violet-500",
+                              t.grad,
                             )}>
                             {initial}
                           </div>
@@ -720,17 +619,8 @@ const KartaFakulteta = () => {
                             </div>
                           </div>
 
-                          {/* Type badge */}
                           <div className="mb-3">
-                              <Badge
-                              variant="outline"
-                              className={cn(
-                                "rounded-md border px-2 py-0.5 text-[10px] font-semibold",
-                                TYPE_STYLE[faculty.institutionType],
-                              )}
-                              >
-                                {faculty.institutionType}
-                              </Badge>
+                              <CategoryTag tone={tone}>{faculty.institutionType}</CategoryTag>
                             </div>
 
                           {/* Info rows */}
@@ -756,10 +646,8 @@ const KartaFakulteta = () => {
                               Pogledaj detalje
                             </span>
                             <span className={cn(
-                              "flex h-6 w-6 items-center justify-center rounded-full text-white transition-transform duration-200 group-hover:translate-x-0.5",
-                              faculty.institutionType === "Sveučilište" && "bg-primary",
-                              faculty.institutionType === "Veleučilište" && "bg-sky-500",
-                              faculty.institutionType === "Ostalo" && "bg-violet-500",
+                              "flex h-6 w-6 items-center justify-center rounded-full font-bold text-[hsl(var(--sr-night))] transition-transform duration-200 group-hover:translate-x-0.5",
+                              t.solid,
                             )}>
                               →
                                   </span>
@@ -796,15 +684,9 @@ const KartaFakulteta = () => {
                 </span>
               </DialogDescription>
                     <div className="mt-2 flex flex-wrap gap-1.5">
-                      <Badge
-                        variant="outline"
-                        className={cn(
-                          "rounded-md border px-1.5 py-0 text-[10px] font-semibold",
-                          TYPE_STYLE[detailFaculty.institutionType],
-                        )}
-                      >
+                      <CategoryTag tone={TYPE_TONE[detailFaculty.institutionType]}>
                         {detailFaculty.institutionType}
-                      </Badge>
+                      </CategoryTag>
                       <Badge variant="secondary" className="rounded-md px-1.5 py-0 text-[10px] font-semibold">
                         {detailFaculty.programs.length}{" "}
                         {detailFaculty.programs.length === 1 ? "program" : "programa"}

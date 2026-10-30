@@ -70,6 +70,11 @@ export function resolveExperienceMode(
   return getStoredExperience() ?? "senior";
 }
 
+/** Tipografski omot unutarnjih stranica (ne početna). */
+export function experiencePageClass(isJunior: boolean): "jh-page" | "sr-page" {
+  return isJunior ? "jh-page" : "sr-page";
+}
+
 /** Početni ekran odabranog Junior/Senior iskustva — ne uvodni odabir na /. */
 export function experienceHomePath(mode?: MojPutExperienceMode | null): string {
   const resolved = mode === undefined ? getStoredExperience() : mode;

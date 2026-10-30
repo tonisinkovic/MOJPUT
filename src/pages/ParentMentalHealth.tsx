@@ -1,9 +1,12 @@
 import Layout from "@/components/Layout";
 import { mentalResources, mentalTopicsFor, parentArticlesFor, type MentalResource } from "@/data/parentHub";
-import { resolveExperienceMode } from "@/lib/experience";
-import { AlertTriangle, MessageCircle, Phone, PhoneCall, Globe } from "lucide-react";
+import { experiencePageClass, resolveExperienceMode } from "@/lib/experience";
+import { AlertTriangle, Heart, MessageCircle, Phone, PhoneCall, Globe } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
+import { CARD, Chip, JBack, JuniorBlobs, PageHero } from "@/components/junior-kit";
+import { SBack, SeniorBlobs } from "@/components/senior-kit";
+import { cn } from "@/lib/utils";
 
 const ParentMentalHealth = () => {
   const [searchParams] = useSearchParams();
@@ -50,27 +53,54 @@ const ParentMentalHealth = () => {
 
   return (
     <Layout>
-      <section className="container py-10 md:py-14 pb-[max(6rem,env(safe-area-inset-bottom))]">
-        <h1 className="text-3xl font-bold">Mentalno zdravlje</h1>
-        <p className="text-muted-foreground mt-2">
-          {isJunior
-            ? "Prepoznajte znakove stresa oko upisa u srednju i podržite dijete bez pritiska."
-            : "Prepoznajte znakove stresa i podržite dijete kroz zahtjevno razdoblje."}
-        </p>
+      <section className={cn(experiencePageClass(isJunior), "relative mx-auto max-w-6xl px-3 py-10 pb-[max(6.5rem,calc(5rem+env(safe-area-inset-bottom)))] sm:px-4 md:py-14")}>
+        {isJunior ? <JuniorBlobs /> : <SeniorBlobs />}
+        {isJunior ? <JBack to="/roditelji?experience=junior" label="Roditeljski kutak" /> : <SBack to="/roditelji" label="Roditeljski kutak" crumb="Mentalno zdravlje" />}
+        {isJunior ? (
+          <PageHero
+            icon={Heart}
+            tone="rose"
+            badge="Za roditelje"
+            title="Mentalno zdravlje"
+            lead="Prepoznajte znakove stresa oko upisa u srednju i podržite dijete bez pritiska."
+          />
+        ) : (
+          <>
+            <h1 className="text-3xl font-bold">Mentalno zdravlje</h1>
+            <p className="text-muted-foreground mt-2">
+              Prepoznajte znakove stresa i podržite dijete kroz zahtjevno razdoblje.
+            </p>
+          </>
+        )}
 
-        <div className="grid md:grid-cols-[2fr_1fr] gap-4 mt-6">
-          <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Pretraži teme..." className="h-10 rounded-md border bg-background px-3 text-sm" />
+        <div className={cn("mt-6 grid gap-4 md:grid-cols-[2fr_1fr]", isJunior && CARD, isJunior && "p-3 sm:p-4")}>
+          <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Pretraži teme..." className="h-11 min-h-11 rounded-xl border bg-background px-3 text-sm" />
+          {isJunior ? (
+            <div className="flex flex-wrap gap-2">
+              {([
+                ["sve", "Sve teme"],
+                ["stres", "Stres"],
+                ["anksioznost", "Anksioznost"],
+                ["podrska", "Podrška"],
+              ] as const).map(([id, label]) => (
+                <Chip key={id} active={filter === id} onClick={() => setFilter(id)}>
+                  {label}
+                </Chip>
+              ))}
+            </div>
+          ) : (
           <select value={filter} onChange={(e) => setFilter(e.target.value as typeof filter)} className="h-10 rounded-md border bg-background px-3 text-sm">
             <option value="sve">Sve teme</option>
             <option value="stres">Stres</option>
             <option value="anksioznost">Anksioznost</option>
             <option value="podrska">Podrška</option>
           </select>
+          )}
         </div>
 
         <div className="grid md:grid-cols-3 gap-4 mt-6">
           {filteredTopics.map((topic) => (
-            <article key={topic.id} className="rounded-2xl border bg-card p-5 shadow-card">
+            <article key={topic.id} className={cn("rounded-2xl border bg-card p-5 shadow-card", isJunior && CARD)}>
               <h2 className="font-semibold">{topic.title}</h2>
               <p className="text-sm text-muted-foreground mt-2">{topic.description}</p>
             </article>

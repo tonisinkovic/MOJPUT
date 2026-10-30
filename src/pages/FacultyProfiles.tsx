@@ -19,6 +19,7 @@ import { expandAliasQuery } from "@/lib/facultyAliases";
 import { getFaculties } from "@/lib/facultyStore";
 import type { Faculty } from "@/types/faculty";
 import { cn } from "@/lib/utils";
+import { CategoryTag, EmptyState, FilterChip, PageHero, SBack, SCARD, SeniorBlobs, STONE } from "@/components/senior-kit";
 
 const PAGE_SIZE = 36;
 const WORD_SPLIT = new RegExp("[\\s,;.()\\-/[\\]\"'·]+", "g");
@@ -196,36 +197,39 @@ const FacultyProfiles = () => {
         description="Pronađi fakultet po nazivu, gradu ili području i otvori profil — opis, kontakti i novosti ustanove."
         canonical="https://mojput.com/fakulteti"
       />
-      <section className="relative overflow-hidden">
-        <div
-          aria-hidden
-          className="pointer-events-none absolute -top-24 left-1/2 h-64 w-[min(90vw,40rem)] -translate-x-1/2 rounded-full bg-[var(--hero-gradient-soft)] opacity-70 blur-3xl"
-        />
-        <div className="container relative py-6 md:py-10">
-          <header className="mb-5 md:mb-6">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-primary">MojPut Senior</p>
-            <div className="mt-1 flex items-center justify-between gap-3">
-              <h1 className="min-w-0 text-[1.65rem] font-extrabold tracking-tight md:text-4xl">Pronađi fakultet</h1>
+      <section className="sr-page relative mx-auto max-w-7xl px-3 pb-[max(6.5rem,calc(5rem+env(safe-area-inset-bottom)))] pt-5 sm:px-4 sm:pb-14 sm:pt-8 md:py-12">
+        <SeniorBlobs />
+        <SBack crumb="Profili fakulteta" />
+        <div className="relative">
+          <PageHero
+            icon={GraduationCap}
+            tone="indigo"
+            kicker="Profili"
+            badge="MojPut Senior"
+            title={
+              <>
+                Pronađi <span className="text-[hsl(var(--sr-indigo))]">fakultet</span>
+              </>
+            }
+            lead="Upiši naziv, grad ili sveučilište — pa otvori profil."
+            actions={
               <Link
                 to="/fakulteti/prijava"
                 id="prijava-fakulteta"
-                className="inline-flex shrink-0 items-center gap-2.5 rounded-2xl border border-border/70 bg-card py-2 pl-2 pr-4 shadow-sm transition hover:border-primary/40"
+                className="inline-flex min-h-12 shrink-0 items-center gap-2.5 rounded-xl border border-white/15 bg-white/8 py-2 pl-2 pr-4 text-white transition hover:bg-white/12"
               >
-                <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary text-primary-foreground">
+                <span className={cn("flex h-10 w-10 items-center justify-center rounded-xl text-white", STONE.indigo.grad)}>
                   <GraduationCap className="h-5 w-5" />
                 </span>
                 <span className="text-left leading-tight">
-                  <span className="block text-sm font-bold text-foreground">Prijava za fakultete</span>
-                  <span className="hidden text-xs text-muted-foreground sm:block">Uredi svoj profil</span>
+                  <span className="block text-sm font-bold">Prijava za fakultete</span>
+                  <span className="hidden text-xs text-white/65 sm:block">Uredi svoj profil</span>
                 </span>
               </Link>
-            </div>
-            <p className="mt-1.5 text-sm text-muted-foreground md:text-base">
-              Upiši naziv, grad ili sveučilište — pa otvori profil.
-            </p>
-          </header>
+            }
+          />
 
-          <div className="rounded-3xl border border-border/70 bg-card/90 p-3 shadow-[var(--shadow-elevated)] backdrop-blur-sm sm:p-4 md:p-5">
+          <div className={cn(SCARD, "mt-8 p-3 sm:mt-10 sm:p-4 md:p-5")}>
             <label className="relative block">
               <span className="sr-only">Pretraži fakultete</span>
               <Search className="pointer-events-none absolute left-3.5 top-1/2 h-5 w-5 -translate-y-1/2 text-primary/70" />
@@ -255,7 +259,33 @@ const FacultyProfiles = () => {
               ) : null}
             </label>
 
-            <div className="mt-3 grid gap-2 sm:grid-cols-3">
+            <div className="mt-3 flex flex-wrap gap-2">
+              <FilterChip
+                active={area === "sve"}
+                count={faculties.length}
+                onClick={() => {
+                  setArea("sve");
+                  resetBrowse();
+                }}
+              >
+                Sva područja
+              </FilterChip>
+              {areas.map((a) => (
+                <FilterChip
+                  key={a}
+                  active={area === a}
+                  count={faculties.filter((f) => f.area === a).length}
+                  onClick={() => {
+                    setArea(a);
+                    resetBrowse();
+                  }}
+                >
+                  {a}
+                </FilterChip>
+              ))}
+            </div>
+
+            <div className="mt-3 grid gap-2 sm:grid-cols-2">
               <CityTypeahead
                 cities={cities}
                 value={cityInput}
@@ -265,25 +295,6 @@ const FacultyProfiles = () => {
                   resetBrowse();
                 }}
               />
-              <Select
-                value={area}
-                onValueChange={(value) => {
-                  setArea(value);
-                  resetBrowse();
-                }}
-              >
-                <SelectTrigger aria-label="Područje" className="h-11 rounded-xl">
-                  <SelectValue placeholder="Područje" />
-                </SelectTrigger>
-                <SelectContent className="max-h-72">
-                  <SelectItem value="sve">Sva područja</SelectItem>
-                  {areas.map((a) => (
-                    <SelectItem key={a} value={a}>
-                      {a}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
               <Select value={sort} onValueChange={(value) => setSort(value as SortKey)}>
                 <SelectTrigger aria-label="Razvrstaj" className="h-11 rounded-xl">
                   <SelectValue placeholder="Razvrstaj" />
@@ -306,8 +317,8 @@ const FacultyProfiles = () => {
                     type="button"
                     onClick={() => setLetter((cur) => (cur === ch ? "" : ch))}
                     className={cn(
-                      "h-8 min-w-8 rounded-lg px-2 text-xs font-bold",
-                      letter === ch ? "bg-primary text-primary-foreground" : "bg-muted text-foreground hover:bg-muted/80",
+                      "inline-flex h-11 min-w-11 items-center justify-center rounded-lg px-2 text-xs font-bold",
+                      letter === ch ? "bg-[hsl(var(--sr-night))] text-white" : "bg-muted text-foreground hover:bg-muted/80",
                     )}
                   >
                     {ch}
@@ -330,12 +341,16 @@ const FacultyProfiles = () => {
           </div>
 
           {listed.length === 0 ? (
-            <div className="mt-4 rounded-2xl border border-dashed bg-card/80 px-5 py-12 text-center">
-              <p className="font-semibold">Nema fakulteta za ovu pretragu</p>
-              <p className="mt-1 text-sm text-muted-foreground">Promijeni naziv, slovo, grad ili područje.</p>
-              <Button variant="outline" className="mt-4 rounded-full" onClick={clearFilters}>
-                Prikaži sve fakultete
-              </Button>
+            <div className="mt-4">
+              <EmptyState
+                title="Nema fakulteta za ovu pretragu"
+                text="Promijeni naziv, slovo, grad ili područje."
+                action={
+                  <Button variant="outline" className="rounded-xl" onClick={clearFilters}>
+                    Prikaži sve fakultete
+                  </Button>
+                }
+              />
             </div>
           ) : (
             <div className="mt-4 space-y-6">
@@ -348,14 +363,14 @@ const FacultyProfiles = () => {
                     <span className="h-px flex-1 bg-border/80" />
                     <span className="text-[11px] font-medium text-muted-foreground">{group.items.length}</span>
                   </div>
-                  <ul className="overflow-hidden rounded-2xl border border-border/70 bg-card shadow-[var(--shadow-soft)]">
+                  <ul className={cn(SCARD, "overflow-hidden p-0")}>
                     {group.items.map((faculty, idx) => {
                       const initial = facultyInitial(faculty.name);
                       return (
                         <li key={faculty.id} className={idx > 0 ? "border-t border-border/60" : undefined}>
                           <Link
                             to={`/fakulteti/${faculty.id}`}
-                            className="group flex items-center gap-3 px-3 py-3 transition-colors hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:px-4 sm:py-3.5"
+                            className="group flex min-h-11 items-center gap-3 px-3 py-3 transition-colors hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(var(--sr-cyan))] sm:px-4 sm:py-3.5"
                           >
                             <span
                               className={cn(
@@ -380,13 +395,11 @@ const FacultyProfiles = () => {
                                   <MapPin className="h-3 w-3" />
                                   {faculty.city}
                                 </span>
-                                <Badge variant="outline" className="h-5 rounded-md px-1.5 text-[10px] font-semibold">
-                                  {faculty.area}
-                                </Badge>
+                                <CategoryTag>{faculty.area}</CategoryTag>
                                 <span className="truncate">{faculty.university}</span>
                               </span>
                             </span>
-                            <ArrowRight className="h-4 w-4 shrink-0 text-muted-foreground transition group-hover:translate-x-0.5 group-hover:text-primary" />
+                            <ArrowRight className="h-4 w-4 shrink-0 text-muted-foreground transition group-hover:translate-x-0.5 group-hover:text-[hsl(var(--sr-cyan-t))]" />
                           </Link>
                         </li>
                       );

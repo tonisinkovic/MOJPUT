@@ -1,15 +1,16 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
+import { Newspaper } from "lucide-react";
 import Layout from "@/components/Layout";
 import PageSeo from "@/components/seo/PageSeo";
 import SchoolPostCard from "@/components/school/SchoolPostCard";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { highSchools } from "@/data/highSchools";
 import { slugForSchool } from "@/lib/schoolSlug";
 import { fetchSchoolFeed, type SchoolPost } from "@/lib/schoolCmsApi";
 import { demoSchoolPosts, mergeDemoSchoolPosts } from "@/data/schoolDemoPosts";
+import { CARD, EmptyState, JuniorPage, LoadingSkeleton, PageHero, SecondaryButton } from "@/components/junior-kit";
 
 const CATEGORIES = [
   { id: "sve", label: "Sve kategorije" },
@@ -76,19 +77,26 @@ export default function JuniorSchoolFeed() {
         description="Najnovije objave srednjih škola — dani otvorenih vrata, upisi, uspjesi učenika i školske novosti."
         canonical="https://mojput.com/srednje-skole/objave"
       />
-      <section className="container py-10 md:py-14">
-        <div className="mb-6 max-w-2xl">
-          <p className="text-xs font-semibold uppercase tracking-wide text-primary">MojPut Junior</p>
-          <h1 className="mt-1 text-3xl font-bold tracking-tight">Najnovije objave škola</h1>
-          <p className="mt-2 text-muted-foreground">
-            Centralni feed škola. Filtriraj po gradu, školi ili vrsti objave.
-          </p>
-          <Button variant="outline" className="mt-4" asChild>
-            <Link to="/srednje-skole">Pregledaj sve škole</Link>
-          </Button>
-        </div>
+      <JuniorPage wide crumb="Objave">
+        <PageHero
+          icon={Newspaper}
+          tone="sky"
+          kicker="Novosti"
+          badge="MojPut Junior"
+          title={
+            <>
+              Najnovije <span className="text-[hsl(var(--jh-sky))]">objave škola</span>
+            </>
+          }
+          lead="Centralni feed škola. Filtriraj po gradu, školi ili vrsti objave."
+          actions={
+            <Link to="/srednje-skole">
+              <SecondaryButton type="button">Pregledaj sve škole</SecondaryButton>
+            </Link>
+          }
+        />
 
-        <div className="mb-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        <div className={`${CARD} mb-6 grid gap-3 p-3 sm:grid-cols-2 sm:p-4 lg:grid-cols-4`}>
           <Select value={city} onValueChange={setCity}>
             <SelectTrigger>
               <SelectValue placeholder="Grad" />
@@ -131,11 +139,12 @@ export default function JuniorSchoolFeed() {
         </div>
 
         {loading ? (
-          <p className="text-sm text-muted-foreground">Učitavam objave...</p>
+          <LoadingSkeleton rows={4} />
         ) : posts.length === 0 ? (
-          <div className="rounded-2xl border border-dashed bg-card p-8 text-center text-sm text-muted-foreground">
-            Još nema objava za odabrane filtere. Škole mogu objaviti novosti nakon prijave.
-          </div>
+          <EmptyState
+            title="Nema objava"
+            text="Još nema objava za odabrane filtere. Škole mogu objaviti novosti nakon prijave."
+          />
         ) : (
           <div className="grid gap-3 sm:grid-cols-2">
             {posts.map((post) => (
@@ -143,7 +152,7 @@ export default function JuniorSchoolFeed() {
             ))}
           </div>
         )}
-      </section>
+      </JuniorPage>
     </Layout>
   );
 }

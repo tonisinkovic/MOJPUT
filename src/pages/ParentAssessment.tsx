@@ -2,11 +2,15 @@ import Layout from "@/components/Layout";
 import { assessmentQuestionsFor } from "@/data/parentHub";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { resolveExperienceMode } from "@/lib/experience";
+import { experiencePageClass, resolveExperienceMode } from "@/lib/experience";
 import { loadJuniorSnapshot } from "@/lib/juniorPath";
 import { loadParentBrief } from "@/lib/juniorParentBrief";
 import { useMemo, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
+import { Users } from "lucide-react";
+import { CARD, JBack, JuniorBlobs, PageHero, PrimaryButton, SecondaryButton } from "@/components/junior-kit";
+import { PageHero as SeniorHero, PrimaryButton as SeniorPrimaryButton, SBack, SeniorBlobs } from "@/components/senior-kit";
+import { cn } from "@/lib/utils";
 
 const ParentAssessment = () => {
   const [searchParams] = useSearchParams();
@@ -39,16 +43,28 @@ const ParentAssessment = () => {
 
   return (
     <Layout>
-      <section className="container py-10 md:py-14 max-w-3xl">
-        <h1 className="text-3xl font-bold">Zajednička procjena</h1>
-        <p className="text-muted-foreground mt-2">
-          {isJunior
-            ? "Kratka procjena roditelja i djeteta o srednjoj školi — usklađuje se s kvizom za 8. razred."
-            : "Interaktivni alat za roditelja i dijete kroz pitanja po koracima."}
-        </p>
+      <section className={cn(experiencePageClass(isJunior), "relative mx-auto max-w-3xl px-3 py-10 pb-[max(6.5rem,calc(5rem+env(safe-area-inset-bottom)))] sm:px-4 md:py-14")}>
+        {isJunior ? <JuniorBlobs /> : <SeniorBlobs />}
+        {isJunior ? <JBack to="/roditelji?experience=junior" label="Roditeljski kutak" /> : <SBack to="/roditelji" label="Roditeljski kutak" crumb="Zajednička procjena" />}
+        {isJunior ? (
+          <PageHero
+            icon={Users}
+            tone="violet"
+            badge="Za roditelje"
+            title="Zajednička procjena"
+            lead="Kratka procjena roditelja i djeteta o srednjoj školi — usklađuje se s kvizom za 8. razred."
+          />
+        ) : (
+          <SeniorHero
+            icon={Users}
+            tone="rose"
+            title="Zajednička procjena"
+            lead="Interaktivni alat za roditelja i dijete kroz pitanja po koracima."
+          />
+        )}
 
         {!started ? (
-          <article className="mt-6 rounded-2xl border bg-card p-6 shadow-card">
+          <article className={cn("mx-auto mt-6 w-full max-w-3xl rounded-2xl border bg-card p-6 shadow-card", isJunior && CARD)}>
             <p className="text-muted-foreground">
               {isJunior
                 ? "Procjena traje 3–5 minuta. Ne zamjenjuje kviz djeteta — spaja vaš razgovor s njegovim rezultatom."
@@ -59,17 +75,35 @@ const ParentAssessment = () => {
                 Kviz djeteta predlaže: {childPrograms.join(", ") || childSnap.pathway.title}.
               </p>
             ) : null}
-            <Button className="mt-4" onClick={() => setStarted(true)}>
+            {isJunior ? (
+              <PrimaryButton className="mt-4" onClick={() => setStarted(true)}>
+                Započni procjenu
+              </PrimaryButton>
+            ) : (
+            <SeniorPrimaryButton className="mt-4" onClick={() => setStarted(true)}>
               Započni procjenu
-            </Button>
+            </SeniorPrimaryButton>
+            )}
           </article>
         ) : !done ? (
-          <article className="mt-6 rounded-2xl border bg-card p-6 shadow-card">
+          <article className={cn("mx-auto mt-6 w-full max-w-3xl rounded-2xl border bg-card p-6 shadow-card", isJunior && CARD)}>
             <div className="text-sm text-muted-foreground">Korak {step + 1} od {questions.length}</div>
             <Progress value={progress} className="mt-2" />
             <h2 className="text-xl font-semibold mt-5">{questions[step].question}</h2>
             <div className="grid gap-2 mt-4">
-              {questions[step].options.map((option) => (
+              {questions[step].options.map((option) =>
+                isJunior ? (
+                  <SecondaryButton
+                    key={option}
+                    className="justify-start text-left"
+                    onClick={() => {
+                      setAnswers((prev) => [...prev, option]);
+                      setStep((prev) => prev + 1);
+                    }}
+                  >
+                    {option}
+                  </SecondaryButton>
+                ) : (
                 <Button
                   key={option}
                   variant="outline"
@@ -81,11 +115,12 @@ const ParentAssessment = () => {
                 >
                   {option}
                 </Button>
-              ))}
+                ),
+              )}
             </div>
           </article>
         ) : (
-          <article className="mt-6 rounded-2xl border bg-card p-6 shadow-card">
+          <article className={cn("mx-auto mt-6 w-full max-w-3xl rounded-2xl border bg-card p-6 shadow-card", isJunior && CARD)}>
             <h2 className="text-xl font-semibold">Rezultat procjene</h2>
             <p className="text-muted-foreground mt-3">{result}</p>
             {isJunior && childSnap ? (

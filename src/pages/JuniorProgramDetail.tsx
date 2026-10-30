@@ -1,8 +1,9 @@
 import { Link, useParams } from "react-router-dom";
-import { ArrowLeft, BookOpen, MapPin, School, TriangleAlert } from "lucide-react";
+import { BookOpen, MapPin, School, TriangleAlert } from "lucide-react";
 import Layout from "@/components/Layout";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { JCard, JuniorPage, PageHero } from "@/components/junior-kit";
 import JuniorNumbersNote from "@/components/junior/JuniorNumbersNote";
 import { buildProgramGuide, findProgramBySlug } from "@/lib/juniorProgramGuide";
 import { mapSchoolHref } from "@/lib/juniorPath";
@@ -15,29 +16,20 @@ export default function JuniorProgramDetail() {
   if (!guide) {
     return (
       <Layout>
-        <section className="container mx-auto max-w-3xl px-3 py-12">
-          <h1 className="text-2xl font-bold">Program nije pronađen</h1>
-          <p className="mt-2 text-sm text-muted-foreground">Provjeri poveznicu ili otvori popis programa.</p>
-          <Button asChild className="mt-4 rounded-xl">
+        <JuniorPage homeTo="/programi" crumb="Programi">
+          <PageHero icon={BookOpen} tone="violet" badge="Programi" title="Program nije pronađen" lead="Provjeri poveznicu ili otvori popis programa." />
+          <Button asChild className="mt-2 rounded-2xl">
             <Link to="/programi">Svi programi</Link>
           </Button>
-        </section>
+        </JuniorPage>
       </Layout>
     );
   }
 
   return (
     <Layout>
-      <section className="container mx-auto max-w-3xl px-3 py-8 sm:px-4 md:py-12">
-        <Button asChild variant="ghost" size="sm" className="mb-4 -ml-2 rounded-xl">
-          <Link to="/programi">
-            <ArrowLeft className="mr-1.5 h-4 w-4" />
-            Svi programi
-          </Link>
-        </Button>
-
-        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-primary">{guide.typeLabel}</p>
-        <h1 className="mt-1 text-3xl font-bold tracking-tight">{guide.program.name}</h1>
+      <JuniorPage homeTo="/programi" crumb={guide.program.name}>
+        <PageHero icon={BookOpen} tone="violet" kicker="Program" badge={guide.typeLabel} title={guide.program.name} lead={guide.program.description} />
         <div className="mt-2 flex flex-wrap gap-2">
           <Badge variant="secondary">{guide.program.duration} godine</Badge>
           <Badge variant="outline">
@@ -49,10 +41,8 @@ export default function JuniorProgramDetail() {
           </Badge>
           {guide.extraExam ? <Badge className="bg-amber-500 text-white hover:bg-amber-500">Prijemni / provjera</Badge> : null}
         </div>
-        <p className="mt-4 text-sm leading-relaxed text-muted-foreground">{guide.program.description}</p>
-
-        <div className="mt-6 space-y-4">
-          <article className="rounded-2xl border border-border/70 bg-card p-5">
+        <div className="mt-5 space-y-4">
+          <JCard as="article">
             <h2 className="flex items-center gap-2 text-base font-bold">
               <BookOpen className="h-4 w-4 text-primary" />
               Što se uči
@@ -62,9 +52,9 @@ export default function JuniorProgramDetail() {
                 <li key={line}>· {line}</li>
               ))}
             </ul>
-          </article>
+          </JCard>
 
-          <article className="rounded-2xl border border-border/70 bg-card p-5">
+          <JCard as="article">
             <h2 className="flex items-center gap-2 text-base font-bold">
               <TriangleAlert className="h-4 w-4 text-amber-500" />
               Za koga nije
@@ -74,15 +64,15 @@ export default function JuniorProgramDetail() {
                 <li key={line}>· {line}</li>
               ))}
             </ul>
-          </article>
+          </JCard>
 
-          <article className="rounded-2xl border border-border/70 bg-card p-5">
+          <JCard as="article">
             <h2 className="text-base font-bold">Što poslije</h2>
             <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{guide.program.afterSchool}</p>
             <p className="mt-3 text-xs text-muted-foreground">{guide.program.entryNote}</p>
-          </article>
+          </JCard>
 
-          <article className="rounded-2xl border border-border/70 bg-card p-5">
+          <JCard as="article">
             <h2 className="flex items-center gap-2 text-base font-bold">
               <School className="h-4 w-4 text-primary" />
               Škole u bazi
@@ -121,12 +111,12 @@ export default function JuniorProgramDetail() {
                 <Link to="/kviz-srednja">Kviz za 8. razred</Link>
               </Button>
             </div>
-          </article>
+          </JCard>
 
           <JuniorNumbersNote />
           <JuniorNumbersNote catalog className="mt-2" />
         </div>
-      </section>
+      </JuniorPage>
     </Layout>
   );
 }

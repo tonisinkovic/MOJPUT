@@ -1,7 +1,9 @@
 import Layout from "@/components/Layout";
 import { motion } from "framer-motion";
-import { FileText, Sparkles } from "lucide-react";
+import { FileText } from "lucide-react";
 import { Link } from "react-router-dom";
+import { PageHero, SBack, SCARD, SeniorBlobs } from "@/components/senior-kit";
+import { cn } from "@/lib/utils";
 import type { ReactNode } from "react";
 
 type SectionBlockProps = {
@@ -11,7 +13,7 @@ type SectionBlockProps = {
 };
 
 const SectionBlock = ({ number, title, children }: SectionBlockProps) => (
-  <section className="group relative overflow-hidden rounded-2xl border-2 border-border bg-card p-5 shadow-sm transition-all duration-300 hover:border-primary/25 hover:shadow-card md:p-6">
+  <section className={cn(SCARD, "group p-5 transition-transform duration-300 hover:-translate-y-0.5 md:p-6")}>
     <div
       aria-hidden
       className="pointer-events-none absolute inset-y-0 left-0 w-1 bg-gradient-to-b from-primary/70 via-primary/30 to-transparent opacity-60 transition-opacity group-hover:opacity-100"
@@ -36,48 +38,26 @@ const SectionBlock = ({ number, title, children }: SectionBlockProps) => (
 const UvjetiKoristenja = () => {
   return (
     <Layout>
-      <section className="container mx-auto max-w-3xl px-4 py-10 md:py-14">
-        {/* Hero */}
-        <motion.div
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="relative mb-8 overflow-hidden rounded-2xl border-2 border-primary/20 bg-gradient-to-br from-primary/[0.12] via-primary/[0.04] to-card p-5 shadow-card sm:rounded-3xl sm:p-7 md:p-8"
-        >
-          <div
-            aria-hidden
-            className="pointer-events-none absolute -right-10 -top-10 h-40 w-40 rounded-full bg-primary/15 blur-3xl sm:h-52 sm:w-52"
-          />
-          <div
-            aria-hidden
-            className="pointer-events-none absolute -bottom-14 -left-10 h-32 w-32 rounded-full bg-primary/10 blur-3xl sm:h-44 sm:w-44"
-          />
-          <div
-            aria-hidden
-            className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/40 to-transparent"
-          />
-
-          <div className="relative flex flex-col gap-4 sm:flex-row sm:items-start sm:gap-5">
-            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl gradient-hero text-primary-foreground shadow-md sm:h-14 sm:w-14">
-              <FileText className="h-6 w-6 sm:h-7 sm:w-7" aria-hidden />
-            </div>
-            <div className="min-w-0 flex-1">
-              <span className="inline-flex items-center gap-1 rounded-full border border-primary/25 bg-primary/10 px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-primary">
-                <Sparkles className="h-3 w-3" aria-hidden />
-                Pravni dokument
-              </span>
-              <h1 className="mt-2 text-balance text-2xl font-bold tracking-tight sm:text-3xl md:text-4xl">
-                Uvjeti <span className="text-gradient">korištenja</span> web stranice
-              </h1>
-            </div>
-          </div>
-        </motion.div>
-
+      <section className="sr-page relative mx-auto max-w-3xl px-3 py-10 pb-[max(6.5rem,calc(5rem+env(safe-area-inset-bottom)))] sm:px-4 md:py-14">
+        <SeniorBlobs />
+        <SBack crumb="Uvjeti korištenja" />
+        <PageHero
+          icon={FileText}
+          tone="cyan"
+          kicker="Informacije"
+          badge="Pravni dokument"
+          title={
+            <>
+              Uvjeti <span className="text-[hsl(var(--sr-cyan))]">korištenja</span> web stranice
+            </>
+          }
+        />
         {/* Sadržaj */}
         <motion.div
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.08 }}
-          className="space-y-4 sm:space-y-5"
+          className="mx-auto w-full max-w-3xl space-y-6 sm:space-y-8"
         >
           <SectionBlock number={1} title="Opće odredbe">
             <p>

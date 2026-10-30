@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 import { ArrowUpRight, Bot, ExternalLink, Handshake, LineChart, Sparkles } from "lucide-react";
 import { Link } from "react-router-dom";
+import { PageHero, SBack, SCARD, SeniorBlobs } from "@/components/senior-kit";
 
 const aboutPoints = [
   {
@@ -31,50 +32,28 @@ const Partneri = () => {
         title="Partneri | MojPut"
         description="Partner MojPuta je MaturaBOT — AI asistent za pripremu državne mature na maturabot.hr."
       />
-      <section className="container py-12 md:py-16">
-        <div className="mx-auto max-w-5xl space-y-8 md:space-y-10">
-          <motion.article
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.35 }}
-            className="relative overflow-hidden rounded-2xl border-2 border-primary/20 bg-gradient-to-br from-primary/[0.12] via-primary/[0.04] to-card p-5 shadow-card sm:rounded-3xl sm:p-7 md:p-10"
-          >
-            <div
-              aria-hidden
-              className="pointer-events-none absolute -right-10 -top-10 h-48 w-48 rounded-full bg-primary/15 blur-3xl sm:h-64 sm:w-64"
-            />
-            <div
-              aria-hidden
-              className="pointer-events-none absolute -bottom-16 -left-12 h-40 w-40 rounded-full bg-primary/10 blur-3xl"
-            />
-            <div
-              aria-hidden
-              className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/40 to-transparent"
-            />
-            <div className="relative flex flex-col gap-4 sm:flex-row sm:items-start sm:gap-5">
-              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl gradient-hero text-primary-foreground shadow-md sm:h-14 sm:w-14">
-                <Handshake className="h-6 w-6 sm:h-7 sm:w-7" aria-hidden />
-              </div>
-              <div className="min-w-0 max-w-2xl">
-                <span className="inline-flex items-center gap-1 rounded-full border border-primary/25 bg-primary/10 px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-primary">
-                  <Sparkles className="h-3 w-3" aria-hidden />
-                  Suradnje
-                </span>
-                <h1 className="mt-2 text-balance text-3xl font-extrabold tracking-tight md:text-5xl">
-                  <span className="text-gradient">Partneri</span>
-                </h1>
-                <p className="mt-3 text-pretty text-base leading-relaxed text-muted-foreground md:text-lg">
-                  Alati s kojima dijelimo isti cilj: mirnija priprema i jasnija odluka pred državnu maturu.
-                </p>
-              </div>
-            </div>
-          </motion.article>
+      <section className="sr-page relative mx-auto max-w-5xl space-y-8 px-3 py-12 pb-[max(6.5rem,calc(5rem+env(safe-area-inset-bottom)))] sm:px-4 md:space-y-10 md:py-16">
+        <SeniorBlobs />
+        <SBack crumb="Partneri" />
+        <div className="space-y-8 md:space-y-10">
+          <PageHero
+            icon={Handshake}
+            tone="gold"
+            kicker="Partneri"
+            badge="Suradnje"
+            title={
+              <>
+                <span className="text-[hsl(var(--sr-gold))]">Partneri</span>
+              </>
+            }
+            lead="Alati s kojima dijelimo isti cilj: mirnija priprema i jasnija odluka pred državnu maturu."
+          />
 
           <motion.article
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4, delay: 0.05 }}
-            className="overflow-hidden rounded-2xl border-2 border-[#2563EB]/25 bg-card shadow-card sm:rounded-3xl"
+            className="overflow-hidden rounded-2xl border border-[#2563EB]/25 bg-card sm:rounded-3xl"
           >
             <div className="grid md:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
               <div className="relative flex flex-col justify-between gap-6 bg-gradient-to-br from-[#2563EB]/12 via-card to-card p-5 sm:p-7 md:p-8">
@@ -83,7 +62,7 @@ const Partneri = () => {
                   className="pointer-events-none absolute inset-x-0 top-0 h-1 bg-[#2563EB]"
                 />
                 <div>
-                  <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-[#2563EB]">Partner</p>
+                  <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-[#2563EB] dark:text-[#7DB0FF]">Partner</p>
                   <div className="mt-4 flex items-center gap-3">
                     <img
                       src={MATURABOT_LOGO_URL}
@@ -131,7 +110,7 @@ const Partneri = () => {
                 {aboutPoints.map(({ icon: Icon, title, text }) => (
                   <div key={title} className="bg-card p-5 sm:p-6">
                     <div className="flex items-start gap-3">
-                      <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#2563EB]/10 text-[#2563EB]">
+                      <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[hsl(var(--sr-indigo)/0.12)] text-[hsl(var(--sr-indigo-t))]">
                         <Icon className="h-5 w-5" aria-hidden />
                       </span>
                       <div>
@@ -149,7 +128,7 @@ const Partneri = () => {
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4, delay: 0.1 }}
-            className="rounded-2xl border-2 border-border bg-card p-5 shadow-card sm:rounded-3xl sm:p-7 md:p-8"
+            className="rounded-[1.5rem] border border-border/70 bg-card p-5 shadow-[var(--sr-page-shadow)] sm:p-7 md:p-8"
           >
             <h2 className="text-2xl font-bold tracking-tight md:text-3xl">O MaturaBOT-u</h2>
             <div className="mt-4 max-w-3xl space-y-4 text-pretty text-base leading-relaxed text-muted-foreground">

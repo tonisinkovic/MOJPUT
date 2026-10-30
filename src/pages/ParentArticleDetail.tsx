@@ -1,9 +1,12 @@
 import Layout from "@/components/Layout";
 import { Button } from "@/components/ui/button";
 import { parentArticlesFor, sourcesFor } from "@/data/parentHub";
-import { resolveExperienceMode } from "@/lib/experience";
+import { experiencePageClass, resolveExperienceMode } from "@/lib/experience";
 import { getTotalViews, incrementViewDeduped, readParentHubState, setLastVisited, toggleFavorite } from "@/lib/parentHubStore";
-import { ArrowLeft, Bookmark, Check, ChevronRight, Lightbulb, Link2, Share2, X } from "lucide-react";
+import { ArrowLeft, Bookmark, BookOpen, Check, ChevronRight, Lightbulb, Link2, Share2, X } from "lucide-react";
+import { EmptyState, JBack, JuniorBlobs, PageHero } from "@/components/junior-kit";
+import { EmptyState as SeniorEmptyState, SBack, SeniorBlobs } from "@/components/senior-kit";
+import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
 import { useEffect, useMemo, useState } from "react";
 import { Link, useParams, useSearchParams } from "react-router-dom";
@@ -30,8 +33,14 @@ const ParentArticleDetail = () => {
   if (!article) {
     return (
       <Layout>
-        <section className="container py-16">
-          <p>Članak nije pronađen.</p>
+        <section className={cn(experiencePageClass(isJunior), "relative mx-auto max-w-4xl px-3 py-16 sm:px-4")}>
+          {isJunior ? <JuniorBlobs /> : <SeniorBlobs />}
+          {isJunior ? <JBack to={hubPath} label="Roditeljski kutak" /> : <SBack to={hubPath} label="Roditeljski kutak" />}
+          {isJunior ? (
+            <EmptyState titleAs="h1" title="Članak nije pronađen." />
+          ) : (
+            <SeniorEmptyState titleAs="h1" title="Članak nije pronađen." />
+          )}
         </section>
       </Layout>
     );
@@ -44,16 +53,28 @@ const ParentArticleDetail = () => {
 
   return (
     <Layout>
-      <section className="container max-w-4xl px-3 py-8 sm:px-4 sm:py-10 md:py-14 pb-[max(2rem,env(safe-area-inset-bottom))]">
-        <Link
-          to={hubPath}
-          className="inline-flex min-h-10 items-center gap-1.5 rounded-lg px-1 text-sm text-muted-foreground transition-colors hover:bg-muted/60 hover:text-foreground active:bg-muted/80"
-        >
-          <ArrowLeft className="h-4 w-4 shrink-0" /> Natrag na Roditeljski kutak
-        </Link>
+      <section className={cn(experiencePageClass(isJunior), "relative mx-auto max-w-4xl px-3 py-8 pb-[max(6.5rem,calc(5rem+env(safe-area-inset-bottom)))] sm:px-4 sm:py-10 md:py-14")}>
+        {isJunior ? <JuniorBlobs /> : <SeniorBlobs />}
+        {isJunior ? (
+          <JBack to={hubPath} label="Roditeljski kutak" />
+        ) : (
+          <SBack to={hubPath} label="Roditeljski kutak" crumb="Članak" />
+        )}
+        {isJunior ? (
+          <PageHero
+            icon={BookOpen}
+            tone="violet"
+            badge="Preporučeni članak"
+            title={article.title}
+            lead={article.description}
+          />
+        ) : (
+          <>
         <div className="mt-3 text-xs text-muted-foreground">Roditeljski kutak / Preporučeni članak</div>
         <h1 className="mt-3 text-balance text-2xl font-bold tracking-tight sm:text-3xl md:text-4xl">{article.title}</h1>
         <p className="mt-3 text-pretty text-muted-foreground sm:text-base">{article.description}</p>
+          </>
+        )}
 
         <div className="mt-5 flex flex-wrap items-center gap-2">
           <Button

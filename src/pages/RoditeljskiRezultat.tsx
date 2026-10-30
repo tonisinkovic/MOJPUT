@@ -1,8 +1,9 @@
 import { useMemo } from "react";
 import { Link, useSearchParams } from "react-router-dom";
-import { ArrowLeft, MessageCircle, School, ShieldCheck } from "lucide-react";
+import { MessageCircle, School, ShieldCheck } from "lucide-react";
 import Layout from "@/components/Layout";
-import { Button } from "@/components/ui/button";
+import { CARD, EmptyState, JuniorPage, PageHero, PrimaryButton } from "@/components/junior-kit";
+import { cn } from "@/lib/utils";
 import JuniorShareParents from "@/components/junior/JuniorShareParents";
 import JuniorNumbersNote from "@/components/junior/JuniorNumbersNote";
 import { programHref } from "@/lib/juniorProgramGuide";
@@ -22,41 +23,35 @@ export default function RoditeljskiRezultat() {
 
   return (
     <Layout>
-      <section className="container mx-auto max-w-3xl px-3 py-8 sm:px-4 md:py-12">
-        <Button asChild variant="ghost" size="sm" className="mb-4 -ml-2 rounded-xl">
-          <Link to="/roditelji?experience=junior">
-            <ArrowLeft className="mr-1.5 h-4 w-4" />
-            Roditeljski kutak
-          </Link>
-        </Button>
-
-        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-primary">Za roditelje</p>
-        <h1 className="mt-1 text-3xl font-bold tracking-tight">Rezultat kviza djeteta</h1>
-        <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-          Isti rezultat koji je dijete dobilo, napisan za kućni razgovor. Ovo nije dijagnoza ni
-          naredba upisa — i nije kviz koji vi rješavate umjesto djeteta.
-        </p>
+      <JuniorPage homeTo="/roditelji?experience=junior">
+        <PageHero
+          icon={School}
+          tone="amber"
+          badge="Za roditelje"
+          title="Rezultat kviza djeteta"
+          lead="Isti rezultat koji je dijete dobilo, napisan za kućni razgovor. Ovo nije dijagnoza ni naredba upisa — i nije kviz koji vi rješavate umjesto djeteta."
+        />
 
         {!brief ? (
-          <div className="mt-8 rounded-2xl border border-dashed border-border/70 bg-muted/20 p-6 text-center">
-            <p className="text-sm font-semibold">Nema spremljenog rezultata</p>
-            <p className="mt-1 text-xs text-muted-foreground">
-              Dijete prvo riješi kviz za 8. razred, zatim pošalje ovu stranicu.
-            </p>
-            <Button asChild size="sm" className="mt-3 rounded-xl">
-              <Link to="/kviz-srednja">Otvori kviz</Link>
-            </Button>
-          </div>
+          <EmptyState
+            title="Nema spremljenog rezultata"
+            text="Dijete prvo riješi kviz za 8. razred, zatim pošalje ovu stranicu."
+            action={
+              <Link to="/kviz-srednja">
+                <PrimaryButton type="button">Otvori kviz</PrimaryButton>
+              </Link>
+            }
+          />
         ) : (
-          <div className="mt-8 space-y-5">
-            <div className="rounded-2xl border border-amber-500/30 bg-amber-500/[0.07] p-4 text-sm leading-relaxed">
+          <div className="mt-2 space-y-5">
+            <div className="rounded-[1.75rem] border border-amber-500/30 bg-amber-500/[0.07] p-4 text-sm leading-relaxed">
               <p className="flex items-start gap-2 font-semibold">
                 <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-amber-700 dark:text-amber-300" />
                 {brief.confidence}
               </p>
             </div>
 
-            <article className="rounded-2xl border border-border/70 bg-card p-5 shadow-sm">
+            <article className={cn(CARD, "p-5")}>
               <h2 className="text-lg font-bold">{brief.pathwayTitle}</h2>
               <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{brief.pathwayWhy}</p>
               {brief.city ? (
@@ -65,7 +60,7 @@ export default function RoditeljskiRezultat() {
             </article>
 
             {brief.programs.map((p, i) => (
-              <article key={p.name} className="rounded-2xl border border-border/70 bg-card p-5 shadow-sm">
+              <article key={p.name} className={cn(CARD, "p-5")}>
                 <p className="text-xs font-semibold uppercase tracking-wide text-primary">
                   Program {i + 1}
                 </p>
@@ -117,7 +112,7 @@ export default function RoditeljskiRezultat() {
               </article>
             ))}
 
-            <article className="rounded-2xl border border-primary/20 bg-primary/[0.04] p-5">
+            <article className={cn(CARD, "border-[hsl(var(--jh-teal)/0.3)] bg-[hsl(var(--jh-teal)/0.08)] p-5")}>
               <h2 className="flex items-center gap-2 text-base font-bold">
                 <MessageCircle className="h-4 w-4 text-primary" />
                 Četiri pitanja za razgovor
@@ -143,7 +138,7 @@ export default function RoditeljskiRezultat() {
             <JuniorShareParents brief={brief} variant="outline" />
           </div>
         )}
-      </section>
+      </JuniorPage>
     </Layout>
   );
 }

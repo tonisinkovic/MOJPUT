@@ -7,7 +7,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
 import {
-  ArrowLeft,
   Award,
   BookOpen,
   Building2,
@@ -59,6 +58,7 @@ import {
 } from "@/components/ui/command";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
+import { PageHero, SBack, SCARD, SeniorBlobs, STONE } from "@/components/senior-kit";
 import {
   scoringFormulas,
   calculateTotal,
@@ -134,10 +134,10 @@ const WIZARD_STEPS = [
 ] as const;
 
 const cardShell =
-  "rounded-2xl border border-border/70 bg-card/95 shadow-sm backdrop-blur-[2px] overflow-hidden transition-shadow duration-300 hover:shadow-md";
+  `${SCARD} bg-card/95 backdrop-blur-[2px] overflow-hidden transition-shadow duration-300 hover:shadow-[0_28px_60px_-36px_hsl(var(--sr-gold)/0.35)]`;
 
 const softField =
-  "space-y-3 rounded-xl border border-border/45 bg-muted/15 p-3 shadow-sm sm:p-4";
+  "space-y-3 rounded-2xl border border-border/50 bg-muted/20 p-4 shadow-sm sm:p-5";
 
 /** Parsira unos ocjene (1–5), podržava „3,45” i „3.45”. */
 function parseGradeString(raw: string): number | null {
@@ -491,62 +491,33 @@ const Kalkulator = () => {
       <TooltipProvider delayDuration={300}>
         <section
           className={cn(
-            "container relative mx-auto max-w-6xl px-3 py-10 sm:px-4 md:py-14",
+            "sr-page relative mx-auto max-w-6xl px-3 pt-5 sm:px-4 sm:pt-8 md:py-12",
             wizardStep < 4 &&
               "pb-[max(7.5rem,calc(6rem+env(safe-area-inset-bottom)))] sm:pb-24",
-            wizardStep >= 4 && "pb-10 sm:pb-14",
+            wizardStep >= 4 && "pb-[max(6.5rem,calc(5rem+env(safe-area-inset-bottom)))] sm:pb-14",
           )}
         >
-          {/* Back button */}
-          <button
-            type="button"
-            onClick={() => window.history.back()}
-            className="relative z-10 mb-4 inline-flex items-center gap-1.5 text-sm font-medium text-slate-500 transition-colors hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            <span>Natrag</span>
-          </button>
-
-          {/* Subtle dot-grid texture */}
-          <div className="pointer-events-none absolute inset-0 bg-grid-pattern opacity-[0.018]" aria-hidden />
-          {/* Ambient glow orbs */}
-          <div className="pointer-events-none absolute -left-32 top-20 h-80 w-80 rounded-full bg-primary/[0.07] blur-3xl" aria-hidden />
-          <div className="pointer-events-none absolute -right-40 bottom-40 h-96 w-96 rounded-full bg-accent/[0.06] blur-3xl" aria-hidden />
+          <SeniorBlobs />
+          <SBack crumb="Kalkulator bodova" />
 
           <motion.div
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
-            className="relative min-w-0 w-full space-y-6 sm:space-y-8"
+            className="relative min-w-0 w-full space-y-12 sm:space-y-16"
           >
-            {/* Hero header */}
-            <div className="relative overflow-hidden rounded-2xl border-2 border-primary/20 bg-gradient-to-br from-primary/[0.12] via-primary/[0.04] to-card p-3 shadow-card sm:rounded-3xl sm:p-6 md:p-7">
-              <div
-                aria-hidden
-                className="pointer-events-none absolute -right-10 -top-10 h-36 w-36 rounded-full bg-primary/15 blur-3xl sm:h-52 sm:w-52"
-              />
-              <div
-                aria-hidden
-                className="pointer-events-none absolute -bottom-14 -left-10 h-32 w-32 rounded-full bg-primary/10 blur-3xl sm:h-48 sm:w-48"
-              />
-
-              <div className="relative flex flex-col gap-4 sm:flex-row sm:items-start sm:gap-5">
-                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl gradient-hero text-primary-foreground shadow-md sm:h-14 sm:w-14">
-                  <CalcIcon className="h-6 w-6 sm:h-7 sm:w-7" />
-                </div>
-                <div className="min-w-0 flex-1">
-                  <span className="inline-flex items-center gap-1 rounded-full border border-primary/25 bg-primary/10 px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-primary">
-                    <Sparkles className="h-3 w-3" />
-                    <span className="tabular-nums">{PROGRAM_OPTIONS.length} programa · bodovne formule 2025.</span>
-                  </span>
-                  <h1 className="mt-2 text-balance text-2xl font-bold leading-tight tracking-tight sm:text-3xl md:text-4xl">
-                    Kalkulator <span className="text-gradient">bodova</span>
-                  </h1>
-                  <p className="mt-1.5 max-w-2xl text-pretty text-sm leading-relaxed text-muted-foreground sm:text-base">
-                    Unesi ocjene i rezultate mature — formula se prilagođava odabranom smjeru, korak po korak.
-                  </p>
-                </div>
-              </div>
-            </div>
+            <PageHero
+              icon={CalcIcon}
+              tone="gold"
+              index="05"
+              kicker="Bodovi"
+              badge={`${PROGRAM_OPTIONS.length} programa · bodovne formule 2025.`}
+              title={
+                <>
+                  Kalkulator <span className="text-[hsl(var(--sr-gold))]">bodova</span>
+                </>
+              }
+              lead="Unesi ocjene i rezultate mature — formula se prilagođava odabranom smjeru, korak po korak."
+            />
 
             {/* Stepper — wizard progress */}
             <div className="rounded-2xl border-2 border-border bg-card p-3 shadow-card sm:p-5 md:p-6">
@@ -554,7 +525,7 @@ const Kalkulator = () => {
               <div className="mb-3 flex items-center justify-between gap-3 sm:mb-6 sm:items-start">
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2">
-                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                    <div className={cn("flex h-8 w-8 shrink-0 items-center justify-center rounded-xl text-white", STONE.gold.grad)}>
                       <CalcIcon className="h-4 w-4" aria-hidden />
                     </div>
                     <p className="min-w-0 text-sm font-semibold leading-snug text-foreground sm:text-base">
@@ -569,7 +540,7 @@ const Kalkulator = () => {
                     Možeš se uvijek vratiti i prilagoditi unos.
                   </p>
                 </div>
-                <span className="shrink-0 rounded-full border border-primary/25 bg-primary/10 px-2.5 py-1 text-[11px] font-bold uppercase tracking-wide text-primary sm:text-xs">
+                <span className="shrink-0 rounded-full border border-[hsl(var(--sr-gold)/0.35)] bg-[hsl(var(--sr-gold)/0.16)] px-2.5 py-1 text-[11px] font-bold uppercase tracking-wide text-[hsl(var(--sr-gold-t))] sm:text-xs">
                   Korak <span className="tabular-nums">{wizardStep + 1} / 5</span>
                 </span>
               </div>
@@ -581,7 +552,7 @@ const Kalkulator = () => {
                   aria-hidden
                 >
                   <motion.div
-                    className="h-full rounded-full gradient-hero"
+                    className="h-full rounded-full bg-gradient-to-r from-[hsl(var(--sr-gold))] to-[hsl(28_96%_56%)]"
                     initial={false}
                     animate={{ width: `${(wizardStep / 4) * 100}%` }}
                     transition={{ type: "spring", stiffness: 120, damping: 22 }}
@@ -628,7 +599,7 @@ const Kalkulator = () => {
               {/* ═══ Inputs column ═══ */}
               <div
                 className={cn(
-                  "space-y-6",
+                  "min-w-0 space-y-6",
                   wizardStep === 4 ? "lg:col-span-3" : "lg:col-span-5",
                 )}
               >
@@ -1478,7 +1449,7 @@ const Kalkulator = () => {
                       <p className="text-muted-foreground">
                         Odaberi fakultet i smjer iznad da vidiš formulu bodovanja
                       </p>
-                      <p className="text-sm text-muted-foreground/60 mt-1">
+                      <p className="text-sm text-muted-foreground mt-1">
                         {PROGRAM_OPTIONS.length} programa dostupno
                       </p>
                     </CardContent>
@@ -1516,14 +1487,14 @@ const Kalkulator = () => {
 
               {/* ═══ Result column – samo završni korak ═══ */}
               {wizardStep === 4 && (
-              <div className="lg:col-span-2">
+              <div className="min-w-0 lg:col-span-2">
                 <div className="lg:sticky lg:top-24 space-y-4">
                   {/* Main result card */}
                   <Card
                     className={cn(
                       cardShell,
                       config.border,
-                      "bg-gradient-to-b from-card to-card/95 shadow-md",
+                      "sr-edge sr-result bg-card",
                     )}
                   >
                     <CardHeader className="pb-2">
@@ -1574,7 +1545,7 @@ const Kalkulator = () => {
                             animate={{ scale: 1, opacity: 1 }}
                             exit={{ scale: 0.9, opacity: 0.5 }}
                             transition={{ type: "spring", stiffness: 300 }}
-                            className="text-5xl md:text-6xl font-extrabold text-gradient"
+                            className="text-5xl font-extrabold tabular-nums tracking-tighter text-[hsl(var(--sr-gold-t))] md:text-6xl"
                           >
                             {totalPoints ?? "—"}
                           </motion.p>
@@ -1741,7 +1712,7 @@ const Kalkulator = () => {
                                 return (
                                   <div key={item.id} className="space-y-1">
                                     <div className="flex justify-between text-xs">
-                                      <span className="text-muted-foreground truncate mr-2">
+                                      <span className="min-w-0 text-muted-foreground truncate mr-2">
                                         {item.label}
                                       </span>
                                       <span className="font-medium whitespace-nowrap">
@@ -1778,7 +1749,7 @@ const Kalkulator = () => {
                               </div>
                               {selectedFormula && (
                                 <div className="flex flex-wrap gap-2 pt-2">
-                                  <Button asChild size="sm" variant="outline" className="rounded-lg">
+                                  <Button asChild size="sm" variant="outline" className="h-auto min-h-10 whitespace-normal rounded-lg py-2 text-left">
                                     <Link to="/kalkulator-doma">Trebaš studentski dom? Izračunaj bodove ({selectedFormula.grad})</Link>
                                   </Button>
                                 </div>

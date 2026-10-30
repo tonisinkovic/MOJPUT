@@ -1,10 +1,13 @@
 import Layout from "@/components/Layout";
 import PageSeo from "@/components/seo/PageSeo";
-import { getStoredExperience, onExperienceChange, type MojPutExperienceMode } from "@/lib/experience";
+import { experiencePageClass, getStoredExperience, onExperienceChange, type MojPutExperienceMode } from "@/lib/experience";
 import { motion } from "framer-motion";
-import { ArrowLeft, Bell, CalendarDays, ChevronLeft, ChevronRight, ListChecks, Sparkles } from "lucide-react";
+import { Bell, CalendarDays, ChevronLeft, ChevronRight, ListChecks } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
+import { CARD, JBack, JuniorBlobs, PageHero } from "@/components/junior-kit";
+import { DateBadge, PageHero as SeniorHero, SBack, SCARD, SeniorBlobs } from "@/components/senior-kit";
+import { cn } from "@/lib/utils";
 import {
   isArchivedEvent,
   juniorEvents,
@@ -206,60 +209,37 @@ const Kalendar = () => {
   return (
     <Layout>
       <PageSeo title="Kalendar upisa – rokovi za fakultete, srednje škole i domove | MojPut" description="Rokovi prijava, rang-liste, upisi i natječaji za studentske domove na jednom mjestu. Okvirni datumi su jasno označeni, uz poveznicu na službeni izvor." />
-      <section className="container py-12 max-w-6xl">
-        {/* Back button */}
-        <button
-          type="button"
-          onClick={() => window.history.back()}
-          className="mb-4 inline-flex items-center gap-1.5 text-sm font-medium text-slate-500 transition-colors hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100"
-        >
-          <ArrowLeft className="h-4 w-4" />
-          <span>Natrag</span>
-        </button>
+      <section className={cn(experiencePageClass(isJunior), "relative mx-auto max-w-6xl px-3 py-8 pb-[max(6.5rem,calc(5rem+env(safe-area-inset-bottom)))] sm:px-4 sm:py-12")}>
+        {isJunior ? <JuniorBlobs /> : <SeniorBlobs />}
+        {isJunior ? <JBack crumb="Kalendar" /> : <SBack crumb="Kalendar" />}
 
-        <motion.div
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="relative mb-8 overflow-hidden rounded-2xl border-2 border-primary/20 bg-gradient-to-br from-primary/[0.12] via-primary/[0.04] to-card p-4 shadow-card sm:rounded-3xl sm:p-6 md:p-7"
-        >
-          <div
-            aria-hidden
-            className="pointer-events-none absolute -right-10 -top-10 h-36 w-36 rounded-full bg-primary/15 blur-3xl sm:h-52 sm:w-52"
-          />
-          <div
-            aria-hidden
-            className="pointer-events-none absolute -bottom-14 -left-10 h-32 w-32 rounded-full bg-primary/10 blur-3xl sm:h-48 sm:w-48"
-          />
-
-          <div className="relative flex flex-col gap-4 sm:flex-row sm:items-start sm:gap-5">
-            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl gradient-hero text-primary-foreground shadow-md sm:h-14 sm:w-14">
-              <CalendarDays className="h-6 w-6 sm:h-7 sm:w-7" strokeWidth={2} aria-hidden />
+        {isJunior ? (
+          <>
+            <PageHero
+              icon={CalendarDays}
+              tone="coral"
+              kicker="Rokovi"
+              badge={heroBadge}
+              title={
+                <>
+                  Kalendar <span className="text-[hsl(var(--jh-coral))]">važnih datuma</span>
+                </>
+              }
+              lead={heroSubtitle}
+            />
+            <div className="mb-6 flex flex-wrap gap-1.5 sm:gap-2">
+              {Object.entries(typeDots).map(([type, dot]) => (
+                <span
+                  key={type}
+                  className="inline-flex min-h-11 items-center gap-1.5 rounded-full border border-border/70 bg-card px-3 py-2 text-xs font-bold"
+                >
+                  <span className={`h-2.5 w-2.5 rounded-full ${dot}`} aria-hidden />
+                  {type}
+                </span>
+              ))}
             </div>
-            <div className="min-w-0 flex-1">
-              <span className="inline-flex items-center gap-1 rounded-full border border-primary/25 bg-primary/10 px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-primary">
-                <Sparkles className="h-3 w-3" aria-hidden />
-                {heroBadge}
-              </span>
-              <h1 className="mt-2 text-balance text-2xl font-bold leading-tight tracking-tight sm:text-3xl md:text-4xl">
-                <span className="text-gradient">Kalendar</span> važnih datuma
-              </h1>
-              <p className="mt-1.5 max-w-2xl text-pretty text-sm leading-relaxed text-muted-foreground sm:text-base">
-                {heroSubtitle}
-              </p>
-
-              <div className="mt-4 flex flex-wrap gap-1.5 sm:gap-2">
-                {Object.entries(typeDots).map(([type, dot]) => (
-                  <span
-                    key={type}
-                    className="inline-flex items-center gap-1.5 rounded-full border border-border bg-background/60 px-2.5 py-1 text-xs font-medium text-foreground shadow-sm backdrop-blur"
-                  >
-                    <span className={`h-2.5 w-2.5 rounded-full ${dot}`} aria-hidden />
-                    {type}
-                  </span>
-                ))}
-              </div>
-
-              <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-muted-foreground">
+            {(hasEstimated || archivedCount > 0) && (
+              <div className="mb-6 flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-muted-foreground">
                 {hasEstimated && (
                   <span>
                     <span className="font-semibold text-foreground">Okvirno</span> = procjena prema prošloj godini dok
@@ -270,28 +250,77 @@ const Kalendar = () => {
                   <button
                     type="button"
                     onClick={() => setShowArchive((v) => !v)}
-                    className="font-semibold text-primary underline-offset-2 hover:underline"
+                    className="min-h-11 font-semibold text-primary underline-offset-2 hover:underline"
                   >
                     {showArchive ? "Sakrij arhivu prošle godine" : `Prikaži arhivu prošle godine (${archivedCount})`}
                   </button>
                 )}
               </div>
+            )}
+          </>
+        ) : (
+          <>
+            <SeniorHero
+              icon={CalendarDays}
+              tone="gold"
+              index="03"
+              kicker="Rokovi"
+              badge={heroBadge}
+              title={
+                <>
+                  Kalendar <span className="text-[hsl(var(--sr-gold))]">važnih datuma</span>
+                </>
+              }
+              lead={heroSubtitle}
+            />
+            <div className="mb-6 flex flex-wrap gap-1.5 sm:gap-2">
+              {Object.entries(typeDots).map(([type, dot]) => (
+                <span
+                  key={type}
+                  className="inline-flex min-h-11 items-center gap-1.5 rounded-lg border border-border/70 bg-card px-3 py-2 text-xs font-bold"
+                >
+                  <span className={`h-2.5 w-2.5 rounded-full ${dot}`} aria-hidden />
+                  {type}
+                </span>
+              ))}
             </div>
-          </div>
-        </motion.div>
+            {(hasEstimated || archivedCount > 0) && (
+              <div className="mb-6 flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-muted-foreground">
+                {hasEstimated && (
+                  <span>
+                    <span className="font-semibold text-foreground">Okvirno</span> = procjena prema prošloj godini dok
+                    službeni datum nije objavljen. Uvijek provjeri izvor.
+                  </span>
+                )}
+                {archivedCount > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => setShowArchive((v) => !v)}
+                    className="min-h-11 font-semibold text-[hsl(var(--sr-gold-t))] underline-offset-2 hover:underline"
+                  >
+                    {showArchive ? "Sakrij arhivu prošle godine" : `Prikaži arhivu prošle godine (${archivedCount})`}
+                  </button>
+                )}
+              </div>
+            )}
+          </>
+        )}
 
-        <div className="grid lg:grid-cols-[minmax(0,560px)_minmax(0,1fr)] gap-8 items-stretch lg:h-[70vh]">
+        <div className="grid items-start gap-8 lg:grid-cols-[minmax(0,22rem)_minmax(0,1fr)] lg:gap-12">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="bg-card rounded-2xl border-2 border-border shadow-card p-5 sm:p-7 h-full flex flex-col overflow-hidden"
+            className={cn(
+              "flex h-full flex-col overflow-hidden p-5 sm:p-7",
+              isJunior ? CARD : SCARD,
+            )}
           >
             <div className="flex items-center justify-between mb-6">
               <button
                 onClick={prev}
                 disabled={!canPrev}
                 aria-label="Prethodni mjesec"
-                className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-border bg-background/60 text-foreground transition-all hover:border-primary/40 hover:bg-primary/10 hover:text-primary disabled:opacity-40 disabled:hover:border-border disabled:hover:bg-background/60 disabled:hover:text-foreground"
+                className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-border bg-background/60 text-foreground transition-all hover:border-primary/40 hover:bg-primary/10 hover:text-primary disabled:opacity-40 disabled:hover:border-border disabled:hover:bg-background/60 disabled:hover:text-foreground"
               >
                 <ChevronLeft className="h-5 w-5" />
               </button>
@@ -306,7 +335,7 @@ const Kalendar = () => {
                 onClick={next}
                 disabled={!canNext}
                 aria-label="Sljedeći mjesec"
-                className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-border bg-background/60 text-foreground transition-all hover:border-primary/40 hover:bg-primary/10 hover:text-primary disabled:opacity-40 disabled:hover:border-border disabled:hover:bg-background/60 disabled:hover:text-foreground"
+                className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-border bg-background/60 text-foreground transition-all hover:border-primary/40 hover:bg-primary/10 hover:text-primary disabled:opacity-40 disabled:hover:border-border disabled:hover:bg-background/60 disabled:hover:text-foreground"
               >
                 <ChevronRight className="h-5 w-5" />
               </button>
@@ -370,7 +399,10 @@ const Kalendar = () => {
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="bg-card rounded-2xl border-2 border-border shadow-card p-5 sm:p-7 h-full flex flex-col overflow-hidden"
+            className={cn(
+              "flex h-full flex-col overflow-hidden p-5 sm:p-7",
+              isJunior ? CARD : SCARD,
+            )}
           >
             <div className="mb-4 flex items-start justify-between gap-3">
               <div className="flex items-start gap-3 min-w-0">
@@ -390,21 +422,34 @@ const Kalendar = () => {
             </div>
 
             {monthEvents.length > 0 && (
-              <div className="flex-1 overflow-y-auto pr-1 space-y-2.5 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-border hover:[&::-webkit-scrollbar-thumb]:bg-muted-foreground/40">
+              <div className={cn(
+                "flex-1 overflow-y-auto pr-1 space-y-2.5 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-border hover:[&::-webkit-scrollbar-thumb]:bg-muted-foreground/40",
+                !isJunior && "relative border-l-2 border-[hsl(var(--sr-gold)/0.35)] pl-5",
+              )}>
                 {monthEvents.map((e, i) => {
                   const key = `${experience}-${e.year}-${e.month}-${e.day}-${e.title}`;
                   const isReminded = reminders.has(key);
                   return (
                     <div
                       key={i}
-                      className={`group flex items-stretch gap-3 rounded-xl border text-base font-medium transition-all hover:shadow-sm ${typeColors[e.type] ?? ""}`}
+                      className={`group flex items-stretch gap-3 rounded-2xl border text-base font-medium transition-all hover:-translate-y-0.5 hover:shadow-md ${typeColors[e.type] ?? ""}`}
                     >
-                      <div className="flex shrink-0 flex-col items-center justify-center px-3.5 py-3 border-r border-current/15">
-                        <span className="text-lg font-extrabold leading-none tabular-nums">{e.day}.</span>
-                        <span className="mt-1 text-[10px] font-semibold uppercase tracking-wide opacity-80">
+                      {isJunior ? (
+                      <div className="m-2 flex h-[4.25rem] w-[4.25rem] shrink-0 flex-col items-center justify-center rounded-2xl bg-white/70 dark:bg-black/25">
+                        <span className="text-2xl font-extrabold leading-none tabular-nums">{e.day}</span>
+                        <span className="mt-1.5 text-[10px] font-bold uppercase tracking-wider opacity-80">
                           {croatianMonths[month].slice(0, 3)}
                         </span>
                       </div>
+                      ) : (
+                        <div className="m-2">
+                          <DateBadge
+                            day={e.day}
+                            month={croatianMonths[month].slice(0, 3)}
+                            tone={e.type === "Rok" || e.type === "Upisi" ? "gold" : e.type === "Dom" ? "emerald" : "cyan"}
+                          />
+                        </div>
+                      )}
                       <div className="flex flex-1 min-w-0 items-center gap-2 py-3 pr-3">
                         <div className="min-w-0 flex-1">
                           <div className="mb-1 flex flex-wrap items-center gap-1.5">
