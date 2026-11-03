@@ -40,9 +40,9 @@ const FORUM_RULES = [
   "Poruke koje više korisnika prijavi automatski se skrivaju dok ih moderator ne pregleda.",
 ];
 
-function ForumRulesNote() {
+function ForumRulesNote({ className }: { className?: string }) {
   return (
-    <details className="mb-2 rounded-lg border border-border/70 bg-background/70 px-3 py-1.5 text-xs text-muted-foreground">
+    <details className={cn("mb-2 rounded-lg border px-3 py-1.5 text-xs text-muted-foreground", className ?? "border-border/70 bg-background/70")}>
       <summary className="flex cursor-pointer items-center gap-1.5 font-semibold text-foreground">
         <ShieldCheck className="h-3.5 w-3.5 text-primary" aria-hidden />
         Pravila zajednice
@@ -59,8 +59,8 @@ import { Link, useLocation, useSearchParams } from "react-router-dom";
 import { authLogout, authMe, userFromAuthMe, type AuthUser } from "@/lib/auth";
 import { experiencePageClass, resolveExperienceMode, type MojPutExperienceMode } from "@/lib/experience";
 import { cn } from "@/lib/utils";
-import { JBack, JuniorBlobs, PageHero, StatTile } from "@/components/junior-kit";
-import { PageHero as SeniorHero, SBack, SeniorBlobs } from "@/components/senior-kit";
+import { CARD, JBack, JuniorBlobs, PageHero, StatTile } from "@/components/junior-kit";
+import { PageHero as SeniorHero, SBack, SCARD, SeniorBlobs } from "@/components/senior-kit";
 import { MessagesSquare as ForumHeroIcon } from "lucide-react";
 
 type ForumMessage = {
@@ -892,18 +892,28 @@ const Forum = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             className={cn(
-              "mb-4 rounded-2xl border-2 border-primary/15 bg-primary/[0.04] p-3 shadow-sm md:mb-6 md:p-4",
+              "mb-4 rounded-2xl border-2 p-3 shadow-sm md:mb-6 md:p-4",
+              isJunior
+                ? "border-[hsl(var(--jh-teal)/0.28)] bg-gradient-to-r from-[hsl(var(--jh-teal)/0.12)] via-card to-[hsl(var(--jh-violet)/0.08)]"
+                : "border-[hsl(var(--sr-gold)/0.32)] bg-gradient-to-r from-[hsl(var(--sr-gold)/0.12)] via-card to-[hsl(var(--sr-cyan)/0.08)]",
               selectedConversation && "max-md:hidden",
             )}
           >
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div className="flex items-start gap-3">
-                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                <div
+                  className={cn(
+                    "flex h-10 w-10 shrink-0 items-center justify-center",
+                    isJunior
+                      ? "jh-blob-shape bg-gradient-to-br from-[hsl(var(--jh-teal))] to-[hsl(var(--jh-violet))] text-white"
+                      : "sr-hex bg-gradient-to-br from-[hsl(var(--sr-gold))] to-[hsl(28_96%_56%)] text-[hsl(var(--sr-night))]",
+                  )}
+                >
                   <LogIn className="h-4 w-4" />
                 </div>
                 <div className="min-w-0">
-                  <p className="text-sm font-semibold text-foreground">Čitaš kao gost</p>
-                  <p className="mt-0.5 text-xs leading-relaxed text-muted-foreground">
+                  <p className="text-sm font-extrabold text-foreground">Čitaš kao gost</p>
+                  <p className="mt-0.5 text-xs font-medium leading-relaxed text-muted-foreground">
                     Sve teme i poruke su ti vidljive. Za slanje poruka, lajkanje i otvaranje novih tema — prijavi se.
                   </p>
                 </div>
@@ -911,10 +921,8 @@ const Forum = () => {
               <Link
                 to="/prijava"
                 className={cn(
-                  "inline-flex min-h-[44px] items-center justify-center gap-2 rounded-xl px-4 py-3 text-sm font-semibold shadow-md sm:min-h-0 sm:py-2.5 touch-manipulation",
-                  isJunior
-                    ? "bg-primary text-primary-foreground hover:bg-primary/90"
-                    : "sr-gold-btn",
+                  "inline-flex min-h-[44px] items-center justify-center gap-2 rounded-xl px-4 py-3 text-sm font-extrabold shadow-md sm:min-h-0 sm:py-2.5 touch-manipulation",
+                  isJunior ? "jh-cta" : "sr-gold-btn",
                 )}
               >
                 <LogIn className="h-4 w-4" />
@@ -924,18 +932,16 @@ const Forum = () => {
           </motion.div>
         )}
 
-        {offline && !loadingConversations && (
-          <div className="mb-4 rounded-xl border border-amber-300/60 bg-amber-50 px-4 py-3 text-sm text-amber-900 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-200">
-            Forum server trenutno nije dostupan. Prikazujemo primjere tema i ono što si spremio na ovom uređaju —
-            to nisu stvarne objave drugih korisnika.
-          </div>
-        )}
-
         <motion.div
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3, delay: 0.05 }}
-          className="overflow-hidden rounded-2xl border-2 border-border bg-card shadow-card"
+          className={cn(
+            "overflow-hidden border-2",
+            isJunior
+              ? cn(CARD, "border-2 border-[hsl(var(--jh-teal)/0.32)]")
+              : cn(SCARD, "border-[hsl(var(--sr-cyan)/0.32)]"),
+          )}
         >
           <div
             className={cn(
@@ -950,23 +956,45 @@ const Forum = () => {
             {/* Sidebar */}
             <div
               className={cn(
-                "flex min-h-0 w-full shrink-0 flex-col border-b border-border bg-muted/25 md:w-[min(100%,20rem)] md:border-b-0 md:border-r",
+                "flex min-h-0 w-full shrink-0 flex-col md:w-[min(100%,20rem)]",
+                isJunior
+                  ? "border-b border-[hsl(var(--jh-teal)/0.16)] bg-gradient-to-b from-[hsl(var(--jh-teal)/0.08)] via-[hsl(var(--jh-violet)/0.05)] to-card md:border-b-0 md:border-r md:border-[hsl(var(--jh-teal)/0.16)]"
+                  : "border-b border-[hsl(var(--sr-cyan)/0.18)] bg-gradient-to-b from-[hsl(var(--sr-night)/0.07)] via-[hsl(var(--sr-cyan)/0.05)] to-card md:border-b-0 md:border-r md:border-[hsl(var(--sr-cyan)/0.18)]",
                 selectedConversation && "max-md:hidden",
               )}
             >
-              <div className="flex items-center gap-3 border-b border-border p-3 sm:p-4">
-                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl gradient-hero text-sm font-bold text-primary-foreground shadow-md">
+              <div
+                className={cn(
+                  "flex items-center gap-3 p-3 sm:p-4",
+                  isJunior ? "border-b border-[hsl(var(--jh-violet)/0.16)]" : "border-b border-[hsl(var(--sr-gold)/0.18)]",
+                )}
+              >
+                <div
+                  className={cn(
+                    "flex h-11 w-11 shrink-0 items-center justify-center text-sm font-extrabold shadow-md",
+                    isJunior
+                      ? "jh-blob-shape bg-gradient-to-br from-[hsl(var(--jh-teal))] to-[hsl(var(--jh-violet))] text-white"
+                      : "sr-hex bg-gradient-to-br from-[hsl(var(--sr-gold))] to-[hsl(28_96%_56%)] text-[hsl(var(--sr-night))] shadow-[var(--sr-page-glow-gold)]",
+                  )}
+                >
                   {(currentUser?.username?.[0] || "G").toUpperCase()}
                 </div>
                 <div className="min-w-0 flex-1">
-                  <p className="truncate text-sm font-semibold text-foreground">{currentUser?.username || "Gost"}</p>
-                  <p className="text-xs text-muted-foreground">{canUseForum ? "Član foruma" : "Samo pregled"}</p>
+                  <p className="truncate text-sm font-extrabold text-foreground">{currentUser?.username || "Gost"}</p>
+                  <p className={cn("text-xs font-medium", isJunior ? "text-[hsl(var(--jh-teal-t))]" : "text-[hsl(var(--sr-gold-t))]")}>
+                    {canUseForum ? "Član foruma" : "Samo pregled"}
+                  </p>
                 </div>
                 {canUseForum ? (
                   <button
                     type="button"
                     onClick={handleLogout}
-                    className="flex min-h-[44px] min-w-[44px] items-center justify-center rounded-xl p-2 text-muted-foreground transition-colors hover:bg-muted touch-manipulation sm:p-2"
+                    className={cn(
+                      "flex min-h-[44px] min-w-[44px] items-center justify-center rounded-xl p-2 text-muted-foreground transition-colors touch-manipulation sm:p-2",
+                      isJunior
+                        ? "hover:bg-[hsl(var(--jh-teal)/0.1)] hover:text-[hsl(var(--jh-teal-t))]"
+                        : "hover:bg-[hsl(var(--sr-gold)/0.12)] hover:text-[hsl(var(--sr-gold-t))]",
+                    )}
                     title="Odjava"
                   >
                     <LogOut className="h-4 w-4" />
@@ -974,7 +1002,12 @@ const Forum = () => {
                 ) : (
                   <Link
                     to="/prijava"
-                    className="flex min-h-[44px] min-w-[44px] items-center justify-center rounded-xl p-2 text-muted-foreground transition-colors hover:bg-muted touch-manipulation sm:p-2"
+                    className={cn(
+                      "flex min-h-[44px] min-w-[44px] items-center justify-center rounded-xl p-2 text-muted-foreground transition-colors touch-manipulation sm:p-2",
+                      isJunior
+                        ? "hover:bg-[hsl(var(--jh-teal)/0.1)] hover:text-[hsl(var(--jh-teal-t))]"
+                        : "hover:bg-[hsl(var(--sr-gold)/0.12)] hover:text-[hsl(var(--sr-gold-t))]",
+                    )}
                     title="Prijava"
                   >
                     <LogIn className="h-4 w-4" />
@@ -982,14 +1015,14 @@ const Forum = () => {
                 )}
               </div>
 
-              <div className="border-b border-border p-3">
+              <div className={cn("p-3", isJunior ? "border-b border-[hsl(var(--jh-teal)/0.16)]" : "border-b border-[hsl(var(--sr-cyan)/0.16)]")}>
                 {canUseForum ? (
                   <button
                     type="button"
                     onClick={() => setShowNewConversationModal(true)}
                     className={cn(
-                      "inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-xl px-4 py-3 text-sm font-semibold shadow-md transition-all hover:shadow-lg active:scale-[0.98] sm:min-h-10 sm:py-2.5 touch-manipulation",
-                      isJunior ? "bg-primary text-primary-foreground hover:bg-primary/90" : "sr-gold-btn",
+                      "inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-xl px-4 py-3 text-sm font-extrabold shadow-md transition-all hover:shadow-lg active:scale-[0.98] sm:min-h-10 sm:py-2.5 touch-manipulation",
+                      isJunior ? "jh-cta" : "sr-gold-btn",
                     )}
                   >
                     <Plus className="h-4 w-4" />
@@ -998,7 +1031,12 @@ const Forum = () => {
                 ) : (
                   <Link
                     to="/prijava"
-                    className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-xl border-2 border-border bg-background px-4 py-3 text-sm font-semibold text-foreground transition-colors hover:bg-muted sm:min-h-10 sm:py-2.5 touch-manipulation"
+                    className={cn(
+                      "inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-xl border-2 px-4 py-3 text-sm font-extrabold transition-colors sm:min-h-10 sm:py-2.5 touch-manipulation",
+                      isJunior
+                        ? "border-[hsl(var(--jh-teal)/0.42)] bg-[hsl(var(--jh-teal)/0.1)] text-[hsl(var(--jh-teal-t))] hover:bg-[hsl(var(--jh-teal)/0.16)]"
+                        : "border-[hsl(var(--sr-gold)/0.42)] bg-[hsl(var(--sr-gold)/0.1)] text-[hsl(var(--sr-gold-t))] hover:bg-[hsl(var(--sr-gold)/0.16)]",
+                    )}
                   >
                     <LogIn className="h-4 w-4" />
                     Prijavi se za pisanje
@@ -1006,32 +1044,51 @@ const Forum = () => {
                 )}
               </div>
 
-              <div className="border-b border-border p-3">
+              <div className={cn("p-3", isJunior ? "border-b border-[hsl(var(--jh-teal)/0.16)]" : "border-b border-[hsl(var(--sr-cyan)/0.16)]")}>
                 <div className="relative">
-                  <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                  <Search
+                    className={cn(
+                      "absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2",
+                      isJunior ? "text-[hsl(var(--jh-teal-t))]" : "text-[hsl(var(--sr-cyan-t))]",
+                    )}
+                  />
                   <input
                     type="text"
                     placeholder="Pretraži teme…"
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="h-11 w-full rounded-xl border-2 border-input bg-background py-2.5 pl-9 pr-4 text-base text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-ring sm:h-10 sm:text-sm"
+                    className={cn(
+                      "h-11 w-full rounded-xl border-2 bg-background py-2.5 pl-9 pr-4 text-base text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 sm:h-10 sm:text-sm",
+                      isJunior
+                        ? "border-[hsl(var(--jh-teal)/0.28)] focus:border-[hsl(var(--jh-teal))] focus:ring-[hsl(var(--jh-teal)/0.22)]"
+                        : "border-[hsl(var(--sr-cyan)/0.28)] focus:border-[hsl(var(--sr-cyan))] focus:ring-[hsl(var(--sr-cyan)/0.22)]",
+                    )}
                   />
                 </div>
               </div>
 
-              <div className="border-b border-border px-3 py-2">
-                <p className="mb-2 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">Poredaj</p>
+              <div className={cn("px-3 py-2.5", isJunior ? "border-b border-[hsl(var(--jh-teal)/0.16)]" : "border-b border-[hsl(var(--sr-cyan)/0.16)]")}>
+                <p
+                  className={cn(
+                    "mb-2 text-[11px] font-extrabold uppercase tracking-[0.14em]",
+                    isJunior ? "text-[hsl(var(--jh-violet-t))]" : "text-[hsl(var(--sr-cyan-t))]",
+                  )}
+                >
+                  Poredaj
+                </p>
                 <div className="flex gap-2 overflow-x-auto pb-0.5 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
                   <button
                     type="button"
                     onClick={() => setSortMode("recent")}
                     className={cn(
-                      "inline-flex shrink-0 items-center gap-1.5 rounded-full border-2 px-3 py-2 text-xs font-semibold transition-all touch-manipulation",
+                      "inline-flex min-h-10 shrink-0 items-center gap-1.5 rounded-full border-2 px-3 py-2 text-xs font-extrabold transition-all touch-manipulation",
                       sortMode === "recent"
                         ? isJunior
-                          ? "border-primary bg-primary text-primary-foreground shadow-sm"
-                          : "border-transparent bg-[hsl(var(--sr-night))] text-white shadow-sm"
-                        : "border-border bg-background text-foreground hover:bg-muted",
+                          ? "border-transparent bg-gradient-to-br from-[hsl(var(--jh-teal))] to-[hsl(174_60%_50%)] text-white shadow-[0_10px_20px_-12px_hsl(var(--jh-teal)/0.8)]"
+                          : "border-transparent sr-gold-btn shadow-sm"
+                        : isJunior
+                          ? "border-[hsl(var(--jh-teal)/0.28)] bg-background text-foreground hover:border-[hsl(var(--jh-teal)/0.5)]"
+                          : "border-[hsl(var(--sr-gold)/0.25)] bg-background text-foreground hover:border-[hsl(var(--sr-gold)/0.5)]",
                     )}
                   >
                     <Clock className="h-3.5 w-3.5" />
@@ -1041,12 +1098,14 @@ const Forum = () => {
                     type="button"
                     onClick={() => setSortMode("active")}
                     className={cn(
-                      "inline-flex shrink-0 items-center gap-1.5 rounded-full border-2 px-3 py-2 text-xs font-semibold transition-all touch-manipulation",
+                      "inline-flex min-h-10 shrink-0 items-center gap-1.5 rounded-full border-2 px-3 py-2 text-xs font-extrabold transition-all touch-manipulation",
                       sortMode === "active"
                         ? isJunior
-                          ? "border-primary bg-primary text-primary-foreground shadow-sm"
-                          : "border-transparent bg-[hsl(var(--sr-night))] text-white shadow-sm"
-                        : "border-border bg-background text-foreground hover:bg-muted",
+                          ? "border-transparent bg-gradient-to-br from-[hsl(var(--jh-violet))] to-[hsl(248_80%_68%)] text-white shadow-[0_10px_20px_-12px_hsl(var(--jh-violet)/0.8)]"
+                          : "border-transparent bg-[hsl(var(--sr-cyan))] text-[hsl(var(--sr-night))] shadow-[var(--sr-page-glow-cyan)]"
+                        : isJunior
+                          ? "border-[hsl(var(--jh-violet)/0.28)] bg-background text-foreground hover:border-[hsl(var(--jh-violet)/0.5)]"
+                          : "border-[hsl(var(--sr-cyan)/0.28)] bg-background text-foreground hover:border-[hsl(var(--sr-cyan)/0.55)]",
                     )}
                   >
                     <TrendingUp className="h-3.5 w-3.5" />
@@ -1058,18 +1117,30 @@ const Forum = () => {
               <div className="min-h-0 flex-1 md:overflow-y-auto">
                 {loadingConversations ? (
                   <div className="p-8 text-center">
-                    <div className="inline-block h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+                    <div
+                      className={cn(
+                        "inline-block h-6 w-6 animate-spin rounded-full border-2 border-t-transparent",
+                        isJunior ? "border-[hsl(var(--jh-teal))]" : "border-[hsl(var(--sr-gold))]",
+                      )}
+                    />
                     <p className="mt-3 text-xs text-muted-foreground">Učitavam razgovore…</p>
                   </div>
                 ) : sortedConversations.length === 0 ? (
                   <div className="px-5 py-10 text-center">
-                    <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+                    <div
+                      className={cn(
+                        "mx-auto mb-3 flex h-12 w-12 items-center justify-center",
+                        isJunior
+                          ? "jh-blob-shape bg-[hsl(var(--jh-violet)/0.14)] text-[hsl(var(--jh-violet-t))]"
+                          : "sr-hex bg-[hsl(var(--sr-gold)/0.16)] text-[hsl(var(--sr-gold-t))]",
+                      )}
+                    >
                       <MessageCircle className="h-6 w-6" />
                     </div>
-                    <p className="text-sm font-semibold text-foreground">
+                    <p className="text-sm font-extrabold text-foreground">
                       {isJunior ? "Još nema tema o srednjoj" : "Još nema tema"}
                     </p>
-                    <p className="mx-auto mt-1 max-w-[16rem] text-xs leading-relaxed text-muted-foreground">
+                    <p className="mx-auto mt-1 max-w-[16rem] text-xs font-medium leading-relaxed text-muted-foreground">
                       {canUseForum
                         ? isJunior
                           ? "Otvori prvu: gimnazija ili struka, bodovi, upis, grad."
@@ -1093,22 +1164,31 @@ const Forum = () => {
                           className={cn(
                             "group flex w-full items-start gap-3 rounded-xl border-2 px-3 py-3 text-left transition-all duration-200 touch-manipulation sm:px-3.5",
                             isActive
-                              ? "border-primary/40 bg-primary/10 shadow-sm"
-                              : "border-transparent hover:border-border hover:bg-muted/60 active:scale-[0.99]",
+                              ? isJunior
+                                ? "border-[hsl(var(--jh-teal)/0.42)] bg-gradient-to-r from-[hsl(var(--jh-teal)/0.14)] to-[hsl(var(--jh-violet)/0.08)] shadow-sm"
+                                : "border-[hsl(var(--sr-gold)/0.42)] bg-gradient-to-r from-[hsl(var(--sr-gold)/0.16)] to-[hsl(var(--sr-cyan)/0.08)] shadow-sm"
+                              : isJunior
+                                ? "border-transparent hover:border-[hsl(var(--jh-violet)/0.28)] hover:bg-[hsl(var(--jh-violet)/0.07)] active:scale-[0.99]"
+                                : "border-transparent hover:border-[hsl(var(--sr-cyan)/0.28)] hover:bg-[hsl(var(--sr-cyan)/0.07)] active:scale-[0.99]",
                           )}
                         >
                           <div
                             className={cn(
-                              "flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-sm font-bold transition-colors",
+                              "flex h-10 w-10 shrink-0 items-center justify-center text-sm font-extrabold transition-colors",
+                              isJunior ? "jh-blob-shape" : "sr-hex",
                               isActive
-                                ? "gradient-hero text-primary-foreground shadow-sm"
-                                : "bg-muted text-muted-foreground group-hover:bg-primary/15 group-hover:text-primary",
+                                ? isJunior
+                                  ? "bg-gradient-to-br from-[hsl(var(--jh-teal))] to-[hsl(var(--jh-violet))] text-white shadow-sm"
+                                  : "bg-gradient-to-br from-[hsl(var(--sr-gold))] to-[hsl(28_96%_56%)] text-[hsl(var(--sr-night))]"
+                                : isJunior
+                                  ? "bg-[hsl(var(--jh-teal)/0.12)] text-[hsl(var(--jh-teal-t))] group-hover:bg-[hsl(var(--jh-violet)/0.16)] group-hover:text-[hsl(var(--jh-violet-t))]"
+                                  : "bg-[hsl(var(--sr-night)/0.08)] text-[hsl(var(--sr-cyan-t))] group-hover:bg-[hsl(var(--sr-cyan)/0.16)]",
                             )}
                           >
                             {initial}
                           </div>
                           <div className="min-w-0 flex-1">
-                            <p className="line-clamp-2 text-sm font-semibold leading-snug text-foreground">
+                            <p className="line-clamp-2 text-sm font-extrabold leading-snug text-foreground">
                               {conv.title}
                             </p>
                             {conv.description ? (
@@ -1120,17 +1200,28 @@ const Forum = () => {
                               {conv.messageCount > 0 ? (
                                 <span
                                   className={cn(
-                                    "inline-flex items-center gap-1 rounded-full px-2 py-0.5 font-semibold",
+                                    "inline-flex items-center gap-1 rounded-full px-2 py-0.5 font-extrabold",
                                     isActive
-                                      ? "bg-primary text-primary-foreground"
-                                      : "bg-primary/15 text-primary",
+                                      ? isJunior
+                                        ? "bg-gradient-to-br from-[hsl(var(--jh-teal))] to-[hsl(174_60%_50%)] text-white"
+                                        : "sr-gold-btn"
+                                      : isJunior
+                                        ? "bg-[hsl(var(--jh-sky)/0.16)] text-[hsl(var(--jh-sky-t))]"
+                                        : "bg-[hsl(var(--sr-cyan)/0.14)] text-[hsl(var(--sr-cyan-t))]",
                                   )}
                                 >
                                   <MessageCircle className="h-3 w-3" />
                                   {conv.messageCount}
                                 </span>
                               ) : (
-                                <span className="rounded-full bg-muted px-2 py-0.5 font-semibold text-muted-foreground">
+                                <span
+                                  className={cn(
+                                    "rounded-full px-2 py-0.5 font-extrabold",
+                                    isJunior
+                                      ? "bg-[hsl(var(--jh-violet)/0.12)] text-[hsl(var(--jh-violet-t))]"
+                                      : "bg-[hsl(var(--sr-gold)/0.14)] text-[hsl(var(--sr-gold-t))]",
+                                  )}
+                                >
                                   Nova tema
                                 </span>
                               )}
@@ -1154,7 +1245,10 @@ const Forum = () => {
             {/* Chat area */}
             <div
               className={cn(
-                "flex min-h-0 min-w-0 flex-1 flex-col bg-background",
+                "flex min-h-0 min-w-0 flex-1 flex-col",
+                isJunior
+                  ? "bg-[radial-gradient(ellipse_at_78%_8%,hsl(var(--jh-violet)/0.1),transparent_42%),radial-gradient(ellipse_at_12%_92%,hsl(var(--jh-teal)/0.1),transparent_48%)] bg-background"
+                  : "bg-[radial-gradient(ellipse_at_78%_8%,hsl(var(--sr-gold)/0.11),transparent_42%),radial-gradient(ellipse_at_12%_92%,hsl(var(--sr-cyan)/0.1),transparent_48%)] bg-background",
                 !selectedConversation && "max-md:hidden",
               )}
             >
@@ -1167,7 +1261,14 @@ const Forum = () => {
                     exit={{ opacity: 0 }}
                     className="flex h-full flex-col"
                   >
-                    <div className="shrink-0 border-b border-border bg-gradient-to-r from-primary/[0.08] via-muted/20 to-muted/20 p-3 sm:p-4">
+                    <div
+                      className={cn(
+                        "shrink-0 p-3 sm:p-4",
+                        isJunior
+                          ? "border-b border-[hsl(var(--jh-teal)/0.18)] bg-gradient-to-r from-[hsl(var(--jh-teal)/0.12)] via-[hsl(var(--jh-violet)/0.07)] to-transparent"
+                          : "border-b border-[hsl(var(--sr-gold)/0.22)] bg-gradient-to-r from-[hsl(var(--sr-gold)/0.14)] via-[hsl(var(--sr-cyan)/0.07)] to-transparent",
+                      )}
+                    >
                       <button
                         type="button"
                         onClick={() => setSelectedConversation(null)}
@@ -1177,18 +1278,32 @@ const Forum = () => {
                         Popis razgovora
                       </button>
                       <div className="flex items-start gap-3">
-                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl gradient-hero text-sm font-bold text-primary-foreground shadow-sm sm:h-11 sm:w-11">
+                        <div
+                          className={cn(
+                            "flex h-10 w-10 shrink-0 items-center justify-center text-sm font-extrabold shadow-sm sm:h-11 sm:w-11",
+                            isJunior
+                              ? "jh-blob-shape bg-gradient-to-br from-[hsl(var(--jh-teal))] to-[hsl(var(--jh-violet))] text-white"
+                              : "sr-hex bg-gradient-to-br from-[hsl(var(--sr-gold))] to-[hsl(28_96%_56%)] text-[hsl(var(--sr-night))]",
+                          )}
+                        >
                           {(selectedConversation.creator?.[0] || "?").toUpperCase()}
                         </div>
                         <div className="min-w-0 flex-1">
-                          <h2 className="text-pretty text-base font-bold leading-tight text-foreground sm:text-lg">
+                          <h2 className="text-pretty text-base font-extrabold leading-tight text-foreground sm:text-lg">
                             {selectedConversation.title}
                           </h2>
                           <p className="mt-0.5 line-clamp-2 text-xs text-muted-foreground sm:text-sm">
                             {selectedConversation.description || "Bez opisa"}
                           </p>
                           <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-muted-foreground">
-                            <span className="inline-flex items-center gap-1 rounded-full bg-primary/15 px-2 py-0.5 font-semibold text-primary">
+                            <span
+                              className={cn(
+                                "inline-flex items-center gap-1 rounded-full px-2 py-0.5 font-extrabold",
+                                isJunior
+                                  ? "bg-[hsl(var(--jh-sky)/0.16)] text-[hsl(var(--jh-sky-t))]"
+                                  : "bg-[hsl(var(--sr-cyan)/0.16)] text-[hsl(var(--sr-cyan-t))]",
+                              )}
+                            >
                               <MessageCircle className="h-3 w-3" />
                               {selectedConversation.messageCount}{" "}
                               {porukeOznaka(selectedConversation.messageCount)}
@@ -1208,14 +1323,24 @@ const Forum = () => {
                       {loadingMessages ? (
                         <div className="flex h-full items-center justify-center">
                           <div className="text-center">
-                            <div className="mb-3 inline-block h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+                            <div
+                              className={cn(
+                                "mb-3 inline-block h-8 w-8 animate-spin rounded-full border-2 border-t-transparent",
+                                isJunior ? "border-[hsl(var(--jh-teal))]" : "border-[hsl(var(--sr-gold))]",
+                              )}
+                            />
                             <p className="text-sm text-muted-foreground">Učitavam poruke…</p>
                           </div>
                         </div>
                       ) : selectedConversation.messages.length === 0 ? (
                         <div className="flex h-full items-center justify-center">
                           <div className="max-w-xs text-center">
-                            <MessageCircle className="mx-auto mb-4 h-14 w-14 text-muted-foreground/35" />
+                            <MessageCircle
+                              className={cn(
+                                "mx-auto mb-4 h-14 w-14",
+                                isJunior ? "text-[hsl(var(--jh-violet)/0.4)]" : "text-[hsl(var(--sr-gold)/0.45)]",
+                              )}
+                            />
                             <p className="text-sm text-muted-foreground">
                               {canUseForum
                                 ? "Nema poruka. Budi prvi koji će započeti razgovor!"
@@ -1232,9 +1357,17 @@ const Forum = () => {
                             className={`flex gap-3 ${msg.userId === currentUser?.id ? "flex-row-reverse" : ""}`}
                           >
                             <div
-                              className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-xs font-bold text-primary-foreground ${
-                                msg.userId === currentUser?.id ? "gradient-hero" : "bg-muted text-muted-foreground"
-                              }`}
+                              className={cn(
+                                "flex h-9 w-9 shrink-0 items-center justify-center text-xs font-extrabold",
+                                isJunior ? "jh-blob-shape" : "sr-hex",
+                                msg.userId === currentUser?.id
+                                  ? isJunior
+                                    ? "bg-gradient-to-br from-[hsl(var(--jh-teal))] to-[hsl(var(--jh-violet))] text-white"
+                                    : "bg-gradient-to-br from-[hsl(var(--sr-gold))] to-[hsl(28_96%_56%)] text-[hsl(var(--sr-night))]"
+                                  : isJunior
+                                    ? "bg-[hsl(var(--jh-sky)/0.16)] text-[hsl(var(--jh-sky-t))]"
+                                    : "bg-[hsl(var(--sr-cyan)/0.16)] text-[hsl(var(--sr-cyan-t))]",
+                              )}
                             >
                               {msg.username?.[0]?.toUpperCase() || "U"}
                             </div>
@@ -1255,7 +1388,10 @@ const Forum = () => {
                               {msg.replyToId != null && (msg.replyToSnippet || msg.replyToUsername) && (
                                 <div
                                   className={cn(
-                                    "mb-1 max-w-full rounded-lg border border-border/60 bg-background/80 px-2.5 py-1.5 text-[11px] leading-snug text-muted-foreground",
+                                    "mb-1 max-w-full rounded-lg border px-2.5 py-1.5 text-[11px] leading-snug text-muted-foreground",
+                                    isJunior
+                                      ? "border-[hsl(var(--jh-violet)/0.22)] bg-[hsl(var(--jh-violet)/0.06)]"
+                                      : "border-[hsl(var(--sr-cyan)/0.22)] bg-[hsl(var(--sr-cyan)/0.06)]",
                                     msg.userId === currentUser?.id ? "self-end" : "self-start",
                                   )}
                                 >
@@ -1269,13 +1405,18 @@ const Forum = () => {
                                 </div>
                               )}
                               <div
-                                className={`rounded-2xl px-4 py-2.5 text-sm ${
+                                className={cn(
+                                  "rounded-2xl px-4 py-2.5 text-sm",
                                   msg.deletedByUser || msg.hidden
                                     ? "rounded-br-md rounded-bl-md border border-dashed border-border bg-muted/50 text-muted-foreground"
                                     : msg.userId === currentUser?.id
-                                      ? "rounded-br-md bg-primary text-primary-foreground"
-                                      : "rounded-bl-md border border-border bg-muted/60 text-foreground"
-                                }`}
+                                      ? isJunior
+                                        ? "rounded-br-md bg-gradient-to-br from-[hsl(var(--jh-teal))] to-[hsl(var(--jh-violet))] text-white"
+                                        : "rounded-br-md sr-gold-btn"
+                                      : isJunior
+                                        ? "rounded-bl-md border border-[hsl(var(--jh-sky)/0.28)] bg-[hsl(var(--jh-sky)/0.1)] text-foreground"
+                                        : "rounded-bl-md border border-[hsl(var(--sr-cyan)/0.22)] bg-[hsl(var(--sr-cyan)/0.08)] text-foreground",
+                                )}
                               >
                                 <p className="whitespace-pre-wrap break-words">
                                   {msg.deletedByUser ? (
@@ -1301,7 +1442,10 @@ const Forum = () => {
                                   <button
                                     type="button"
                                     onClick={() => setReplyingTo(msg)}
-                                    className="inline-flex min-h-9 items-center gap-1 px-1 text-xs text-muted-foreground transition-colors hover:text-primary touch-manipulation"
+                                    className={cn(
+                                      "inline-flex min-h-9 items-center gap-1 px-1 text-xs text-muted-foreground transition-colors touch-manipulation",
+                                      isJunior ? "hover:text-[hsl(var(--jh-teal-t))]" : "hover:text-[hsl(var(--sr-gold-t))]",
+                                    )}
                                   >
                                     <Reply className="h-3.5 w-3.5" />
                                     Odgovori
@@ -1328,7 +1472,11 @@ const Forum = () => {
                                     onClick={() => handleLikeMessage(msg.id)}
                                     className={cn(
                                       "inline-flex min-h-9 items-center gap-1.5 px-1 text-xs transition-colors touch-manipulation",
-                                      msg.userLiked ? "text-primary" : "text-muted-foreground hover:text-foreground",
+                                      msg.userLiked
+                                        ? isJunior
+                                          ? "text-[hsl(var(--jh-violet-t))]"
+                                          : "text-[hsl(var(--sr-gold-t))]"
+                                        : "text-muted-foreground hover:text-foreground",
                                     )}
                                   >
                                     <ThumbsUp className={`h-3.5 w-3.5 ${msg.userLiked ? "fill-current" : ""}`} />
@@ -1360,13 +1508,37 @@ const Forum = () => {
                     {canUseForum ? (
                       <form
                         onSubmit={handleSendMessage}
-                        className="shrink-0 border-t border-border bg-muted/30 p-3 sm:p-4 pb-[max(0.75rem,env(safe-area-inset-bottom))]"
+                        className={cn(
+                          "shrink-0 p-3 sm:p-4 pb-[max(0.75rem,env(safe-area-inset-bottom))]",
+                          isJunior
+                            ? "border-t border-[hsl(var(--jh-teal)/0.18)] bg-gradient-to-r from-[hsl(var(--jh-teal)/0.08)] to-[hsl(var(--jh-violet)/0.07)]"
+                            : "border-t border-[hsl(var(--sr-gold)/0.22)] bg-gradient-to-r from-[hsl(var(--sr-gold)/0.08)] to-[hsl(var(--sr-cyan)/0.07)]",
+                        )}
                       >
-                        <ForumRulesNote />
+                        <ForumRulesNote
+                          className={
+                            isJunior
+                              ? "border-[hsl(var(--jh-teal)/0.25)] bg-[hsl(var(--jh-teal)/0.06)]"
+                              : "border-[hsl(var(--sr-gold)/0.28)] bg-[hsl(var(--sr-gold)/0.07)]"
+                          }
+                        />
                         {replyingTo && (
-                          <div className="mb-2 flex items-start justify-between gap-2 rounded-xl border border-primary/25 bg-primary/[0.06] px-3 py-2 text-xs text-foreground">
+                          <div
+                            className={cn(
+                              "mb-2 flex items-start justify-between gap-2 rounded-xl border px-3 py-2 text-xs text-foreground",
+                              isJunior
+                                ? "border-[hsl(var(--jh-violet)/0.28)] bg-[hsl(var(--jh-violet)/0.08)]"
+                                : "border-[hsl(var(--sr-gold)/0.28)] bg-[hsl(var(--sr-gold)/0.1)]",
+                            )}
+                          >
                             <span className="min-w-0 leading-snug">
-                              <Reply className="inline h-3.5 w-3.5 shrink-0 text-primary" aria-hidden />
+                              <Reply
+                                className={cn(
+                                  "inline h-3.5 w-3.5 shrink-0",
+                                  isJunior ? "text-[hsl(var(--jh-violet-t))]" : "text-[hsl(var(--sr-gold-t))]",
+                                )}
+                                aria-hidden
+                              />
                               <span className="font-medium"> Odgovor na {replyingTo.username}</span>
                               {!replyingTo.deletedByUser && replyingTo.text && (
                                 <span className="text-muted-foreground"> — {replyingTo.text.slice(0, 100)}</span>
@@ -1403,12 +1575,20 @@ const Forum = () => {
                               }
                             }}
                             placeholder="Upiši poruku…"
-                            className="min-h-12 max-h-32 flex-1 resize-y rounded-xl border-2 border-input bg-background px-4 py-3 text-base text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-ring sm:min-h-10 sm:text-sm touch-manipulation"
+                            className={cn(
+                              "min-h-12 max-h-32 flex-1 resize-y rounded-xl border-2 bg-background px-4 py-3 text-base text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 sm:min-h-10 sm:text-sm touch-manipulation",
+                              isJunior
+                                ? "border-[hsl(var(--jh-teal)/0.28)] focus:border-[hsl(var(--jh-teal))] focus:ring-[hsl(var(--jh-teal)/0.22)]"
+                                : "border-[hsl(var(--sr-cyan)/0.28)] focus:border-[hsl(var(--sr-cyan))] focus:ring-[hsl(var(--sr-cyan)/0.22)]",
+                            )}
                           />
                           <button
                             type="submit"
                             disabled={!messageInput.trim() || sendingMessage}
-                            className="inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-md transition-all hover:bg-primary/90 hover:shadow-lg active:scale-95 disabled:cursor-not-allowed disabled:opacity-50 touch-manipulation"
+                            className={cn(
+                              "inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-xl shadow-md transition-all hover:shadow-lg active:scale-95 disabled:cursor-not-allowed disabled:opacity-50 touch-manipulation",
+                              isJunior ? "jh-cta" : "sr-gold-btn",
+                            )}
                             aria-label="Pošalji poruku"
                           >
                             <Send className="h-5 w-5" />
@@ -1419,11 +1599,21 @@ const Forum = () => {
                         </p>
                       </form>
                     ) : (
-                      <div className="flex shrink-0 flex-col items-stretch justify-between gap-3 border-t border-border bg-muted/30 p-3 sm:flex-row sm:items-center sm:p-4 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
-                        <p className="text-sm leading-snug text-muted-foreground">Prijavi se za slanje poruka</p>
+                      <div
+                        className={cn(
+                          "flex shrink-0 flex-col items-stretch justify-between gap-3 p-3 sm:flex-row sm:items-center sm:p-4 pb-[max(0.75rem,env(safe-area-inset-bottom))]",
+                          isJunior
+                            ? "border-t border-[hsl(var(--jh-teal)/0.18)] bg-gradient-to-r from-[hsl(var(--jh-teal)/0.1)] to-[hsl(var(--jh-violet)/0.07)]"
+                            : "border-t border-[hsl(var(--sr-gold)/0.22)] bg-gradient-to-r from-[hsl(var(--sr-gold)/0.1)] to-[hsl(var(--sr-cyan)/0.07)]",
+                        )}
+                      >
+                        <p className="text-sm font-medium leading-snug text-muted-foreground">Prijavi se za slanje poruka</p>
                         <Link
                           to="/prijava"
-                          className="inline-flex min-h-[44px] shrink-0 items-center justify-center gap-2 rounded-xl bg-primary px-4 py-3 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90 sm:py-2.5 touch-manipulation"
+                          className={cn(
+                            "inline-flex min-h-[44px] shrink-0 items-center justify-center gap-2 rounded-xl px-4 py-3 text-sm font-extrabold transition-colors sm:py-2.5 touch-manipulation",
+                            isJunior ? "jh-cta" : "sr-gold-btn",
+                          )}
                         >
                           <LogIn className="h-4 w-4" />
                           Prijavi se
@@ -1440,13 +1630,20 @@ const Forum = () => {
                     className="hidden flex-1 items-center justify-center md:flex"
                   >
                     <div className="max-w-xs text-center">
-                      <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10 text-primary">
-                        <MessageCircle className="h-7 w-7" />
+                      <div
+                        className={cn(
+                          "mx-auto mb-4 flex items-center justify-center",
+                          isJunior
+                            ? "h-16 w-16 jh-blob-shape bg-gradient-to-br from-[hsl(var(--jh-teal))] to-[hsl(var(--jh-violet))] text-white shadow-[0_16px_32px_-14px_hsl(var(--jh-violet)/0.7)]"
+                            : "h-16 w-16 sr-hex bg-gradient-to-br from-[hsl(var(--sr-gold))] to-[hsl(28_96%_56%)] text-[hsl(var(--sr-night))] shadow-[var(--sr-page-glow-gold)]",
+                        )}
+                      >
+                        <MessageCircle className="h-8 w-8" />
                       </div>
-                      <p className="text-base font-semibold text-foreground">
+                      <p className="text-lg font-extrabold tracking-tight text-foreground">
                         {isJunior ? "Odaberi temu" : "Odaberi razgovor"}
                       </p>
-                      <p className="mt-1 text-sm text-muted-foreground">
+                      <p className="mt-1.5 text-sm font-medium text-muted-foreground">
                         {canUseForum
                           ? "Ili otvori novu temu s lijeve strane."
                           : "Poruke su otvorene za čitanje. Za pisanje treba prijava."}
@@ -1474,7 +1671,12 @@ const Forum = () => {
                 animate={{ scale: 1, opacity: 1 }}
                 exit={{ scale: 0.95, opacity: 0 }}
                 onClick={(e) => e.stopPropagation()}
-                className="max-h-[min(92dvh,560px)] w-full max-w-md overflow-y-auto rounded-t-2xl border-2 border-border bg-card p-5 shadow-2xl sm:m-0 sm:rounded-2xl sm:p-6"
+                className={cn(
+                  "max-h-[min(92dvh,560px)] w-full max-w-md overflow-y-auto rounded-t-2xl border-2 p-5 shadow-2xl sm:m-0 sm:rounded-2xl sm:p-6",
+                  isJunior
+                    ? cn(CARD, "border-[hsl(var(--jh-teal)/0.32)] bg-card")
+                    : cn(SCARD, "border-[hsl(var(--sr-gold)/0.32)] bg-card"),
+                )}
               >
                 <h3 className="mb-1 text-lg font-bold text-foreground">Novi razgovor</h3>
                 <p className="mb-5 text-sm text-muted-foreground">
@@ -1483,7 +1685,13 @@ const Forum = () => {
                     : "Postavi pitanje ili otvori temu o maturi, fakultetima ili studentskom životu."}
                 </p>
                 <form onSubmit={handleCreateConversation} className="space-y-4">
-                  <ForumRulesNote />
+                  <ForumRulesNote
+                    className={
+                      isJunior
+                        ? "border-[hsl(var(--jh-teal)/0.25)] bg-[hsl(var(--jh-teal)/0.06)]"
+                        : "border-[hsl(var(--sr-gold)/0.28)] bg-[hsl(var(--sr-gold)/0.07)]"
+                    }
+                  />
                   <div>
                     <label className="mb-1.5 block text-sm font-semibold text-foreground" htmlFor="forum-new-title">
                       Naziv
@@ -1494,7 +1702,12 @@ const Forum = () => {
                       value={newConvTitle}
                       onChange={(e) => setNewConvTitle(e.target.value)}
                       placeholder={isJunior ? "npr. Gimnazija ili strukovna?" : "npr. Koji fakultet za IT?"}
-                      className="w-full rounded-xl border-2 border-input bg-background px-4 py-2.5 text-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-ring"
+                      className={cn(
+                        "w-full rounded-xl border-2 bg-background px-4 py-2.5 text-foreground focus:outline-none focus:ring-2",
+                        isJunior
+                          ? "border-[hsl(var(--jh-teal)/0.28)] focus:border-[hsl(var(--jh-teal))] focus:ring-[hsl(var(--jh-teal)/0.22)]"
+                          : "border-[hsl(var(--sr-cyan)/0.28)] focus:border-[hsl(var(--sr-cyan))] focus:ring-[hsl(var(--sr-cyan)/0.22)]",
+                      )}
                     />
                   </div>
                   <div>
@@ -1507,13 +1720,21 @@ const Forum = () => {
                       onChange={(e) => setNewConvDescription(e.target.value)}
                       placeholder="Ukratko opiši temu..."
                       rows={3}
-                      className="w-full resize-none rounded-xl border-2 border-input bg-background px-4 py-2.5 text-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-ring"
+                      className={cn(
+                        "w-full resize-none rounded-xl border-2 bg-background px-4 py-2.5 text-foreground focus:outline-none focus:ring-2",
+                        isJunior
+                          ? "border-[hsl(var(--jh-teal)/0.28)] focus:border-[hsl(var(--jh-teal))] focus:ring-[hsl(var(--jh-teal)/0.22)]"
+                          : "border-[hsl(var(--sr-cyan)/0.28)] focus:border-[hsl(var(--sr-cyan))] focus:ring-[hsl(var(--sr-cyan)/0.22)]",
+                      )}
                     />
                   </div>
                   <div className="flex gap-3 pt-2">
                     <button
                       type="submit"
-                      className="flex-1 rounded-xl bg-primary py-2.5 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
+                      className={cn(
+                        "flex-1 rounded-xl py-2.5 text-sm font-extrabold transition-colors",
+                        isJunior ? "jh-cta" : "sr-gold-btn",
+                      )}
                     >
                       Kreiraj
                     </button>

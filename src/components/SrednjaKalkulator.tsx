@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState, type ChangeEvent } from "react";
+import { useEffect, useMemo, useRef, useState, type ChangeEvent, type ReactNode } from "react";
 import { useSearchParams } from "react-router-dom";
 import {
   ArrowLeft,
@@ -21,7 +21,7 @@ import {
   type KalkulatorSchool,
 } from "@/data/srednjaKalkulator";
 import { cn } from "@/lib/utils";
-import { CARD, PageHero, PrimaryButton, SecondaryButton } from "@/components/junior-kit";
+import { CARD, PageHero, PrimaryButton, SecondaryButton, Reveal } from "@/components/junior-kit";
 import JuniorNumbersNote from "@/components/junior/JuniorNumbersNote";
 import {
   chanceForProgram,
@@ -53,26 +53,61 @@ type Chance = {
 
 const CHANCE_TONE: Record<Chance["tone"], { box: string; badge: string; bar: string }> = {
   emerald: {
-    box: "border-emerald-500/40 bg-emerald-500/5",
-    badge: "bg-emerald-500 text-white",
-    bar: "from-emerald-500 to-emerald-400",
+    box: "border-[hsl(var(--jh-teal)/0.42)] bg-gradient-to-br from-[hsl(var(--jh-teal)/0.16)] via-card to-[hsl(var(--jh-sky)/0.08)]",
+    badge: "bg-gradient-to-br from-[hsl(var(--jh-teal))] to-[hsl(174_60%_50%)] text-white",
+    bar: "from-[hsl(var(--jh-teal))] to-[hsl(var(--jh-sky))]",
   },
   lime: {
-    box: "border-lime-500/40 bg-lime-500/5",
-    badge: "bg-lime-600 text-white",
-    bar: "from-lime-500 to-emerald-400",
+    box: "border-[hsl(var(--jh-sky)/0.42)] bg-gradient-to-br from-[hsl(var(--jh-sky)/0.16)] via-card to-[hsl(var(--jh-teal)/0.08)]",
+    badge: "bg-gradient-to-br from-[hsl(var(--jh-sky))] to-[hsl(210_90%_62%)] text-white",
+    bar: "from-[hsl(var(--jh-sky))] to-[hsl(var(--jh-teal))]",
   },
   amber: {
-    box: "border-amber-500/40 bg-amber-500/5",
-    badge: "bg-amber-500 text-white",
-    bar: "from-amber-500 to-amber-400",
+    box: "border-[hsl(var(--jh-amber)/0.48)] bg-gradient-to-br from-[hsl(var(--jh-amber)/0.18)] via-card to-[hsl(var(--jh-coral)/0.08)]",
+    badge: "bg-gradient-to-br from-[hsl(var(--jh-amber))] to-[hsl(38_92%_52%)] text-white",
+    bar: "from-[hsl(var(--jh-amber))] to-[hsl(var(--jh-coral))]",
   },
   rose: {
-    box: "border-rose-500/40 bg-rose-500/5",
-    badge: "bg-rose-500 text-white",
-    bar: "from-rose-500 to-rose-400",
+    box: "border-[hsl(var(--jh-coral)/0.48)] bg-gradient-to-br from-[hsl(var(--jh-coral)/0.16)] via-card to-[hsl(var(--jh-rose)/0.1)]",
+    badge: "bg-gradient-to-br from-[hsl(var(--jh-coral))] to-[hsl(var(--jh-rose))] text-white",
+    bar: "from-[hsl(var(--jh-coral))] to-[hsl(var(--jh-rose))]",
   },
 };
+
+const PROGRAM_CHIP: Record<ProgramType, { on: string; off: string }> = {
+  gimnazija4: {
+    on: "border-transparent bg-gradient-to-br from-[hsl(var(--jh-teal))] to-[hsl(174_60%_50%)] text-white shadow-[0_12px_24px_-14px_hsl(var(--jh-teal)/0.8)]",
+    off: "border-[hsl(var(--jh-teal)/0.3)] bg-[hsl(var(--jh-teal)/0.07)] text-[hsl(var(--jh-teal-t))] hover:border-[hsl(var(--jh-teal)/0.5)]",
+  },
+  trogodisnji: {
+    on: "border-transparent bg-gradient-to-br from-[hsl(var(--jh-violet))] to-[hsl(248_80%_68%)] text-white shadow-[0_12px_24px_-14px_hsl(var(--jh-violet)/0.8)]",
+    off: "border-[hsl(var(--jh-violet)/0.3)] bg-[hsl(var(--jh-violet)/0.07)] text-[hsl(var(--jh-violet-t))] hover:border-[hsl(var(--jh-violet)/0.5)]",
+  },
+  kraci: {
+    on: "border-transparent bg-gradient-to-br from-[hsl(34_85%_36%)] to-[hsl(var(--jh-amber))] text-white shadow-[0_12px_24px_-14px_hsl(var(--jh-amber)/0.75)]",
+    off: "border-[hsl(var(--jh-amber)/0.35)] bg-[hsl(var(--jh-amber)/0.1)] text-[hsl(var(--jh-amber-t))] hover:border-[hsl(var(--jh-amber)/0.55)]",
+  },
+};
+
+const GRADE_ON = [
+  "bg-gradient-to-br from-[hsl(14_80%_46%)] to-[hsl(var(--jh-coral))] text-white shadow-[0_10px_20px_-12px_hsl(var(--jh-coral)/0.8)]",
+  "bg-gradient-to-br from-[hsl(34_85%_36%)] to-[hsl(var(--jh-amber))] text-white shadow-[0_10px_20px_-12px_hsl(var(--jh-amber)/0.8)]",
+  "bg-gradient-to-br from-[hsl(var(--jh-sky))] to-[hsl(210_90%_62%)] text-white shadow-[0_10px_20px_-12px_hsl(var(--jh-sky)/0.8)]",
+  "bg-gradient-to-br from-[hsl(var(--jh-teal))] to-[hsl(174_60%_50%)] text-white shadow-[0_10px_20px_-12px_hsl(var(--jh-teal)/0.8)]",
+  "bg-gradient-to-br from-[hsl(var(--jh-violet))] to-[hsl(248_80%_68%)] text-white shadow-[0_10px_20px_-12px_hsl(var(--jh-violet)/0.8)]",
+] as const;
+
+const selectTrigger =
+  "flex min-h-14 w-full items-center gap-3 rounded-2xl border-2 bg-card px-4 text-left text-sm transition hover:border-[hsl(var(--jh-teal)/0.45)] focus:border-[hsl(var(--jh-teal))] focus:ring-2 focus:ring-[hsl(var(--jh-teal)/0.22)] focus:outline-none";
+
+const selectPanel =
+  "absolute left-0 right-0 top-[calc(100%+6px)] z-50 overflow-hidden rounded-2xl border-2 border-[hsl(var(--jh-teal)/0.22)] bg-card shadow-[0_24px_48px_-28px_hsl(var(--jh-teal)/0.55)]";
+
+const STEP_META = [
+  { id: 0 as const, label: "1. Škola", icon: School },
+  { id: 1 as const, label: "2. Ocjene", icon: BookOpen },
+  { id: 2 as const, label: "3. Rezultat", icon: Trophy },
+];
 
 function clamp(value: number, min: number, max: number): number {
   return Math.min(max, Math.max(min, value));
@@ -121,27 +156,23 @@ function SearchableCountySelect({
       <button
         type="button"
         onClick={handleOpen}
-        className={cn(
-          "flex h-12 w-full items-center gap-3 rounded-xl border bg-background px-4 text-left text-sm transition",
-          "hover:border-primary/40 focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none",
-          open ? "border-primary ring-2 ring-primary/20" : "border-input",
-        )}
+        className={cn(selectTrigger, open ? "border-[hsl(var(--jh-teal))] ring-2 ring-[hsl(var(--jh-teal)/0.22)]" : "border-[hsl(var(--jh-teal)/0.22)]")}
       >
         {selectedCounty ? (
           <>
-            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+            <div className="jh-blob-shape flex h-10 w-10 shrink-0 items-center justify-center bg-gradient-to-br from-[hsl(var(--jh-teal))] to-[hsl(174_60%_50%)] text-white">
               <Landmark className="h-4 w-4" />
             </div>
             <div className="min-w-0 flex-1">
-              <span className="block truncate font-semibold text-foreground">{selectedCounty}</span>
-              <span className="block text-xs text-muted-foreground">
+              <span className="block truncate font-extrabold text-foreground">{selectedCounty}</span>
+              <span className="block text-xs font-medium text-muted-foreground">
                 {schoolCounts.get(selectedCounty) || 0} škola
               </span>
             </div>
             <button
               type="button"
               onClick={(e) => { e.stopPropagation(); onSelect(""); setOpen(false); }}
-              className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-muted-foreground hover:bg-muted hover:text-foreground"
+              className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-muted-foreground hover:bg-muted hover:text-foreground"
               aria-label="Očisti odabir"
             >
               <X className="h-3.5 w-3.5" />
@@ -149,8 +180,10 @@ function SearchableCountySelect({
           </>
         ) : (
           <>
-            <Landmark className="h-4 w-4 shrink-0 text-muted-foreground" />
-            <span className="flex-1 text-muted-foreground">
+            <div className="jh-blob-shape flex h-10 w-10 shrink-0 items-center justify-center bg-[hsl(var(--jh-teal)/0.12)] text-[hsl(var(--jh-teal-t))]">
+              <Landmark className="h-4 w-4" />
+            </div>
+            <span className="flex-1 font-medium text-muted-foreground">
               Sve županije ({kalkulatorSchools.length} škola)
             </span>
             <ChevronsUpDown className="h-4 w-4 shrink-0 text-muted-foreground" />
@@ -161,24 +194,24 @@ function SearchableCountySelect({
       {open && (
         <>
           <div className="fixed inset-0 z-40" onClick={() => { setOpen(false); setQuery(""); }} />
-          <div className="absolute left-0 right-0 top-[calc(100%+4px)] z-50 overflow-hidden rounded-xl border border-border bg-card shadow-xl">
-            <div className="flex items-center gap-2 border-b border-border/60 px-3 py-2.5">
-              <Search className="h-4 w-4 shrink-0 text-muted-foreground" />
+          <div className={selectPanel}>
+            <div className="flex items-center gap-2 border-b border-[hsl(var(--jh-teal)/0.16)] bg-[hsl(var(--jh-teal)/0.05)] px-3 py-3">
+              <Search className="h-4 w-4 shrink-0 text-[hsl(var(--jh-teal-t))]" />
               <input
                 ref={inputRef}
                 type="text"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 placeholder="Pretraži županiju..."
-                className="h-7 w-full bg-transparent text-sm outline-none placeholder:text-muted-foreground"
+                className="h-8 w-full bg-transparent text-sm outline-none placeholder:text-muted-foreground"
               />
               {query && (
                 <button
                   type="button"
                   onClick={() => setQuery("")}
-                  className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-muted-foreground hover:bg-muted"
+                  className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-muted-foreground hover:bg-muted"
                 >
-                  <X className="h-3 w-3" />
+                  <X className="h-3.5 w-3.5" />
                 </button>
               )}
             </div>
@@ -188,23 +221,23 @@ function SearchableCountySelect({
                 type="button"
                 onClick={() => handleSelect("")}
                 className={cn(
-                  "flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm transition-colors",
+                  "flex min-h-12 w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm transition-colors",
                   !selectedCounty
-                    ? "bg-primary/10 text-primary"
-                    : "text-foreground hover:bg-muted/70",
+                    ? "bg-[hsl(var(--jh-teal)/0.12)] text-[hsl(var(--jh-teal-t))]"
+                    : "text-foreground hover:bg-[hsl(var(--jh-teal)/0.07)]",
                 )}
               >
                 <div className={cn(
-                  "flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-xs font-bold",
-                  !selectedCounty ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground",
+                  "flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-xs font-bold",
+                  !selectedCounty ? "bg-[hsl(var(--jh-teal))] text-white" : "bg-muted text-muted-foreground",
                 )}>
                   <MapPin className="h-4 w-4" />
                 </div>
                 <div className="min-w-0 flex-1">
-                  <span className="block font-medium">Sve županije</span>
+                  <span className="block font-extrabold">Sve županije</span>
                   <span className="text-xs text-muted-foreground">{kalkulatorSchools.length} škola</span>
                 </div>
-                {!selectedCounty && <CheckCircle2 className="h-4 w-4 shrink-0 text-primary" />}
+                {!selectedCounty && <CheckCircle2 className="h-4 w-4 shrink-0 text-[hsl(var(--jh-teal))]" />}
               </button>
 
               {filtered.length === 0 ? (
@@ -221,21 +254,21 @@ function SearchableCountySelect({
                       type="button"
                       onClick={() => handleSelect(county)}
                       className={cn(
-                        "flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm transition-colors",
-                        isActive ? "bg-primary/10 text-primary" : "text-foreground hover:bg-muted/70",
+                        "flex min-h-12 w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm transition-colors",
+                        isActive ? "bg-[hsl(var(--jh-teal)/0.12)] text-[hsl(var(--jh-teal-t))]" : "text-foreground hover:bg-[hsl(var(--jh-teal)/0.07)]",
                       )}
                     >
                       <div className={cn(
-                        "flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-xs font-bold",
-                        isActive ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground",
+                        "flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-xs font-bold",
+                        isActive ? "bg-[hsl(var(--jh-teal))] text-white" : "bg-[hsl(var(--jh-violet)/0.1)] text-[hsl(var(--jh-violet-t))]",
                       )}>
                         <Landmark className="h-4 w-4" />
                       </div>
                       <div className="min-w-0 flex-1">
-                        <span className="block truncate font-medium">{county}</span>
+                        <span className="block truncate font-extrabold">{county}</span>
                         <span className="text-xs text-muted-foreground">{cnt} škola</span>
                       </div>
-                      {isActive && <CheckCircle2 className="h-4 w-4 shrink-0 text-primary" />}
+                      {isActive && <CheckCircle2 className="h-4 w-4 shrink-0 text-[hsl(var(--jh-teal))]" />}
                     </button>
                   );
                 })
@@ -300,27 +333,23 @@ function SearchableSchoolSelect({
       <button
         type="button"
         onClick={handleOpen}
-        className={cn(
-          "flex h-12 w-full items-center gap-3 rounded-xl border bg-background px-4 text-left text-sm transition",
-          "hover:border-primary/40 focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none",
-          open ? "border-primary ring-2 ring-primary/20" : "border-input",
-        )}
+        className={cn(selectTrigger, open ? "border-[hsl(var(--jh-violet))] ring-2 ring-[hsl(var(--jh-violet)/0.22)]" : "border-[hsl(var(--jh-violet)/0.22)]")}
       >
         {selected ? (
           <>
-            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-xs font-bold text-primary">
+            <div className="jh-blob-shape flex h-10 w-10 shrink-0 items-center justify-center bg-gradient-to-br from-[hsl(var(--jh-violet))] to-[hsl(248_80%_68%)] text-sm font-extrabold text-white">
               {selected.name.charAt(0).toUpperCase()}
             </div>
             <div className="min-w-0 flex-1">
-              <span className="block truncate font-semibold text-foreground">{selected.name}</span>
-              <span className="block truncate text-xs text-muted-foreground">
+              <span className="block truncate font-extrabold text-foreground">{selected.name}</span>
+              <span className="block truncate text-xs font-medium text-muted-foreground">
                 {selected.city} · {selected.programs.length} programa
               </span>
             </div>
             <button
               type="button"
               onClick={handleClear}
-              className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-muted-foreground hover:bg-muted hover:text-foreground"
+              className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-muted-foreground hover:bg-muted hover:text-foreground"
               aria-label="Očisti odabir"
             >
               <X className="h-3.5 w-3.5" />
@@ -328,8 +357,10 @@ function SearchableSchoolSelect({
           </>
         ) : (
           <>
-            <Search className="h-4 w-4 shrink-0 text-muted-foreground" />
-            <span className="flex-1 text-muted-foreground">
+            <div className="jh-blob-shape flex h-10 w-10 shrink-0 items-center justify-center bg-[hsl(var(--jh-violet)/0.12)] text-[hsl(var(--jh-violet-t))]">
+              <Search className="h-4 w-4" />
+            </div>
+            <span className="flex-1 font-medium text-muted-foreground">
               Pretraži i odaberi školu ({schools.length})
             </span>
             <ChevronsUpDown className="h-4 w-4 shrink-0 text-muted-foreground" />
@@ -342,25 +373,25 @@ function SearchableSchoolSelect({
         <>
           {/* Backdrop */}
           <div className="fixed inset-0 z-40" onClick={() => { setOpen(false); setQuery(""); }} />
-          <div className="absolute left-0 right-0 top-[calc(100%+4px)] z-50 overflow-hidden rounded-xl border border-border bg-card shadow-xl">
+          <div className={cn(selectPanel, "border-[hsl(var(--jh-violet)/0.22)] shadow-[0_24px_48px_-28px_hsl(var(--jh-violet)/0.55)]")}>
             {/* Search input */}
-            <div className="flex items-center gap-2 border-b border-border/60 px-3 py-2.5">
-              <Search className="h-4 w-4 shrink-0 text-muted-foreground" />
+            <div className="flex items-center gap-2 border-b border-[hsl(var(--jh-violet)/0.16)] bg-[hsl(var(--jh-violet)/0.05)] px-3 py-3">
+              <Search className="h-4 w-4 shrink-0 text-[hsl(var(--jh-violet-t))]" />
               <input
                 ref={inputRef}
                 type="text"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 placeholder="Naziv škole ili grad..."
-                className="h-7 w-full bg-transparent text-sm outline-none placeholder:text-muted-foreground"
+                className="h-8 w-full bg-transparent text-sm outline-none placeholder:text-muted-foreground"
               />
               {query && (
                 <button
                   type="button"
                   onClick={() => setQuery("")}
-                  className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-muted-foreground hover:bg-muted"
+                  className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-muted-foreground hover:bg-muted"
                 >
-                  <X className="h-3 w-3" />
+                  <X className="h-3.5 w-3.5" />
                 </button>
               )}
             </div>
@@ -380,20 +411,20 @@ function SearchableSchoolSelect({
                       type="button"
                       onClick={() => handleSelect(school)}
                       className={cn(
-                        "flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm transition-colors",
+                        "flex min-h-12 w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm transition-colors",
                         isActive
-                          ? "bg-primary/10 text-primary"
-                          : "text-foreground hover:bg-muted/70",
+                          ? "bg-[hsl(var(--jh-violet)/0.12)] text-[hsl(var(--jh-violet-t))]"
+                          : "text-foreground hover:bg-[hsl(var(--jh-violet)/0.07)]",
                       )}
                     >
                       <div className={cn(
-                        "flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-xs font-bold",
-                        isActive ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground",
+                        "jh-blob-shape flex h-9 w-9 shrink-0 items-center justify-center text-xs font-extrabold",
+                        isActive ? "bg-[hsl(var(--jh-violet))] text-white" : "bg-[hsl(var(--jh-sky)/0.14)] text-[hsl(var(--jh-sky-t))]",
                       )}>
                         {school.name.charAt(0).toUpperCase()}
                       </div>
                       <div className="min-w-0 flex-1">
-                        <span className="block truncate font-medium">{school.name}</span>
+                        <span className="block truncate font-extrabold">{school.name}</span>
                         <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
                           <MapPin className="h-3 w-3 shrink-0" />
                           {school.city}
@@ -401,7 +432,7 @@ function SearchableSchoolSelect({
                           {school.programs.length} programa
                         </span>
                       </div>
-                      {isActive && <CheckCircle2 className="h-4 w-4 shrink-0 text-primary" />}
+                      {isActive && <CheckCircle2 className="h-4 w-4 shrink-0 text-[hsl(var(--jh-violet))]" />}
                     </button>
                   );
                 })
@@ -598,16 +629,12 @@ export default function SrednjaKalkulator() {
         lead="Tri koraka: škola, ocjene, pa usporedba s lanjskim pragom."
       />
 
-      <nav aria-label="Koraci kalkulatora" className="mb-4 mt-8 grid grid-cols-3 gap-2 sm:mt-10">
-        {(
-          [
-            { id: 0 as const, label: "1. Škola" },
-            { id: 1 as const, label: "2. Ocjene" },
-            { id: 2 as const, label: "3. Rezultat" },
-          ]
-        ).map((item) => {
+      <nav aria-label="Koraci kalkulatora" className="mb-6 mt-8 grid grid-cols-3 gap-2 sm:mt-10 sm:gap-3">
+        {STEP_META.map((item) => {
           const locked = item.id === 2 && !rezultatIzracunat;
           const active = step === item.id;
+          const done = !locked && step > item.id;
+          const Icon = item.icon;
           return (
             <button
               key={item.id}
@@ -615,15 +642,25 @@ export default function SrednjaKalkulator() {
               disabled={locked}
               onClick={() => setStep(item.id)}
               className={cn(
-                "min-h-12 rounded-2xl border px-2 py-2 text-center text-xs font-extrabold transition sm:text-sm",
+                "flex min-h-[4.5rem] flex-col items-center justify-center gap-1.5 rounded-2xl border-2 px-2 py-3 text-center transition sm:min-h-[5rem]",
                 active
-                  ? "border-transparent bg-gradient-to-br from-[hsl(174_66%_36%)] to-[hsl(174_60%_50%)] text-white shadow-[0_10px_22px_-12px_hsl(174_66%_30%/0.75)]"
-                  : locked
-                    ? "cursor-not-allowed border-border bg-muted/40 text-muted-foreground/50"
-                    : "border-border bg-card text-foreground hover:border-[hsl(var(--jh-teal)/0.4)]",
+                  ? "border-transparent bg-gradient-to-br from-[hsl(var(--jh-teal))] via-[hsl(174_58%_42%)] to-[hsl(var(--jh-violet))] text-white shadow-[0_16px_32px_-16px_hsl(var(--jh-violet)/0.7)]"
+                  : done
+                    ? "border-[hsl(var(--jh-teal)/0.38)] bg-[hsl(var(--jh-teal)/0.1)] text-[hsl(var(--jh-teal-t))]"
+                    : locked
+                      ? "cursor-not-allowed border-border bg-muted/40 text-muted-foreground/50"
+                      : "border-border/80 bg-card text-foreground hover:border-[hsl(var(--jh-teal)/0.45)] hover:bg-[hsl(var(--jh-teal)/0.05)]",
               )}
             >
-              {item.label}
+              <span
+                className={cn(
+                  "flex h-9 w-9 items-center justify-center rounded-full sm:h-10 sm:w-10",
+                  active ? "bg-white text-[hsl(var(--jh-teal))]" : done ? "bg-[hsl(var(--jh-teal))] text-white" : "bg-muted text-muted-foreground",
+                )}
+              >
+                {done ? <CheckCircle2 className="h-5 w-5" aria-hidden /> : <Icon className="h-5 w-5" aria-hidden />}
+              </span>
+              <span className="text-xs font-extrabold tracking-tight sm:text-sm">{item.label}</span>
             </button>
           );
         })}
@@ -632,14 +669,15 @@ export default function SrednjaKalkulator() {
       {step === 0 && (
       <>
       {/* Odabir škole i programa */}
-      <section className={cn(CARD, "mb-5 p-4 sm:p-5")}>
-        <div className="mb-4 flex items-start gap-3">
-          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[hsl(var(--jh-teal)/0.12)] text-[hsl(var(--jh-teal-t))]">
-            <GraduationCap className="h-5 w-5" />
+      <Reveal>
+      <section className={cn(CARD, "mb-5 border-[hsl(var(--jh-teal)/0.22)] bg-gradient-to-br from-[hsl(var(--jh-teal)/0.1)] via-card to-[hsl(var(--jh-violet)/0.06)] p-5 sm:p-6")}>
+        <div className="mb-5 flex items-start gap-3">
+          <div className="jh-blob-shape flex h-12 w-12 shrink-0 items-center justify-center bg-gradient-to-br from-[hsl(var(--jh-teal))] to-[hsl(174_60%_50%)] text-white shadow-[0_12px_24px_-14px_hsl(var(--jh-teal)/0.8)] sm:h-14 sm:w-14">
+            <GraduationCap className="h-6 w-6" />
           </div>
           <div>
-            <h2 className="text-lg font-bold">Škola i program</h2>
-            <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
+            <h2 className="text-xl font-extrabold tracking-tight sm:text-2xl">Škola i program</h2>
+            <p className="mt-1 text-sm font-medium leading-relaxed text-muted-foreground sm:text-base">
               Odaberi željenu školu i program — prikazat ćemo prošlogodišnji prag bodova s ljetnog upisnog roka.
             </p>
           </div>
@@ -647,8 +685,8 @@ export default function SrednjaKalkulator() {
 
         {/* Županija: pretraživi dropdown */}
         <div className="mb-4">
-          <p className="mb-2 flex items-center gap-1.5 text-sm font-semibold">
-            <Landmark className="h-3.5 w-3.5 text-primary" />
+          <p className="mb-2 flex items-center gap-1.5 text-sm font-extrabold text-[hsl(var(--jh-teal-t))]">
+            <Landmark className="h-4 w-4" />
             Županija
           </p>
           <SearchableCountySelect
@@ -661,8 +699,8 @@ export default function SrednjaKalkulator() {
 
         {/* Škola: pretraživi dropdown */}
         <div className="mb-4">
-          <p className="mb-2 flex items-center gap-1.5 text-sm font-semibold">
-            <School className="h-3.5 w-3.5 text-primary" />
+          <p className="mb-2 flex items-center gap-1.5 text-sm font-extrabold text-[hsl(var(--jh-violet-t))]">
+            <School className="h-4 w-4" />
             Škola
           </p>
           <SearchableSchoolSelect
@@ -674,16 +712,16 @@ export default function SrednjaKalkulator() {
 
         {/* Program */}
         <div>
-          <p className="mb-2 flex items-center gap-1.5 text-sm font-semibold">
-            <BookOpen className="h-3.5 w-3.5 text-primary" />
+          <p className="mb-2 flex items-center gap-1.5 text-sm font-extrabold text-[hsl(var(--jh-sky-t))]">
+            <BookOpen className="h-4 w-4" />
             Program
           </p>
           {!selSchool ? (
-            <div className="flex h-11 items-center rounded-xl border border-dashed border-border/80 bg-muted/30 px-4 text-sm text-muted-foreground">
+            <div className="flex min-h-12 items-center rounded-2xl border-2 border-dashed border-[hsl(var(--jh-sky)/0.3)] bg-[hsl(var(--jh-sky)/0.06)] px-4 text-sm font-medium text-muted-foreground">
               Prvo odaberi školu ↑
             </div>
           ) : (
-            <div className="flex flex-wrap gap-2">
+            <div className="flex flex-wrap gap-2.5">
               {selSchool.programs.map((prog) => {
                 const isActive = selProgramId === prog.id;
                 const hasPrag = prog.prag?.min != null;
@@ -693,29 +731,29 @@ export default function SrednjaKalkulator() {
                     type="button"
                     onClick={() => handleProgramChange(String(isActive ? 0 : prog.id))}
                     className={cn(
-                      "group relative flex items-center gap-2 rounded-xl border px-3.5 py-2.5 text-left text-sm font-medium transition-all",
+                      "group relative flex min-h-12 items-center gap-2 rounded-2xl border-2 px-3.5 py-2.5 text-left text-sm font-extrabold transition-all",
                       isActive
-                        ? "border-primary bg-primary/10 text-primary shadow-sm ring-1 ring-primary/20"
-                        : "border-border/70 bg-background text-foreground hover:border-primary/40 hover:bg-primary/5",
+                        ? "border-transparent bg-gradient-to-br from-[hsl(var(--jh-sky))] to-[hsl(var(--jh-teal))] text-white shadow-[0_12px_24px_-14px_hsl(var(--jh-sky)/0.8)]"
+                        : "border-border/70 bg-card text-foreground hover:border-[hsl(var(--jh-sky)/0.45)] hover:bg-[hsl(var(--jh-sky)/0.06)]",
                     )}
                   >
                     <GraduationCap className={cn(
                       "h-4 w-4 shrink-0",
-                      isActive ? "text-primary" : "text-muted-foreground",
+                      isActive ? "text-white" : "text-[hsl(var(--jh-sky-t))]",
                     )} />
                     <span className="min-w-0">
                       <span className="block leading-snug">{prog.name}</span>
                       {hasPrag && (
                         <span className={cn(
-                          "block text-[11px]",
-                          isActive ? "text-primary/70" : "text-muted-foreground",
+                          "block text-[11px] font-semibold",
+                          isActive ? "text-white/80" : "text-muted-foreground",
                         )}>
                           Prag: {prog.prag!.min!.toLocaleString("hr-HR", { maximumFractionDigits: 2 })} bod.
                         </span>
                       )}
                     </span>
                     {isActive && (
-                      <CheckCircle2 className="h-4 w-4 shrink-0 text-primary" />
+                      <CheckCircle2 className="h-4 w-4 shrink-0 text-white" />
                     )}
                   </button>
                 );
@@ -725,16 +763,16 @@ export default function SrednjaKalkulator() {
         </div>
 
         {selProgram && selSchool && (
-          <div className="mt-4 rounded-2xl border border-primary/25 bg-primary/5 p-4">
+          <div className="mt-5 rounded-2xl border-2 border-[hsl(var(--jh-violet)/0.22)] bg-gradient-to-br from-[hsl(var(--jh-violet)/0.1)] via-card to-[hsl(var(--jh-sky)/0.08)] p-4 sm:p-5">
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div className="min-w-0">
-                <p className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                  <BookOpen className="h-3.5 w-3.5 text-primary" />
+                <p className="flex items-center gap-1.5 text-[11px] font-extrabold uppercase tracking-[0.14em] text-[hsl(var(--jh-violet-t))]">
+                  <BookOpen className="h-3.5 w-3.5" />
                   Odabrani program
                 </p>
-                <p className="mt-1 text-base font-bold text-foreground">{selProgram.name}</p>
-                <p className="mt-0.5 flex items-center gap-1 text-sm text-muted-foreground">
-                  <MapPin className="h-3.5 w-3.5" />
+                <p className="mt-1.5 text-lg font-extrabold tracking-tight text-foreground">{selProgram.name}</p>
+                <p className="mt-1 flex items-center gap-1 text-sm font-medium text-muted-foreground">
+                  <MapPin className="h-3.5 w-3.5 text-[hsl(var(--jh-teal))]" />
                   {selSchool.name}, {selSchool.city}
                 </p>
                 {selProgram.sector && (
@@ -742,7 +780,7 @@ export default function SrednjaKalkulator() {
                 )}
               </div>
               {selPrag && (
-                <span className="rounded-full bg-primary/10 px-3 py-1 text-xs font-bold text-primary">
+                <span className="rounded-full bg-[hsl(var(--jh-violet)/0.14)] px-3 py-1.5 text-xs font-extrabold text-[hsl(var(--jh-violet-t))]">
                   Upisni rok {selPrag.year}
                 </span>
               )}
@@ -761,13 +799,13 @@ export default function SrednjaKalkulator() {
                 Za ovaj program nema objavljenih pragova za prošlu školsku godinu.
               </p>
             )}
-            <p className="mt-2 text-[11px] text-muted-foreground">
+            <p className="mt-3 text-[11px] text-muted-foreground">
               * Bodovi se odnose na ljetni upisni rok. Izvor:{" "}
               <a
                 href="https://www.srednja.hr/srednja-kalkulator"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="font-medium text-primary hover:underline"
+                className="font-extrabold text-[hsl(var(--jh-teal-t))] hover:underline"
               >
                 srednja.hr
               </a>
@@ -775,6 +813,7 @@ export default function SrednjaKalkulator() {
           </div>
         )}
       </section>
+      </Reveal>
       </>
       )}
 
@@ -784,53 +823,52 @@ export default function SrednjaKalkulator() {
         <button
           type="button"
           onClick={() => setStep(0)}
-          className="mb-4 flex w-full items-center justify-between gap-3 rounded-2xl border bg-card px-4 py-3 text-left shadow-card"
+          className="mb-4 flex w-full items-center justify-between gap-3 rounded-2xl border-2 border-[hsl(var(--jh-teal)/0.22)] bg-gradient-to-r from-[hsl(var(--jh-teal)/0.1)] to-card px-4 py-3.5 text-left"
         >
           <span className="min-w-0">
-            <span className="block text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+            <span className="block text-[11px] font-extrabold uppercase tracking-[0.14em] text-[hsl(var(--jh-teal-t))]">
               Odabrano
             </span>
-            <span className="mt-0.5 block truncate text-sm font-bold">
+            <span className="mt-0.5 block truncate text-base font-extrabold">
               {selProgram?.name || selSchool?.name}
             </span>
             {selSchool && (
-              <span className="mt-0.5 block truncate text-xs text-muted-foreground">
+              <span className="mt-0.5 block truncate text-xs font-medium text-muted-foreground">
                 {selSchool.name}, {selSchool.city}
               </span>
             )}
           </span>
-          <span className="shrink-0 text-xs font-semibold text-primary">Promijeni</span>
+          <span className="shrink-0 rounded-full bg-[hsl(var(--jh-teal)/0.12)] px-3 py-1.5 text-xs font-extrabold text-[hsl(var(--jh-teal-t))]">Promijeni</span>
         </button>
       )}
 
       {extended ? (
-        <section className="mb-5 rounded-2xl border border-primary/25 bg-primary/5 p-4 shadow-card sm:p-5">
-          <h2 className="text-lg font-bold">
+        <section className={cn(CARD, "mb-5 border-[hsl(var(--jh-violet)/0.25)] bg-gradient-to-br from-[hsl(var(--jh-violet)/0.1)] via-card to-card p-5 sm:p-6")}>
+          <h2 className="text-xl font-extrabold tracking-tight">
             {profile.includeSchool ? "Školski bodovi i provjera" : "Bodovi provjere"}
           </h2>
-          <p className="mt-1 text-sm leading-relaxed text-muted-foreground">{profile.note}</p>
+          <p className="mt-1 text-sm font-medium leading-relaxed text-muted-foreground">{profile.note}</p>
         </section>
       ) : (
-      <section className="mb-5 rounded-2xl border bg-card p-4 shadow-card sm:p-5">
-        <h2 className="mb-3 text-lg font-bold">Tip programa</h2>
+      <section className={cn(CARD, "mb-5 border-[hsl(var(--jh-teal)/0.2)] bg-gradient-to-br from-[hsl(var(--jh-teal)/0.08)] via-card to-[hsl(var(--jh-amber)/0.06)] p-5 sm:p-6")}>
+        <h2 className="mb-3 text-xl font-extrabold tracking-tight">Tip programa</h2>
         <div className="flex flex-wrap gap-2">
           {(Object.keys(PROGRAM_LABELS) as ProgramType[]).map((key) => (
             <button
               key={key}
               type="button"
               onClick={() => setProgram(key)}
-              className={`rounded-full border px-4 py-2 text-sm font-semibold transition ${
-                program === key
-                  ? "border-primary bg-primary text-primary-foreground"
-                  : "border-border bg-background text-muted-foreground hover:border-primary/40"
-              }`}
+              className={cn(
+                "min-h-11 rounded-full border-2 px-4 py-2 text-sm font-extrabold transition",
+                program === key ? PROGRAM_CHIP[key].on : PROGRAM_CHIP[key].off,
+              )}
             >
               {PROGRAM_LABELS[key]}
             </button>
           ))}
         </div>
           {selProgram && (
-            <p className="mt-2 text-xs text-muted-foreground">
+            <p className="mt-3 text-xs font-medium text-muted-foreground">
               Tip programa automatski je postavljen prema odabranom programu — po potrebi ga promijeni.
             </p>
           )}
@@ -839,8 +877,8 @@ export default function SrednjaKalkulator() {
 
       {profile.includeSchool && (
         <>
-      <section className="mb-5 rounded-2xl border bg-card p-4 shadow-card sm:p-5">
-        <h2 className="mb-3 text-lg font-bold">5. i 6. razred</h2>
+      <section className={cn(CARD, "mb-5 border-[hsl(var(--jh-sky)/0.22)] bg-gradient-to-br from-[hsl(var(--jh-sky)/0.1)] via-card to-card p-5 sm:p-6")}>
+        <h2 className="mb-4 text-xl font-extrabold tracking-tight text-[hsl(var(--jh-sky-t))]">5. i 6. razred</h2>
         <div className="grid gap-4 sm:grid-cols-2">
           <NumberField label="Ukupan prosjek, 5. razred" value={prosjek5} onChange={setProsjek5} placeholder="npr. 4.85" />
           <NumberField label="Ukupan prosjek, 6. razred" value={prosjek6} onChange={setProsjek6} placeholder="npr. 4.90" />
@@ -853,6 +891,7 @@ export default function SrednjaKalkulator() {
         onChange={updateSeven}
             pokaziKljucne={schoolKind !== "kraci"}
             pokaziPosebne={schoolKind === "gimnazija4"}
+            tone="violet"
       />
       <RazredCard
         naslov="8. razred"
@@ -860,13 +899,14 @@ export default function SrednjaKalkulator() {
         onChange={updateEight}
             pokaziKljucne={schoolKind !== "kraci"}
             pokaziPosebne={schoolKind === "gimnazija4"}
+            tone="teal"
           />
         </>
       )}
 
       {profile.extras.length > 0 && (
-        <section className="mb-5 rounded-2xl border bg-card p-4 shadow-card sm:p-5">
-          <h2 className="mb-2 text-lg font-bold">Bodovi uz školske</h2>
+        <section className={cn(CARD, "mb-5 border-[hsl(var(--jh-coral)/0.25)] bg-gradient-to-br from-[hsl(var(--jh-coral)/0.08)] via-card to-card p-5 sm:p-6")}>
+          <h2 className="mb-3 text-xl font-extrabold tracking-tight">Bodovi uz školske</h2>
           <div className="grid gap-4 sm:grid-cols-2">
             {profile.extras.map((extra) => (
               <NumberField
@@ -883,9 +923,9 @@ export default function SrednjaKalkulator() {
         </section>
       )}
 
-      <section className="mb-5 rounded-2xl border bg-card p-4 shadow-card sm:p-5">
-        <h2 className="mb-2 text-lg font-bold">Dodatni bodovi</h2>
-        <p className="mb-3 text-sm leading-relaxed text-muted-foreground">
+      <section className={cn(CARD, "mb-5 border-[hsl(var(--jh-amber)/0.3)] bg-gradient-to-br from-[hsl(var(--jh-amber)/0.12)] via-card to-card p-5 sm:p-6")}>
+        <h2 className="mb-2 text-xl font-extrabold tracking-tight">Dodatni bodovi</h2>
+        <p className="mb-3 text-sm font-medium leading-relaxed text-muted-foreground">
           {profile.id === "sport"
             ? "Natjecanja u znanju i druga posebna postignuća, osim sportske uspješnosti s rang-liste."
             : "Natjecanja i druga posebna postignuća unose se ručno kao ukupni dodatni bodovi."}{" "}
@@ -901,14 +941,14 @@ export default function SrednjaKalkulator() {
         />
       </section>
 
-      <div className="mb-5 flex items-center justify-between gap-3 rounded-2xl border bg-card px-4 py-3 shadow-card">
+      <div className="mb-5 flex items-center justify-between gap-3 rounded-2xl border-2 border-[hsl(var(--jh-teal)/0.28)] bg-gradient-to-r from-[hsl(var(--jh-teal)/0.14)] via-card to-[hsl(var(--jh-violet)/0.1)] px-5 py-4">
         <div className="min-w-0">
-          <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+          <p className="text-[11px] font-extrabold uppercase tracking-[0.14em] text-[hsl(var(--jh-teal-t))]">
             {extended ? "Ukupno na skali programa" : "Zajednički element"}
           </p>
-          <p className="mt-0.5 text-xs text-muted-foreground">Mijenja se dok upisuješ.</p>
+          <p className="mt-0.5 text-xs font-medium text-muted-foreground">Mijenja se dok upisuješ.</p>
         </div>
-        <p className="text-2xl font-extrabold tabular-nums text-primary">
+        <p className="text-3xl font-extrabold tabular-nums text-[hsl(var(--jh-teal-t))]">
           {(extended ? rezultat.ukupno : rezultat.zajednicki).toFixed(2)}
           <span className="ml-1 text-sm font-semibold text-muted-foreground">
             / {extended ? rezultat.scaleMax : rezultat.schoolMax}
@@ -919,26 +959,31 @@ export default function SrednjaKalkulator() {
       )}
 
       {step === 2 && rezultatIzracunat && (
-        <section className={cn(CARD, "mb-5 bg-gradient-to-br from-[hsl(var(--jh-teal)/0.16)] via-card to-[hsl(var(--jh-violet)/0.1)] p-4 sm:p-6")}>
-          <p className="text-center text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+        <section className={cn(CARD, "mb-5 bg-gradient-to-br from-[hsl(var(--jh-teal)/0.18)] via-card to-[hsl(var(--jh-violet)/0.12)] p-5 sm:p-7")}>
+          <p className="text-center text-[11px] font-extrabold uppercase tracking-[0.16em] text-[hsl(var(--jh-teal-t))]">
             Ukupno bodova
           </p>
-          <p className="mt-1 text-center text-5xl font-extrabold tabular-nums tracking-tight text-[hsl(var(--jh-teal-t))] sm:text-6xl">
-            {rezultat.ukupno.toFixed(2)}
-          </p>
-          <p className="mt-1 text-center text-sm text-muted-foreground">
+          <ScoreRing
+            value={rezultat.ukupno}
+            max={extended ? rezultat.scaleMax : rezultat.schoolMax}
+          >
+            <p className="text-4xl font-extrabold tabular-nums tracking-tight text-[hsl(var(--jh-teal-t))] sm:text-5xl">
+              {rezultat.ukupno.toFixed(2)}
+            </p>
+          </ScoreRing>
+          <p className="mt-1 text-center text-sm font-medium text-muted-foreground">
             {extended
               ? `Ukupno ${rezultat.ukupno.toFixed(2)} od ${rezultat.scaleMax}`
               : `Zajednički element ${rezultat.zajednicki.toFixed(2)} od ${rezultat.schoolMax}`}
           </p>
-          <div className="mx-auto mt-4 h-2.5 max-w-sm overflow-hidden rounded-full bg-muted">
+          <div className="mx-auto mt-4 h-3 max-w-sm overflow-hidden rounded-full bg-muted">
             <div
-              className="h-full rounded-full bg-gradient-to-r from-[hsl(var(--jh-teal))] to-[hsl(174_60%_62%)]"
+              className="h-full rounded-full bg-gradient-to-r from-[hsl(var(--jh-teal))] via-[hsl(var(--jh-sky))] to-[hsl(var(--jh-violet))]"
               style={{ width: `${Math.min(100, (rezultat.ukupno / (extended ? rezultat.scaleMax : rezultat.schoolMax || 1)) * 100)}%` }}
             />
           </div>
-          <div className="mt-5 border-t border-primary/15 pt-4">
-            <h2 className="mb-3 text-base font-bold">Od čega se sastoji</h2>
+          <div className="mt-6 border-t border-[hsl(var(--jh-teal)/0.18)] pt-5">
+            <h2 className="mb-3 text-lg font-extrabold tracking-tight">Od čega se sastoji</h2>
             {rezultat.includeSchool && (
               <>
           <ResultRow label="Opći uspjeh (5.-8. razred)" value={`${rezultat.opciUspjeh.toFixed(2)} / 20`} />
@@ -963,8 +1008,8 @@ export default function SrednjaKalkulator() {
       )}
 
       {step === 2 && rezultatIzracunat && selProgram && selSchool && selPrag?.min != null && rezultat.scaleMismatch && (
-        <section className="mb-5 rounded-2xl border-2 border-amber-500/40 bg-amber-500/5 p-4 shadow-card sm:p-5">
-          <h2 className="text-lg font-bold">Prag nije na školskoj skali</h2>
+        <section className={cn(CARD, "mb-5 border-2 border-[hsl(var(--jh-amber)/0.45)] bg-gradient-to-br from-[hsl(var(--jh-amber)/0.14)] via-card to-card p-5 sm:p-6")}>
+          <h2 className="text-xl font-extrabold tracking-tight">Prag nije na školskoj skali</h2>
           <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
             {selProgram.name} boduje se školskim bodovima, do {rezultat.schoolMax}. Lanjski minimum od {fmt(selPrag.min)}{" "}
             uključuje druge bodove, pa se šansa ne računa prema njemu.
@@ -976,8 +1021,8 @@ export default function SrednjaKalkulator() {
       )}
 
       {step === 2 && rezultatIzracunat && selProgram && selSchool && selPrag?.min != null && rezultat.examPending && (
-        <section className="mb-5 rounded-2xl border-2 border-amber-500/40 bg-amber-500/5 p-4 shadow-card sm:p-5">
-          <h2 className="text-lg font-bold">Usporedba čeka prijemni</h2>
+        <section className={cn(CARD, "mb-5 border-2 border-[hsl(var(--jh-amber)/0.45)] bg-gradient-to-br from-[hsl(var(--jh-amber)/0.14)] via-card to-card p-5 sm:p-6")}>
+          <h2 className="text-xl font-extrabold tracking-tight">Usporedba čeka prijemni</h2>
           <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
             {profile.note || "Prag ovog programa uključuje provjeru uz školske bodove."} Školski dio je{" "}
             {rezultat.includeSchool ? `${rezultat.zajednicki.toFixed(2)} od ${rezultat.schoolMax}` : "0"}. Upiši bodove
@@ -988,40 +1033,40 @@ export default function SrednjaKalkulator() {
 
       {/* Usporedba s prošlogodišnjim pragom i procjena šansi */}
       {step === 2 && rezultatIzracunat && selProgram && selSchool && selPrag?.min != null && chance && (
-        <section className={`mb-5 rounded-2xl border-2 p-4 shadow-card sm:p-5 ${CHANCE_TONE[chance.tone].box}`}>
-          <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
+        <section className={`mb-5 rounded-2xl border-2 p-5 shadow-card sm:p-6 ${CHANCE_TONE[chance.tone].box}`}>
+          <div className="mb-5 flex flex-wrap items-start justify-between gap-3">
             <div className="flex items-start gap-3">
-              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-background text-foreground shadow-sm">
+              <div className="jh-blob-shape flex h-12 w-12 shrink-0 items-center justify-center bg-gradient-to-br from-[hsl(var(--jh-amber))] to-[hsl(38_92%_56%)] text-white shadow-[0_12px_24px_-14px_hsl(var(--jh-amber)/0.8)]">
             <Trophy className="h-5 w-5" />
           </div>
               <div className="min-w-0">
-                <h2 className="text-lg font-bold">Tvoje šanse za upis</h2>
-                <p className="mt-0.5 text-sm text-muted-foreground">
+                <h2 className="text-xl font-extrabold tracking-tight sm:text-2xl">Tvoje šanse za upis</h2>
+                <p className="mt-0.5 text-sm font-medium text-muted-foreground">
                   {selProgram.name} · {selSchool.name}, {selSchool.city}
             </p>
           </div>
             </div>
-            <span className={`rounded-full px-4 py-1.5 text-sm font-bold shadow-sm ${CHANCE_TONE[chance.tone].badge}`}>
+            <span className={`rounded-full px-4 py-2 text-sm font-extrabold shadow-sm ${CHANCE_TONE[chance.tone].badge}`}>
               {chance.label}
             </span>
         </div>
 
           <div className="grid gap-3 sm:grid-cols-3">
-            <div className="rounded-2xl bg-background p-4 text-center">
-              <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Tvoji bodovi</p>
-              <p className="mt-1 text-2xl font-extrabold tabular-nums text-primary">{rezultat.ukupno.toFixed(2)}</p>
+            <div className="jh-well rounded-2xl bg-background p-4 text-center">
+              <p className="text-[11px] font-extrabold uppercase tracking-[0.12em] text-muted-foreground">Tvoji bodovi</p>
+              <p className="mt-1 text-3xl font-extrabold tabular-nums text-[hsl(var(--jh-teal-t))]">{rezultat.ukupno.toFixed(2)}</p>
             </div>
-            <div className="rounded-2xl bg-background p-4 text-center">
-              <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+            <div className="jh-well rounded-2xl bg-background p-4 text-center">
+              <p className="text-[11px] font-extrabold uppercase tracking-[0.12em] text-muted-foreground">
                 Prag {selPrag.year}
               </p>
-              <p className="mt-1 text-2xl font-extrabold tabular-nums text-foreground">{fmt(selPrag.min)}</p>
+              <p className="mt-1 text-3xl font-extrabold tabular-nums text-foreground">{fmt(selPrag.min)}</p>
             </div>
-            <div className="rounded-2xl bg-background p-4 text-center">
-              <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Razlika</p>
+            <div className="jh-well rounded-2xl bg-background p-4 text-center">
+              <p className="text-[11px] font-extrabold uppercase tracking-[0.12em] text-muted-foreground">Razlika</p>
               <p
-                className={`mt-1 text-2xl font-extrabold tabular-nums ${
-                  !rezultat.examFailed && rezultat.ukupno >= selPrag.min ? "text-emerald-600" : "text-rose-600"
+                className={`mt-1 text-3xl font-extrabold tabular-nums ${
+                  !rezultat.examFailed && rezultat.ukupno >= selPrag.min ? "text-[hsl(var(--jh-teal-t))]" : "text-[hsl(var(--jh-coral-t))]"
                 }`}
               >
                 {rezultat.ukupno >= selPrag.min ? "+" : ""}
@@ -1050,11 +1095,11 @@ export default function SrednjaKalkulator() {
             </div>
           </div>
 
-          <p className="mt-4 flex items-start gap-2 rounded-2xl bg-background p-4 text-sm leading-relaxed text-muted-foreground">
+          <p className="mt-4 flex items-start gap-2 rounded-2xl bg-background/80 p-4 text-sm font-medium leading-relaxed text-muted-foreground">
             {chance.tone === "emerald" || chance.tone === "lime" ? (
-              <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600" />
+              <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-[hsl(var(--jh-teal))]" />
             ) : (
-              <TrendingUp className="mt-0.5 h-4 w-4 shrink-0 text-amber-600" />
+              <TrendingUp className="mt-0.5 h-4 w-4 shrink-0 text-[hsl(var(--jh-amber))]" />
             )}
             {chance.desc}
           </p>
@@ -1074,14 +1119,14 @@ export default function SrednjaKalkulator() {
       )}
 
       {step === 2 && rezultatIzracunat && !selProgram && (
-        <section className="mb-5 rounded-2xl border border-dashed bg-muted/30 p-4 text-center sm:p-5">
-          <p className="text-sm text-muted-foreground">
+        <section className={cn(CARD, "mb-5 border-2 border-dashed border-[hsl(var(--jh-sky)/0.35)] bg-[hsl(var(--jh-sky)/0.08)] p-5 text-center sm:p-6")}>
+          <p className="text-sm font-medium text-muted-foreground">
             Bodovi su izračunati. Odaberi školu i program da ih usporediš s lanjskim pragom.
           </p>
           <button
             type="button"
             onClick={() => setStep(0)}
-            className="jh-shine mt-3 inline-flex min-h-12 items-center justify-center rounded-2xl bg-gradient-to-br from-[hsl(174_66%_36%)] to-[hsl(174_60%_50%)] px-4 text-sm font-extrabold text-white shadow-[0_18px_36px_-14px_hsl(174_66%_30%/0.75)]"
+            className="jh-shine jh-cta mt-4 inline-flex min-h-12 items-center justify-center rounded-full px-6 text-sm font-extrabold text-white"
           >
             Odaberi školu
           </button>
@@ -1130,15 +1175,52 @@ export default function SrednjaKalkulator() {
   );
 }
 
+function ScoreRing({ value, max, children }: { value: number; max: number; children: ReactNode }) {
+  const pct = clamp((value / (max || 1)) * 100, 0, 100);
+  const r = 52;
+  const c = 2 * Math.PI * r;
+  const dash = (pct / 100) * c;
+  return (
+    <div className="relative mx-auto mt-3 h-44 w-44 sm:h-52 sm:w-52">
+      <svg viewBox="0 0 120 120" className="h-full w-full -rotate-90" aria-hidden>
+        <circle cx="60" cy="60" r={r} fill="none" stroke="hsl(var(--muted))" strokeWidth="8" />
+        <circle
+          cx="60"
+          cy="60"
+          r={r}
+          fill="none"
+          stroke="url(#jhScoreRing)"
+          strokeWidth="8"
+          strokeLinecap="round"
+          strokeDasharray={`${dash} ${c}`}
+        />
+        <defs>
+          <linearGradient id="jhScoreRing" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stopColor="hsl(var(--jh-teal))" />
+            <stop offset="55%" stopColor="hsl(var(--jh-sky))" />
+            <stop offset="100%" stopColor="hsl(var(--jh-violet))" />
+          </linearGradient>
+        </defs>
+      </svg>
+      <div className="absolute inset-[16%] flex flex-col items-center justify-center rounded-full bg-card/90 text-center shadow-[inset_0_1px_0_hsl(0_0%_100%/0.55)]">
+        {children}
+      </div>
+    </div>
+  );
+}
+
 function PragStat({ label, value, highlight }: { label: string; value: string; highlight?: boolean }) {
   return (
     <div
-      className={`rounded-xl border p-3 text-center ${
-        highlight ? "border-primary/40 bg-background shadow-sm" : "border-border/60 bg-background/70"
-      }`}
+      className={cn(
+        "jh-well rounded-xl border p-3 text-center",
+        highlight
+          ? "border-[hsl(var(--jh-teal)/0.4)] bg-[hsl(var(--jh-teal)/0.08)]"
+          : "border-border/60 bg-background/80",
+      )}
     >
-      <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">{label}</p>
-      <p className={`mt-0.5 text-lg font-extrabold tabular-nums ${highlight ? "text-primary" : "text-foreground"}`}>
+      <p className="text-[10px] font-extrabold uppercase tracking-wide text-muted-foreground">{label}</p>
+      <p className={cn("mt-0.5 text-xl font-extrabold tabular-nums", highlight ? "text-[hsl(var(--jh-teal-t))]" : "text-foreground")}>
         {value}
       </p>
     </div>
@@ -1151,16 +1233,24 @@ function RazredCard({
   onChange,
   pokaziKljucne,
   pokaziPosebne,
+  tone = "violet",
 }: {
   naslov: string;
   podaci: SevenEightGrades;
   onChange: (field: keyof SevenEightGrades, value: string) => void;
   pokaziKljucne: boolean;
   pokaziPosebne: boolean;
+  tone?: "violet" | "teal";
 }) {
+  const shell =
+    tone === "teal"
+      ? "border-[hsl(var(--jh-teal)/0.22)] bg-gradient-to-br from-[hsl(var(--jh-teal)/0.1)] via-card to-card"
+      : "border-[hsl(var(--jh-violet)/0.22)] bg-gradient-to-br from-[hsl(var(--jh-violet)/0.1)] via-card to-card";
+  const title =
+    tone === "teal" ? "text-[hsl(var(--jh-teal-t))]" : "text-[hsl(var(--jh-violet-t))]";
   return (
-    <section className="mb-5 rounded-2xl border bg-card p-4 shadow-card sm:p-5">
-      <h2 className="mb-3 text-lg font-bold">{naslov}</h2>
+    <section className={cn(CARD, "mb-5 p-5 sm:p-6", shell)}>
+      <h2 className={cn("mb-4 text-xl font-extrabold tracking-tight", title)}>{naslov}</h2>
       <div className="grid gap-4 sm:grid-cols-2">
         <NumberField label="Ukupan prosjek" value={podaci.prosjek} onChange={(value) => onChange("prosjek", value)} placeholder="npr. 4.75" />
         {pokaziKljucne && (
@@ -1198,9 +1288,9 @@ function NumberField({
   hint?: string;
 }) {
   return (
-    <label className="block text-sm font-semibold text-foreground">
+    <label className="block text-sm font-extrabold text-foreground">
       {label}
-      {hint ? <span className="mt-1 block text-xs font-normal leading-relaxed text-muted-foreground">{hint}</span> : null}
+      {hint ? <span className="mt-1 block text-xs font-medium leading-relaxed text-muted-foreground">{hint}</span> : null}
       <input
         type="number"
         min={0}
@@ -1210,7 +1300,7 @@ function NumberField({
         value={value}
         placeholder={placeholder}
         onChange={(event: ChangeEvent<HTMLInputElement>) => onChange(event.target.value)}
-        className="mt-2 h-11 w-full rounded-xl border border-input bg-background px-3 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20"
+        className="mt-2 h-12 w-full rounded-xl border-2 border-[hsl(var(--jh-teal)/0.2)] bg-background px-3 text-base outline-none transition focus:border-[hsl(var(--jh-teal))] focus:ring-2 focus:ring-[hsl(var(--jh-teal)/0.2)]"
       />
     </label>
   );
@@ -1227,7 +1317,7 @@ function GradeSelect({
 }) {
   return (
     <div>
-      <p className="text-sm font-semibold text-foreground">{label}</p>
+      <p className="text-sm font-extrabold text-foreground">{label}</p>
       <div className="mt-2 flex flex-wrap gap-2" role="group" aria-label={label}>
         {[1, 2, 3, 4, 5].map((grade) => {
           const selected = value === String(grade);
@@ -1238,10 +1328,8 @@ function GradeSelect({
               aria-pressed={selected}
               onClick={() => onChange(selected ? "" : String(grade))}
               className={cn(
-                "flex h-11 w-11 items-center justify-center rounded-full text-sm font-extrabold transition-transform focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-                selected
-                  ? "bg-gradient-to-br from-[hsl(174_66%_36%)] to-[hsl(174_60%_50%)] text-white shadow-[0_10px_22px_-12px_hsl(174_66%_30%/0.75)]"
-                  : "border border-border/70 bg-card text-foreground hover:-translate-y-0.5",
+                "flex h-12 w-12 items-center justify-center rounded-full text-base font-extrabold transition-transform focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                selected ? GRADE_ON[grade - 1] : "border-2 border-border/70 bg-card text-foreground hover:-translate-y-0.5",
               )}
             >
               {grade}
@@ -1255,8 +1343,8 @@ function GradeSelect({
 
 function ResultRow({ label, value }: { label: string; value: string }) {
   return (
-    <div className="flex items-center justify-between gap-4 border-b py-2 text-sm">
-      <span className="text-muted-foreground">{label}</span>
+    <div className="flex items-center justify-between gap-4 border-b border-[hsl(var(--jh-teal)/0.12)] py-2.5 text-sm">
+      <span className="font-medium text-muted-foreground">{label}</span>
       <strong className="tabular-nums text-foreground">{value}</strong>
     </div>
   );

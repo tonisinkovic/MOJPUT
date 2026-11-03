@@ -994,7 +994,7 @@ const Chatbot = () => {
                       <p className="mt-0.5 text-xs leading-relaxed text-muted-foreground sm:text-sm">
                         Za Dražena trebaš biti prijavljen. Svaki dan imaš <strong className="text-foreground">12 besplatnih poruka</strong>.
                       </p>
-                      <Button asChild size="sm" className="mt-3 rounded-xl">
+                      <Button asChild size="sm" className="mt-3 min-h-11 rounded-xl px-4">
                         <Link to="/prijava" className="inline-flex items-center gap-2">
                           <LogIn className="w-4 h-4" />
                           Prijavi se
@@ -1244,18 +1244,19 @@ const Chatbot = () => {
           display: flex;
           flex-direction: column;
           height: min(720px, 78dvh);
+          isolation: isolate;
           background: hsl(var(--card));
-          border: 2px solid hsl(var(--border));
-          border-radius: 1.75rem 0.55rem 1.75rem 1.75rem;
+          border: 1px solid hsl(var(--jh-teal) / 0.22);
+          border-radius: 1.85rem 0.55rem 1.85rem 1.25rem;
           overflow: hidden;
           box-shadow:
-            inset 0 3px 0 hsl(var(--jh-teal)),
-            0 22px 40px -28px hsl(var(--jh-teal) / 0.4);
+            0 1px 0 hsl(0 0% 100% / 0.7) inset,
+            0 22px 48px -28px hsl(var(--jh-teal) / 0.38);
         }
         .chat-container--senior {
           background: hsl(var(--sr-night));
           border-color: hsl(var(--sr-cyan) / 0.28);
-          border-radius: 1.5rem 0.3rem 1.5rem 0.3rem;
+          border-radius: 1.45rem 0.22rem 1.45rem 0.22rem;
           color: white;
           box-shadow:
             inset 3px 0 0 hsl(var(--sr-cyan)),
@@ -1263,26 +1264,60 @@ const Chatbot = () => {
         }
         .chat-container--senior .chat-header {
           background:
-            linear-gradient(90deg, hsl(var(--sr-indigo) / 0.22), transparent 60%),
+            linear-gradient(105deg, hsl(var(--sr-indigo) / 0.28), transparent 58%),
             hsl(0 0% 100% / 0.04);
-          border-bottom-color: hsl(0 0% 100% / 0.1);
+          border-bottom: 1px solid hsl(0 0% 100% / 0.08);
         }
         .chat-container--senior .chat-avatar {
+          border-radius: 1.15rem 0.2rem 1.15rem 0.2rem;
           background: linear-gradient(135deg, hsl(var(--sr-indigo)), hsl(262 90% 72%));
           box-shadow: 0 10px 20px -10px hsl(var(--sr-indigo) / 0.9);
         }
-        .chat-container--senior .chat-status { color: hsl(var(--sr-cyan)); }
+        .chat-container--senior .chat-status {
+          color: hsl(var(--sr-cyan));
+          background: hsl(0 0% 100% / 0.08);
+        }
         .chat-container--senior .chat-status-dot {
           background: hsl(var(--sr-cyan));
           box-shadow: 0 0 0 3px hsl(var(--sr-cyan) / 0.2);
         }
         .chat-container--senior .chat-messages {
           background:
-            radial-gradient(ellipse at top, hsl(var(--sr-indigo) / 0.18), transparent 60%),
+            radial-gradient(ellipse at 12% 0%, hsl(var(--sr-indigo) / 0.22), transparent 42%),
+            radial-gradient(ellipse at 88% 100%, hsl(var(--sr-cyan) / 0.08), transparent 40%),
             hsl(var(--sr-night-2));
         }
+        .chat-container--senior .chat-input-area {
+          background: linear-gradient(180deg, hsl(0 0% 100% / 0.02), hsl(0 0% 100% / 0.06));
+          border-top-color: hsl(0 0% 100% / 0.08);
+        }
+        .chat-container--senior .chat-input-row {
+          background: hsl(0 0% 100% / 0.06);
+          border-color: hsl(var(--sr-cyan) / 0.28);
+        }
+        .chat-container--senior .chat-input-row:focus-within {
+          border-color: hsl(var(--sr-cyan) / 0.7);
+          box-shadow: 0 0 0 4px hsl(var(--sr-cyan) / 0.12);
+        }
+        .chat-container--senior .chat-send-btn {
+          background: var(--sr-gold-grad) !important;
+          color: hsl(var(--sr-night)) !important;
+          box-shadow: var(--sr-page-glow-gold);
+        }
+        .chat-container--senior .chat-textarea {
+          color: white;
+        }
+        .chat-container--senior .chat-textarea::placeholder {
+          color: hsl(0 0% 100% / 0.5);
+        }
+        .chat-container--senior .chat-footer-hint {
+          color: hsl(0 0% 100% / 0.55);
+        }
+        .chat-container--senior .chat-header-title h2 {
+          color: white;
+        }
         @media (min-width: 640px) {
-          .chat-container:not(.chat-container--senior) { border-radius: 2rem 0.6rem 2rem 2rem; }
+          .chat-container:not(.chat-container--senior) { border-radius: 2.1rem 0.6rem 2.1rem 1.4rem; }
         }
 
         /* ── Header ──────────────────────────────────────────────── */
@@ -1290,38 +1325,48 @@ const Chatbot = () => {
           display: flex;
           flex-wrap: wrap;
           align-items: center;
-          gap: 0.625rem 0.875rem;
-          padding: 0.75rem 1rem;
-          border-bottom: 1px solid hsl(var(--border));
+          gap: 0.75rem 0.875rem;
+          padding: 0.875rem 1rem;
+          border-bottom: 1px solid hsl(var(--jh-teal) / 0.14);
           background:
-            linear-gradient(90deg, hsl(var(--primary) / 0.08), transparent 60%),
-            hsl(var(--muted) / 0.55);
-          backdrop-filter: blur(10px);
+            linear-gradient(105deg, hsl(var(--jh-sky) / 0.14), hsl(var(--jh-teal) / 0.06) 42%, transparent 72%),
+            hsl(var(--card));
         }
         @media (min-width: 640px) {
-          .chat-header { padding: 1rem 1.25rem; }
+          .chat-header { padding: 1rem 1.35rem; }
+        }
+
+        .chat-header-title h2 {
+          font-weight: 800;
+          letter-spacing: -0.03em;
+          line-height: 1.15;
         }
 
         .chat-avatar {
-          width: 44px; height: 44px;
-          border-radius: 0.875rem;
-          background: var(--hero-gradient);
+          width: 48px; height: 48px;
+          border-radius: 42% 58% 62% 38% / 48% 42% 58% 52%;
+          background: linear-gradient(145deg, hsl(var(--jh-sky)), hsl(var(--jh-teal)));
           display: flex; align-items: center; justify-content: center;
           flex-shrink: 0;
-          box-shadow: 0 4px 12px hsl(var(--primary) / 0.3);
+          box-shadow: 0 10px 22px -12px hsl(var(--jh-sky) / 0.85);
         }
         .chat-status {
           font-size: 0.6875rem;
-          font-weight: 500;
-          color: hsl(var(--primary));
+          font-weight: 700;
+          letter-spacing: 0.02em;
+          color: hsl(var(--jh-teal-t));
           display: inline-flex; align-items: center; gap: 0.375rem;
-          margin-top: 2px;
+          margin-top: 4px;
+          min-height: 1.5rem;
+          padding: 0.15rem 0.55rem 0.15rem 0.4rem;
+          border-radius: 999px;
+          background: hsl(var(--jh-teal) / 0.1);
         }
         .chat-status-dot {
           width: 7px; height: 7px;
           border-radius: 50%;
-          background: hsl(var(--primary));
-          box-shadow: 0 0 0 3px hsl(var(--primary) / 0.15);
+          background: hsl(var(--jh-teal));
+          box-shadow: 0 0 0 3px hsl(var(--jh-teal) / 0.18);
           animation: chatPulse 2s ease-in-out infinite;
         }
         .chat-status-dot--muted {
@@ -1331,24 +1376,36 @@ const Chatbot = () => {
         }
 
         .chat-new-btn {
-          border-radius: 0.625rem;
-          height: 32px;
-          padding: 0 0.75rem;
+          border-radius: 999px;
+          min-height: 44px;
+          height: auto;
+          padding: 0 0.9rem;
         }
 
         .chat-badge {
-          font-size: 0.6875rem;
-          color: hsl(var(--primary));
-          background: hsl(var(--primary) / 0.12);
-          border: 1px solid hsl(var(--primary) / 0.3);
-          padding: 4px 10px;
+          font-size: 0.625rem;
+          color: hsl(var(--jh-sky-t));
+          background: hsl(var(--jh-sky) / 0.12);
+          border: 1px solid hsl(var(--jh-sky) / 0.28);
+          padding: 0.4rem 0.7rem;
           border-radius: 999px;
-          letter-spacing: 0.02em;
-          font-weight: 600;
+          letter-spacing: 0.08em;
+          text-transform: uppercase;
+          font-weight: 800;
           display: inline-flex;
           align-items: center;
+          min-height: 44px;
           gap: 0.3rem;
           white-space: nowrap;
+        }
+        .chat-container--senior .chat-badge {
+          color: hsl(var(--sr-cyan));
+          background: hsl(var(--sr-cyan) / 0.12);
+          border-color: hsl(var(--sr-cyan) / 0.35);
+        }
+        .chat-container--senior .chat-new-btn {
+          border-radius: 1.15rem 0.2rem 1.15rem 0.2rem;
+          color: white;
         }
 
         .chat-quota-pill {
@@ -1356,12 +1413,17 @@ const Chatbot = () => {
           flex-wrap: wrap;
           align-items: center;
           gap: 0.35rem 0.5rem;
-          padding: 0.5rem 0.75rem;
-          border-radius: 0.75rem;
-          border: 1px solid hsl(var(--primary) / 0.35);
+          padding: 0.5rem 0.8rem;
+          border-radius: 999px;
+          border: 1px solid hsl(var(--jh-teal) / 0.28);
           background: hsl(var(--card));
-          box-shadow: 0 1px 2px hsl(var(--foreground) / 0.06);
+          box-shadow: 0 8px 18px -16px hsl(var(--jh-teal) / 0.45);
           max-width: 100%;
+        }
+        .chat-container--senior .chat-quota-pill {
+          border-radius: 1.15rem 0.2rem 1.15rem 0.2rem;
+          border-color: hsl(var(--sr-cyan) / 0.35);
+          background: hsl(0 0% 100% / 0.06);
         }
         .chat-quota-pill--limit {
           border-color: hsl(var(--destructive) / 0.45);
@@ -1413,17 +1475,18 @@ const Chatbot = () => {
         .chat-messages {
           flex: 1;
           overflow-y: auto;
-          padding: 1rem;
+          padding: 1.1rem 1rem 1.25rem;
           display: flex;
           flex-direction: column;
           gap: 1rem;
           scroll-behavior: smooth;
-          background:
-            radial-gradient(ellipse at top, hsl(var(--primary) / 0.04), transparent 60%),
-            hsl(var(--background));
+          background-color: hsl(var(--muted) / 0.35);
+          background-image:
+            radial-gradient(ellipse at 8% 0%, hsl(var(--jh-sky) / 0.1), transparent 42%),
+            radial-gradient(ellipse at 100% 100%, hsl(var(--jh-teal) / 0.08), transparent 38%);
         }
         @media (min-width: 640px) {
-          .chat-messages { padding: 1.5rem; gap: 1.25rem; }
+          .chat-messages { padding: 1.5rem 1.5rem 1.75rem; gap: 1.25rem; }
         }
         .chat-messages::-webkit-scrollbar { width: 6px; }
         .chat-messages::-webkit-scrollbar-track { background: transparent; }
@@ -1440,23 +1503,33 @@ const Chatbot = () => {
           display: flex;
           gap: 0.875rem;
           align-items: flex-start;
-          padding: 0.875rem 1rem;
-          border-radius: 1rem;
-          border: 2px solid hsl(var(--primary) / 0.25);
+          padding: 1rem 1.05rem;
+          border-radius: 1.5rem 0.45rem 1.5rem 1.1rem;
+          border: 1px solid hsl(var(--jh-teal) / 0.28);
           background:
-            linear-gradient(135deg, hsl(var(--primary) / 0.12), hsl(var(--primary) / 0.03));
+            linear-gradient(135deg, hsl(var(--jh-sky) / 0.12), hsl(var(--card) / 0.92) 55%);
+          box-shadow: 0 12px 28px -24px hsl(var(--jh-teal) / 0.5);
+        }
+        .chat-container--senior .chat-login-gate {
+          border-radius: 1.2rem 0.2rem 1.2rem 0.2rem;
+          border-color: hsl(var(--sr-cyan) / 0.35);
+          background: linear-gradient(135deg, hsl(var(--sr-indigo) / 0.22), hsl(0 0% 100% / 0.04));
         }
         .chat-login-gate-icon {
           flex-shrink: 0;
           display: flex;
           align-items: center;
           justify-content: center;
-          width: 40px;
-          height: 40px;
-          border-radius: 0.75rem;
-          background: var(--hero-gradient);
+          width: 44px;
+          height: 44px;
+          border-radius: 42% 58% 62% 38% / 48% 42% 58% 52%;
+          background: linear-gradient(145deg, hsl(var(--jh-sky)), hsl(var(--jh-teal)));
           color: hsl(var(--primary-foreground));
-          box-shadow: 0 4px 10px hsl(var(--primary) / 0.3);
+          box-shadow: 0 8px 16px -10px hsl(var(--jh-sky) / 0.85);
+        }
+        .chat-container--senior .chat-login-gate-icon {
+          border-radius: 1.15rem 0.2rem 1.15rem 0.2rem;
+          background: linear-gradient(135deg, hsl(var(--sr-indigo)), hsl(262 90% 72%));
         }
         .chat-login-gate-body { min-width: 0; flex: 1; }
 
@@ -1668,14 +1741,13 @@ const Chatbot = () => {
 
         /* ── Input area ──────────────────────────────────────────── */
         .chat-input-area {
-          padding: 0.75rem;
-          border-top: 1px solid hsl(var(--border));
+          padding: 0.85rem 0.9rem 0.95rem;
+          border-top: 1px solid hsl(var(--jh-teal) / 0.14);
           background:
-            linear-gradient(180deg, hsl(var(--muted) / 0.25), hsl(var(--muted) / 0.5));
-          backdrop-filter: blur(10px);
+            linear-gradient(180deg, hsl(var(--card) / 0.55), hsl(var(--card)));
         }
         @media (min-width: 640px) {
-          .chat-input-area { padding: 1rem 1.25rem; }
+          .chat-input-area { padding: 1.05rem 1.35rem 1.15rem; }
         }
         .chat-input-row {
           display: flex;
@@ -1683,10 +1755,11 @@ const Chatbot = () => {
           align-items: stretch;
           gap: 0.5rem;
           background: hsl(var(--background));
-          border: 2px solid hsl(var(--border));
-          border-radius: 1rem;
-          padding: 0.5rem 0.625rem;
-          transition: all 0.2s;
+          border: 1.5px solid hsl(var(--jh-teal) / 0.22);
+          border-radius: 1.65rem 0.7rem 1.65rem 1.65rem;
+          padding: 0.45rem 0.5rem 0.45rem 0.75rem;
+          box-shadow: 0 10px 24px -20px hsl(var(--jh-ink) / 0.45);
+          transition: border-color 0.2s ease, box-shadow 0.2s ease;
         }
         .chat-input-row-main {
           display: flex;
@@ -1697,8 +1770,8 @@ const Chatbot = () => {
           min-width: 0;
         }
         .chat-input-row:focus-within {
-          border-color: hsl(var(--primary) / 0.55);
-          box-shadow: 0 0 0 4px hsl(var(--primary) / 0.08);
+          border-color: hsl(var(--jh-teal) / 0.55);
+          box-shadow: 0 0 0 4px hsl(var(--jh-teal) / 0.1);
           outline: none;
         }
         .chat-pending-icon {
@@ -1712,28 +1785,28 @@ const Chatbot = () => {
           border: none;
           outline: none;
           color: hsl(var(--foreground));
-          font-size: 0.9375rem;
+          font-size: 1rem;
           line-height: 1.5;
           resize: none;
           max-height: 120px;
-          min-height: 24px;
-          padding: 0.375rem 0.25rem;
+          min-height: 2.75rem;
+          padding: 0.7rem 0.35rem;
           font-family: inherit;
         }
         @media (min-width: 640px) {
-          .chat-textarea { font-size: 0.875rem; }
+          .chat-textarea { font-size: 0.9375rem; }
         }
         .chat-textarea::placeholder {
           color: hsl(var(--muted-foreground));
         }
         .chat-send-btn {
-          width: 40px; height: 40px;
-          border-radius: 0.75rem;
-          background: var(--hero-gradient) !important;
+          width: 44px; height: 44px;
+          border-radius: 999px;
+          background: linear-gradient(145deg, hsl(var(--jh-sky)), hsl(var(--jh-teal))) !important;
           border: none !important;
           color: white !important;
-          box-shadow: 0 4px 12px hsl(var(--primary) / 0.35);
-          transition: all 0.2s;
+          box-shadow: 0 8px 18px -10px hsl(var(--jh-teal) / 0.7);
+          transition: transform 0.2s ease, filter 0.2s ease, box-shadow 0.2s ease;
         }
         .chat-send-btn:hover:not(:disabled) {
           transform: translateY(-1px) scale(1.03);
@@ -1745,13 +1818,17 @@ const Chatbot = () => {
           box-shadow: none;
         }
         .chat-attach-btn {
-          width: 40px;
-          height: 40px;
-          border-radius: 0.75rem;
-          background: hsl(var(--muted)) !important;
+          width: 44px;
+          height: 44px;
+          border-radius: 999px;
+          background: hsl(var(--muted) / 0.7) !important;
           border: 1.5px solid hsl(var(--border)) !important;
           color: hsl(var(--muted-foreground)) !important;
-          transition: all 0.2s;
+          transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+        }
+        .chat-container--senior .chat-send-btn,
+        .chat-container--senior .chat-attach-btn {
+          border-radius: 1.15rem 0.2rem 1.15rem 0.2rem;
         }
         .chat-attach-btn:hover:not(:disabled) {
           background: hsl(var(--primary) / 0.08) !important;
@@ -1778,9 +1855,13 @@ const Chatbot = () => {
           font-size: 0.6875rem;
           color: hsl(var(--muted-foreground));
           text-align: center;
-          margin-top: 0.5rem;
+          margin-top: 0.65rem;
           letter-spacing: 0.01em;
           line-height: 1.5;
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .chat-status-dot, .chat-typing-dot, .chat-message { animation: none !important; }
+          .chat-send-btn:hover:not(:disabled) { transform: none; }
         }
       `}</style>
     </Layout>
