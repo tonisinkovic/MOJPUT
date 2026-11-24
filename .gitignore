@@ -44,6 +44,7 @@ data/school-credentials/
 data/faculty-credentials/
 src/data/facultyUsers.generated.ts
 data/uploads/
+data/giveaway-entries.json
 
 # Local log from npm run git:push
 git-output.txt

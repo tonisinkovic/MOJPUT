@@ -60,12 +60,13 @@ import JuniorProfilHome from "@/components/junior/JuniorProfilHome";
 import JuniorProfilQuiz from "@/components/junior/JuniorProfilQuiz";
 import JuniorSchoolCompare from "@/components/junior/JuniorSchoolCompare";
 import JuniorNumbersNote from "@/components/junior/JuniorNumbersNote";
+import AdventProfileSection from "@/components/profile/AdventProfileSection";
 
 const interests = interestsJson.interests;
 const competencies = competenciesJson.competencies;
 const careers = careersJson.careers as CareerRow[];
 
-type TabId = "pregled" | "kviz" | "fakulteti" | "skole" | "postavke";
+type TabId = "pregled" | "kviz" | "advent" | "fakulteti" | "skole" | "postavke";
 
 const MOCK_SUGGESTIONS = [
   {
@@ -326,6 +327,7 @@ export default function ProfilDashboard() {
     : [
         { id: "pregled", label: "Profil", icon: LayoutDashboard },
         { id: "kviz", label: "Kviz", icon: Sparkles },
+        { id: "advent", label: "Adventski kviz", icon: Trophy },
         { id: "fakulteti", label: "Fakulteti", icon: GraduationCap },
         { id: "postavke", label: "Postavke", icon: Settings },
       ];
@@ -835,6 +837,8 @@ export default function ProfilDashboard() {
                       </Card>
                     </div>
                   )}
+
+                  {tab === "advent" && !isJunior && <AdventProfileSection />}
 
                   {tab === "fakulteti" && (
                     <div className="space-y-6">

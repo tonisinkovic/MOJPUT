@@ -130,7 +130,14 @@ async function parseJson<T>(res: Response, reqPath: string): Promise<ApiResponse
     }
     const msg = formatHttpError(res, json, text, reqPath);
     const code = codeFromJson(json);
-    return { success: false, message: msg, code };
+    const errBody = json as Record<string, unknown>;
+    const data = errBody?.data;
+    return {
+      success: false,
+      message: msg,
+      code,
+      ...(data !== undefined ? { data: data as T } : {}),
+    };
   }
   const body = json as Record<string, unknown>;
   if (body && typeof body === "object" && body.success === undefined && ("user" in body || "data" in body)) {
@@ -205,6 +212,23 @@ export async function apiPatch<T>(url: string, body: unknown): Promise<ApiRespon
   try {
     const res = await fetchWithTimeout(`${API_BASE_URL}${url}`, {
       method: "PATCH",
+      credentials: "include",
+      headers: withAuthHeaders({
+        "Content-Type": "application/json",
+        Accept: "application/json",
+      }),
+      body: JSON.stringify(body),
+    });
+    return parseJson<T>(res, url);
+  } catch (err) {
+    return { success: false, message: networkErrorMessage(err), code: "NETWORK_ERROR" };
+  }
+}
+
+export async function apiPut<T>(url: string, body: unknown): Promise<ApiResponse<T>> {
+  try {
+    const res = await fetchWithTimeout(`${API_BASE_URL}${url}`, {
+      method: "PUT",
       credentials: "include",
       headers: withAuthHeaders({
         "Content-Type": "application/json",

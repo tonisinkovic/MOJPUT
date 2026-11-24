@@ -1,8 +1,10 @@
 import { createRoot } from "react-dom/client";
 import { ThemeProvider } from "next-themes";
+import { ChristmasThemeProvider } from "@/components/christmas";
 import { registerSW } from "virtual:pwa-register";
 import { initAnalytics } from "./lib/analytics";
 import "./index.css";
+import "./styles/christmas.css";
 
 const rootEl = document.getElementById("root");
 
@@ -35,7 +37,9 @@ void import("./App.tsx")
     if (!rootEl) throw new Error("Nedostaje #root");
     createRoot(rootEl).render(
       <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-        <App />
+        <ChristmasThemeProvider>
+          <App />
+        </ChristmasThemeProvider>
       </ThemeProvider>,
     );
   })

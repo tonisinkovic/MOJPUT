@@ -28,8 +28,10 @@ import { authGoogle, authRegister, authResendVerification, userFromAuthMe } from
 import GoogleSignInButton from "@/components/GoogleSignInButton";
 import { setStoredLastLoginEmail, warmupApiHealth } from "@/lib/api";
 import { trackEvent } from "@/lib/analytics";
+import { adventSignupAnalyticsParams } from "@/lib/adventLeagueAnalytics";
 import { storePreferredExperience } from "@/lib/experience";
 import { cn } from "@/lib/utils";
+import { CHRISTMAS_THEME_ENABLED } from "@/config/christmas";
 
 const Registracija = () => {
   const navigate = useNavigate();
@@ -131,6 +133,7 @@ const Registracija = () => {
     trackEvent(created ? "sign_up_completed" : "login_completed", {
       method: "google",
       page_path: window.location.pathname,
+      ...adventSignupAnalyticsParams(searchParams.get("next")),
     });
     const nextPath = searchParams.get("next");
     if (user.user_type === "skola" || user.school) {
@@ -215,6 +218,7 @@ const Registracija = () => {
     trackEvent("sign_up_completed", {
       method: "email",
       page_path: window.location.pathname,
+      ...adventSignupAnalyticsParams(searchParams.get("next")),
     });
     setFormData({
       firstName: "",
@@ -318,12 +322,17 @@ const Registracija = () => {
                   Kreiraj svoj{" "}
                   <span className="relative inline-block align-baseline">
                     <span
-                      className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 h-[120%] w-[140%] rounded-full bg-gradient-to-r from-primary/30 via-accent/15 to-[hsl(232_68%_60%/0.25)] blur-2xl opacity-80"
+                      className={cn(
+                        "pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 h-[120%] w-[140%] rounded-full blur-2xl opacity-80",
+                        CHRISTMAS_THEME_ENABLED
+                          ? "bg-gradient-to-r from-[hsl(152_35%_28%/0.25)] via-[hsl(43_70%_62%/0.2)] to-[hsl(350_55%_52%/0.15)]"
+                          : "bg-gradient-to-r from-primary/30 via-accent/15 to-[hsl(232_68%_60%/0.25)]",
+                      )}
                       aria-hidden
                     />
                     <span className="relative text-gradient drop-shadow-sm">MojPut</span>
                   </span>{" "}
-                  račun
+                  račun {CHRISTMAS_THEME_ENABLED && "🎄"}
                 </h1>
 
                 <p className="text-pretty text-[15px] sm:text-base text-muted-foreground leading-[1.65] max-w-md mb-6">
@@ -396,6 +405,17 @@ const Registracija = () => {
                     aria-hidden
                   />
 
+                  {/* Christmas decorative accent */}
+                  {CHRISTMAS_THEME_ENABLED && (
+                    <div className="pointer-events-none absolute -right-2 -top-2 opacity-[0.18]" aria-hidden>
+                      <svg width="72" height="72" viewBox="0 0 80 80" fill="none">
+                        <path d="M80 0 L62 14 L74 11 L52 28 L68 23 L48 42 L80 30 Z" fill="hsl(152 35% 28%)" />
+                        <circle cx="60" cy="20" r="2.5" fill="hsl(350 55% 52%)" opacity="0.7" />
+                        <circle cx="70" cy="12" r="1.8" fill="hsl(43 70% 62%)" opacity="0.6" />
+                      </svg>
+                    </div>
+                  )}
+
                   {/* Form header */}
                   <div className="mb-6 flex items-center justify-between gap-4">
                     <div className="min-w-0">
@@ -406,7 +426,12 @@ const Registracija = () => {
                         Gmailom odmah, ili ispuni obrazac ispod.
                       </p>
                     </div>
-                    <div className="shrink-0 flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br from-primary/20 to-primary/5 text-primary ring-1 ring-primary/20 shadow-inner">
+                    <div className={cn(
+                      "shrink-0 flex h-11 w-11 items-center justify-center rounded-2xl shadow-inner ring-1",
+                      CHRISTMAS_THEME_ENABLED
+                        ? "bg-gradient-to-br from-[hsl(43_70%_62%/0.2)] to-[hsl(152_35%_28%/0.1)] text-[hsl(43_70%_50%)] ring-[hsl(43_70%_62%/0.25)]"
+                        : "bg-gradient-to-br from-primary/20 to-primary/5 text-primary ring-primary/20",
+                    )}>
                       <User className="h-[1.15rem] w-[1.15rem]" />
                     </div>
                   </div>

@@ -147,6 +147,8 @@ const INSERT_RETURNING_TABLES = new Set([
   "school_accounts",
   "school_posts",
   "school_post_images",
+  "advent_day_attempts",
+  "advent_question_answers",
 ]);
 
 function needsReturningId(sql) {
@@ -327,6 +329,56 @@ function migrateSqlite(db) {
       )
     `);
   }
+
+  try {
+    db.prepare("SELECT 1 FROM advent_day_attempts LIMIT 1").get();
+  } catch {
+    db.exec(`
+      CREATE TABLE advent_day_attempts (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER NOT NULL,
+        day_key TEXT NOT NULL,
+        total_score INTEGER NOT NULL DEFAULT 0,
+        questions_answered INTEGER NOT NULL DEFAULT 0,
+        questions_correct INTEGER NOT NULL DEFAULT 0,
+        total_duration_ms INTEGER NOT NULL DEFAULT 0,
+        started_at TEXT NOT NULL,
+        submitted_at TEXT,
+        completed INTEGER NOT NULL DEFAULT 0,
+        UNIQUE(user_id, day_key),
+        FOREIGN KEY (user_id) REFERENCES users(id)
+      );
+      CREATE INDEX idx_advent_day_attempts_day_key ON advent_day_attempts(day_key);
+      CREATE INDEX idx_advent_day_attempts_user_score ON advent_day_attempts(user_id, total_score);
+      CREATE INDEX idx_advent_day_attempts_completed ON advent_day_attempts(completed, day_key);
+    `);
+  }
+
+  try {
+    db.prepare("SELECT 1 FROM advent_question_answers LIMIT 1").get();
+  } catch {
+    db.exec(`
+      CREATE TABLE advent_question_answers (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        attempt_id INTEGER NOT NULL,
+        user_id INTEGER NOT NULL,
+        day_key TEXT NOT NULL,
+        question_index INTEGER NOT NULL,
+        selected_answer TEXT NOT NULL,
+        is_correct INTEGER NOT NULL,
+        score INTEGER NOT NULL,
+        duration_ms INTEGER NOT NULL,
+        answered_at TEXT NOT NULL DEFAULT (datetime('now')),
+        UNIQUE(attempt_id, question_index),
+        FOREIGN KEY (attempt_id) REFERENCES advent_day_attempts(id) ON DELETE CASCADE,
+        FOREIGN KEY (user_id) REFERENCES users(id)
+      );
+      CREATE INDEX idx_advent_question_answers_attempt ON advent_question_answers(attempt_id);
+      CREATE INDEX idx_advent_question_answers_user_day ON advent_question_answers(user_id, day_key);
+    `);
+  }
+
+  migrateAdventReferralSqlite(db);
 
   const userCols = db.prepare("PRAGMA table_info(users)").all().map((c) => c.name);
   if (!userCols.includes("user_type")) {
@@ -750,6 +802,40 @@ async function migratePg(pool) {
       created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
       UNIQUE(message_id, reporter_user_id)
     )`);
+  await run(`CREATE TABLE IF NOT EXISTS advent_day_attempts (
+      id SERIAL PRIMARY KEY,
+      user_id INTEGER NOT NULL REFERENCES users(id),
+      day_key TEXT NOT NULL,
+      total_score INTEGER NOT NULL DEFAULT 0,
+      questions_answered INTEGER NOT NULL DEFAULT 0,
+      questions_correct INTEGER NOT NULL DEFAULT 0,
+      total_duration_ms INTEGER NOT NULL DEFAULT 0,
+      started_at TIMESTAMPTZ NOT NULL,
+      submitted_at TIMESTAMPTZ,
+      completed BOOLEAN NOT NULL DEFAULT FALSE,
+      UNIQUE(user_id, day_key)
+    )`);
+  await run("CREATE INDEX IF NOT EXISTS idx_advent_day_attempts_day_key ON advent_day_attempts(day_key)");
+  await run("CREATE INDEX IF NOT EXISTS idx_advent_day_attempts_user_score ON advent_day_attempts(user_id, total_score)");
+  await run("CREATE INDEX IF NOT EXISTS idx_advent_day_attempts_completed ON advent_day_attempts(completed, day_key)");
+
+  await run(`CREATE TABLE IF NOT EXISTS advent_question_answers (
+      id SERIAL PRIMARY KEY,
+      attempt_id INTEGER NOT NULL REFERENCES advent_day_attempts(id) ON DELETE CASCADE,
+      user_id INTEGER NOT NULL REFERENCES users(id),
+      day_key TEXT NOT NULL,
+      question_index INTEGER NOT NULL,
+      selected_answer TEXT NOT NULL,
+      is_correct BOOLEAN NOT NULL,
+      score INTEGER NOT NULL,
+      duration_ms INTEGER NOT NULL,
+      answered_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      UNIQUE(attempt_id, question_index)
+    )`);
+  await run("CREATE INDEX IF NOT EXISTS idx_advent_question_answers_attempt ON advent_question_answers(attempt_id)");
+  await run("CREATE INDEX IF NOT EXISTS idx_advent_question_answers_user_day ON advent_question_answers(user_id, day_key)");
+
+  await migrateAdventReferralPg(run);
 
   let migrated;
   try {
@@ -1001,6 +1087,64 @@ async function seedForum(db) {
     "Savjeti i trikovi za maturu",
     anyUser.id,
   );
+}
+
+function migrateAdventReferralSqlite(db) {
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS advent_referral_codes (
+      user_id INTEGER PRIMARY KEY,
+      code TEXT NOT NULL UNIQUE,
+      created_at TEXT NOT NULL DEFAULT (datetime('now')),
+      FOREIGN KEY (user_id) REFERENCES users(id)
+    );
+    CREATE TABLE IF NOT EXISTS advent_referral_visits (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      referral_code TEXT NOT NULL,
+      referrer_user_id INTEGER NOT NULL,
+      visitor_hash TEXT NOT NULL,
+      landing_path TEXT NOT NULL DEFAULT '/adventska-liga',
+      day_key TEXT NOT NULL,
+      created_at TEXT NOT NULL DEFAULT (datetime('now')),
+      FOREIGN KEY (referrer_user_id) REFERENCES users(id)
+    );
+    CREATE INDEX IF NOT EXISTS idx_advent_ref_visits_code ON advent_referral_visits(referral_code);
+    CREATE INDEX IF NOT EXISTS idx_advent_ref_visits_day ON advent_referral_visits(day_key, visitor_hash);
+    CREATE TABLE IF NOT EXISTS advent_referral_signups (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      referral_code TEXT NOT NULL,
+      referrer_user_id INTEGER NOT NULL,
+      referred_user_id INTEGER NOT NULL UNIQUE,
+      created_at TEXT NOT NULL DEFAULT (datetime('now')),
+      FOREIGN KEY (referrer_user_id) REFERENCES users(id),
+      FOREIGN KEY (referred_user_id) REFERENCES users(id)
+    );
+  `);
+}
+
+async function migrateAdventReferralPg(run) {
+  await run(`CREATE TABLE IF NOT EXISTS advent_referral_codes (
+    user_id INTEGER PRIMARY KEY REFERENCES users(id),
+    code TEXT NOT NULL UNIQUE,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
+  )`);
+  await run(`CREATE TABLE IF NOT EXISTS advent_referral_visits (
+    id SERIAL PRIMARY KEY,
+    referral_code TEXT NOT NULL,
+    referrer_user_id INTEGER NOT NULL REFERENCES users(id),
+    visitor_hash TEXT NOT NULL,
+    landing_path TEXT NOT NULL DEFAULT '/adventska-liga',
+    day_key TEXT NOT NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
+  )`);
+  await run("CREATE INDEX IF NOT EXISTS idx_advent_ref_visits_code ON advent_referral_visits(referral_code)");
+  await run("CREATE INDEX IF NOT EXISTS idx_advent_ref_visits_day ON advent_referral_visits(day_key, visitor_hash)");
+  await run(`CREATE TABLE IF NOT EXISTS advent_referral_signups (
+    id SERIAL PRIMARY KEY,
+    referral_code TEXT NOT NULL,
+    referrer_user_id INTEGER NOT NULL REFERENCES users(id),
+    referred_user_id INTEGER NOT NULL UNIQUE REFERENCES users(id),
+    created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
+  )`);
 }
 
 async function finalizePendingRegistration(db, pending) {

@@ -2487,3 +2487,352 @@ body:has(.sr-page) .mp-menu [role="option"] {
     transition: none;
   }
 }
+
+/* ================================================================== */
+/*  ADVENT PAGE — Premium Christmas scoped layer                       */
+/*  Following .jh-page / .sr-page pattern for isolated theming.        */
+/* ================================================================== */
+
+.advent-page {
+  /* ---- Festive Display Font ---- */
+  --advent-font-display: 'Mountains of Christmas', 'Plus Jakarta Sans', cursive;
+  
+  /* ---- Palette — warmer, more festive ---- */
+  --advent-midnight: 340 35% 12%;        /* warm deep burgundy instead of cold navy */
+  --advent-midnight-lighter: 340 28% 18%;
+  --advent-evergreen: 152 45% 18%;       /* richer, warmer green */
+  --advent-evergreen-lighter: 152 38% 26%;
+  --advent-gold: 38 92% 58%;             /* warmer amber-gold */
+  --advent-gold-soft: 38 70% 72%;
+  --advent-copper: 25 75% 55%;           /* new: copper accent */
+  --advent-ivory: 36 40% 97%;            /* warmer ivory */
+  --advent-cranberry: 350 70% 52%;       /* brighter, more festive red */
+  --advent-frost: 200 35% 82%;           /* slightly warmer frost */
+  --advent-primary: var(--primary);
+
+  /* ---- Shadows & Glows — richer, warmer ---- */
+  --advent-shadow-card: 0 4px 24px -4px hsl(340 35% 5% / 0.6);
+  --advent-shadow-elevated: 0 8px 40px -8px hsl(340 35% 5% / 0.7), 0 2px 8px hsl(340 35% 5% / 0.4);
+  --advent-glow-gold: 0 0 32px hsl(38 92% 58% / 0.3), 0 0 64px hsl(38 92% 58% / 0.15), 0 0 90px hsl(38 70% 50% / 0.08);
+  --advent-glow-gold-strong: 0 0 24px hsl(38 92% 58% / 0.45), 0 0 56px hsl(38 92% 58% / 0.2);
+  --advent-glow-emerald: 0 0 24px hsl(152 60% 45% / 0.25), 0 0 48px hsl(152 60% 45% / 0.12);
+  --advent-glow-copper: 0 0 28px hsl(25 75% 55% / 0.3), 0 0 56px hsl(25 75% 55% / 0.15);
+}
+
+/* ---- Surface utilities ---- */
+
+.advent-surface-primary {
+  background: linear-gradient(
+    170deg,
+    hsl(var(--advent-midnight)) 0%,
+    hsl(var(--advent-evergreen)) 100%
+  );
+  color: hsl(var(--advent-ivory));
+}
+
+.advent-surface-elevated {
+  background: hsl(var(--advent-midnight-lighter));
+  color: hsl(var(--advent-ivory));
+}
+
+.advent-glass {
+  background: hsl(var(--advent-midnight) / 0.6);
+  backdrop-filter: blur(16px) saturate(1.4);
+  -webkit-backdrop-filter: blur(16px) saturate(1.4);
+  border: 1px solid hsl(var(--advent-frost) / 0.1);
+}
+
+.advent-glass-gold {
+  background: hsl(var(--advent-midnight) / 0.55);
+  backdrop-filter: blur(16px) saturate(1.4);
+  -webkit-backdrop-filter: blur(16px) saturate(1.4);
+  border: 1px solid hsl(var(--advent-gold) / 0.15);
+}
+
+.advent-glass-frost {
+  background: hsl(var(--advent-frost) / 0.06);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid hsl(var(--advent-frost) / 0.12);
+}
+
+/* ---- Text utilities ---- */
+
+.advent-text-gold {
+  background: linear-gradient(135deg, hsl(var(--advent-gold)), hsl(var(--advent-gold-soft)));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.advent-text-ivory {
+  color: hsl(var(--advent-ivory));
+}
+
+.advent-text-muted {
+  color: hsl(var(--advent-frost) / 0.65);
+}
+
+/* ---- Display font utility (for headings) ---- */
+
+.advent-heading {
+  font-family: var(--advent-font-display);
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-shadow: 0 2px 12px hsl(var(--advent-gold) / 0.3);
+}
+
+/* ---- Button utilities ---- */
+
+.advent-btn-gold {
+  background: linear-gradient(135deg, hsl(var(--advent-gold)), hsl(var(--advent-copper)));
+  color: hsl(var(--advent-midnight));
+  font-weight: 700;
+  border: none;
+  box-shadow: 0 2px 12px hsl(38 92% 58% / 0.35), 0 1px 6px hsl(25 75% 55% / 0.25);
+  transition: transform 0.2s, box-shadow 0.2s, filter 0.2s;
+}
+.advent-btn-gold:hover {
+  transform: translateY(-1px) scale(1.02);
+  box-shadow: 0 4px 24px hsl(38 92% 58% / 0.5), 0 2px 12px hsl(25 75% 55% / 0.3);
+  filter: brightness(1.1);
+}
+.advent-btn-gold:active {
+  transform: translateY(0) scale(0.98);
+  filter: brightness(0.95);
+}
+
+.advent-btn-ghost {
+  background: transparent;
+  color: hsl(var(--advent-ivory) / 0.85);
+  border: 1px solid hsl(var(--advent-frost) / 0.2);
+  transition: background 0.2s, border-color 0.2s;
+}
+.advent-btn-ghost:hover {
+  background: hsl(var(--advent-frost) / 0.08);
+  border-color: hsl(var(--advent-frost) / 0.3);
+}
+
+/* ---- Shimmer effect for gold buttons ---- */
+
+.advent-shimmer {
+  position: relative;
+  overflow: hidden;
+}
+.advent-shimmer::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    hsl(0 0% 100% / 0.15) 50%,
+    transparent 100%
+  );
+  background-size: 200% 100%;
+  animation: advent-shimmer 2.5s ease-in-out infinite;
+  pointer-events: none;
+}
+
+/* ---- Snowfall background ---- */
+
+.advent-snow-bg {
+  position: relative;
+  overflow: hidden;
+}
+.advent-snow-bg::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+  background-image:
+    radial-gradient(2px 2px at 10% 20%, hsl(0 0% 100% / 0.6), transparent),
+    radial-gradient(2px 2px at 25% 60%, hsl(0 0% 100% / 0.4), transparent),
+    radial-gradient(1.5px 1.5px at 40% 10%, hsl(0 0% 100% / 0.5), transparent),
+    radial-gradient(2px 2px at 55% 80%, hsl(0 0% 100% / 0.35), transparent),
+    radial-gradient(1px 1px at 70% 30%, hsl(0 0% 100% / 0.45), transparent),
+    radial-gradient(2px 2px at 85% 50%, hsl(0 0% 100% / 0.3), transparent),
+    radial-gradient(1.5px 1.5px at 95% 70%, hsl(0 0% 100% / 0.4), transparent);
+  background-size: 100% 100%;
+  animation: advent-snowfall 18s linear infinite;
+  opacity: 0.5;
+}
+
+/* ---- Glow orb decoration ---- */
+
+.advent-orb-gold {
+  position: absolute;
+  border-radius: 50%;
+  background: radial-gradient(circle, hsl(var(--advent-gold) / 0.25), transparent 70%);
+  animation: advent-glow-pulse 4s ease-in-out infinite;
+  pointer-events: none;
+}
+
+.advent-orb-frost {
+  position: absolute;
+  border-radius: 50%;
+  background: radial-gradient(circle, hsl(var(--advent-frost) / 0.12), transparent 70%);
+  animation: advent-glow-pulse 5s ease-in-out infinite;
+  pointer-events: none;
+}
+
+/* ---- Card states for calendar doors ---- */
+
+.advent-door {
+  transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.3s, border-color 0.3s;
+  transform-origin: left center;
+}
+
+.advent-door-locked {
+  background: hsl(var(--advent-midnight-lighter));
+  border: 1px solid hsl(var(--advent-frost) / 0.08);
+  color: hsl(var(--advent-frost) / 0.3);
+}
+
+.advent-door-available {
+  background: hsl(var(--advent-midnight-lighter));
+  border: 2px solid hsl(var(--advent-gold) / 0.5);
+  box-shadow: var(--advent-glow-gold);
+  color: hsl(var(--advent-gold));
+  cursor: pointer;
+}
+.advent-door-available:hover {
+  border-color: hsl(var(--advent-gold) / 0.8);
+  box-shadow: var(--advent-glow-gold-strong), 0 -4px 12px hsl(200 100% 90% / 0.3);
+  transform: translateY(-2px) scale(1.02);
+  background: linear-gradient(
+    135deg,
+    hsl(var(--advent-midnight-lighter)),
+    hsl(var(--advent-evergreen-lighter))
+  );
+}
+
+.advent-door-today {
+  animation: advent-glow-pulse 3s ease-in-out infinite;
+  box-shadow: var(--advent-glow-gold), var(--advent-glow-copper);
+}
+
+.advent-door-completed {
+  background: hsl(var(--advent-evergreen-lighter));
+  border: 1px solid hsl(152 60% 40% / 0.3);
+  box-shadow: var(--advent-glow-emerald);
+  color: hsl(152 60% 70%);
+}
+
+.advent-door-missed {
+  background: hsl(var(--advent-midnight-lighter));
+  border: 1px solid hsl(var(--advent-frost) / 0.06);
+  color: hsl(var(--advent-frost) / 0.25);
+  opacity: 0.7;
+}
+
+/* ---- Quiz option buttons ---- */
+
+.advent-option {
+  background: hsl(var(--advent-midnight-lighter));
+  border: 2px solid hsl(var(--advent-frost) / 0.12);
+  color: hsl(var(--advent-ivory));
+  transition: border-color 0.2s, background 0.2s, transform 0.15s, box-shadow 0.2s;
+}
+.advent-option:hover:not(:disabled):not(.advent-option-selected) {
+  border-color: hsl(var(--advent-gold) / 0.4);
+  background: hsl(var(--advent-frost) / 0.05);
+  transform: translateY(-1px);
+}
+.advent-option-selected {
+  border-color: hsl(var(--advent-gold) / 0.7);
+  background: hsl(var(--advent-gold) / 0.08);
+  box-shadow: 0 0 16px hsl(var(--advent-gold) / 0.12);
+}
+
+/* ---- Feedback states ---- */
+
+.advent-feedback-correct {
+  background: hsl(152 40% 15% / 0.5);
+  border: 1px solid hsl(152 60% 50% / 0.3);
+}
+
+.advent-feedback-incorrect {
+  background: hsl(var(--advent-midnight-lighter));
+  border: 1px solid hsl(var(--advent-frost) / 0.15);
+}
+
+/* ---- Podium ---- */
+
+.advent-podium-gold {
+  background: linear-gradient(180deg, hsl(var(--advent-gold) / 0.15), hsl(var(--advent-gold) / 0.05));
+  border: 1px solid hsl(var(--advent-gold) / 0.3);
+}
+.advent-podium-silver {
+  background: linear-gradient(180deg, hsl(0 0% 75% / 0.12), hsl(0 0% 75% / 0.04));
+  border: 1px solid hsl(0 0% 75% / 0.2);
+}
+.advent-podium-bronze {
+  background: linear-gradient(180deg, hsl(30 60% 45% / 0.12), hsl(30 60% 45% / 0.04));
+  border: 1px solid hsl(30 60% 45% / 0.2);
+}
+
+/* ---- Leaderboard row highlight ---- */
+
+.advent-row-self {
+  background: hsl(var(--advent-gold) / 0.06);
+  border: 1px solid hsl(var(--advent-gold) / 0.2);
+}
+
+/* ---- Confetti particles (celebration) ---- */
+
+.advent-confetti-particle {
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  border-radius: 1px;
+  pointer-events: none;
+  will-change: transform, opacity;
+}
+
+/* ---- Gold separator line ---- */
+
+.advent-gold-line {
+  height: 2px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    hsl(var(--advent-gold) / 0.4) 20%,
+    hsl(var(--advent-gold) / 0.6) 50%,
+    hsl(var(--advent-gold) / 0.4) 80%,
+    transparent
+  );
+}
+
+/* ================================================================== */
+/*  ADVENT — keyboard focus (gold ring on all interactive elements)    */
+/* ================================================================== */
+
+.advent-page button:focus-visible,
+.advent-page a:focus-visible,
+.advent-page [role="radio"]:focus-visible,
+.advent-page [tabindex="0"]:focus-visible {
+  outline: 2px solid hsl(var(--advent-gold) / 0.7);
+  outline-offset: 2px;
+  border-radius: 8px;
+}
+
+/* ================================================================== */
+/*  ADVENT — reduced motion overrides                                  */
+/* ================================================================== */
+
+@media (prefers-reduced-motion: reduce) {
+  .advent-page .advent-snow-bg::before,
+  .advent-page .advent-orb-gold,
+  .advent-page .advent-orb-frost,
+  .advent-page .advent-door-today,
+  .advent-page .advent-shimmer::after,
+  .advent-page .advent-confetti-particle {
+    animation: none !important;
+  }
+  .advent-page .advent-door,
+  .advent-page .advent-option {
+    transition: none;
+  }
+}

@@ -32,6 +32,7 @@ import {
 } from "@/lib/auth";
 import GoogleSignInButton from "@/components/GoogleSignInButton";
 import { getStoredLastLoginEmail, warmupApiHealth } from "@/lib/api";
+import { CHRISTMAS_THEME_ENABLED } from "@/config/christmas";
 import {
   Dialog,
   DialogContent,
@@ -393,7 +394,11 @@ const Prijava = () => {
                 {/* Header */}
                 <div className="mb-6 flex items-start gap-3.5">
                   <div
-                    className="shrink-0 flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-primary/20 to-primary/5 text-primary ring-1 ring-primary/20 shadow-inner"
+                    className={`shrink-0 flex h-12 w-12 items-center justify-center rounded-2xl shadow-inner ring-1 ${
+                      CHRISTMAS_THEME_ENABLED
+                        ? "bg-gradient-to-br from-[hsl(43_70%_62%/0.2)] to-[hsl(152_35%_28%/0.1)] text-[hsl(43_70%_50%)] ring-[hsl(43_70%_62%/0.25)]"
+                        : "bg-gradient-to-br from-primary/20 to-primary/5 text-primary ring-primary/20"
+                    }`}
                     aria-hidden
                   >
                     <LogIn className="h-[1.25rem] w-[1.25rem]" />
@@ -403,13 +408,24 @@ const Prijava = () => {
                       <span>Prijava</span>
                     </div>
                     <h1 className="text-balance text-[1.625rem] sm:text-[1.75rem] font-extrabold tracking-[-0.02em] leading-[1.15]">
-                      Dobrodošao natrag
+                      {CHRISTMAS_THEME_ENABLED ? "Dobrodošao natrag! 🎄" : "Dobrodošao natrag"}
                     </h1>
                     <p className="mt-1 text-[13.5px] sm:text-sm text-muted-foreground leading-snug">
                       Prijavi se i nastavi gdje si stao.
                     </p>
                   </div>
                 </div>
+
+                {/* Christmas decorative accent */}
+                {CHRISTMAS_THEME_ENABLED && (
+                  <div className="pointer-events-none absolute -right-3 -top-3 opacity-20" aria-hidden>
+                    <svg width="80" height="80" viewBox="0 0 80 80" fill="none">
+                      <path d="M80 0 L62 14 L74 11 L52 28 L68 23 L48 42 L80 30 Z" fill="hsl(152 35% 28%)" />
+                      <circle cx="60" cy="20" r="2.5" fill="hsl(350 55% 52%)" opacity="0.7" />
+                      <circle cx="70" cy="12" r="1.8" fill="hsl(43 70% 62%)" opacity="0.6" />
+                    </svg>
+                  </div>
+                )}
 
                 {/* Napomena: ovo je prijava za učenike. Fakultetski računi imaju zasebnu stranicu. */}
                 <div className="mb-4 flex items-start gap-2.5 rounded-xl border border-border/70 bg-muted/40 px-3.5 py-2.5 text-[12.5px] text-muted-foreground">

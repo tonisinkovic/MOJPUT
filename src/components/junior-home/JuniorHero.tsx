@@ -6,6 +6,8 @@ import { JUNIOR_QUIZ_QUESTION_COUNT } from "@/lib/juniorHonesty";
 import { enrollmentYear } from "@/lib/juniorHomeData";
 import { cn } from "@/lib/utils";
 import JuniorRoad from "./JuniorRoad";
+import { CHRISTMAS_THEME_ENABLED } from "@/config/christmas";
+import { ChristmasHeroOverlay } from "@/components/christmas";
 
 type Experience = "junior" | "senior";
 
@@ -154,6 +156,7 @@ export default function JuniorHero({
 
   return (
     <section className="relative overflow-hidden">
+      {CHRISTMAS_THEME_ENABLED && <ChristmasHeroOverlay />}
       <div className="pointer-events-none absolute inset-0" aria-hidden>
         <div className="jh-blob absolute -right-32 -top-72 h-[56rem] w-[56rem] rounded-full bg-[radial-gradient(circle,hsl(var(--jh-teal)/0.22),transparent_62%)]" />
         <div

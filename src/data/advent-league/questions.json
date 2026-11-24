@@ -1,0 +1,316 @@
+{
+  "questions": [
+    {
+      "dayKey": "2026-12-01",
+      "dayNumber": 1,
+      "questionText": "Sto MojPut prvenstveno pomaze srednjoskolcima odabrati?",
+      "options": [
+        { "id": "a", "text": "Smjer srednje skole ili put prema studiju" },
+        { "id": "b", "text": "Iskljucivo sportsku karijeru" },
+        { "id": "c", "text": "Samo izbor fakultetskog restorana" },
+        { "id": "d", "text": "Poreznu klasifikaciju" }
+      ],
+      "correctAnswer": "a",
+      "explanation": "MojPut je platforma za orijentaciju oko skolovanja, studija i karijere."
+    },
+    {
+      "dayKey": "2026-12-02",
+      "dayNumber": 2,
+      "questionText": "Sto je matura u hrvatskom obrazovnom sustavu?",
+      "options": [
+        { "id": "a", "text": "Zavrsni ispit koji otvara put prema fakultetu" },
+        { "id": "b", "text": "Roditeljski roditeljski sastanak" },
+        { "id": "c", "text": "Poslovni plan skole" },
+        { "id": "d", "text": "Vrsta studentske knjiznice" }
+      ],
+      "correctAnswer": "a",
+      "explanation": "Matura je kljucna tocka nakon srednje skole za nastavak obrazovanja."
+    },
+    {
+      "dayKey": "2026-12-03",
+      "dayNumber": 3,
+      "questionText": "Sto u kontekstu upisa znaci bodovni prag?",
+      "options": [
+        { "id": "a", "text": "Minimalni broj bodova za upis na odredeni studij" },
+        { "id": "b", "text": "Broj slobodnih mjesta u ucionici" },
+        { "id": "c", "text": "Visina skolarine za prvu godinu" },
+        { "id": "d", "text": "Broj ECTS bodova za seminar" }
+      ],
+      "correctAnswer": "a",
+      "explanation": "Prag pokazuje koliko bodova treba za konkretan studij u odredenoj godini."
+    },
+    {
+      "dayKey": "2026-12-04",
+      "dayNumber": 4,
+      "questionText": "Gdje na MojPutu pronades kalkulator koji usporeduje ocekivane bodove s pragovima?",
+      "options": [
+        { "id": "a", "text": "/kalkulator ili /kalkulator-fakulteti" },
+        { "id": "b", "text": "Samo na forumu bez podataka" },
+        { "id": "c", "text": "U postavkama racuna kao PDF" },
+        { "id": "d", "text": "U skolskom rasporedu voznje" }
+      ],
+      "correctAnswer": "a",
+      "explanation": "Kalkulatori pomazu procijeniti realnost upisa na zeljene studije."
+    },
+    {
+      "dayKey": "2026-12-05",
+      "dayNumber": 5,
+      "questionText": "Cemu sluzi karijerni kviz na /kviz?",
+      "options": [
+        { "id": "a", "text": "Suziti interese i predloziti smjerovi studija" },
+        { "id": "b", "text": "Rezervirati studentski dom" },
+        { "id": "c", "text": "Prijaviti se na natjecanje u sportu" },
+        { "id": "d", "text": "Automatski upisati korisnika na FER" }
+      ],
+      "correctAnswer": "a",
+      "explanation": "Kviz daje orijentaciju, ne garantira upis."
+    },
+    {
+      "dayKey": "2026-12-06",
+      "dayNumber": 6,
+      "questionText": "Koliko dana traje Adventska kviz liga u MVP-u?",
+      "options": [
+        { "id": "a", "text": "24 dana (1.-24. prosinca)" },
+        { "id": "b", "text": "7 dana" },
+        { "id": "c", "text": "365 dana" },
+        { "id": "d", "text": "Samo jedan dan" }
+      ],
+      "correctAnswer": "a",
+      "explanation": "Klasican advent ima 24 dana do Badnjeg dana u prosincu."
+    },
+    {
+      "dayKey": "2026-12-07",
+      "dayNumber": 7,
+      "questionText": "U kojoj vremenskoj zoni se odreduje danasnji dan kviza?",
+      "options": [
+        { "id": "a", "text": "Europe/Zagreb" },
+        { "id": "b", "text": "UTC samo za produkciju" },
+        { "id": "c", "text": "America/New_York" },
+        { "id": "d", "text": "Lokalno vrijeme preglednika bez servera" }
+      ],
+      "correctAnswer": "a",
+      "explanation": "Isti pristup koristi chatbot dnevni limit u MojPutu."
+    },
+    {
+      "dayKey": "2026-12-08",
+      "dayNumber": 8,
+      "questionText": "Koliko osnovnih bodova dajes tocno odgovor u MVP pravilima?",
+      "options": [
+        { "id": "a", "text": "100" },
+        { "id": "b", "text": "10" },
+        { "id": "c", "text": "1000" },
+        { "id": "d", "text": "0 uvijek" }
+      ],
+      "correctAnswer": "a",
+      "explanation": "Netocan odgovor donosi 0 bodova."
+    },
+    {
+      "dayKey": "2026-12-09",
+      "dayNumber": 9,
+      "questionText": "Koji vremenski bonus vrijedi za tocno u prvih 15 sekundi?",
+      "options": [
+        { "id": "a", "text": "+50" },
+        { "id": "b", "text": "+5" },
+        { "id": "c", "text": "+500" },
+        { "id": "d", "text": "Nema bonusa" }
+      ],
+      "correctAnswer": "a",
+      "explanation": "Brz tocno odgovor nagradjuje se dodatnih 50 bodova."
+    },
+    {
+      "dayKey": "2026-12-10",
+      "dayNumber": 10,
+      "questionText": "Koliko puta mozes odigrati isti advent dan na jednom racunu?",
+      "options": [
+        { "id": "a", "text": "Jednom" },
+        { "id": "b", "text": "Neograniceno" },
+        { "id": "c", "text": "Tri puta" },
+        { "id": "d", "text": "Samo u vikend" }
+      ],
+      "correctAnswer": "a",
+      "explanation": "UNIQUE (user_id, day_key) sprjecava duplikate."
+    },
+    {
+      "dayKey": "2026-12-11",
+      "dayNumber": 11,
+      "questionText": "Gdje se spremaju pokuajsi advent lige u produkciji?",
+      "options": [
+        { "id": "a", "text": "U app bazi (advent_attempts)" },
+        { "id": "b", "text": "U giveaway-entries.json" },
+        { "id": "c", "text": "Samo u localStorage" },
+        { "id": "d", "text": "U Prisma katalogu studija" }
+      ],
+      "correctAnswer": "a",
+      "explanation": "Pokusaji moraju biti u SQLite/PostgreSQL app bazi."
+    },
+    {
+      "dayKey": "2026-12-12",
+      "dayNumber": 12,
+      "questionText": "Koji status HTTP vraca API ako je danasnji kviz vec odigran?",
+      "options": [
+        { "id": "a", "text": "409" },
+        { "id": "b", "text": "404" },
+        { "id": "c", "text": "201" },
+        { "id": "d", "text": "301" }
+      ],
+      "correctAnswer": "a",
+      "explanation": "Konflikt resursa — jedan pokusaj po danu."
+    },
+    {
+      "dayKey": "2026-12-13",
+      "dayNumber": 13,
+      "questionText": "Sta authMiddleware zahtijeva prije igranja?",
+      "options": [
+        { "id": "a", "text": "Prijavljen racun s potvrdjenim emailom" },
+        { "id": "b", "text": "Samo cookie bez racuna" },
+        { "id": "c", "text": "Skolski CMS racun" },
+        { "id": "d", "text": "Faculty dashboard login" }
+      ],
+      "correctAnswer": "a",
+      "explanation": "Neverified email dobiva 403 EMAIL_NOT_VERIFIED."
+    },
+    {
+      "dayKey": "2026-12-14",
+      "dayNumber": 14,
+      "questionText": "Koji prefiks imaju rute advent API-ja?",
+      "options": [
+        { "id": "a", "text": "/api/advent/" },
+        { "id": "b", "text": "/api/giveaway/" },
+        { "id": "c", "text": "/api/career-quiz/" },
+        { "id": "d", "text": "/api/prisma/" }
+      ],
+      "correctAnswer": "a",
+      "explanation": "Izolirani prefiks ne dira ostale module."
+    },
+    {
+      "dayKey": "2026-12-15",
+      "dayNumber": 15,
+      "questionText": "Moze li se u MVP-u igrati prosli dan koji si propustio?",
+      "options": [
+        { "id": "a", "text": "Ne, samo danasnjeg day_key" },
+        { "id": "b", "text": "Da, bilo koji dan u prosincu" },
+        { "id": "c", "text": "Da, ali samo subotom" },
+        { "id": "d", "text": "Da, ako platis bodovima" }
+      ],
+      "correctAnswer": "a",
+      "explanation": "Retroaktivna igra nije u MVP scopeu."
+    },
+    {
+      "dayKey": "2026-12-16",
+      "dayNumber": 16,
+      "questionText": "Sta frontend salje zajedno s odgovorom za timer?",
+      "options": [
+        { "id": "a", "text": "startedAt (ISO vrijeme otvaranja pitanja)" },
+        { "id": "b", "text": "Lozinku korisnika" },
+        { "id": "c", "text": "Tocan odgovor s klienta" },
+        { "id": "d", "text": "Sam popunjeni score" }
+      ],
+      "correctAnswer": "a",
+      "explanation": "Server racuna duration prema submitted_at na serveru."
+    },
+    {
+      "dayKey": "2026-12-17",
+      "dayNumber": 17,
+      "questionText": "Koji je URL stranice advent lige u planu?",
+      "options": [
+        { "id": "a", "text": "/adventska-liga" },
+        { "id": "b", "text": "/bozicni-giveaway" },
+        { "id": "c", "text": "/tim" },
+        { "id": "d", "text": "/mature" }
+      ],
+      "correctAnswer": "a",
+      "explanation": "Ruta registrirana u App.tsx kao lazy stranica."
+    },
+    {
+      "dayKey": "2026-12-18",
+      "dayNumber": 18,
+      "questionText": "Prvi kriterij sortiranja ljestvice je:",
+      "options": [
+        { "id": "a", "text": "total_score silazno" },
+        { "id": "b", "text": "username abecedno" },
+        { "id": "c", "text": "email abecedno" },
+        { "id": "d", "text": "random" }
+      ],
+      "correctAnswer": "a",
+      "explanation": "Vise ukupnih bodova = bolja pozicija."
+    },
+    {
+      "dayKey": "2026-12-19",
+      "dayNumber": 19,
+      "questionText": "Koliko korisnika MVP ljestvica prikazuje?",
+      "options": [
+        { "id": "a", "text": "50" },
+        { "id": "b", "text": "5" },
+        { "id": "c", "text": "Sve bez limita" },
+        { "id": "d", "text": "Samo admin" }
+      ],
+      "correctAnswer": "a",
+      "explanation": "Top 50 za preglednost i performanse."
+    },
+    {
+      "dayKey": "2026-12-20",
+      "dayNumber": 20,
+      "questionText": "Moze li netocan odgovor dobiti vremenski bonus?",
+      "options": [
+        { "id": "a", "text": "Ne" },
+        { "id": "b", "text": "Da, uvijek +50" },
+        { "id": "c", "text": "Da, ali samo ujutro" },
+        { "id": "d", "text": "Da, ako trajes manje od 1 s" }
+      ],
+      "correctAnswer": "a",
+      "explanation": "Bonus vrijedi samo uz tocno."
+    },
+    {
+      "dayKey": "2026-12-21",
+      "dayNumber": 21,
+      "questionText": "Gdje su metapodaci sezone spremljeni u repou?",
+      "options": [
+        { "id": "a", "text": "src/data/advent-league/season.json" },
+        { "id": "b", "text": "prisma/schema.prisma" },
+        { "id": "c", "text": "data/giveaway-entries.json" },
+        { "id": "d", "text": "public/robots.txt" }
+      ],
+      "correctAnswer": "a",
+      "explanation": "Sadrzaj se deploya s repom; admin UI nije u MVP-u."
+    },
+    {
+      "dayKey": "2026-12-22",
+      "dayNumber": 22,
+      "questionText": "Minimalno trajanje odgovora u anti-cheat pravilima:",
+      "options": [
+        { "id": "a", "text": "500 ms" },
+        { "id": "b", "text": "0 ms" },
+        { "id": "c", "text": "1 sat" },
+        { "id": "d", "text": "10 min" }
+      ],
+      "correctAnswer": "a",
+      "explanation": "Prebrza predaja odbijena kao sumnjiva."
+    },
+    {
+      "dayKey": "2026-12-23",
+      "dayNumber": 23,
+      "questionText": "Neregistrirani korisnik na stranici lige:",
+      "options": [
+        { "id": "a", "text": "Vidi promociju i ljestvicu, igra zahtijeva prijavu" },
+        { "id": "b", "text": "Automatski je prvi na ljestvici" },
+        { "id": "c", "text": "Ne moze vidjeti stranicu" },
+        { "id": "d", "text": "Igra bez bodova" }
+      ],
+      "correctAnswer": "a",
+      "explanation": "Isti uzorak kao Bozicni giveaway."
+    },
+    {
+      "dayKey": "2026-12-24",
+      "dayNumber": 24,
+      "questionText": "Glavni cilj Adventske kviz lige na MojPutu je:",
+      "options": [
+        { "id": "a", "text": "Dnevni angažman i registracije uz edukativni sadržaj" },
+        { "id": "b", "text": "Zamijeniti forum" },
+        { "id": "c", "text": "Iskljuciti kalkulator" },
+        { "id": "d", "text": "Migrirati na novi framework" }
+      ],
+      "correctAnswer": "a",
+      "explanation": "Sezonski dodatak postojece platforme."
+    }
+  ]
+}

@@ -22,7 +22,16 @@ type AuthEventName =
   | "login_completed"
   | "login_failed";
 
-type AnalyticsEventName = QuizEventName | AuthEventName | "page_view";
+type AdventAnalyticsEventName =
+  | "advent_landing_view"
+  | "advent_cta_click"
+  | "advent_quiz_started"
+  | "advent_quiz_completed"
+  | "advent_leaderboard_view"
+  | "advent_share_click"
+  | "advent_referral_arrival";
+
+type AnalyticsEventName = QuizEventName | AuthEventName | AdventAnalyticsEventName | "page_view";
 
 type AnalyticsParams = Record<string, string | number | boolean | null | undefined>;
 
@@ -136,3 +145,5 @@ export function trackPageView(path: string): void {
     page_location: window.location.href,
   });
 }
+
+export type { AdventAnalyticsEventName };

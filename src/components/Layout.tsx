@@ -6,6 +6,8 @@ import SiteFeedback from "./SiteFeedback";
 import MojPutPremiumTeaser from "./MojPutPremiumTeaser";
 import { Bot } from "lucide-react";
 import { getStoredExperience, onExperienceChange } from "@/lib/experience";
+import { CHRISTMAS_THEME_ENABLED } from "@/config/christmas";
+import { ChristmasSnowfall, ChristmasGarland } from "@/components/christmas";
 
 interface LayoutProps {
   children: ReactNode;
@@ -27,6 +29,8 @@ const Layout = ({ children, hideFooter, hideChrome }: LayoutProps) => {
 
   return (
     <div className="min-h-screen flex flex-col">
+      {CHRISTMAS_THEME_ENABLED && !hideChrome && <ChristmasGarland />}
+      {CHRISTMAS_THEME_ENABLED && !hideChrome && <ChristmasSnowfall />}
       {hideChrome ? null : <Navbar />}
       <main className={hideChrome ? "flex-1" : "flex-1 pt-16"}>{children}</main>
       {!hideFooter && !hideChrome && (

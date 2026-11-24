@@ -1,0 +1,5909 @@
+{
+  "days": [
+    {
+      "dayKey": "2026-12-01",
+      "dayNumber": 1,
+      "questions": [
+        {
+          "index": 0,
+          "text": "Test pitanje?",
+          "options": [
+            {
+              "id": "a",
+              "text": "Odgovor A"
+            },
+            {
+              "id": "b",
+              "text": "Odgovor B"
+            },
+            {
+              "id": "c",
+              "text": "Odgovor C"
+            },
+            {
+              "id": "d",
+              "text": "Odgovor D"
+            }
+          ],
+          "correctAnswer": "b",
+          "category": "test",
+          "explanation": "Objašnjenje."
+        },
+        {
+          "index": 1,
+          "text": "Dan 1, pitanje 2: Testno pitanje za advent kviz (q2)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q2"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q2"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q2 (tocno)"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q2"
+            }
+          ],
+          "correctAnswer": "c",
+          "explanation": "Objasnjenje za pitanje 2 na dan 1."
+        },
+        {
+          "index": 2,
+          "text": "Dan 1, pitanje 3: Testno pitanje za advent kviz (q3)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q3"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q3"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q3"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q3 (tocno)"
+            }
+          ],
+          "correctAnswer": "d",
+          "explanation": "Objasnjenje za pitanje 3 na dan 1."
+        },
+        {
+          "index": 3,
+          "text": "Dan 1, pitanje 4: Testno pitanje za advent kviz (q4)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q4 (tocno)"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q4"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q4"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q4"
+            }
+          ],
+          "correctAnswer": "a",
+          "explanation": "Objasnjenje za pitanje 4 na dan 1."
+        },
+        {
+          "index": 4,
+          "text": "Dan 1, pitanje 5: Testno pitanje za advent kviz (q5)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q5"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q5 (tocno)"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q5"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q5"
+            }
+          ],
+          "correctAnswer": "b",
+          "explanation": "Objasnjenje za pitanje 5 na dan 1."
+        },
+        {
+          "index": 5,
+          "text": "Dan 1, pitanje 6: Testno pitanje za advent kviz (q6)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q6"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q6"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q6 (tocno)"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q6"
+            }
+          ],
+          "correctAnswer": "c",
+          "explanation": "Objasnjenje za pitanje 6 na dan 1."
+        },
+        {
+          "index": 6,
+          "text": "Dan 1, pitanje 7: Testno pitanje za advent kviz (q7)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q7"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q7"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q7"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q7 (tocno)"
+            }
+          ],
+          "correctAnswer": "d",
+          "explanation": "Objasnjenje za pitanje 7 na dan 1."
+        },
+        {
+          "index": 7,
+          "text": "Dan 1, pitanje 8: Testno pitanje za advent kviz (q8)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q8 (tocno)"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q8"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q8"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q8"
+            }
+          ],
+          "correctAnswer": "a",
+          "explanation": "Objasnjenje za pitanje 8 na dan 1."
+        },
+        {
+          "index": 8,
+          "text": "Dan 1, pitanje 9: Testno pitanje za advent kviz (q9)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q9"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q9 (tocno)"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q9"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q9"
+            }
+          ],
+          "correctAnswer": "b",
+          "explanation": "Objasnjenje za pitanje 9 na dan 1."
+        },
+        {
+          "index": 9,
+          "text": "Dan 1, pitanje 10: Testno pitanje za advent kviz (q10)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q10"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q10"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q10 (tocno)"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q10"
+            }
+          ],
+          "correctAnswer": "c",
+          "explanation": "Objasnjenje za pitanje 10 na dan 1."
+        }
+      ]
+    },
+    {
+      "dayKey": "2026-12-02",
+      "dayNumber": 2,
+      "questions": [
+        {
+          "index": 0,
+          "text": "Dan 2, pitanje 1: Testno pitanje za advent kviz (q11)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q11"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q11"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q11"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q11 (tocno)"
+            }
+          ],
+          "correctAnswer": "d",
+          "explanation": "Objasnjenje za pitanje 11 na dan 2."
+        },
+        {
+          "index": 1,
+          "text": "Dan 2, pitanje 2: Testno pitanje za advent kviz (q12)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q12 (tocno)"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q12"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q12"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q12"
+            }
+          ],
+          "correctAnswer": "a",
+          "explanation": "Objasnjenje za pitanje 12 na dan 2."
+        },
+        {
+          "index": 2,
+          "text": "Dan 2, pitanje 3: Testno pitanje za advent kviz (q13)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q13"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q13 (tocno)"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q13"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q13"
+            }
+          ],
+          "correctAnswer": "b",
+          "explanation": "Objasnjenje za pitanje 13 na dan 2."
+        },
+        {
+          "index": 3,
+          "text": "Dan 2, pitanje 4: Testno pitanje za advent kviz (q14)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q14"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q14"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q14 (tocno)"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q14"
+            }
+          ],
+          "correctAnswer": "c",
+          "explanation": "Objasnjenje za pitanje 14 na dan 2."
+        },
+        {
+          "index": 4,
+          "text": "Dan 2, pitanje 5: Testno pitanje za advent kviz (q15)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q15"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q15"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q15"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q15 (tocno)"
+            }
+          ],
+          "correctAnswer": "d",
+          "explanation": "Objasnjenje za pitanje 15 na dan 2."
+        },
+        {
+          "index": 5,
+          "text": "Dan 2, pitanje 6: Testno pitanje za advent kviz (q16)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q16 (tocno)"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q16"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q16"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q16"
+            }
+          ],
+          "correctAnswer": "a",
+          "explanation": "Objasnjenje za pitanje 16 na dan 2."
+        },
+        {
+          "index": 6,
+          "text": "Dan 2, pitanje 7: Testno pitanje za advent kviz (q17)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q17"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q17 (tocno)"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q17"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q17"
+            }
+          ],
+          "correctAnswer": "b",
+          "explanation": "Objasnjenje za pitanje 17 na dan 2."
+        },
+        {
+          "index": 7,
+          "text": "Dan 2, pitanje 8: Testno pitanje za advent kviz (q18)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q18"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q18"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q18 (tocno)"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q18"
+            }
+          ],
+          "correctAnswer": "c",
+          "explanation": "Objasnjenje za pitanje 18 na dan 2."
+        },
+        {
+          "index": 8,
+          "text": "Dan 2, pitanje 9: Testno pitanje za advent kviz (q19)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q19"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q19"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q19"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q19 (tocno)"
+            }
+          ],
+          "correctAnswer": "d",
+          "explanation": "Objasnjenje za pitanje 19 na dan 2."
+        },
+        {
+          "index": 9,
+          "text": "Dan 2, pitanje 10: Testno pitanje za advent kviz (q20)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q20 (tocno)"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q20"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q20"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q20"
+            }
+          ],
+          "correctAnswer": "a",
+          "explanation": "Objasnjenje za pitanje 20 na dan 2."
+        }
+      ]
+    },
+    {
+      "dayKey": "2026-12-03",
+      "dayNumber": 3,
+      "questions": [
+        {
+          "index": 0,
+          "text": "Dan 3, pitanje 1: Testno pitanje za advent kviz (q21)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q21"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q21 (tocno)"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q21"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q21"
+            }
+          ],
+          "correctAnswer": "b",
+          "explanation": "Objasnjenje za pitanje 21 na dan 3."
+        },
+        {
+          "index": 1,
+          "text": "Dan 3, pitanje 2: Testno pitanje za advent kviz (q22)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q22"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q22"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q22 (tocno)"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q22"
+            }
+          ],
+          "correctAnswer": "c",
+          "explanation": "Objasnjenje za pitanje 22 na dan 3."
+        },
+        {
+          "index": 2,
+          "text": "Dan 3, pitanje 3: Testno pitanje za advent kviz (q23)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q23"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q23"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q23"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q23 (tocno)"
+            }
+          ],
+          "correctAnswer": "d",
+          "explanation": "Objasnjenje za pitanje 23 na dan 3."
+        },
+        {
+          "index": 3,
+          "text": "Dan 3, pitanje 4: Testno pitanje za advent kviz (q24)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q24 (tocno)"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q24"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q24"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q24"
+            }
+          ],
+          "correctAnswer": "a",
+          "explanation": "Objasnjenje za pitanje 24 na dan 3."
+        },
+        {
+          "index": 4,
+          "text": "Dan 3, pitanje 5: Testno pitanje za advent kviz (q25)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q25"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q25 (tocno)"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q25"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q25"
+            }
+          ],
+          "correctAnswer": "b",
+          "explanation": "Objasnjenje za pitanje 25 na dan 3."
+        },
+        {
+          "index": 5,
+          "text": "Dan 3, pitanje 6: Testno pitanje za advent kviz (q26)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q26"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q26"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q26 (tocno)"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q26"
+            }
+          ],
+          "correctAnswer": "c",
+          "explanation": "Objasnjenje za pitanje 26 na dan 3."
+        },
+        {
+          "index": 6,
+          "text": "Dan 3, pitanje 7: Testno pitanje za advent kviz (q27)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q27"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q27"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q27"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q27 (tocno)"
+            }
+          ],
+          "correctAnswer": "d",
+          "explanation": "Objasnjenje za pitanje 27 na dan 3."
+        },
+        {
+          "index": 7,
+          "text": "Dan 3, pitanje 8: Testno pitanje za advent kviz (q28)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q28 (tocno)"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q28"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q28"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q28"
+            }
+          ],
+          "correctAnswer": "a",
+          "explanation": "Objasnjenje za pitanje 28 na dan 3."
+        },
+        {
+          "index": 8,
+          "text": "Dan 3, pitanje 9: Testno pitanje za advent kviz (q29)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q29"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q29 (tocno)"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q29"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q29"
+            }
+          ],
+          "correctAnswer": "b",
+          "explanation": "Objasnjenje za pitanje 29 na dan 3."
+        },
+        {
+          "index": 9,
+          "text": "Dan 3, pitanje 10: Testno pitanje za advent kviz (q30)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q30"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q30"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q30 (tocno)"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q30"
+            }
+          ],
+          "correctAnswer": "c",
+          "explanation": "Objasnjenje za pitanje 30 na dan 3."
+        }
+      ]
+    },
+    {
+      "dayKey": "2026-12-04",
+      "dayNumber": 4,
+      "questions": [
+        {
+          "index": 0,
+          "text": "Dan 4, pitanje 1: Testno pitanje za advent kviz (q31)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q31"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q31"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q31"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q31 (tocno)"
+            }
+          ],
+          "correctAnswer": "d",
+          "explanation": "Objasnjenje za pitanje 31 na dan 4."
+        },
+        {
+          "index": 1,
+          "text": "Dan 4, pitanje 2: Testno pitanje za advent kviz (q32)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q32 (tocno)"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q32"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q32"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q32"
+            }
+          ],
+          "correctAnswer": "a",
+          "explanation": "Objasnjenje za pitanje 32 na dan 4."
+        },
+        {
+          "index": 2,
+          "text": "Dan 4, pitanje 3: Testno pitanje za advent kviz (q33)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q33"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q33 (tocno)"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q33"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q33"
+            }
+          ],
+          "correctAnswer": "b",
+          "explanation": "Objasnjenje za pitanje 33 na dan 4."
+        },
+        {
+          "index": 3,
+          "text": "Dan 4, pitanje 4: Testno pitanje za advent kviz (q34)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q34"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q34"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q34 (tocno)"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q34"
+            }
+          ],
+          "correctAnswer": "c",
+          "explanation": "Objasnjenje za pitanje 34 na dan 4."
+        },
+        {
+          "index": 4,
+          "text": "Dan 4, pitanje 5: Testno pitanje za advent kviz (q35)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q35"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q35"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q35"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q35 (tocno)"
+            }
+          ],
+          "correctAnswer": "d",
+          "explanation": "Objasnjenje za pitanje 35 na dan 4."
+        },
+        {
+          "index": 5,
+          "text": "Dan 4, pitanje 6: Testno pitanje za advent kviz (q36)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q36 (tocno)"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q36"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q36"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q36"
+            }
+          ],
+          "correctAnswer": "a",
+          "explanation": "Objasnjenje za pitanje 36 na dan 4."
+        },
+        {
+          "index": 6,
+          "text": "Dan 4, pitanje 7: Testno pitanje za advent kviz (q37)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q37"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q37 (tocno)"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q37"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q37"
+            }
+          ],
+          "correctAnswer": "b",
+          "explanation": "Objasnjenje za pitanje 37 na dan 4."
+        },
+        {
+          "index": 7,
+          "text": "Dan 4, pitanje 8: Testno pitanje za advent kviz (q38)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q38"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q38"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q38 (tocno)"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q38"
+            }
+          ],
+          "correctAnswer": "c",
+          "explanation": "Objasnjenje za pitanje 38 na dan 4."
+        },
+        {
+          "index": 8,
+          "text": "Dan 4, pitanje 9: Testno pitanje za advent kviz (q39)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q39"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q39"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q39"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q39 (tocno)"
+            }
+          ],
+          "correctAnswer": "d",
+          "explanation": "Objasnjenje za pitanje 39 na dan 4."
+        },
+        {
+          "index": 9,
+          "text": "Dan 4, pitanje 10: Testno pitanje za advent kviz (q40)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q40 (tocno)"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q40"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q40"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q40"
+            }
+          ],
+          "correctAnswer": "a",
+          "explanation": "Objasnjenje za pitanje 40 na dan 4."
+        }
+      ]
+    },
+    {
+      "dayKey": "2026-12-05",
+      "dayNumber": 5,
+      "questions": [
+        {
+          "index": 0,
+          "text": "Dan 5, pitanje 1: Testno pitanje za advent kviz (q41)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q41"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q41 (tocno)"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q41"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q41"
+            }
+          ],
+          "correctAnswer": "b",
+          "explanation": "Objasnjenje za pitanje 41 na dan 5."
+        },
+        {
+          "index": 1,
+          "text": "Dan 5, pitanje 2: Testno pitanje za advent kviz (q42)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q42"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q42"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q42 (tocno)"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q42"
+            }
+          ],
+          "correctAnswer": "c",
+          "explanation": "Objasnjenje za pitanje 42 na dan 5."
+        },
+        {
+          "index": 2,
+          "text": "Dan 5, pitanje 3: Testno pitanje za advent kviz (q43)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q43"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q43"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q43"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q43 (tocno)"
+            }
+          ],
+          "correctAnswer": "d",
+          "explanation": "Objasnjenje za pitanje 43 na dan 5."
+        },
+        {
+          "index": 3,
+          "text": "Dan 5, pitanje 4: Testno pitanje za advent kviz (q44)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q44 (tocno)"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q44"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q44"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q44"
+            }
+          ],
+          "correctAnswer": "a",
+          "explanation": "Objasnjenje za pitanje 44 na dan 5."
+        },
+        {
+          "index": 4,
+          "text": "Dan 5, pitanje 5: Testno pitanje za advent kviz (q45)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q45"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q45 (tocno)"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q45"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q45"
+            }
+          ],
+          "correctAnswer": "b",
+          "explanation": "Objasnjenje za pitanje 45 na dan 5."
+        },
+        {
+          "index": 5,
+          "text": "Dan 5, pitanje 6: Testno pitanje za advent kviz (q46)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q46"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q46"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q46 (tocno)"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q46"
+            }
+          ],
+          "correctAnswer": "c",
+          "explanation": "Objasnjenje za pitanje 46 na dan 5."
+        },
+        {
+          "index": 6,
+          "text": "Dan 5, pitanje 7: Testno pitanje za advent kviz (q47)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q47"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q47"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q47"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q47 (tocno)"
+            }
+          ],
+          "correctAnswer": "d",
+          "explanation": "Objasnjenje za pitanje 47 na dan 5."
+        },
+        {
+          "index": 7,
+          "text": "Dan 5, pitanje 8: Testno pitanje za advent kviz (q48)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q48 (tocno)"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q48"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q48"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q48"
+            }
+          ],
+          "correctAnswer": "a",
+          "explanation": "Objasnjenje za pitanje 48 na dan 5."
+        },
+        {
+          "index": 8,
+          "text": "Dan 5, pitanje 9: Testno pitanje za advent kviz (q49)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q49"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q49 (tocno)"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q49"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q49"
+            }
+          ],
+          "correctAnswer": "b",
+          "explanation": "Objasnjenje za pitanje 49 na dan 5."
+        },
+        {
+          "index": 9,
+          "text": "Dan 5, pitanje 10: Testno pitanje za advent kviz (q50)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q50"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q50"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q50 (tocno)"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q50"
+            }
+          ],
+          "correctAnswer": "c",
+          "explanation": "Objasnjenje za pitanje 50 na dan 5."
+        }
+      ]
+    },
+    {
+      "dayKey": "2026-12-06",
+      "dayNumber": 6,
+      "questions": [
+        {
+          "index": 0,
+          "text": "Dan 6, pitanje 1: Testno pitanje za advent kviz (q51)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q51"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q51"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q51"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q51 (tocno)"
+            }
+          ],
+          "correctAnswer": "d",
+          "explanation": "Objasnjenje za pitanje 51 na dan 6."
+        },
+        {
+          "index": 1,
+          "text": "Dan 6, pitanje 2: Testno pitanje za advent kviz (q52)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q52 (tocno)"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q52"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q52"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q52"
+            }
+          ],
+          "correctAnswer": "a",
+          "explanation": "Objasnjenje za pitanje 52 na dan 6."
+        },
+        {
+          "index": 2,
+          "text": "Dan 6, pitanje 3: Testno pitanje za advent kviz (q53)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q53"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q53 (tocno)"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q53"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q53"
+            }
+          ],
+          "correctAnswer": "b",
+          "explanation": "Objasnjenje za pitanje 53 na dan 6."
+        },
+        {
+          "index": 3,
+          "text": "Dan 6, pitanje 4: Testno pitanje za advent kviz (q54)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q54"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q54"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q54 (tocno)"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q54"
+            }
+          ],
+          "correctAnswer": "c",
+          "explanation": "Objasnjenje za pitanje 54 na dan 6."
+        },
+        {
+          "index": 4,
+          "text": "Dan 6, pitanje 5: Testno pitanje za advent kviz (q55)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q55"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q55"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q55"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q55 (tocno)"
+            }
+          ],
+          "correctAnswer": "d",
+          "explanation": "Objasnjenje za pitanje 55 na dan 6."
+        },
+        {
+          "index": 5,
+          "text": "Dan 6, pitanje 6: Testno pitanje za advent kviz (q56)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q56 (tocno)"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q56"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q56"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q56"
+            }
+          ],
+          "correctAnswer": "a",
+          "explanation": "Objasnjenje za pitanje 56 na dan 6."
+        },
+        {
+          "index": 6,
+          "text": "Dan 6, pitanje 7: Testno pitanje za advent kviz (q57)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q57"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q57 (tocno)"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q57"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q57"
+            }
+          ],
+          "correctAnswer": "b",
+          "explanation": "Objasnjenje za pitanje 57 na dan 6."
+        },
+        {
+          "index": 7,
+          "text": "Dan 6, pitanje 8: Testno pitanje za advent kviz (q58)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q58"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q58"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q58 (tocno)"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q58"
+            }
+          ],
+          "correctAnswer": "c",
+          "explanation": "Objasnjenje za pitanje 58 na dan 6."
+        },
+        {
+          "index": 8,
+          "text": "Dan 6, pitanje 9: Testno pitanje za advent kviz (q59)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q59"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q59"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q59"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q59 (tocno)"
+            }
+          ],
+          "correctAnswer": "d",
+          "explanation": "Objasnjenje za pitanje 59 na dan 6."
+        },
+        {
+          "index": 9,
+          "text": "Dan 6, pitanje 10: Testno pitanje za advent kviz (q60)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q60 (tocno)"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q60"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q60"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q60"
+            }
+          ],
+          "correctAnswer": "a",
+          "explanation": "Objasnjenje za pitanje 60 na dan 6."
+        }
+      ]
+    },
+    {
+      "dayKey": "2026-12-07",
+      "dayNumber": 7,
+      "questions": [
+        {
+          "index": 0,
+          "text": "Dan 7, pitanje 1: Testno pitanje za advent kviz (q61)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q61"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q61 (tocno)"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q61"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q61"
+            }
+          ],
+          "correctAnswer": "b",
+          "explanation": "Objasnjenje za pitanje 61 na dan 7."
+        },
+        {
+          "index": 1,
+          "text": "Dan 7, pitanje 2: Testno pitanje za advent kviz (q62)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q62"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q62"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q62 (tocno)"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q62"
+            }
+          ],
+          "correctAnswer": "c",
+          "explanation": "Objasnjenje za pitanje 62 na dan 7."
+        },
+        {
+          "index": 2,
+          "text": "Dan 7, pitanje 3: Testno pitanje za advent kviz (q63)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q63"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q63"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q63"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q63 (tocno)"
+            }
+          ],
+          "correctAnswer": "d",
+          "explanation": "Objasnjenje za pitanje 63 na dan 7."
+        },
+        {
+          "index": 3,
+          "text": "Dan 7, pitanje 4: Testno pitanje za advent kviz (q64)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q64 (tocno)"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q64"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q64"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q64"
+            }
+          ],
+          "correctAnswer": "a",
+          "explanation": "Objasnjenje za pitanje 64 na dan 7."
+        },
+        {
+          "index": 4,
+          "text": "Dan 7, pitanje 5: Testno pitanje za advent kviz (q65)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q65"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q65 (tocno)"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q65"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q65"
+            }
+          ],
+          "correctAnswer": "b",
+          "explanation": "Objasnjenje za pitanje 65 na dan 7."
+        },
+        {
+          "index": 5,
+          "text": "Dan 7, pitanje 6: Testno pitanje za advent kviz (q66)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q66"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q66"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q66 (tocno)"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q66"
+            }
+          ],
+          "correctAnswer": "c",
+          "explanation": "Objasnjenje za pitanje 66 na dan 7."
+        },
+        {
+          "index": 6,
+          "text": "Dan 7, pitanje 7: Testno pitanje za advent kviz (q67)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q67"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q67"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q67"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q67 (tocno)"
+            }
+          ],
+          "correctAnswer": "d",
+          "explanation": "Objasnjenje za pitanje 67 na dan 7."
+        },
+        {
+          "index": 7,
+          "text": "Dan 7, pitanje 8: Testno pitanje za advent kviz (q68)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q68 (tocno)"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q68"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q68"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q68"
+            }
+          ],
+          "correctAnswer": "a",
+          "explanation": "Objasnjenje za pitanje 68 na dan 7."
+        },
+        {
+          "index": 8,
+          "text": "Dan 7, pitanje 9: Testno pitanje za advent kviz (q69)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q69"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q69 (tocno)"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q69"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q69"
+            }
+          ],
+          "correctAnswer": "b",
+          "explanation": "Objasnjenje za pitanje 69 na dan 7."
+        },
+        {
+          "index": 9,
+          "text": "Dan 7, pitanje 10: Testno pitanje za advent kviz (q70)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q70"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q70"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q70 (tocno)"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q70"
+            }
+          ],
+          "correctAnswer": "c",
+          "explanation": "Objasnjenje za pitanje 70 na dan 7."
+        }
+      ]
+    },
+    {
+      "dayKey": "2026-12-08",
+      "dayNumber": 8,
+      "questions": [
+        {
+          "index": 0,
+          "text": "Dan 8, pitanje 1: Testno pitanje za advent kviz (q71)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q71"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q71"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q71"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q71 (tocno)"
+            }
+          ],
+          "correctAnswer": "d",
+          "explanation": "Objasnjenje za pitanje 71 na dan 8."
+        },
+        {
+          "index": 1,
+          "text": "Dan 8, pitanje 2: Testno pitanje za advent kviz (q72)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q72 (tocno)"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q72"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q72"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q72"
+            }
+          ],
+          "correctAnswer": "a",
+          "explanation": "Objasnjenje za pitanje 72 na dan 8."
+        },
+        {
+          "index": 2,
+          "text": "Dan 8, pitanje 3: Testno pitanje za advent kviz (q73)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q73"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q73 (tocno)"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q73"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q73"
+            }
+          ],
+          "correctAnswer": "b",
+          "explanation": "Objasnjenje za pitanje 73 na dan 8."
+        },
+        {
+          "index": 3,
+          "text": "Dan 8, pitanje 4: Testno pitanje za advent kviz (q74)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q74"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q74"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q74 (tocno)"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q74"
+            }
+          ],
+          "correctAnswer": "c",
+          "explanation": "Objasnjenje za pitanje 74 na dan 8."
+        },
+        {
+          "index": 4,
+          "text": "Dan 8, pitanje 5: Testno pitanje za advent kviz (q75)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q75"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q75"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q75"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q75 (tocno)"
+            }
+          ],
+          "correctAnswer": "d",
+          "explanation": "Objasnjenje za pitanje 75 na dan 8."
+        },
+        {
+          "index": 5,
+          "text": "Dan 8, pitanje 6: Testno pitanje za advent kviz (q76)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q76 (tocno)"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q76"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q76"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q76"
+            }
+          ],
+          "correctAnswer": "a",
+          "explanation": "Objasnjenje za pitanje 76 na dan 8."
+        },
+        {
+          "index": 6,
+          "text": "Dan 8, pitanje 7: Testno pitanje za advent kviz (q77)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q77"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q77 (tocno)"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q77"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q77"
+            }
+          ],
+          "correctAnswer": "b",
+          "explanation": "Objasnjenje za pitanje 77 na dan 8."
+        },
+        {
+          "index": 7,
+          "text": "Dan 8, pitanje 8: Testno pitanje za advent kviz (q78)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q78"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q78"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q78 (tocno)"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q78"
+            }
+          ],
+          "correctAnswer": "c",
+          "explanation": "Objasnjenje za pitanje 78 na dan 8."
+        },
+        {
+          "index": 8,
+          "text": "Dan 8, pitanje 9: Testno pitanje za advent kviz (q79)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q79"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q79"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q79"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q79 (tocno)"
+            }
+          ],
+          "correctAnswer": "d",
+          "explanation": "Objasnjenje za pitanje 79 na dan 8."
+        },
+        {
+          "index": 9,
+          "text": "Dan 8, pitanje 10: Testno pitanje za advent kviz (q80)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q80 (tocno)"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q80"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q80"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q80"
+            }
+          ],
+          "correctAnswer": "a",
+          "explanation": "Objasnjenje za pitanje 80 na dan 8."
+        }
+      ]
+    },
+    {
+      "dayKey": "2026-12-09",
+      "dayNumber": 9,
+      "questions": [
+        {
+          "index": 0,
+          "text": "Dan 9, pitanje 1: Testno pitanje za advent kviz (q81)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q81"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q81 (tocno)"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q81"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q81"
+            }
+          ],
+          "correctAnswer": "b",
+          "explanation": "Objasnjenje za pitanje 81 na dan 9."
+        },
+        {
+          "index": 1,
+          "text": "Dan 9, pitanje 2: Testno pitanje za advent kviz (q82)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q82"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q82"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q82 (tocno)"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q82"
+            }
+          ],
+          "correctAnswer": "c",
+          "explanation": "Objasnjenje za pitanje 82 na dan 9."
+        },
+        {
+          "index": 2,
+          "text": "Dan 9, pitanje 3: Testno pitanje za advent kviz (q83)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q83"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q83"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q83"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q83 (tocno)"
+            }
+          ],
+          "correctAnswer": "d",
+          "explanation": "Objasnjenje za pitanje 83 na dan 9."
+        },
+        {
+          "index": 3,
+          "text": "Dan 9, pitanje 4: Testno pitanje za advent kviz (q84)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q84 (tocno)"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q84"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q84"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q84"
+            }
+          ],
+          "correctAnswer": "a",
+          "explanation": "Objasnjenje za pitanje 84 na dan 9."
+        },
+        {
+          "index": 4,
+          "text": "Dan 9, pitanje 5: Testno pitanje za advent kviz (q85)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q85"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q85 (tocno)"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q85"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q85"
+            }
+          ],
+          "correctAnswer": "b",
+          "explanation": "Objasnjenje za pitanje 85 na dan 9."
+        },
+        {
+          "index": 5,
+          "text": "Dan 9, pitanje 6: Testno pitanje za advent kviz (q86)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q86"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q86"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q86 (tocno)"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q86"
+            }
+          ],
+          "correctAnswer": "c",
+          "explanation": "Objasnjenje za pitanje 86 na dan 9."
+        },
+        {
+          "index": 6,
+          "text": "Dan 9, pitanje 7: Testno pitanje za advent kviz (q87)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q87"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q87"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q87"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q87 (tocno)"
+            }
+          ],
+          "correctAnswer": "d",
+          "explanation": "Objasnjenje za pitanje 87 na dan 9."
+        },
+        {
+          "index": 7,
+          "text": "Dan 9, pitanje 8: Testno pitanje za advent kviz (q88)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q88 (tocno)"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q88"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q88"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q88"
+            }
+          ],
+          "correctAnswer": "a",
+          "explanation": "Objasnjenje za pitanje 88 na dan 9."
+        },
+        {
+          "index": 8,
+          "text": "Dan 9, pitanje 9: Testno pitanje za advent kviz (q89)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q89"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q89 (tocno)"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q89"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q89"
+            }
+          ],
+          "correctAnswer": "b",
+          "explanation": "Objasnjenje za pitanje 89 na dan 9."
+        },
+        {
+          "index": 9,
+          "text": "Dan 9, pitanje 10: Testno pitanje za advent kviz (q90)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q90"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q90"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q90 (tocno)"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q90"
+            }
+          ],
+          "correctAnswer": "c",
+          "explanation": "Objasnjenje za pitanje 90 na dan 9."
+        }
+      ]
+    },
+    {
+      "dayKey": "2026-12-10",
+      "dayNumber": 10,
+      "questions": [
+        {
+          "index": 0,
+          "text": "Dan 10, pitanje 1: Testno pitanje za advent kviz (q91)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q91"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q91"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q91"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q91 (tocno)"
+            }
+          ],
+          "correctAnswer": "d",
+          "explanation": "Objasnjenje za pitanje 91 na dan 10."
+        },
+        {
+          "index": 1,
+          "text": "Dan 10, pitanje 2: Testno pitanje za advent kviz (q92)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q92 (tocno)"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q92"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q92"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q92"
+            }
+          ],
+          "correctAnswer": "a",
+          "explanation": "Objasnjenje za pitanje 92 na dan 10."
+        },
+        {
+          "index": 2,
+          "text": "Dan 10, pitanje 3: Testno pitanje za advent kviz (q93)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q93"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q93 (tocno)"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q93"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q93"
+            }
+          ],
+          "correctAnswer": "b",
+          "explanation": "Objasnjenje za pitanje 93 na dan 10."
+        },
+        {
+          "index": 3,
+          "text": "Dan 10, pitanje 4: Testno pitanje za advent kviz (q94)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q94"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q94"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q94 (tocno)"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q94"
+            }
+          ],
+          "correctAnswer": "c",
+          "explanation": "Objasnjenje za pitanje 94 na dan 10."
+        },
+        {
+          "index": 4,
+          "text": "Dan 10, pitanje 5: Testno pitanje za advent kviz (q95)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q95"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q95"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q95"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q95 (tocno)"
+            }
+          ],
+          "correctAnswer": "d",
+          "explanation": "Objasnjenje za pitanje 95 na dan 10."
+        },
+        {
+          "index": 5,
+          "text": "Dan 10, pitanje 6: Testno pitanje za advent kviz (q96)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q96 (tocno)"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q96"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q96"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q96"
+            }
+          ],
+          "correctAnswer": "a",
+          "explanation": "Objasnjenje za pitanje 96 na dan 10."
+        },
+        {
+          "index": 6,
+          "text": "Dan 10, pitanje 7: Testno pitanje za advent kviz (q97)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q97"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q97 (tocno)"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q97"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q97"
+            }
+          ],
+          "correctAnswer": "b",
+          "explanation": "Objasnjenje za pitanje 97 na dan 10."
+        },
+        {
+          "index": 7,
+          "text": "Dan 10, pitanje 8: Testno pitanje za advent kviz (q98)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q98"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q98"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q98 (tocno)"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q98"
+            }
+          ],
+          "correctAnswer": "c",
+          "explanation": "Objasnjenje za pitanje 98 na dan 10."
+        },
+        {
+          "index": 8,
+          "text": "Dan 10, pitanje 9: Testno pitanje za advent kviz (q99)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q99"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q99"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q99"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q99 (tocno)"
+            }
+          ],
+          "correctAnswer": "d",
+          "explanation": "Objasnjenje za pitanje 99 na dan 10."
+        },
+        {
+          "index": 9,
+          "text": "Dan 10, pitanje 10: Testno pitanje za advent kviz (q100)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q100 (tocno)"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q100"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q100"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q100"
+            }
+          ],
+          "correctAnswer": "a",
+          "explanation": "Objasnjenje za pitanje 100 na dan 10."
+        }
+      ]
+    },
+    {
+      "dayKey": "2026-12-11",
+      "dayNumber": 11,
+      "questions": [
+        {
+          "index": 0,
+          "text": "Dan 11, pitanje 1: Testno pitanje za advent kviz (q101)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q101"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q101 (tocno)"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q101"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q101"
+            }
+          ],
+          "correctAnswer": "b",
+          "explanation": "Objasnjenje za pitanje 101 na dan 11."
+        },
+        {
+          "index": 1,
+          "text": "Dan 11, pitanje 2: Testno pitanje za advent kviz (q102)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q102"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q102"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q102 (tocno)"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q102"
+            }
+          ],
+          "correctAnswer": "c",
+          "explanation": "Objasnjenje za pitanje 102 na dan 11."
+        },
+        {
+          "index": 2,
+          "text": "Dan 11, pitanje 3: Testno pitanje za advent kviz (q103)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q103"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q103"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q103"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q103 (tocno)"
+            }
+          ],
+          "correctAnswer": "d",
+          "explanation": "Objasnjenje za pitanje 103 na dan 11."
+        },
+        {
+          "index": 3,
+          "text": "Dan 11, pitanje 4: Testno pitanje za advent kviz (q104)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q104 (tocno)"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q104"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q104"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q104"
+            }
+          ],
+          "correctAnswer": "a",
+          "explanation": "Objasnjenje za pitanje 104 na dan 11."
+        },
+        {
+          "index": 4,
+          "text": "Dan 11, pitanje 5: Testno pitanje za advent kviz (q105)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q105"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q105 (tocno)"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q105"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q105"
+            }
+          ],
+          "correctAnswer": "b",
+          "explanation": "Objasnjenje za pitanje 105 na dan 11."
+        },
+        {
+          "index": 5,
+          "text": "Dan 11, pitanje 6: Testno pitanje za advent kviz (q106)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q106"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q106"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q106 (tocno)"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q106"
+            }
+          ],
+          "correctAnswer": "c",
+          "explanation": "Objasnjenje za pitanje 106 na dan 11."
+        },
+        {
+          "index": 6,
+          "text": "Dan 11, pitanje 7: Testno pitanje za advent kviz (q107)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q107"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q107"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q107"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q107 (tocno)"
+            }
+          ],
+          "correctAnswer": "d",
+          "explanation": "Objasnjenje za pitanje 107 na dan 11."
+        },
+        {
+          "index": 7,
+          "text": "Dan 11, pitanje 8: Testno pitanje za advent kviz (q108)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q108 (tocno)"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q108"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q108"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q108"
+            }
+          ],
+          "correctAnswer": "a",
+          "explanation": "Objasnjenje za pitanje 108 na dan 11."
+        },
+        {
+          "index": 8,
+          "text": "Dan 11, pitanje 9: Testno pitanje za advent kviz (q109)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q109"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q109 (tocno)"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q109"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q109"
+            }
+          ],
+          "correctAnswer": "b",
+          "explanation": "Objasnjenje za pitanje 109 na dan 11."
+        },
+        {
+          "index": 9,
+          "text": "Dan 11, pitanje 10: Testno pitanje za advent kviz (q110)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q110"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q110"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q110 (tocno)"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q110"
+            }
+          ],
+          "correctAnswer": "c",
+          "explanation": "Objasnjenje za pitanje 110 na dan 11."
+        }
+      ]
+    },
+    {
+      "dayKey": "2026-12-12",
+      "dayNumber": 12,
+      "questions": [
+        {
+          "index": 0,
+          "text": "Dan 12, pitanje 1: Testno pitanje za advent kviz (q111)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q111"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q111"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q111"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q111 (tocno)"
+            }
+          ],
+          "correctAnswer": "d",
+          "explanation": "Objasnjenje za pitanje 111 na dan 12."
+        },
+        {
+          "index": 1,
+          "text": "Dan 12, pitanje 2: Testno pitanje za advent kviz (q112)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q112 (tocno)"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q112"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q112"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q112"
+            }
+          ],
+          "correctAnswer": "a",
+          "explanation": "Objasnjenje za pitanje 112 na dan 12."
+        },
+        {
+          "index": 2,
+          "text": "Dan 12, pitanje 3: Testno pitanje za advent kviz (q113)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q113"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q113 (tocno)"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q113"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q113"
+            }
+          ],
+          "correctAnswer": "b",
+          "explanation": "Objasnjenje za pitanje 113 na dan 12."
+        },
+        {
+          "index": 3,
+          "text": "Dan 12, pitanje 4: Testno pitanje za advent kviz (q114)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q114"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q114"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q114 (tocno)"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q114"
+            }
+          ],
+          "correctAnswer": "c",
+          "explanation": "Objasnjenje za pitanje 114 na dan 12."
+        },
+        {
+          "index": 4,
+          "text": "Dan 12, pitanje 5: Testno pitanje za advent kviz (q115)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q115"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q115"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q115"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q115 (tocno)"
+            }
+          ],
+          "correctAnswer": "d",
+          "explanation": "Objasnjenje za pitanje 115 na dan 12."
+        },
+        {
+          "index": 5,
+          "text": "Dan 12, pitanje 6: Testno pitanje za advent kviz (q116)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q116 (tocno)"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q116"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q116"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q116"
+            }
+          ],
+          "correctAnswer": "a",
+          "explanation": "Objasnjenje za pitanje 116 na dan 12."
+        },
+        {
+          "index": 6,
+          "text": "Dan 12, pitanje 7: Testno pitanje za advent kviz (q117)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q117"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q117 (tocno)"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q117"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q117"
+            }
+          ],
+          "correctAnswer": "b",
+          "explanation": "Objasnjenje za pitanje 117 na dan 12."
+        },
+        {
+          "index": 7,
+          "text": "Dan 12, pitanje 8: Testno pitanje za advent kviz (q118)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q118"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q118"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q118 (tocno)"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q118"
+            }
+          ],
+          "correctAnswer": "c",
+          "explanation": "Objasnjenje za pitanje 118 na dan 12."
+        },
+        {
+          "index": 8,
+          "text": "Dan 12, pitanje 9: Testno pitanje za advent kviz (q119)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q119"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q119"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q119"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q119 (tocno)"
+            }
+          ],
+          "correctAnswer": "d",
+          "explanation": "Objasnjenje za pitanje 119 na dan 12."
+        },
+        {
+          "index": 9,
+          "text": "Dan 12, pitanje 10: Testno pitanje za advent kviz (q120)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q120 (tocno)"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q120"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q120"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q120"
+            }
+          ],
+          "correctAnswer": "a",
+          "explanation": "Objasnjenje za pitanje 120 na dan 12."
+        }
+      ]
+    },
+    {
+      "dayKey": "2026-12-13",
+      "dayNumber": 13,
+      "questions": [
+        {
+          "index": 0,
+          "text": "Dan 13, pitanje 1: Testno pitanje za advent kviz (q121)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q121"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q121 (tocno)"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q121"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q121"
+            }
+          ],
+          "correctAnswer": "b",
+          "explanation": "Objasnjenje za pitanje 121 na dan 13."
+        },
+        {
+          "index": 1,
+          "text": "Dan 13, pitanje 2: Testno pitanje za advent kviz (q122)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q122"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q122"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q122 (tocno)"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q122"
+            }
+          ],
+          "correctAnswer": "c",
+          "explanation": "Objasnjenje za pitanje 122 na dan 13."
+        },
+        {
+          "index": 2,
+          "text": "Dan 13, pitanje 3: Testno pitanje za advent kviz (q123)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q123"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q123"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q123"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q123 (tocno)"
+            }
+          ],
+          "correctAnswer": "d",
+          "explanation": "Objasnjenje za pitanje 123 na dan 13."
+        },
+        {
+          "index": 3,
+          "text": "Dan 13, pitanje 4: Testno pitanje za advent kviz (q124)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q124 (tocno)"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q124"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q124"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q124"
+            }
+          ],
+          "correctAnswer": "a",
+          "explanation": "Objasnjenje za pitanje 124 na dan 13."
+        },
+        {
+          "index": 4,
+          "text": "Dan 13, pitanje 5: Testno pitanje za advent kviz (q125)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q125"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q125 (tocno)"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q125"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q125"
+            }
+          ],
+          "correctAnswer": "b",
+          "explanation": "Objasnjenje za pitanje 125 na dan 13."
+        },
+        {
+          "index": 5,
+          "text": "Dan 13, pitanje 6: Testno pitanje za advent kviz (q126)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q126"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q126"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q126 (tocno)"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q126"
+            }
+          ],
+          "correctAnswer": "c",
+          "explanation": "Objasnjenje za pitanje 126 na dan 13."
+        },
+        {
+          "index": 6,
+          "text": "Dan 13, pitanje 7: Testno pitanje za advent kviz (q127)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q127"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q127"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q127"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q127 (tocno)"
+            }
+          ],
+          "correctAnswer": "d",
+          "explanation": "Objasnjenje za pitanje 127 na dan 13."
+        },
+        {
+          "index": 7,
+          "text": "Dan 13, pitanje 8: Testno pitanje za advent kviz (q128)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q128 (tocno)"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q128"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q128"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q128"
+            }
+          ],
+          "correctAnswer": "a",
+          "explanation": "Objasnjenje za pitanje 128 na dan 13."
+        },
+        {
+          "index": 8,
+          "text": "Dan 13, pitanje 9: Testno pitanje za advent kviz (q129)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q129"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q129 (tocno)"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q129"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q129"
+            }
+          ],
+          "correctAnswer": "b",
+          "explanation": "Objasnjenje za pitanje 129 na dan 13."
+        },
+        {
+          "index": 9,
+          "text": "Dan 13, pitanje 10: Testno pitanje za advent kviz (q130)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q130"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q130"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q130 (tocno)"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q130"
+            }
+          ],
+          "correctAnswer": "c",
+          "explanation": "Objasnjenje za pitanje 130 na dan 13."
+        }
+      ]
+    },
+    {
+      "dayKey": "2026-12-14",
+      "dayNumber": 14,
+      "questions": [
+        {
+          "index": 0,
+          "text": "Dan 14, pitanje 1: Testno pitanje za advent kviz (q131)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q131"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q131"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q131"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q131 (tocno)"
+            }
+          ],
+          "correctAnswer": "d",
+          "explanation": "Objasnjenje za pitanje 131 na dan 14."
+        },
+        {
+          "index": 1,
+          "text": "Dan 14, pitanje 2: Testno pitanje za advent kviz (q132)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q132 (tocno)"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q132"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q132"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q132"
+            }
+          ],
+          "correctAnswer": "a",
+          "explanation": "Objasnjenje za pitanje 132 na dan 14."
+        },
+        {
+          "index": 2,
+          "text": "Dan 14, pitanje 3: Testno pitanje za advent kviz (q133)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q133"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q133 (tocno)"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q133"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q133"
+            }
+          ],
+          "correctAnswer": "b",
+          "explanation": "Objasnjenje za pitanje 133 na dan 14."
+        },
+        {
+          "index": 3,
+          "text": "Dan 14, pitanje 4: Testno pitanje za advent kviz (q134)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q134"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q134"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q134 (tocno)"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q134"
+            }
+          ],
+          "correctAnswer": "c",
+          "explanation": "Objasnjenje za pitanje 134 na dan 14."
+        },
+        {
+          "index": 4,
+          "text": "Dan 14, pitanje 5: Testno pitanje za advent kviz (q135)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q135"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q135"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q135"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q135 (tocno)"
+            }
+          ],
+          "correctAnswer": "d",
+          "explanation": "Objasnjenje za pitanje 135 na dan 14."
+        },
+        {
+          "index": 5,
+          "text": "Dan 14, pitanje 6: Testno pitanje za advent kviz (q136)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q136 (tocno)"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q136"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q136"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q136"
+            }
+          ],
+          "correctAnswer": "a",
+          "explanation": "Objasnjenje za pitanje 136 na dan 14."
+        },
+        {
+          "index": 6,
+          "text": "Dan 14, pitanje 7: Testno pitanje za advent kviz (q137)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q137"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q137 (tocno)"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q137"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q137"
+            }
+          ],
+          "correctAnswer": "b",
+          "explanation": "Objasnjenje za pitanje 137 na dan 14."
+        },
+        {
+          "index": 7,
+          "text": "Dan 14, pitanje 8: Testno pitanje za advent kviz (q138)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q138"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q138"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q138 (tocno)"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q138"
+            }
+          ],
+          "correctAnswer": "c",
+          "explanation": "Objasnjenje za pitanje 138 na dan 14."
+        },
+        {
+          "index": 8,
+          "text": "Dan 14, pitanje 9: Testno pitanje za advent kviz (q139)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q139"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q139"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q139"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q139 (tocno)"
+            }
+          ],
+          "correctAnswer": "d",
+          "explanation": "Objasnjenje za pitanje 139 na dan 14."
+        },
+        {
+          "index": 9,
+          "text": "Dan 14, pitanje 10: Testno pitanje za advent kviz (q140)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q140 (tocno)"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q140"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q140"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q140"
+            }
+          ],
+          "correctAnswer": "a",
+          "explanation": "Objasnjenje za pitanje 140 na dan 14."
+        }
+      ]
+    },
+    {
+      "dayKey": "2026-12-15",
+      "dayNumber": 15,
+      "questions": [
+        {
+          "index": 0,
+          "text": "Dan 15, pitanje 1: Testno pitanje za advent kviz (q141)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q141"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q141 (tocno)"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q141"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q141"
+            }
+          ],
+          "correctAnswer": "b",
+          "explanation": "Objasnjenje za pitanje 141 na dan 15."
+        },
+        {
+          "index": 1,
+          "text": "Dan 15, pitanje 2: Testno pitanje za advent kviz (q142)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q142"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q142"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q142 (tocno)"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q142"
+            }
+          ],
+          "correctAnswer": "c",
+          "explanation": "Objasnjenje za pitanje 142 na dan 15."
+        },
+        {
+          "index": 2,
+          "text": "Dan 15, pitanje 3: Testno pitanje za advent kviz (q143)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q143"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q143"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q143"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q143 (tocno)"
+            }
+          ],
+          "correctAnswer": "d",
+          "explanation": "Objasnjenje za pitanje 143 na dan 15."
+        },
+        {
+          "index": 3,
+          "text": "Dan 15, pitanje 4: Testno pitanje za advent kviz (q144)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q144 (tocno)"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q144"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q144"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q144"
+            }
+          ],
+          "correctAnswer": "a",
+          "explanation": "Objasnjenje za pitanje 144 na dan 15."
+        },
+        {
+          "index": 4,
+          "text": "Dan 15, pitanje 5: Testno pitanje za advent kviz (q145)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q145"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q145 (tocno)"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q145"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q145"
+            }
+          ],
+          "correctAnswer": "b",
+          "explanation": "Objasnjenje za pitanje 145 na dan 15."
+        },
+        {
+          "index": 5,
+          "text": "Dan 15, pitanje 6: Testno pitanje za advent kviz (q146)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q146"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q146"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q146 (tocno)"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q146"
+            }
+          ],
+          "correctAnswer": "c",
+          "explanation": "Objasnjenje za pitanje 146 na dan 15."
+        },
+        {
+          "index": 6,
+          "text": "Dan 15, pitanje 7: Testno pitanje za advent kviz (q147)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q147"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q147"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q147"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q147 (tocno)"
+            }
+          ],
+          "correctAnswer": "d",
+          "explanation": "Objasnjenje za pitanje 147 na dan 15."
+        },
+        {
+          "index": 7,
+          "text": "Dan 15, pitanje 8: Testno pitanje za advent kviz (q148)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q148 (tocno)"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q148"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q148"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q148"
+            }
+          ],
+          "correctAnswer": "a",
+          "explanation": "Objasnjenje za pitanje 148 na dan 15."
+        },
+        {
+          "index": 8,
+          "text": "Dan 15, pitanje 9: Testno pitanje za advent kviz (q149)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q149"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q149 (tocno)"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q149"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q149"
+            }
+          ],
+          "correctAnswer": "b",
+          "explanation": "Objasnjenje za pitanje 149 na dan 15."
+        },
+        {
+          "index": 9,
+          "text": "Dan 15, pitanje 10: Testno pitanje za advent kviz (q150)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q150"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q150"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q150 (tocno)"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q150"
+            }
+          ],
+          "correctAnswer": "c",
+          "explanation": "Objasnjenje za pitanje 150 na dan 15."
+        }
+      ]
+    },
+    {
+      "dayKey": "2026-12-16",
+      "dayNumber": 16,
+      "questions": [
+        {
+          "index": 0,
+          "text": "Dan 16, pitanje 1: Testno pitanje za advent kviz (q151)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q151"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q151"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q151"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q151 (tocno)"
+            }
+          ],
+          "correctAnswer": "d",
+          "explanation": "Objasnjenje za pitanje 151 na dan 16."
+        },
+        {
+          "index": 1,
+          "text": "Dan 16, pitanje 2: Testno pitanje za advent kviz (q152)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q152 (tocno)"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q152"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q152"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q152"
+            }
+          ],
+          "correctAnswer": "a",
+          "explanation": "Objasnjenje za pitanje 152 na dan 16."
+        },
+        {
+          "index": 2,
+          "text": "Dan 16, pitanje 3: Testno pitanje za advent kviz (q153)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q153"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q153 (tocno)"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q153"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q153"
+            }
+          ],
+          "correctAnswer": "b",
+          "explanation": "Objasnjenje za pitanje 153 na dan 16."
+        },
+        {
+          "index": 3,
+          "text": "Dan 16, pitanje 4: Testno pitanje za advent kviz (q154)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q154"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q154"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q154 (tocno)"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q154"
+            }
+          ],
+          "correctAnswer": "c",
+          "explanation": "Objasnjenje za pitanje 154 na dan 16."
+        },
+        {
+          "index": 4,
+          "text": "Dan 16, pitanje 5: Testno pitanje za advent kviz (q155)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q155"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q155"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q155"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q155 (tocno)"
+            }
+          ],
+          "correctAnswer": "d",
+          "explanation": "Objasnjenje za pitanje 155 na dan 16."
+        },
+        {
+          "index": 5,
+          "text": "Dan 16, pitanje 6: Testno pitanje za advent kviz (q156)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q156 (tocno)"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q156"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q156"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q156"
+            }
+          ],
+          "correctAnswer": "a",
+          "explanation": "Objasnjenje za pitanje 156 na dan 16."
+        },
+        {
+          "index": 6,
+          "text": "Dan 16, pitanje 7: Testno pitanje za advent kviz (q157)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q157"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q157 (tocno)"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q157"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q157"
+            }
+          ],
+          "correctAnswer": "b",
+          "explanation": "Objasnjenje za pitanje 157 na dan 16."
+        },
+        {
+          "index": 7,
+          "text": "Dan 16, pitanje 8: Testno pitanje za advent kviz (q158)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q158"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q158"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q158 (tocno)"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q158"
+            }
+          ],
+          "correctAnswer": "c",
+          "explanation": "Objasnjenje za pitanje 158 na dan 16."
+        },
+        {
+          "index": 8,
+          "text": "Dan 16, pitanje 9: Testno pitanje za advent kviz (q159)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q159"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q159"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q159"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q159 (tocno)"
+            }
+          ],
+          "correctAnswer": "d",
+          "explanation": "Objasnjenje za pitanje 159 na dan 16."
+        },
+        {
+          "index": 9,
+          "text": "Dan 16, pitanje 10: Testno pitanje za advent kviz (q160)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q160 (tocno)"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q160"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q160"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q160"
+            }
+          ],
+          "correctAnswer": "a",
+          "explanation": "Objasnjenje za pitanje 160 na dan 16."
+        }
+      ]
+    },
+    {
+      "dayKey": "2026-12-17",
+      "dayNumber": 17,
+      "questions": [
+        {
+          "index": 0,
+          "text": "Dan 17, pitanje 1: Testno pitanje za advent kviz (q161)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q161"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q161 (tocno)"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q161"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q161"
+            }
+          ],
+          "correctAnswer": "b",
+          "explanation": "Objasnjenje za pitanje 161 na dan 17."
+        },
+        {
+          "index": 1,
+          "text": "Dan 17, pitanje 2: Testno pitanje za advent kviz (q162)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q162"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q162"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q162 (tocno)"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q162"
+            }
+          ],
+          "correctAnswer": "c",
+          "explanation": "Objasnjenje za pitanje 162 na dan 17."
+        },
+        {
+          "index": 2,
+          "text": "Dan 17, pitanje 3: Testno pitanje za advent kviz (q163)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q163"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q163"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q163"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q163 (tocno)"
+            }
+          ],
+          "correctAnswer": "d",
+          "explanation": "Objasnjenje za pitanje 163 na dan 17."
+        },
+        {
+          "index": 3,
+          "text": "Dan 17, pitanje 4: Testno pitanje za advent kviz (q164)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q164 (tocno)"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q164"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q164"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q164"
+            }
+          ],
+          "correctAnswer": "a",
+          "explanation": "Objasnjenje za pitanje 164 na dan 17."
+        },
+        {
+          "index": 4,
+          "text": "Dan 17, pitanje 5: Testno pitanje za advent kviz (q165)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q165"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q165 (tocno)"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q165"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q165"
+            }
+          ],
+          "correctAnswer": "b",
+          "explanation": "Objasnjenje za pitanje 165 na dan 17."
+        },
+        {
+          "index": 5,
+          "text": "Dan 17, pitanje 6: Testno pitanje za advent kviz (q166)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q166"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q166"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q166 (tocno)"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q166"
+            }
+          ],
+          "correctAnswer": "c",
+          "explanation": "Objasnjenje za pitanje 166 na dan 17."
+        },
+        {
+          "index": 6,
+          "text": "Dan 17, pitanje 7: Testno pitanje za advent kviz (q167)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q167"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q167"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q167"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q167 (tocno)"
+            }
+          ],
+          "correctAnswer": "d",
+          "explanation": "Objasnjenje za pitanje 167 na dan 17."
+        },
+        {
+          "index": 7,
+          "text": "Dan 17, pitanje 8: Testno pitanje za advent kviz (q168)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q168 (tocno)"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q168"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q168"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q168"
+            }
+          ],
+          "correctAnswer": "a",
+          "explanation": "Objasnjenje za pitanje 168 na dan 17."
+        },
+        {
+          "index": 8,
+          "text": "Dan 17, pitanje 9: Testno pitanje za advent kviz (q169)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q169"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q169 (tocno)"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q169"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q169"
+            }
+          ],
+          "correctAnswer": "b",
+          "explanation": "Objasnjenje za pitanje 169 na dan 17."
+        },
+        {
+          "index": 9,
+          "text": "Dan 17, pitanje 10: Testno pitanje za advent kviz (q170)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q170"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q170"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q170 (tocno)"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q170"
+            }
+          ],
+          "correctAnswer": "c",
+          "explanation": "Objasnjenje za pitanje 170 na dan 17."
+        }
+      ]
+    },
+    {
+      "dayKey": "2026-12-18",
+      "dayNumber": 18,
+      "questions": [
+        {
+          "index": 0,
+          "text": "Dan 18, pitanje 1: Testno pitanje za advent kviz (q171)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q171"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q171"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q171"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q171 (tocno)"
+            }
+          ],
+          "correctAnswer": "d",
+          "explanation": "Objasnjenje za pitanje 171 na dan 18."
+        },
+        {
+          "index": 1,
+          "text": "Dan 18, pitanje 2: Testno pitanje za advent kviz (q172)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q172 (tocno)"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q172"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q172"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q172"
+            }
+          ],
+          "correctAnswer": "a",
+          "explanation": "Objasnjenje za pitanje 172 na dan 18."
+        },
+        {
+          "index": 2,
+          "text": "Dan 18, pitanje 3: Testno pitanje za advent kviz (q173)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q173"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q173 (tocno)"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q173"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q173"
+            }
+          ],
+          "correctAnswer": "b",
+          "explanation": "Objasnjenje za pitanje 173 na dan 18."
+        },
+        {
+          "index": 3,
+          "text": "Dan 18, pitanje 4: Testno pitanje za advent kviz (q174)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q174"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q174"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q174 (tocno)"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q174"
+            }
+          ],
+          "correctAnswer": "c",
+          "explanation": "Objasnjenje za pitanje 174 na dan 18."
+        },
+        {
+          "index": 4,
+          "text": "Dan 18, pitanje 5: Testno pitanje za advent kviz (q175)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q175"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q175"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q175"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q175 (tocno)"
+            }
+          ],
+          "correctAnswer": "d",
+          "explanation": "Objasnjenje za pitanje 175 na dan 18."
+        },
+        {
+          "index": 5,
+          "text": "Dan 18, pitanje 6: Testno pitanje za advent kviz (q176)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q176 (tocno)"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q176"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q176"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q176"
+            }
+          ],
+          "correctAnswer": "a",
+          "explanation": "Objasnjenje za pitanje 176 na dan 18."
+        },
+        {
+          "index": 6,
+          "text": "Dan 18, pitanje 7: Testno pitanje za advent kviz (q177)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q177"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q177 (tocno)"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q177"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q177"
+            }
+          ],
+          "correctAnswer": "b",
+          "explanation": "Objasnjenje za pitanje 177 na dan 18."
+        },
+        {
+          "index": 7,
+          "text": "Dan 18, pitanje 8: Testno pitanje za advent kviz (q178)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q178"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q178"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q178 (tocno)"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q178"
+            }
+          ],
+          "correctAnswer": "c",
+          "explanation": "Objasnjenje za pitanje 178 na dan 18."
+        },
+        {
+          "index": 8,
+          "text": "Dan 18, pitanje 9: Testno pitanje za advent kviz (q179)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q179"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q179"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q179"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q179 (tocno)"
+            }
+          ],
+          "correctAnswer": "d",
+          "explanation": "Objasnjenje za pitanje 179 na dan 18."
+        },
+        {
+          "index": 9,
+          "text": "Dan 18, pitanje 10: Testno pitanje za advent kviz (q180)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q180 (tocno)"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q180"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q180"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q180"
+            }
+          ],
+          "correctAnswer": "a",
+          "explanation": "Objasnjenje za pitanje 180 na dan 18."
+        }
+      ]
+    },
+    {
+      "dayKey": "2026-12-19",
+      "dayNumber": 19,
+      "questions": [
+        {
+          "index": 0,
+          "text": "Dan 19, pitanje 1: Testno pitanje za advent kviz (q181)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q181"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q181 (tocno)"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q181"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q181"
+            }
+          ],
+          "correctAnswer": "b",
+          "explanation": "Objasnjenje za pitanje 181 na dan 19."
+        },
+        {
+          "index": 1,
+          "text": "Dan 19, pitanje 2: Testno pitanje za advent kviz (q182)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q182"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q182"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q182 (tocno)"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q182"
+            }
+          ],
+          "correctAnswer": "c",
+          "explanation": "Objasnjenje za pitanje 182 na dan 19."
+        },
+        {
+          "index": 2,
+          "text": "Dan 19, pitanje 3: Testno pitanje za advent kviz (q183)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q183"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q183"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q183"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q183 (tocno)"
+            }
+          ],
+          "correctAnswer": "d",
+          "explanation": "Objasnjenje za pitanje 183 na dan 19."
+        },
+        {
+          "index": 3,
+          "text": "Dan 19, pitanje 4: Testno pitanje za advent kviz (q184)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q184 (tocno)"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q184"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q184"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q184"
+            }
+          ],
+          "correctAnswer": "a",
+          "explanation": "Objasnjenje za pitanje 184 na dan 19."
+        },
+        {
+          "index": 4,
+          "text": "Dan 19, pitanje 5: Testno pitanje za advent kviz (q185)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q185"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q185 (tocno)"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q185"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q185"
+            }
+          ],
+          "correctAnswer": "b",
+          "explanation": "Objasnjenje za pitanje 185 na dan 19."
+        },
+        {
+          "index": 5,
+          "text": "Dan 19, pitanje 6: Testno pitanje za advent kviz (q186)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q186"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q186"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q186 (tocno)"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q186"
+            }
+          ],
+          "correctAnswer": "c",
+          "explanation": "Objasnjenje za pitanje 186 na dan 19."
+        },
+        {
+          "index": 6,
+          "text": "Dan 19, pitanje 7: Testno pitanje za advent kviz (q187)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q187"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q187"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q187"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q187 (tocno)"
+            }
+          ],
+          "correctAnswer": "d",
+          "explanation": "Objasnjenje za pitanje 187 na dan 19."
+        },
+        {
+          "index": 7,
+          "text": "Dan 19, pitanje 8: Testno pitanje za advent kviz (q188)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q188 (tocno)"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q188"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q188"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q188"
+            }
+          ],
+          "correctAnswer": "a",
+          "explanation": "Objasnjenje za pitanje 188 na dan 19."
+        },
+        {
+          "index": 8,
+          "text": "Dan 19, pitanje 9: Testno pitanje za advent kviz (q189)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q189"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q189 (tocno)"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q189"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q189"
+            }
+          ],
+          "correctAnswer": "b",
+          "explanation": "Objasnjenje za pitanje 189 na dan 19."
+        },
+        {
+          "index": 9,
+          "text": "Dan 19, pitanje 10: Testno pitanje za advent kviz (q190)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q190"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q190"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q190 (tocno)"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q190"
+            }
+          ],
+          "correctAnswer": "c",
+          "explanation": "Objasnjenje za pitanje 190 na dan 19."
+        }
+      ]
+    },
+    {
+      "dayKey": "2026-12-20",
+      "dayNumber": 20,
+      "questions": [
+        {
+          "index": 0,
+          "text": "Dan 20, pitanje 1: Testno pitanje za advent kviz (q191)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q191"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q191"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q191"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q191 (tocno)"
+            }
+          ],
+          "correctAnswer": "d",
+          "explanation": "Objasnjenje za pitanje 191 na dan 20."
+        },
+        {
+          "index": 1,
+          "text": "Dan 20, pitanje 2: Testno pitanje za advent kviz (q192)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q192 (tocno)"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q192"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q192"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q192"
+            }
+          ],
+          "correctAnswer": "a",
+          "explanation": "Objasnjenje za pitanje 192 na dan 20."
+        },
+        {
+          "index": 2,
+          "text": "Dan 20, pitanje 3: Testno pitanje za advent kviz (q193)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q193"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q193 (tocno)"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q193"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q193"
+            }
+          ],
+          "correctAnswer": "b",
+          "explanation": "Objasnjenje za pitanje 193 na dan 20."
+        },
+        {
+          "index": 3,
+          "text": "Dan 20, pitanje 4: Testno pitanje za advent kviz (q194)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q194"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q194"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q194 (tocno)"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q194"
+            }
+          ],
+          "correctAnswer": "c",
+          "explanation": "Objasnjenje za pitanje 194 na dan 20."
+        },
+        {
+          "index": 4,
+          "text": "Dan 20, pitanje 5: Testno pitanje za advent kviz (q195)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q195"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q195"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q195"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q195 (tocno)"
+            }
+          ],
+          "correctAnswer": "d",
+          "explanation": "Objasnjenje za pitanje 195 na dan 20."
+        },
+        {
+          "index": 5,
+          "text": "Dan 20, pitanje 6: Testno pitanje za advent kviz (q196)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q196 (tocno)"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q196"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q196"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q196"
+            }
+          ],
+          "correctAnswer": "a",
+          "explanation": "Objasnjenje za pitanje 196 na dan 20."
+        },
+        {
+          "index": 6,
+          "text": "Dan 20, pitanje 7: Testno pitanje za advent kviz (q197)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q197"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q197 (tocno)"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q197"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q197"
+            }
+          ],
+          "correctAnswer": "b",
+          "explanation": "Objasnjenje za pitanje 197 na dan 20."
+        },
+        {
+          "index": 7,
+          "text": "Dan 20, pitanje 8: Testno pitanje za advent kviz (q198)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q198"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q198"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q198 (tocno)"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q198"
+            }
+          ],
+          "correctAnswer": "c",
+          "explanation": "Objasnjenje za pitanje 198 na dan 20."
+        },
+        {
+          "index": 8,
+          "text": "Dan 20, pitanje 9: Testno pitanje za advent kviz (q199)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q199"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q199"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q199"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q199 (tocno)"
+            }
+          ],
+          "correctAnswer": "d",
+          "explanation": "Objasnjenje za pitanje 199 na dan 20."
+        },
+        {
+          "index": 9,
+          "text": "Dan 20, pitanje 10: Testno pitanje za advent kviz (q200)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q200 (tocno)"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q200"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q200"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q200"
+            }
+          ],
+          "correctAnswer": "a",
+          "explanation": "Objasnjenje za pitanje 200 na dan 20."
+        }
+      ]
+    },
+    {
+      "dayKey": "2026-12-21",
+      "dayNumber": 21,
+      "questions": [
+        {
+          "index": 0,
+          "text": "Dan 21, pitanje 1: Testno pitanje za advent kviz (q201)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q201"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q201 (tocno)"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q201"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q201"
+            }
+          ],
+          "correctAnswer": "b",
+          "explanation": "Objasnjenje za pitanje 201 na dan 21."
+        },
+        {
+          "index": 1,
+          "text": "Dan 21, pitanje 2: Testno pitanje za advent kviz (q202)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q202"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q202"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q202 (tocno)"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q202"
+            }
+          ],
+          "correctAnswer": "c",
+          "explanation": "Objasnjenje za pitanje 202 na dan 21."
+        },
+        {
+          "index": 2,
+          "text": "Dan 21, pitanje 3: Testno pitanje za advent kviz (q203)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q203"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q203"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q203"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q203 (tocno)"
+            }
+          ],
+          "correctAnswer": "d",
+          "explanation": "Objasnjenje za pitanje 203 na dan 21."
+        },
+        {
+          "index": 3,
+          "text": "Dan 21, pitanje 4: Testno pitanje za advent kviz (q204)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q204 (tocno)"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q204"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q204"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q204"
+            }
+          ],
+          "correctAnswer": "a",
+          "explanation": "Objasnjenje za pitanje 204 na dan 21."
+        },
+        {
+          "index": 4,
+          "text": "Dan 21, pitanje 5: Testno pitanje za advent kviz (q205)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q205"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q205 (tocno)"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q205"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q205"
+            }
+          ],
+          "correctAnswer": "b",
+          "explanation": "Objasnjenje za pitanje 205 na dan 21."
+        },
+        {
+          "index": 5,
+          "text": "Dan 21, pitanje 6: Testno pitanje za advent kviz (q206)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q206"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q206"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q206 (tocno)"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q206"
+            }
+          ],
+          "correctAnswer": "c",
+          "explanation": "Objasnjenje za pitanje 206 na dan 21."
+        },
+        {
+          "index": 6,
+          "text": "Dan 21, pitanje 7: Testno pitanje za advent kviz (q207)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q207"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q207"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q207"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q207 (tocno)"
+            }
+          ],
+          "correctAnswer": "d",
+          "explanation": "Objasnjenje za pitanje 207 na dan 21."
+        },
+        {
+          "index": 7,
+          "text": "Dan 21, pitanje 8: Testno pitanje za advent kviz (q208)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q208 (tocno)"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q208"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q208"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q208"
+            }
+          ],
+          "correctAnswer": "a",
+          "explanation": "Objasnjenje za pitanje 208 na dan 21."
+        },
+        {
+          "index": 8,
+          "text": "Dan 21, pitanje 9: Testno pitanje za advent kviz (q209)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q209"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q209 (tocno)"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q209"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q209"
+            }
+          ],
+          "correctAnswer": "b",
+          "explanation": "Objasnjenje za pitanje 209 na dan 21."
+        },
+        {
+          "index": 9,
+          "text": "Dan 21, pitanje 10: Testno pitanje za advent kviz (q210)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q210"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q210"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q210 (tocno)"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q210"
+            }
+          ],
+          "correctAnswer": "c",
+          "explanation": "Objasnjenje za pitanje 210 na dan 21."
+        }
+      ]
+    },
+    {
+      "dayKey": "2026-12-22",
+      "dayNumber": 22,
+      "questions": [
+        {
+          "index": 0,
+          "text": "Dan 22, pitanje 1: Testno pitanje za advent kviz (q211)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q211"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q211"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q211"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q211 (tocno)"
+            }
+          ],
+          "correctAnswer": "d",
+          "explanation": "Objasnjenje za pitanje 211 na dan 22."
+        },
+        {
+          "index": 1,
+          "text": "Dan 22, pitanje 2: Testno pitanje za advent kviz (q212)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q212 (tocno)"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q212"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q212"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q212"
+            }
+          ],
+          "correctAnswer": "a",
+          "explanation": "Objasnjenje za pitanje 212 na dan 22."
+        },
+        {
+          "index": 2,
+          "text": "Dan 22, pitanje 3: Testno pitanje za advent kviz (q213)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q213"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q213 (tocno)"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q213"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q213"
+            }
+          ],
+          "correctAnswer": "b",
+          "explanation": "Objasnjenje za pitanje 213 na dan 22."
+        },
+        {
+          "index": 3,
+          "text": "Dan 22, pitanje 4: Testno pitanje za advent kviz (q214)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q214"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q214"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q214 (tocno)"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q214"
+            }
+          ],
+          "correctAnswer": "c",
+          "explanation": "Objasnjenje za pitanje 214 na dan 22."
+        },
+        {
+          "index": 4,
+          "text": "Dan 22, pitanje 5: Testno pitanje za advent kviz (q215)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q215"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q215"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q215"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q215 (tocno)"
+            }
+          ],
+          "correctAnswer": "d",
+          "explanation": "Objasnjenje za pitanje 215 na dan 22."
+        },
+        {
+          "index": 5,
+          "text": "Dan 22, pitanje 6: Testno pitanje za advent kviz (q216)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q216 (tocno)"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q216"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q216"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q216"
+            }
+          ],
+          "correctAnswer": "a",
+          "explanation": "Objasnjenje za pitanje 216 na dan 22."
+        },
+        {
+          "index": 6,
+          "text": "Dan 22, pitanje 7: Testno pitanje za advent kviz (q217)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q217"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q217 (tocno)"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q217"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q217"
+            }
+          ],
+          "correctAnswer": "b",
+          "explanation": "Objasnjenje za pitanje 217 na dan 22."
+        },
+        {
+          "index": 7,
+          "text": "Dan 22, pitanje 8: Testno pitanje za advent kviz (q218)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q218"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q218"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q218 (tocno)"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q218"
+            }
+          ],
+          "correctAnswer": "c",
+          "explanation": "Objasnjenje za pitanje 218 na dan 22."
+        },
+        {
+          "index": 8,
+          "text": "Dan 22, pitanje 9: Testno pitanje za advent kviz (q219)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q219"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q219"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q219"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q219 (tocno)"
+            }
+          ],
+          "correctAnswer": "d",
+          "explanation": "Objasnjenje za pitanje 219 na dan 22."
+        },
+        {
+          "index": 9,
+          "text": "Dan 22, pitanje 10: Testno pitanje za advent kviz (q220)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q220 (tocno)"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q220"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q220"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q220"
+            }
+          ],
+          "correctAnswer": "a",
+          "explanation": "Objasnjenje za pitanje 220 na dan 22."
+        }
+      ]
+    },
+    {
+      "dayKey": "2026-12-23",
+      "dayNumber": 23,
+      "questions": [
+        {
+          "index": 0,
+          "text": "Dan 23, pitanje 1: Testno pitanje za advent kviz (q221)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q221"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q221 (tocno)"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q221"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q221"
+            }
+          ],
+          "correctAnswer": "b",
+          "explanation": "Objasnjenje za pitanje 221 na dan 23."
+        },
+        {
+          "index": 1,
+          "text": "Dan 23, pitanje 2: Testno pitanje za advent kviz (q222)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q222"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q222"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q222 (tocno)"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q222"
+            }
+          ],
+          "correctAnswer": "c",
+          "explanation": "Objasnjenje za pitanje 222 na dan 23."
+        },
+        {
+          "index": 2,
+          "text": "Dan 23, pitanje 3: Testno pitanje za advent kviz (q223)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q223"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q223"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q223"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q223 (tocno)"
+            }
+          ],
+          "correctAnswer": "d",
+          "explanation": "Objasnjenje za pitanje 223 na dan 23."
+        },
+        {
+          "index": 3,
+          "text": "Dan 23, pitanje 4: Testno pitanje za advent kviz (q224)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q224 (tocno)"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q224"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q224"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q224"
+            }
+          ],
+          "correctAnswer": "a",
+          "explanation": "Objasnjenje za pitanje 224 na dan 23."
+        },
+        {
+          "index": 4,
+          "text": "Dan 23, pitanje 5: Testno pitanje za advent kviz (q225)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q225"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q225 (tocno)"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q225"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q225"
+            }
+          ],
+          "correctAnswer": "b",
+          "explanation": "Objasnjenje za pitanje 225 na dan 23."
+        },
+        {
+          "index": 5,
+          "text": "Dan 23, pitanje 6: Testno pitanje za advent kviz (q226)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q226"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q226"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q226 (tocno)"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q226"
+            }
+          ],
+          "correctAnswer": "c",
+          "explanation": "Objasnjenje za pitanje 226 na dan 23."
+        },
+        {
+          "index": 6,
+          "text": "Dan 23, pitanje 7: Testno pitanje za advent kviz (q227)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q227"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q227"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q227"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q227 (tocno)"
+            }
+          ],
+          "correctAnswer": "d",
+          "explanation": "Objasnjenje za pitanje 227 na dan 23."
+        },
+        {
+          "index": 7,
+          "text": "Dan 23, pitanje 8: Testno pitanje za advent kviz (q228)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q228 (tocno)"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q228"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q228"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q228"
+            }
+          ],
+          "correctAnswer": "a",
+          "explanation": "Objasnjenje za pitanje 228 na dan 23."
+        },
+        {
+          "index": 8,
+          "text": "Dan 23, pitanje 9: Testno pitanje za advent kviz (q229)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q229"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q229 (tocno)"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q229"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q229"
+            }
+          ],
+          "correctAnswer": "b",
+          "explanation": "Objasnjenje za pitanje 229 na dan 23."
+        },
+        {
+          "index": 9,
+          "text": "Dan 23, pitanje 10: Testno pitanje za advent kviz (q230)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q230"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q230"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q230 (tocno)"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q230"
+            }
+          ],
+          "correctAnswer": "c",
+          "explanation": "Objasnjenje za pitanje 230 na dan 23."
+        }
+      ]
+    },
+    {
+      "dayKey": "2026-12-24",
+      "dayNumber": 24,
+      "questions": [
+        {
+          "index": 0,
+          "text": "Dan 24, pitanje 1: Testno pitanje za advent kviz (q231)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q231"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q231"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q231"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q231 (tocno)"
+            }
+          ],
+          "correctAnswer": "d",
+          "explanation": "Objasnjenje za pitanje 231 na dan 24."
+        },
+        {
+          "index": 1,
+          "text": "Dan 24, pitanje 2: Testno pitanje za advent kviz (q232)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q232 (tocno)"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q232"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q232"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q232"
+            }
+          ],
+          "correctAnswer": "a",
+          "explanation": "Objasnjenje za pitanje 232 na dan 24."
+        },
+        {
+          "index": 2,
+          "text": "Dan 24, pitanje 3: Testno pitanje za advent kviz (q233)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q233"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q233 (tocno)"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q233"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q233"
+            }
+          ],
+          "correctAnswer": "b",
+          "explanation": "Objasnjenje za pitanje 233 na dan 24."
+        },
+        {
+          "index": 3,
+          "text": "Dan 24, pitanje 4: Testno pitanje za advent kviz (q234)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q234"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q234"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q234 (tocno)"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q234"
+            }
+          ],
+          "correctAnswer": "c",
+          "explanation": "Objasnjenje za pitanje 234 na dan 24."
+        },
+        {
+          "index": 4,
+          "text": "Dan 24, pitanje 5: Testno pitanje za advent kviz (q235)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q235"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q235"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q235"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q235 (tocno)"
+            }
+          ],
+          "correctAnswer": "d",
+          "explanation": "Objasnjenje za pitanje 235 na dan 24."
+        },
+        {
+          "index": 5,
+          "text": "Dan 24, pitanje 6: Testno pitanje za advent kviz (q236)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q236 (tocno)"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q236"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q236"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q236"
+            }
+          ],
+          "correctAnswer": "a",
+          "explanation": "Objasnjenje za pitanje 236 na dan 24."
+        },
+        {
+          "index": 6,
+          "text": "Dan 24, pitanje 7: Testno pitanje za advent kviz (q237)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q237"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q237 (tocno)"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q237"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q237"
+            }
+          ],
+          "correctAnswer": "b",
+          "explanation": "Objasnjenje za pitanje 237 na dan 24."
+        },
+        {
+          "index": 7,
+          "text": "Dan 24, pitanje 8: Testno pitanje za advent kviz (q238)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q238"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q238"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q238 (tocno)"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q238"
+            }
+          ],
+          "correctAnswer": "c",
+          "explanation": "Objasnjenje za pitanje 238 na dan 24."
+        },
+        {
+          "index": 8,
+          "text": "Dan 24, pitanje 9: Testno pitanje za advent kviz (q239)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q239"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q239"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q239"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q239 (tocno)"
+            }
+          ],
+          "correctAnswer": "d",
+          "explanation": "Objasnjenje za pitanje 239 na dan 24."
+        },
+        {
+          "index": 9,
+          "text": "Dan 24, pitanje 10: Testno pitanje za advent kviz (q240)",
+          "options": [
+            {
+              "id": "a",
+              "text": "Opcija A za q240 (tocno)"
+            },
+            {
+              "id": "b",
+              "text": "Opcija B za q240"
+            },
+            {
+              "id": "c",
+              "text": "Opcija C za q240"
+            },
+            {
+              "id": "d",
+              "text": "Opcija D za q240"
+            }
+          ],
+          "correctAnswer": "a",
+          "explanation": "Objasnjenje za pitanje 240 na dan 24."
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,47 @@
+{
+  "partners": [
+    {
+      "id": "demo-placeholder",
+      "name": "Partner — demo prikaz",
+      "description": "Ovo je neutralni placeholder dok se ne objave stvarni partneri kampanje.",
+      "logoUrl": null,
+      "websiteUrl": null,
+      "isDemo": true
+    }
+  ],
+  "prizes": [
+    {
+      "id": "demo-main-1",
+      "name": "Glavna nagrada — demo",
+      "description": "Placeholder za najveću sezonsku nagradu. Stvarni naziv i uvjeti bit će objavljeni pri startu kampanje.",
+      "imageUrl": null,
+      "category": "sezona",
+      "tier": "main",
+      "partnerId": "demo-placeholder",
+      "isDemo": true,
+      "sortOrder": 1
+    },
+    {
+      "id": "demo-main-2",
+      "name": "Nagrada za top 3 — demo",
+      "description": "Demo opis nagrade za prva tri mjesta na ljestvici.",
+      "imageUrl": null,
+      "category": "ljestvica",
+      "tier": "main",
+      "partnerId": "demo-placeholder",
+      "isDemo": true,
+      "sortOrder": 2
+    },
+    {
+      "id": "demo-daily-1",
+      "name": "Dnevno iznenađenje — demo",
+      "description": "Primjer dnevne nagrade za aktivne igrače. Prikazuje se samo ako postoje dnevne nagrade.",
+      "imageUrl": null,
+      "category": "dnevno",
+      "tier": "daily",
+      "partnerId": "demo-placeholder",
+      "isDemo": true,
+      "sortOrder": 1
+    }
+  ]
+}

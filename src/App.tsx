@@ -60,6 +60,11 @@ const HighSchoolProfiles = lazy(() => import("./pages/HighSchoolProfiles"));
 const JuniorSchoolFeed = lazy(() => import("./pages/JuniorSchoolFeed"));
 const SchoolLogin = lazy(() => import("./pages/SchoolLogin"));
 const SchoolDashboard = lazy(() => import("./pages/SchoolDashboard"));
+const BozicniGiveaway = lazy(() => import("./pages/BozicniGiveaway"));
+const AdventskaLiga = lazy(() => import("./pages/AdventskaLiga"));
+const AdventQuiz = lazy(() => import("./pages/AdventQuiz"));
+const AdventLeaderboardPage = lazy(() => import("./pages/AdventLeaderboardPage"));
+const AdventAdminPanel = lazy(() => import("./pages/AdventAdminPanel"));
 
 /** Usklađeno s `base` u vite.config (`import.meta.env.BASE_URL`). */
 const routerBasename =
@@ -166,6 +171,12 @@ const App = () => (
               <Route path="/privatnost" element={<Privatnost />} />
               <Route path="/chatbot" element={<Chatbot />} />
               <Route path="/prijava" element={<Prijava />} />
+              <Route path="/bozicni-giveaway" element={<BozicniGiveaway />} />
+              <Route path="/adventska-liga" element={<AdventskaLiga />} />
+              <Route path="/adventska-liga/kviz" element={<AdventQuiz />} />
+              <Route path="/adventska-liga/kviz/:dayKey" element={<AdventQuiz />} />
+              <Route path="/adventska-liga/ljestvica" element={<AdventLeaderboardPage />} />
+              <Route path="/adventska-liga/admin" element={<AdventAdminPanel />} />
               <Route path="/zaboravljena-lozinka" element={<ZaboravljenaLozinka />} />
               <Route path="/profil" element={<ProfilDashboard />} />
               <Route path="/verify" element={<Verify />} />

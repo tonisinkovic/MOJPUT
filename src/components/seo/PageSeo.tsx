@@ -5,6 +5,9 @@ type PageSeoProps = {
   description: string;
   canonical?: string;
   image?: string | null;
+  imageWidth?: number;
+  imageHeight?: number;
+  robots?: string;
   jsonLd?: Record<string, unknown> | null;
 };
 
@@ -28,7 +31,16 @@ function upsertLink(rel: string, href: string) {
   el.setAttribute("href", href);
 }
 
-export default function PageSeo({ title, description, canonical, image, jsonLd }: PageSeoProps) {
+export default function PageSeo({
+  title,
+  description,
+  canonical,
+  image,
+  imageWidth = 1200,
+  imageHeight = 630,
+  robots,
+  jsonLd,
+}: PageSeoProps) {
   useEffect(() => {
     const prev = document.title;
     const origin = window.location.origin;
@@ -46,10 +58,17 @@ export default function PageSeo({ title, description, canonical, image, jsonLd }
     upsertMeta('meta[property="og:url"]', "property", "og:url", url);
     upsertMeta('meta[property="og:image"]', "property", "og:image", ogImage);
     upsertMeta('meta[name="twitter:image"]', "name", "twitter:image", ogImage);
+    if (image) {
+      upsertMeta('meta[property="og:image:width"]', "property", "og:image:width", String(imageWidth));
+      upsertMeta('meta[property="og:image:height"]', "property", "og:image:height", String(imageHeight));
+    }
+    if (robots) {
+      upsertMeta('meta[name="robots"]', "name", "robots", robots);
+    }
     return () => {
       document.title = prev;
     };
-  }, [title, description, canonical, image]);
+  }, [title, description, canonical, image, imageWidth, imageHeight, robots]);
 
   if (!jsonLd) return null;
   return (

@@ -1,6 +1,10 @@
-import { useLayoutEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
+import { authMe, userFromAuthMe } from "@/lib/auth";
 import { cn } from "@/lib/utils";
+import { CHRISTMAS_THEME_ENABLED } from "@/config/christmas";
+import { ChristmasSnowfall, ChristmasGarland } from "@/components/christmas";
 
 type MojPutExperience = "junior" | "senior";
 
@@ -43,7 +47,7 @@ function mixColor(a: string, b: string, t: number) {
   return `rgb(${c.join(",")})`;
 }
 
-function paintEntry(root: HTMLElement, ms: number, heights: { a: number; b: number }) {
+function paintEntry(root: HTMLElement, ms: number, heights: { a: number; b: number; c: number }) {
   const q = (name: string) => root.querySelector(`[data-el="${name}"]`) as HTMLElement | null;
 
   const logo = q("logo");
@@ -59,8 +63,10 @@ function paintEntry(root: HTMLElement, ms: number, heights: { a: number; b: numb
   const slotB = q("slotB");
   const cardA = q("cardA");
   const cardB = q("cardB");
+  const slotC = q("slotC");
+  const cardC = q("cardC");
   const skip = q("skip");
-  if (!logo || !line || !sub || !w1 || !w2 || !w3 || !stem || !washA || !washB || !slotA || !slotB || !cardA || !cardB || !skip) {
+  if (!logo || !line || !sub || !w1 || !w2 || !w3 || !stem || !washA || !washB || !slotA || !slotB || !cardA || !cardB || !slotC || !cardC || !skip) {
     return;
   }
 
@@ -155,6 +161,19 @@ function paintEntry(root: HTMLElement, ms: number, heights: { a: number; b: numb
     shineBEl.style.opacity = shineB > 0 && shineB < 1 ? "0.85" : "0";
   }
 
+  const cIn = out(ms, 7000, 7600);
+  const cSpring = back(ms, 7000, 7920);
+  slotC.style.maxHeight = `${heights.c * cIn}px`;
+  slotC.style.marginTop = `${slotGap * cIn}px`;
+  cardC.style.opacity = String(cIn);
+  cardC.style.transform = ms >= 8000 ? "" : `translateY(${mix(28, 0, cSpring)}px)`;
+  cardC.style.pointerEvents = ms >= 7600 ? "auto" : "none";
+  cardC.tabIndex = ms >= 7600 ? 0 : -1;
+  const capC = q("capC");
+  if (capC) capC.style.transform = `scaleX(${out(ms, 7160, 7900)})`;
+  const arrowC = q("arrowC");
+  if (arrowC) arrowC.style.transform = `scale(${back(ms, 7480, 8000)})`;
+
   const skipOn = ms > 700 && ms < 6240;
   skip.style.opacity = skipOn ? "1" : "0";
   skip.style.pointerEvents = skipOn ? "auto" : "none";
@@ -171,7 +190,7 @@ const MojPutEntryIntro = ({ onEnterJunior, onEnterSenior }: MojPutEntryIntroProp
   const skipRef = useRef(false);
   const msRef = useRef(0);
   const reducedRef = useRef(false);
-  const heightsRef = useRef({ a: 240, b: 240 });
+  const heightsRef = useRef({ a: 240, b: 240, c: 220 });
   const [launch, setLaunch] = useState<MojPutExperience | null>(null);
 
   useLayoutEffect(() => {
@@ -185,27 +204,36 @@ const MojPutEntryIntro = ({ onEnterJunior, onEnterSenior }: MojPutEntryIntroProp
     const cardB = root.querySelector('[data-el="cardB"]') as HTMLElement | null;
     const slotA = root.querySelector('[data-el="slotA"]') as HTMLElement | null;
     const slotB = root.querySelector('[data-el="slotB"]') as HTMLElement | null;
-    if (!cardA || !cardB || !slotA || !slotB) return;
+    const cardC = root.querySelector('[data-el="cardC"]') as HTMLElement | null;
+    const slotC = root.querySelector('[data-el="slotC"]') as HTMLElement | null;
+    if (!cardA || !cardB || !cardC || !slotA || !slotB || !slotC) return;
 
     const measure = () => {
       const prev = {
         a: slotA.style.maxHeight,
         b: slotB.style.maxHeight,
+        c: slotC.style.maxHeight,
         mtA: slotA.style.marginTop,
         mtB: slotB.style.marginTop,
+        mtC: slotC.style.marginTop,
       };
       slotA.style.maxHeight = "none";
       slotB.style.maxHeight = "none";
+      slotC.style.maxHeight = "none";
       slotA.style.marginTop = "0px";
       slotB.style.marginTop = "0px";
+      slotC.style.marginTop = "0px";
       const heights = {
         a: Math.ceil(cardA.getBoundingClientRect().height) + 2,
         b: Math.ceil(cardB.getBoundingClientRect().height) + 2,
+        c: Math.ceil(cardC.getBoundingClientRect().height) + 2,
       };
       slotA.style.maxHeight = prev.a;
       slotB.style.maxHeight = prev.b;
+      slotC.style.maxHeight = prev.c;
       slotA.style.marginTop = prev.mtA;
       slotB.style.marginTop = prev.mtB;
+      slotC.style.marginTop = prev.mtC;
       heightsRef.current = heights;
       return heights;
     };
@@ -285,15 +313,58 @@ const MojPutEntryIntro = ({ onEnterJunior, onEnterSenior }: MojPutEntryIntroProp
     <>
       <main
         ref={rootRef}
-        className="relative min-h-dvh overflow-x-hidden overflow-y-auto bg-[radial-gradient(circle_at_50%_-8%,rgba(20,160,150,0.18),transparent_36%),linear-gradient(165deg,#f8fbfc_0%,#eef3f8_58%,#f4f7f6_100%)] text-slate-950"
+        className={cn(
+          "relative min-h-dvh overflow-x-hidden overflow-y-auto text-slate-950",
+          CHRISTMAS_THEME_ENABLED
+            ? "bg-[radial-gradient(circle_at_50%_-8%,rgba(20,120,110,0.14),transparent_36%),radial-gradient(circle_at_80%_80%,rgba(180,140,50,0.06),transparent_40%),linear-gradient(165deg,#f9faf8_0%,#f0f3ef_40%,#f4f5f2_100%)]"
+            : "bg-[radial-gradient(circle_at_50%_-8%,rgba(20,160,150,0.18),transparent_36%),linear-gradient(165deg,#f8fbfc_0%,#eef3f8_58%,#f4f7f6_100%)]",
+        )}
       >
+        {CHRISTMAS_THEME_ENABLED && <ChristmasGarland />}
+        {CHRISTMAS_THEME_ENABLED && <ChristmasSnowfall />}
+
+        {/* Christmas warm ambient glows */}
+        {CHRISTMAS_THEME_ENABLED && (
+          <>
+            <div className="pointer-events-none absolute left-[10%] top-[8%] h-40 w-40 rounded-full bg-[hsl(43_70%_62%/0.08)] blur-3xl lg:h-64 lg:w-64" aria-hidden />
+            <div className="pointer-events-none absolute right-[5%] top-[30%] h-32 w-32 rounded-full bg-[hsl(350_55%_52%/0.05)] blur-3xl lg:h-48 lg:w-48" aria-hidden />
+            <div className="pointer-events-none absolute bottom-[15%] left-[20%] h-36 w-36 rounded-full bg-[hsl(152_35%_28%/0.06)] blur-3xl lg:h-56 lg:w-56" aria-hidden />
+
+            {/* Corner pine decorations */}
+            <svg className="pointer-events-none absolute -left-3 -top-3 h-20 w-20 opacity-[0.18] sm:h-28 sm:w-28 sm:opacity-[0.22] lg:h-36 lg:w-36" viewBox="0 0 100 100" fill="none" aria-hidden>
+              <path d="M0 0 L25 18 L10 12 L35 35 L15 25 L40 50 L10 35 L0 55 Z" fill="hsl(152 35% 28%)" />
+              <circle cx="20" cy="22" r="3" fill="hsl(350 55% 52%)" opacity="0.7" />
+              <circle cx="12" cy="32" r="2.5" fill="hsl(350 55% 52%)" opacity="0.6" />
+              <circle cx="28" cy="12" r="2" fill="hsl(43 70% 62%)" opacity="0.6" />
+            </svg>
+            <svg className="pointer-events-none absolute -bottom-3 -right-3 h-20 w-20 rotate-180 opacity-[0.15] sm:h-28 sm:w-28 sm:opacity-[0.18] lg:h-32 lg:w-32" viewBox="0 0 100 100" fill="none" aria-hidden>
+              <path d="M0 0 L25 18 L10 12 L35 35 L15 25 L40 50 L10 35 L0 55 Z" fill="hsl(152 35% 28%)" />
+              <circle cx="22" cy="18" r="2.5" fill="hsl(43 70% 62%)" opacity="0.6" />
+              <circle cx="14" cy="30" r="2" fill="hsl(350 55% 52%)" opacity="0.5" />
+            </svg>
+
+            {/* Small golden stars */}
+            <svg className="pointer-events-none absolute right-6 top-10 h-5 w-5 opacity-30 sm:right-10 sm:top-16 sm:h-7 sm:w-7 sm:opacity-35" viewBox="0 0 20 20" fill="hsl(43 70% 62%)" aria-hidden>
+              <polygon points="10,0 12.5,7 20,7 14,11.5 16,19 10,14 4,19 6,11.5 0,7 7.5,7" />
+            </svg>
+            <svg className="pointer-events-none absolute bottom-14 left-8 h-4 w-4 opacity-25 sm:bottom-20 sm:left-14 sm:h-5 sm:w-5 sm:opacity-30" viewBox="0 0 20 20" fill="hsl(43 70% 62%)" aria-hidden>
+              <polygon points="10,0 12.5,7 20,7 14,11.5 16,19 10,14 4,19 6,11.5 0,7 7.5,7" />
+            </svg>
+          </>
+        )}
+
         <div data-el="washA" className="pointer-events-none absolute -left-16 top-[22%] h-56 w-56 rounded-full bg-amber-400/30 blur-3xl lg:left-[8%] lg:top-1/2 lg:h-80 lg:w-80 lg:-translate-y-1/2" style={{ opacity: 0 }} aria-hidden />
         <div data-el="washB" className="pointer-events-none absolute -right-20 top-[52%] h-56 w-56 rounded-full bg-teal-400/25 blur-3xl lg:right-[8%] lg:top-1/2 lg:h-80 lg:w-80 lg:-translate-y-1/2" style={{ opacity: 0 }} aria-hidden />
 
         <div className="relative z-10 mx-auto flex min-h-dvh w-full max-w-[28rem] flex-col items-center justify-center px-6 py-8 lg:max-w-[72rem] lg:px-10 lg:py-12">
           <div
             data-el="logo"
-            className="flex items-center justify-center border border-white/90 bg-white/95 p-2.5"
+            className={cn(
+              "flex items-center justify-center border bg-white/95 p-2.5",
+              CHRISTMAS_THEME_ENABLED
+                ? "border-[hsl(43_70%_62%/0.3)] shadow-[0_0_30px_hsl(43_70%_62%/0.1)]"
+                : "border-white/90",
+            )}
             style={{ width: 138, height: 138, opacity: 0, borderRadius: 30 }}
           >
             <img src={`${import.meta.env.BASE_URL}mojput-logo.png`} alt="MojPut" className="h-full w-full object-contain" />
@@ -329,6 +400,7 @@ const MojPutEntryIntro = ({ onEnterJunior, onEnterSenior }: MojPutEntryIntroProp
             aria-hidden
           />
 
+          <div className="flex w-full flex-col">
           <div className="flex w-full flex-col lg:flex-row lg:items-stretch lg:gap-8 xl:gap-10">
             <div data-el="slotA" className="w-full overflow-hidden lg:min-w-0 lg:flex-1" style={{ maxHeight: 0 }}>
               <ChoiceCard
@@ -369,6 +441,11 @@ const MojPutEntryIntro = ({ onEnterJunior, onEnterSenior }: MojPutEntryIntroProp
                 onClick={() => enter("senior")}
               />
             </div>
+          </div>
+
+          <div data-el="slotC" className="w-full overflow-hidden" style={{ maxHeight: 0 }}>
+            <GiveawayCard />
+          </div>
           </div>
         </div>
 
@@ -507,6 +584,67 @@ function ChoiceCard({
         </span>
       </span>
     </button>
+  );
+}
+
+function GiveawayCard() {
+  const [loggedIn, setLoggedIn] = useState(false);
+
+  useEffect(() => {
+    let alive = true;
+    authMe().then((res) => {
+      if (!alive) return;
+      setLoggedIn(Boolean(userFromAuthMe(res)));
+    });
+    return () => {
+      alive = false;
+    };
+  }, []);
+
+  return (
+    <Link
+      data-el="cardC"
+      to={loggedIn ? "/bozicni-giveaway" : "/prijava?next=/bozicni-giveaway"}
+      tabIndex={-1}
+      className="relative flex w-full flex-col overflow-hidden rounded-3xl border border-white/90 bg-white/95 px-[18px] pb-4 pt-5 text-left shadow-[0_18px_50px_-36px_rgba(15,23,42,0.45)] outline-none transition-[transform,box-shadow] duration-300 hover:-translate-y-0.5 focus-visible:ring-4 focus-visible:ring-red-500/30 lg:rounded-[1.85rem] lg:px-9 lg:pb-7 lg:pt-7 lg:shadow-[0_28px_70px_-36px_rgba(15,23,42,0.4)] lg:hover:-translate-y-1"
+      style={{ opacity: 0, pointerEvents: "none" }}
+    >
+      <span
+        data-el="capC"
+        className="absolute inset-x-0 top-0 h-1.5 origin-center bg-gradient-to-r from-[#b42318] via-[#d4a017] to-[#1f7a3a]"
+        style={{ transform: "scaleX(0)" }}
+        aria-hidden
+      />
+      <span className="pointer-events-none absolute -right-8 -top-10 h-28 w-28 rounded-full bg-red-500/10 blur-2xl" aria-hidden />
+      <span className="pointer-events-none absolute -left-8 bottom-0 h-24 w-24 rounded-full bg-emerald-500/10 blur-2xl" aria-hidden />
+      <span className="pointer-events-none absolute right-6 top-5 text-amber-400" aria-hidden>
+        ✦
+      </span>
+      <span className="pointer-events-none absolute right-14 top-9 text-xs text-red-400" aria-hidden>
+        ❄
+      </span>
+      <span className="block text-[11px] font-extrabold uppercase tracking-[0.16em] text-[#b42318] lg:text-xs lg:tracking-[0.2em]">
+        Božićni giveaway
+      </span>
+      <span className="mt-2 block text-[1.6rem] font-extrabold leading-[1.05] tracking-[-0.04em] text-slate-950 lg:mt-3 lg:text-[2.15rem]">
+        Darujemo
+        <br />
+        <span className="text-[#b42318]">priliku!</span>
+      </span>
+      <span className="mt-2.5 inline-block w-fit max-w-full rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-bold leading-snug text-emerald-800 lg:mt-4 lg:px-3.5 lg:py-1.5 lg:text-sm">
+        Prvo prijava u MojPut, pa tek onda na giveaway.
+      </span>
+      <span className="mt-4 flex items-center justify-between gap-3 border-t border-red-900/10 pt-3 text-sm font-extrabold lg:pt-5 lg:text-base">
+        <span>{loggedIn ? "Prijavi se na giveaway" : "Prijavi se u MojPut"}</span>
+        <span
+          data-el="arrowC"
+          className="grid h-8 w-8 place-items-center rounded-full bg-[#b42318] text-base text-white lg:h-11 lg:w-11 lg:text-lg"
+          style={{ transform: "scale(0)" }}
+        >
+          →
+        </span>
+      </span>
+    </Link>
   );
 }
 

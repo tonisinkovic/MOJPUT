@@ -29,6 +29,9 @@
   <url><loc>https://www.mojput.com/kontakt</loc><changefreq>yearly</changefreq><priority>0.3</priority></url>
   <url><loc>https://www.mojput.com/privatnost</loc><changefreq>yearly</changefreq><priority>0.2</priority></url>
   <url><loc>https://www.mojput.com/uvjeti</loc><changefreq>yearly</changefreq><priority>0.2</priority></url>
+  <url><loc>https://www.mojput.com/adventska-liga</loc><changefreq>daily</changefreq><priority>0.8</priority></url>
+  <url><loc>https://www.mojput.com/adventska-liga/kviz</loc><changefreq>daily</changefreq><priority>0.8</priority></url>
+  <url><loc>https://www.mojput.com/adventska-liga/ljestvica</loc><changefreq>daily</changefreq><priority>0.7</priority></url>
   <url><loc>https://www.mojput.com/fakulteti/agronomski-fakultet-sveucilista-u-zagrebu</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
   <url><loc>https://www.mojput.com/fakulteti/akademija-dramske-umjetnosti-sveucilista-u-zagrebu</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
   <url><loc>https://www.mojput.com/fakulteti/akademija-likovnih-umjetnosti-sveucilista-u-zagrebu</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>

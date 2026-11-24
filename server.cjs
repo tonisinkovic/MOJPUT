@@ -1409,6 +1409,45 @@ async function main() {
   app.use(express.json({ limit: "2mb" }));
   app.use(cookieParser());
 
+  const giveawayFile = path.join(__dirname, "data", "giveaway-entries.json");
+  app.post("/api/giveaway", authMiddleware(db), (req, res) => {
+    const name = String(req.body?.name || "").trim().replace(/\s+/g, " ");
+    const phone = String(req.body?.phone || "").trim();
+    const phoneDigits = phone.replace(/[^\d]/g, "");
+    const email = String(req.user?.email || "").trim().toLowerCase();
+    if (name.length < 2 || name.length > 80) {
+      return res.status(400).json({ success: false, message: "Upiši ime i prezime." });
+    }
+    if (phoneDigits.length < 8 || phoneDigits.length > 15) {
+      return res.status(400).json({ success: false, message: "Upiši ispravan broj mobitela." });
+    }
+    if (!email) {
+      return res.status(401).json({ success: false, message: "Nisi prijavljen." });
+    }
+    let rows = [];
+    try {
+      const raw = fs.readFileSync(giveawayFile, "utf8");
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed)) rows = parsed;
+    } catch {
+      rows = [];
+    }
+    const userId = Number(req.user.id);
+    const already = rows.some((row) => row && (Number(row.userId) === userId || row.email === email));
+    if (!already) {
+      rows.push({
+        userId,
+        name,
+        email,
+        phone: phoneDigits,
+        createdAt: new Date().toISOString(),
+      });
+      fs.mkdirSync(path.dirname(giveawayFile), { recursive: true });
+      fs.writeFileSync(giveawayFile, JSON.stringify(rows, null, 2));
+    }
+    return res.json({ success: true, data: { already } });
+  });
+
   registerSchoolCms(app, {
     db,
     authMiddleware: authMiddleware(db),
@@ -2889,6 +2928,14 @@ async function main() {
     );
     if (uni) return res.json({ success: true, data: uni });
     return res.status(404).json({ success: false, message: "Sveučilište nije pronađeno" });
+  });
+
+  const { registerAdventLeagueRoutes } = require("./server/adventLeagueRoutes.cjs");
+  registerAdventLeagueRoutes(app, db, {
+    authMiddleware: authMiddleware(db),
+    optionalAuthMiddleware: optionalAuthMiddleware(db),
+    adminMiddleware: adminMiddleware(db),
+    getChatDayKey: require("./server/appDb.cjs").getChatDayKey,
   });
 
   app.use((err, req, res, next) => {

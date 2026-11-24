@@ -7,6 +7,7 @@ import { resolve } from "node:path";
 import { facultyCatalog } from "@/lib/facultyCatalog";
 import { highSchools } from "@/data/highSchools";
 import { slugForSchool } from "@/lib/schoolSlug";
+import { ADVENT_SITEMAP_ROUTES } from "@/lib/adventLeagueSeo";
 
 const SITE = "https://www.mojput.com";
 
@@ -41,6 +42,7 @@ const STATIC_ROUTES: { path: string; priority: number; changefreq: string }[] = 
   { path: "/kontakt", priority: 0.3, changefreq: "yearly" },
   { path: "/privatnost", priority: 0.2, changefreq: "yearly" },
   { path: "/uvjeti", priority: 0.2, changefreq: "yearly" },
+  ...ADVENT_SITEMAP_ROUTES,
 ];
 
 const escapeXml = (s: string) =>

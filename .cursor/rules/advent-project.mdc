@@ -1,0 +1,45 @@
+---
+description: Adventska kviz liga — scope, arhitektura MojPut, minimalan diff
+globs: docs/advent/**,src/**/advent*,src/pages/AdventskaLiga.tsx,src/lib/adventLeague*,server/advent*,server.cjs,server/appDb.cjs
+alwaysApply: false
+---
+
+# MojPut Adventska kviz liga
+
+## Izvor istine
+
+Prije rada pročitaj `docs/advent/MVP.md`, `SCORING.md`, `TASKS.md`. Ne implementiraj izvan MVP scopea bez eksplicitnog zahtjeva.
+
+## Arhitektura (ne mijenjati)
+
+- **Frontend:** Vite + React; API preko `@/lib/api` i `API_BASE_URL` iz `@/config/apiBase`.
+- **Backend:** Rute u `server.cjs` (ili `server/adventLeague.cjs` samo ako blok raste).
+- **App DB:** migracije u `server/appDb.cjs` — SQLite + Postgres. **Ne** koristiti Prisma za ligu.
+- **Auth:** `authMiddleware`, `src/lib/auth.ts`; redirect `?next=` kao `BozicniGiveaway.tsx`.
+- **Dan:** `Europe/Zagreb`, ista semantika kao `getChatDayKey()` u `appDb.cjs`.
+
+## Scope discipline
+
+- Diraj samo datoteke navedene u `docs/advent/TASKS.md` i svoje dodatke (`src/data/advent-league/`, `src/lib/adventLeague*`).
+- **Zabranjeno:** refaktor forum, career/junior kviza, giveaway, school CMS, `App.tsx` rute osim nove lazy rute.
+- **Ne** instaliraj npm pakete bez jasnog razloga u komentaru u PR/chatu.
+- **Ne** spremaj pokušaje u `data/*.json` (Render); samo app baza.
+- Točni odgovori i bodovi **samo na serveru** (`SCORING.md`).
+
+## UI reuse
+
+`Layout`, `PageSeo`, `components/ui/*`, obrasci greške `ApiResponse`. Ne kopiraj cijeli `CareerQuizFlow` — liga je jedno pitanje/dan.
+
+## Istraživanje koda
+
+Grepaj ciljano (`advent`, `giveaway`, `career-quiz`, `authMiddleware`). Ne čitaj cijeli repo.
+
+## Testiranje
+
+- Dodaj/ ažuriraj Vitest za bodovanje i kritičnu logiku.
+- Nakon promjena: `npm test` (relevantni fileovi) i `npm run lint` na diranim datotekama.
+- Ručno: prijava → today → submit → 409 na duplikat.
+
+## Završni sažetak (obavezno)
+
+Na kraju svakog zadatka u chatu: (1) lista datoteka, (2) nove rute/API, (3) testovi/ishod, (4) sljedeći korak iz `TASKS.md`.

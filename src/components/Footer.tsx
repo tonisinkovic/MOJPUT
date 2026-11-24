@@ -3,6 +3,8 @@ import { Link } from "react-router-dom";
 import { Compass, ArrowUpRight } from "lucide-react";
 import { MATURABOT_LOGO_URL } from "@/components/matura/MaturaBotEmbedDialog";
 import { experienceHomePath, getStoredExperience, onExperienceChange } from "@/lib/experience";
+import { CHRISTMAS_THEME_ENABLED } from "@/config/christmas";
+import { ChristmasFooterDecoration } from "@/components/christmas";
 
 const footerLinks = [
   {
@@ -66,6 +68,7 @@ const Footer = () => {
 
   return (
     <footer className="relative overflow-hidden border-t bg-gradient-to-b from-card to-card/60">
+      {CHRISTMAS_THEME_ENABLED && <ChristmasFooterDecoration />}
       <div
         aria-hidden
         className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/40 to-transparent"

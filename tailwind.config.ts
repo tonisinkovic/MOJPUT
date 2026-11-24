@@ -102,6 +102,52 @@ export default {
           "0%, 100%": { transform: "translateY(0)" },
           "50%": { transform: "translateY(-8px)" },
         },
+        "advent-fade-up": {
+          from: { opacity: "0", transform: "translateY(16px)" },
+          to: { opacity: "1", transform: "translateY(0)" },
+        },
+        "advent-scale-in": {
+          from: { opacity: "0", transform: "scale(0.92)" },
+          to: { opacity: "1", transform: "scale(1)" },
+        },
+        "advent-glow-pulse": {
+          "0%, 100%": { opacity: "0.4", transform: "scale(1)" },
+          "50%": { opacity: "0.8", transform: "scale(1.15)" },
+        },
+        "advent-shimmer": {
+          from: { backgroundPosition: "-200% center" },
+          to: { backgroundPosition: "200% center" },
+        },
+        "advent-snowfall": {
+          from: { transform: "translateY(-10vh) translateX(0) rotate(0deg)", opacity: "0" },
+          "10%": { opacity: "1" },
+          "90%": { opacity: "1" },
+          to: { transform: "translateY(100vh) translateX(30px) rotate(360deg)", opacity: "0" },
+        },
+        "advent-door-open": {
+          from: { transform: "perspective(600px) rotateY(0deg)" },
+          to: { transform: "perspective(600px) rotateY(-95deg)" },
+        },
+        "advent-count-up": {
+          from: { opacity: "0", transform: "translateY(8px) scale(0.9)" },
+          to: { opacity: "1", transform: "translateY(0) scale(1)" },
+        },
+        "advent-twinkle": {
+          "0%, 100%": { opacity: "0.3", transform: "scale(0.9)" },
+          "50%": { opacity: "1", transform: "scale(1.1)" },
+        },
+        "advent-float": {
+          "0%, 100%": { transform: "translateY(0) rotate(0deg)" },
+          "50%": { transform: "translateY(-12px) rotate(5deg)" },
+        },
+        "advent-sway": {
+          "0%, 100%": { transform: "translateX(0) rotate(-2deg)" },
+          "50%": { transform: "translateX(8px) rotate(2deg)" },
+        },
+        "advent-sparkle": {
+          "0%, 100%": { opacity: "0", transform: "scale(0) rotate(0deg)" },
+          "50%": { opacity: "1", transform: "scale(1) rotate(180deg)" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
@@ -109,8 +155,20 @@ export default {
         "fade-in": "fade-in 0.5s ease-out forwards",
         "slide-in-right": "slide-in-right 0.4s ease-out forwards",
         float: "float 3s ease-in-out infinite",
+        "advent-fade-up": "advent-fade-up 0.4s cubic-bezier(0.22,1,0.36,1) forwards",
+        "advent-scale-in": "advent-scale-in 0.4s cubic-bezier(0.22,1,0.36,1) forwards",
+        "advent-glow-pulse": "advent-glow-pulse 3s ease-in-out infinite",
+        "advent-shimmer": "advent-shimmer 2.5s ease-in-out infinite",
+        "advent-snowfall": "advent-snowfall linear infinite",
+        "advent-door-open": "advent-door-open 0.6s cubic-bezier(0.22,1,0.36,1) forwards",
+        "advent-count-up": "advent-count-up 0.3s cubic-bezier(0.22,1,0.36,1) forwards",
+        "advent-twinkle": "advent-twinkle 2s ease-in-out infinite",
+        "advent-float": "advent-float 4s ease-in-out infinite",
+        "advent-sway": "advent-sway 3.5s ease-in-out infinite",
+        "advent-sparkle": "advent-sparkle 1.5s ease-in-out infinite",
       },
     },
   },
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
   plugins: [require("tailwindcss-animate")],
 } satisfies Config;

@@ -155,18 +155,7 @@ export default function GoogleSignInButton({
     };
   }, [autoSelect, clientId, phase, text]);
 
-  if (phase === "off") {
-    if (import.meta.env.DEV) {
-      return (
-        <p className="mb-4 rounded-xl border border-border/70 bg-muted/40 px-3.5 py-2.5 text-[12.5px] leading-snug text-muted-foreground">
-          Google prijava čeka <span className="font-semibold text-foreground">GOOGLE_CLIENT_ID</span> u .env.
-          To je Web client iz Google Clouda, s originom http://localhost:8080 te https://mojput.com i
-          https://www.mojput.com. Nakon toga restartaj API.
-        </p>
-      );
-    }
-    return null;
-  }
+  if (phase === "off") return null;
   if (phase === "loading") {
     return <div className="mb-4 h-11 w-full animate-pulse rounded-full bg-muted/70" aria-hidden />;
   }

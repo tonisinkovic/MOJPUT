@@ -6,6 +6,7 @@ import {
   setStoredLastLoginEmail,
   type ApiResponse,
 } from "@/lib/api";
+import { claimAdventReferralAfterAuth } from "@/lib/adventLeagueReferral";
 
 export const AUTH_CHANGED = "mojput-auth-changed";
 
