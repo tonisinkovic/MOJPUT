@@ -1,7 +1,7 @@
-import { Calendar, Trophy, Target, Gift, Users, Shield } from "lucide-react";
+import { Shield } from "lucide-react";
 import { ADVENT_RULES_SHORT, adventSeasonMeta } from "@/lib/adventLeagueLanding";
 
-const ruleIcons = [Calendar, Target, Trophy, Users, Gift, Shield];
+const ruleEmojis = ["👤", "⚡", "🏆", "🔐", "📆"] as const;
 
 export function AdventRulesSection() {
   return (
@@ -16,32 +16,23 @@ export function AdventRulesSection() {
       {/* Visual rule cards */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {ADVENT_RULES_SHORT.map((rule, i) => {
-          const Icon = ruleIcons[i] || Target;
+          const emoji = ruleEmojis[i] ?? "✨";
           return (
             <div
               key={i}
-              className="advent-glass-gold group rounded-2xl p-4 transition-all hover:scale-105 hover:shadow-2xl hover:shadow-[hsl(var(--advent-gold)/0.3)] cursor-default"
-              style={{
-                animation: `advent-fade-up 0.4s ease-out forwards`,
-                animationDelay: `${i * 0.1}s`,
-                opacity: 0,
-              }}
+              className="advent-glass-gold group cursor-default rounded-2xl p-4 opacity-0 transition-all animate-advent-fade-up hover:scale-105 hover:shadow-2xl hover:shadow-[hsl(var(--advent-gold)/0.3)]"
+              style={{ animationDelay: `${i * 0.1}s` }}
             >
-              <div className="mb-3 flex items-start gap-3">
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[hsl(var(--advent-gold)/0.15)] text-[hsl(var(--advent-gold))] ring-2 ring-[hsl(var(--advent-gold)/0.3)]">
-                  <Icon className="h-5 w-5" aria-hidden />
+              <div className="mb-3 flex items-center gap-3">
+                <div
+                  className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[hsl(var(--advent-gold)/0.15)] text-xl ring-2 ring-[hsl(var(--advent-gold)/0.3)]"
+                  aria-hidden
+                >
+                  {emoji}
                 </div>
-                <div className="flex-1">
-                  <div className="mb-1 flex items-center gap-1.5">
-                    <span className="text-lg font-extrabold text-[hsl(var(--advent-gold))]">
-                      {i + 1}.
-                    </span>
-                  </div>
-                </div>
+                <span className="text-lg font-extrabold text-[hsl(var(--advent-gold))]">{i + 1}.</span>
               </div>
-              <p className="text-sm font-semibold leading-relaxed advent-text-ivory">
-                {rule}
-              </p>
+              <p className="text-sm font-semibold leading-relaxed advent-text-ivory">{rule}</p>
             </div>
           );
         })}

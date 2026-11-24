@@ -1,4 +1,5 @@
 import { apiGet, type ApiResponse } from "@/lib/api";
+import { isAdventApiUnavailableMessage } from "@/lib/adventOfflineFallback";
 
 export type AdventLeaderboardScope = "season" | "day";
 
@@ -39,7 +40,25 @@ export async function adventFetchLeaderboard(params: {
   if (params.dayKey) q.set("dayKey", params.dayKey);
   if (params.limit != null) q.set("limit", String(params.limit));
   if (params.offset != null) q.set("offset", String(params.offset));
-  return apiGet<AdventLeaderboardPayload>(`/api/advent/leaderboard?${q.toString()}`);
+  const res = await apiGet<AdventLeaderboardPayload>(`/api/advent/leaderboard?${q.toString()}`);
+  if (res.success && res.data) return res;
+  if (isAdventApiUnavailableMessage(res.message)) {
+    const limit = params.limit ?? 20;
+    const offset = params.offset ?? 0;
+    return {
+      success: true,
+      data: {
+        scope: params.scope,
+        dayKey: params.scope === "day" ? params.dayKey : undefined,
+        entries: [],
+        total: 0,
+        limit,
+        offset,
+        self: null,
+      },
+    };
+  }
+  return res;
 }
 
 export function hasMoreLeaderboardPage(data: AdventLeaderboardPayload): boolean {

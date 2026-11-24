@@ -52,12 +52,12 @@ const backend = spawn(process.execPath, ["server.cjs"], {
 });
 
 const frontend = isWin
-  ? spawn(process.env.ComSpec || "cmd.exe", ["/d", "/c", "npm", "run", "dev"], {
+  ? spawn(process.env.ComSpec || "cmd.exe", ["/d", "/c", "npm", "run", "dev:vite"], {
       cwd: root,
       stdio: "inherit",
       env: process.env,
     })
-  : spawn("npm", ["run", "dev"], {
+  : spawn("npm", ["run", "dev:vite"], {
       cwd: root,
       stdio: "inherit",
       env: process.env,

@@ -55,6 +55,7 @@
 |---|--------|--------|
 | C1 | `npm run sitemap` | Svježi sitemap |
 | C2 | `npm run build` | `VITE_API_URL=https://mojput.onrender.com` (`.env.production`) |
+| C2b | Redeploy **Render API** | Obavezno nakon advent commita — `node scripts/smoke-advent-api.cjs` na `https://mojput.onrender.com` mora proći (inače `/api/advent/prizes` i ljestvica vraćaju 404 HTML) |
 | C3 | Upload `dist/` | Postojeći postupak za mojput.com (hosting izvan Render API-ja) |
 | C4 | Provjera | `https://mojput.com/adventska-liga` učitava se, nema 404 na chunkove |
 | C5 | Cache | Po potrebi invalidacija CDN/cache za `/adventska-liga*` i `index.html` |

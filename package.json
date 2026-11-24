@@ -4,7 +4,8 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
+    "dev": "node scripts/dev-full.cjs",
+    "dev:vite": "vite",
     "build": "vite build && node scripts/copy-gh-pages-404.cjs",
     "build:phone": "node scripts/build-with-tunnel-api.cjs",
     "build:dev": "vite build --mode development",

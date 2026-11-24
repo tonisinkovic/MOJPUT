@@ -1,4 +1,5 @@
 import { apiGet, apiPut, type ApiResponse } from "@/lib/api";
+import { isAdventApiUnavailableMessage, staticAdventPrizesFallback } from "@/lib/adventOfflineFallback";
 
 export type AdventPrizePartnerRef = {
   id: string;
@@ -43,7 +44,12 @@ export type AdventPrizesAdminPayload = {
 };
 
 export async function adventFetchPrizes() {
-  return apiGet<AdventPrizesPublicPayload>("/api/advent/prizes");
+  const res = await apiGet<AdventPrizesPublicPayload>("/api/advent/prizes");
+  if (res.success && res.data) return res;
+  if (isAdventApiUnavailableMessage(res.message)) {
+    return { success: true as const, data: staticAdventPrizesFallback() };
+  }
+  return res;
 }
 
 export async function adminFetchPrizesPartners() {
