@@ -85,4 +85,5 @@ export const ADVENT_SITEMAP_ROUTES = [
   { path: "/adventska-liga", priority: 0.85, changefreq: "daily" as const },
   { path: "/adventska-liga/kviz", priority: 0.75, changefreq: "daily" as const },
   { path: "/adventska-liga/ljestvica", priority: 0.7, changefreq: "daily" as const },
+  { path: "/adventska-liga/pravila", priority: 0.55, changefreq: "weekly" as const },
 ];

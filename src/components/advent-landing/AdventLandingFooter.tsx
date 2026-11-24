@@ -15,8 +15,11 @@ export function AdventLandingFooter() {
         Organizator: MojPut — alat za srednjoškolce, studente i roditelje.
       </p>
       <nav className="mt-4 flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-sm font-extrabold">
-        <a href="#advent-rules" className="text-[hsl(var(--advent-gold))] hover:underline">
+        <Link to="/adventska-liga/pravila" className="text-[hsl(var(--advent-gold))] hover:underline">
           Pravila
+        </Link>
+        <a href="#advent-rules" className="text-[hsl(var(--advent-frost)/0.5)] hover:text-[hsl(var(--advent-gold))] hover:underline">
+          Kratki pregled
         </a>
         <Link to="/uvjeti" className="text-[hsl(var(--advent-gold))] hover:underline">
           Uvjeti korištenja

@@ -6,7 +6,7 @@ import {
   useContext,
   type ReactNode,
 } from "react";
-import { CHRISTMAS_THEME_ENABLED } from "@/config/christmas";
+import { isChristmasThemeActive } from "@/config/christmas";
 
 interface ChristmasContextValue {
   enabled: boolean;
@@ -36,20 +36,22 @@ interface Props {
  */
 export function ChristmasThemeProvider({ children }: Props) {
   const [reducedMotion, setReducedMotion] = useState(false);
+  const active = isChristmasThemeActive();
 
   useEffect(() => {
-    if (!CHRISTMAS_THEME_ENABLED) return;
+    if (!active) return;
 
     const root = document.documentElement;
     root.classList.add("christmas-active");
 
     return () => {
       root.classList.remove("christmas-active");
+      root.classList.remove("christmas-subtle-tools");
     };
-  }, []);
+  }, [active]);
 
   useEffect(() => {
-    if (!CHRISTMAS_THEME_ENABLED) return;
+    if (!active) return;
     if (typeof window === "undefined") return;
 
     const mql = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -58,19 +60,15 @@ export function ChristmasThemeProvider({ children }: Props) {
     const handler = (e: MediaQueryListEvent) => setReducedMotion(e.matches);
     mql.addEventListener("change", handler);
     return () => mql.removeEventListener("change", handler);
-  }, []);
+  }, [active]);
 
   const ctx = useMemo<ChristmasContextValue>(
     () => ({
-      enabled: CHRISTMAS_THEME_ENABLED,
+      enabled: active,
       reducedMotion,
     }),
-    [reducedMotion],
+    [active, reducedMotion],
   );
 
-  return (
-    <ChristmasContext.Provider value={ctx}>
-      {children}
-    </ChristmasContext.Provider>
-  );
+  return <ChristmasContext.Provider value={ctx}>{children}</ChristmasContext.Provider>;
 }

@@ -26,7 +26,7 @@ export function AdventMegaBanner({ className = "" }: { className?: string }) {
   return (
     <Link
       to="/adventska-liga"
-      className={`group relative block overflow-hidden rounded-2xl transition-all duration-500 ${
+      className={`group relative block overflow-hidden rounded-2xl transition-all duration-500 touch-pan-y max-sm:hover:scale-100 ${
         isVisible ? "opacity-100 scale-100" : "opacity-0 scale-95"
       } ${className}`}
       style={{
@@ -66,18 +66,18 @@ export function AdventMegaBanner({ className = "" }: { className?: string }) {
 
       {/* Floating gift icons */}
       <Gift
-        className="absolute left-6 top-1/2 -translate-y-1/2 text-[hsl(350 70% 65%)] opacity-70 sm:left-8"
+        className="absolute left-6 top-1/2 hidden -translate-y-1/2 text-[hsl(350_70%_65%)] opacity-70 sm:block sm:left-8"
         size={36}
         style={{ animation: "advent-float 3s ease-in-out infinite" }}
       />
       <Gift
-        className="absolute right-6 top-1/2 -translate-y-1/2 text-[hsl(38 92% 68%)] opacity-70 sm:right-8"
+        className="absolute right-6 top-1/2 hidden -translate-y-1/2 text-[hsl(38_92%_68%)] opacity-70 sm:block sm:right-8"
         size={36}
         style={{ animation: "advent-float 3s ease-in-out infinite", animationDelay: "1.5s" }}
       />
 
       {/* Content container */}
-      <div className="relative z-10 flex items-center justify-center gap-6 px-16 py-8 sm:gap-8 sm:px-20 sm:py-10 lg:py-12">
+      <div className="relative z-10 flex items-center justify-center gap-3 px-4 py-5 sm:gap-8 sm:px-20 sm:py-10 lg:py-12 touch-pan-y max-sm:[&_svg.absolute]:hidden">
         {/* Left sparkle */}
         <Sparkles
           className="text-[hsl(38 92% 68%)] shrink-0"
@@ -100,7 +100,7 @@ export function AdventMegaBanner({ className = "" }: { className?: string }) {
             </span>
           </div>
           <h3
-            className="text-2xl font-extrabold tracking-tight text-white sm:text-3xl lg:text-4xl"
+            className="text-xl font-extrabold tracking-tight text-white sm:text-3xl lg:text-4xl"
             style={{
               fontFamily: "'Mountains of Christmas', cursive",
               textShadow: "0 2px 12px hsl(38 92% 58% / 0.8), 0 4px 24px hsl(350 70% 52% / 0.5)",

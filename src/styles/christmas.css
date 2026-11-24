@@ -587,6 +587,16 @@
 /*  Reduced motion — also disable enhanced animations                  */
 /* ================================================================== */
 
+/* ---- Suptilnija tema na kalkulatorima / kvizovima / chatbotu ---- */
+
+.christmas-active.christmas-subtle-tools .christmas-snowfall-layer {
+  opacity: 0.5;
+}
+
+.christmas-active.christmas-subtle-tools .christmas-garland-layer {
+  opacity: 0.4;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .christmas-active .gradient-hero,
   .christmas-active [class*="bg-gradient-to-r"][class*="from-primary"],

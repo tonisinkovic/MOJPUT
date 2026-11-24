@@ -1,12 +1,13 @@
 import { ReactNode, useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import Navbar from "./Navbar";
 import Footer from "./Footer";
 import SiteFeedback from "./SiteFeedback";
 import MojPutPremiumTeaser from "./MojPutPremiumTeaser";
 import { Bot } from "lucide-react";
 import { getStoredExperience, onExperienceChange } from "@/lib/experience";
-import { CHRISTMAS_THEME_ENABLED } from "@/config/christmas";
+import { isChristmasThemeActive } from "@/config/christmas";
+import { useChristmas } from "@/components/christmas/ChristmasThemeProvider";
 import { ChristmasSnowfall, ChristmasGarland } from "@/components/christmas";
 
 interface LayoutProps {
@@ -16,21 +17,43 @@ interface LayoutProps {
   hideChrome?: boolean;
 }
 
+function isChristmasToolRoute(pathname: string): boolean {
+  const p = pathname.toLowerCase();
+  return (
+    /\/(kalkulator|kviz|chatbot|samoprocjena)(\/|$)/.test(p) ||
+    p.includes("/kalkulator-") ||
+    p.includes("/kviz-")
+  );
+}
+
 const Layout = ({ children, hideFooter, hideChrome }: LayoutProps) => {
   const [isJunior, setIsJunior] = useState(false);
+  const location = useLocation();
+  const { enabled: christmasOn } = useChristmas();
+  const showChristmas = isChristmasThemeActive() && christmasOn;
+
   useEffect(() => {
     const sync = () => setIsJunior(getStoredExperience() === "junior");
     sync();
     return onExperienceChange(sync);
   }, []);
 
+  useEffect(() => {
+    if (!showChristmas) {
+      document.documentElement.classList.remove("christmas-subtle-tools");
+      return;
+    }
+    const subtle = isChristmasToolRoute(location.pathname);
+    document.documentElement.classList.toggle("christmas-subtle-tools", subtle);
+  }, [showChristmas, location.pathname]);
+
   const chatTo = isJunior ? "/chatbot?experience=junior" : "/chatbot";
   const chatLabel = "AI ChatBot";
 
   return (
     <div className="min-h-screen flex flex-col">
-      {CHRISTMAS_THEME_ENABLED && !hideChrome && <ChristmasGarland />}
-      {CHRISTMAS_THEME_ENABLED && !hideChrome && <ChristmasSnowfall />}
+      {showChristmas && !hideChrome && <ChristmasGarland />}
+      {showChristmas && !hideChrome && <ChristmasSnowfall />}
       {hideChrome ? null : <Navbar />}
       <main className={hideChrome ? "flex-1" : "flex-1 pt-16"}>{children}</main>
       {!hideFooter && !hideChrome && (
@@ -45,7 +68,7 @@ const Layout = ({ children, hideFooter, hideChrome }: LayoutProps) => {
       {hideChrome ? null : (
       <div
         className="fixed z-50 right-4 sm:right-6"
-        style={{ bottom: "calc(1rem + env(safe-area-inset-bottom))" }}
+        style={{ bottom: "max(1rem, env(safe-area-inset-bottom))" }}
       >
         <Link
           to={chatTo}

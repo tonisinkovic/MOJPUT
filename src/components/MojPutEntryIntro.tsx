@@ -2,7 +2,7 @@ import { useLayoutEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
-import { CHRISTMAS_THEME_ENABLED } from "@/config/christmas";
+import { isChristmasThemeActive } from "@/config/christmas";
 import { ChristmasSnowfall, ChristmasGarland } from "@/components/christmas";
 
 type MojPutExperience = "junior" | "senior";
@@ -173,7 +173,7 @@ function paintEntry(root: HTMLElement, ms: number, heights: { a: number; b: numb
   const arrowC = q("arrowC");
   if (arrowC) arrowC.style.transform = `scale(${back(ms, 7480, 8000)})`;
 
-  const skipOn = ms > 700 && ms < 6240;
+  const skipOn = ms > 800 && ms < 8200;
   skip.style.opacity = skipOn ? "1" : "0";
   skip.style.pointerEvents = skipOn ? "auto" : "none";
 }
@@ -304,6 +304,8 @@ const MojPutEntryIntro = ({ onEnterJunior, onEnterSenior }: MojPutEntryIntroProp
     paintEntry(root, HOLD_MS, heightsRef.current);
   };
 
+  const christmasOn = isChristmasThemeActive();
+
   const enter = (experience: MojPutExperience) => {
     if (launch) return;
     const ready = reducedRef.current || skipRef.current || (experience === "junior" ? msRef.current >= 5080 : msRef.current >= 6240);
@@ -321,16 +323,16 @@ const MojPutEntryIntro = ({ onEnterJunior, onEnterSenior }: MojPutEntryIntroProp
         ref={rootRef}
         className={cn(
           "relative min-h-dvh overflow-x-hidden overflow-y-auto text-slate-950",
-          CHRISTMAS_THEME_ENABLED
+          christmasOn
             ? "bg-[radial-gradient(circle_at_50%_-8%,rgba(20,120,110,0.14),transparent_36%),radial-gradient(circle_at_80%_80%,rgba(180,140,50,0.06),transparent_40%),linear-gradient(165deg,#f9faf8_0%,#f0f3ef_40%,#f4f5f2_100%)]"
             : "bg-[radial-gradient(circle_at_50%_-8%,rgba(20,160,150,0.18),transparent_36%),linear-gradient(165deg,#f8fbfc_0%,#eef3f8_58%,#f4f7f6_100%)]",
         )}
       >
-        {CHRISTMAS_THEME_ENABLED && <ChristmasGarland />}
-        {CHRISTMAS_THEME_ENABLED && <ChristmasSnowfall />}
+        {christmasOn && <ChristmasGarland />}
+        {christmasOn && <ChristmasSnowfall />}
 
         {/* Christmas warm ambient glows */}
-        {CHRISTMAS_THEME_ENABLED && (
+        {christmasOn && (
           <>
             <div className="pointer-events-none absolute left-[10%] top-[8%] h-40 w-40 rounded-full bg-[hsl(43_70%_62%/0.08)] blur-3xl lg:h-64 lg:w-64" aria-hidden />
             <div className="pointer-events-none absolute right-[5%] top-[30%] h-32 w-32 rounded-full bg-[hsl(350_55%_52%/0.05)] blur-3xl lg:h-48 lg:w-48" aria-hidden />
@@ -367,7 +369,7 @@ const MojPutEntryIntro = ({ onEnterJunior, onEnterSenior }: MojPutEntryIntroProp
             data-el="logo"
             className={cn(
               "flex items-center justify-center border bg-white/95 p-2.5",
-              CHRISTMAS_THEME_ENABLED
+              christmasOn
                 ? "border-[hsl(43_70%_62%/0.3)] shadow-[0_0_30px_hsl(43_70%_62%/0.1)]"
                 : "border-white/90",
             )}
@@ -459,7 +461,7 @@ const MojPutEntryIntro = ({ onEnterJunior, onEnterSenior }: MojPutEntryIntroProp
           data-el="skip"
           data-choice="skip"
           type="button"
-          className="fixed bottom-[max(1.25rem,env(safe-area-inset-bottom))] left-1/2 z-20 -translate-x-1/2 rounded-full px-3 py-1.5 text-xs font-semibold text-slate-500 transition-opacity"
+          className="fixed bottom-[max(1.25rem,env(safe-area-inset-bottom))] left-1/2 z-30 -translate-x-1/2 rounded-full border border-slate-300/80 bg-white/95 px-4 py-2 text-xs font-bold text-slate-700 shadow-md ring-1 ring-slate-900/5 backdrop-blur-sm transition-opacity"
           style={{ opacity: 0, pointerEvents: "none" }}
           onClick={(event) => {
             event.stopPropagation();

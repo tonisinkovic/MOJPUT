@@ -20,7 +20,7 @@ import { SENIOR_CALCULATOR_PROGRAM_COUNT, SENIOR_INSTITUTION_COUNT } from "@/lib
 import { QUIZ_QUESTIONS_PER_BLOCK } from "@/lib/careerQuizEngine";
 import { cn } from "@/lib/utils";
 import { CountUp } from "./ui";
-import { CHRISTMAS_THEME_ENABLED } from "@/config/christmas";
+import { isChristmasThemeActive } from "@/config/christmas";
 import { ChristmasHeroOverlay } from "@/components/christmas";
 
 type Experience = "junior" | "senior";
@@ -300,7 +300,7 @@ export default function SeniorHero({
 
   return (
     <section className="relative overflow-hidden rounded-b-[2rem] bg-[hsl(var(--sr-night))] text-white sm:rounded-b-[3rem]">
-      {CHRISTMAS_THEME_ENABLED && <ChristmasHeroOverlay />}
+      {isChristmasThemeActive() && <ChristmasHeroOverlay />}
       <div className="pointer-events-none absolute inset-0" aria-hidden>
         <div className="sr-grid absolute inset-0 opacity-50 [mask-image:radial-gradient(ellipse_at_70%_40%,black_20%,transparent_72%)]" />
         <div className="absolute -right-40 -top-56 h-[52rem] w-[52rem] rounded-full bg-[radial-gradient(circle,hsl(var(--sr-indigo)/0.5),transparent_62%)]" />

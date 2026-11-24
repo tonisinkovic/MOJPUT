@@ -13,15 +13,17 @@ Controlled by a single config flag. All existing design remains untouched.
 
 ```ts
 // src/config/christmas.ts
-export const CHRISTMAS_THEME_ENABLED = true;
+export const CHRISTMAS_MANUAL_ENABLED = true;
+// opcionalno: CHRISTMAS_THEME_END_YMD = "2027-01-07"
 ```
 
 ### Disable (restore original MojPut)
 
 ```ts
-// src/config/christmas.ts
-export const CHRISTMAS_THEME_ENABLED = false;
+export const CHRISTMAS_MANUAL_ENABLED = false;
 ```
+
+Ili pričekajte da prođe `CHRISTMAS_THEME_END_YMD` (Europe/Zagreb) — `isChristmasThemeActive()` tada sama vraća `false`.
 
 Then rebuild or restart the dev server. **That's it.**
 

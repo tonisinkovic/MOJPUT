@@ -64,6 +64,7 @@ const BozicniGiveaway = lazy(() => import("./pages/BozicniGiveaway"));
 const AdventskaLiga = lazy(() => import("./pages/AdventskaLiga"));
 const AdventQuiz = lazy(() => import("./pages/AdventQuiz"));
 const AdventLeaderboardPage = lazy(() => import("./pages/AdventLeaderboardPage"));
+const AdventPravila = lazy(() => import("./pages/AdventPravila"));
 const AdventAdminPanel = lazy(() => import("./pages/AdventAdminPanel"));
 
 /** Usklađeno s `base` u vite.config (`import.meta.env.BASE_URL`). */
@@ -176,6 +177,7 @@ const App = () => (
               <Route path="/adventska-liga/kviz" element={<AdventQuiz />} />
               <Route path="/adventska-liga/kviz/:dayKey" element={<AdventQuiz />} />
               <Route path="/adventska-liga/ljestvica" element={<AdventLeaderboardPage />} />
+              <Route path="/adventska-liga/pravila" element={<AdventPravila />} />
               <Route path="/adventska-liga/admin" element={<AdventAdminPanel />} />
               <Route path="/zaboravljena-lozinka" element={<ZaboravljenaLozinka />} />
               <Route path="/profil" element={<ProfilDashboard />} />

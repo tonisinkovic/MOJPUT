@@ -31,7 +31,7 @@ import { trackEvent } from "@/lib/analytics";
 import { adventSignupAnalyticsParams } from "@/lib/adventLeagueAnalytics";
 import { storePreferredExperience } from "@/lib/experience";
 import { cn } from "@/lib/utils";
-import { CHRISTMAS_THEME_ENABLED } from "@/config/christmas";
+import { isChristmasThemeActive } from "@/config/christmas";
 
 const Registracija = () => {
   const navigate = useNavigate();
@@ -324,7 +324,7 @@ const Registracija = () => {
                     <span
                       className={cn(
                         "pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 h-[120%] w-[140%] rounded-full blur-2xl opacity-80",
-                        CHRISTMAS_THEME_ENABLED
+                        isChristmasThemeActive()
                           ? "bg-gradient-to-r from-[hsl(152_35%_28%/0.25)] via-[hsl(43_70%_62%/0.2)] to-[hsl(350_55%_52%/0.15)]"
                           : "bg-gradient-to-r from-primary/30 via-accent/15 to-[hsl(232_68%_60%/0.25)]",
                       )}
@@ -332,7 +332,7 @@ const Registracija = () => {
                     />
                     <span className="relative text-gradient drop-shadow-sm">MojPut</span>
                   </span>{" "}
-                  račun {CHRISTMAS_THEME_ENABLED && "🎄"}
+                  račun {isChristmasThemeActive() && "🎄"}
                 </h1>
 
                 <p className="text-pretty text-[15px] sm:text-base text-muted-foreground leading-[1.65] max-w-md mb-6">
@@ -406,7 +406,7 @@ const Registracija = () => {
                   />
 
                   {/* Christmas decorative accent */}
-                  {CHRISTMAS_THEME_ENABLED && (
+                  {isChristmasThemeActive() && (
                     <div className="pointer-events-none absolute -right-2 -top-2 opacity-[0.18]" aria-hidden>
                       <svg width="72" height="72" viewBox="0 0 80 80" fill="none">
                         <path d="M80 0 L62 14 L74 11 L52 28 L68 23 L48 42 L80 30 Z" fill="hsl(152 35% 28%)" />
@@ -428,7 +428,7 @@ const Registracija = () => {
                     </div>
                     <div className={cn(
                       "shrink-0 flex h-11 w-11 items-center justify-center rounded-2xl shadow-inner ring-1",
-                      CHRISTMAS_THEME_ENABLED
+                      isChristmasThemeActive()
                         ? "bg-gradient-to-br from-[hsl(43_70%_62%/0.2)] to-[hsl(152_35%_28%/0.1)] text-[hsl(43_70%_50%)] ring-[hsl(43_70%_62%/0.25)]"
                         : "bg-gradient-to-br from-primary/20 to-primary/5 text-primary ring-primary/20",
                     )}>

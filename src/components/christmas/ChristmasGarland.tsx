@@ -40,7 +40,7 @@ export function ChristmasGarland() {
 
   return (
     <div
-      className="xmas-garland-container pointer-events-none fixed inset-x-0 top-0 z-[51] flex items-end justify-between overflow-hidden"
+      className="christmas-garland-layer xmas-garland-container pointer-events-none fixed inset-x-0 top-0 z-[51] flex items-end justify-between overflow-hidden"
       aria-hidden="true"
     >
       {/* Pine garland base line */}

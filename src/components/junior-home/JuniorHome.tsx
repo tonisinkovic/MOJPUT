@@ -15,6 +15,7 @@ import JuniorHero from "./JuniorHero";
 import JuniorTools from "./JuniorTools";
 import JuniorYear from "./JuniorYear";
 import { AdventMegaBanner } from "@/components/advent/AdventMegaBanner";
+import { AdventHomeNudge } from "@/components/advent/AdventHomeNudge";
 
 type Experience = "junior" | "senior";
 
@@ -67,6 +68,7 @@ export default function JuniorHome({
       {/* 🎄 BRUTALNO PRIVLAČAN ADVENT BANNER 🎁 */}
       <div className="relative z-20 mx-auto -mt-6 mb-12 w-full max-w-5xl px-4 sm:mb-16 sm:px-6 lg:mb-20">
         <AdventMegaBanner />
+        <AdventHomeNudge />
       </div>
       
       <JuniorTools />

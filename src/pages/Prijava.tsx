@@ -32,7 +32,7 @@ import {
 } from "@/lib/auth";
 import GoogleSignInButton from "@/components/GoogleSignInButton";
 import { getStoredLastLoginEmail, warmupApiHealth } from "@/lib/api";
-import { CHRISTMAS_THEME_ENABLED } from "@/config/christmas";
+import { isChristmasThemeActive } from "@/config/christmas";
 import {
   Dialog,
   DialogContent,
@@ -395,7 +395,7 @@ const Prijava = () => {
                 <div className="mb-6 flex items-start gap-3.5">
                   <div
                     className={`shrink-0 flex h-12 w-12 items-center justify-center rounded-2xl shadow-inner ring-1 ${
-                      CHRISTMAS_THEME_ENABLED
+                      isChristmasThemeActive()
                         ? "bg-gradient-to-br from-[hsl(43_70%_62%/0.2)] to-[hsl(152_35%_28%/0.1)] text-[hsl(43_70%_50%)] ring-[hsl(43_70%_62%/0.25)]"
                         : "bg-gradient-to-br from-primary/20 to-primary/5 text-primary ring-primary/20"
                     }`}
@@ -408,7 +408,7 @@ const Prijava = () => {
                       <span>Prijava</span>
                     </div>
                     <h1 className="text-balance text-[1.625rem] sm:text-[1.75rem] font-extrabold tracking-[-0.02em] leading-[1.15]">
-                      {CHRISTMAS_THEME_ENABLED ? "Dobrodošao natrag! 🎄" : "Dobrodošao natrag"}
+                      {isChristmasThemeActive() ? "Dobrodošao natrag! 🎄" : "Dobrodošao natrag"}
                     </h1>
                     <p className="mt-1 text-[13.5px] sm:text-sm text-muted-foreground leading-snug">
                       Prijavi se i nastavi gdje si stao.
@@ -417,7 +417,7 @@ const Prijava = () => {
                 </div>
 
                 {/* Christmas decorative accent */}
-                {CHRISTMAS_THEME_ENABLED && (
+                {isChristmasThemeActive() && (
                   <div className="pointer-events-none absolute -right-3 -top-3 opacity-20" aria-hidden>
                     <svg width="80" height="80" viewBox="0 0 80 80" fill="none">
                       <path d="M80 0 L62 14 L74 11 L52 28 L68 23 L48 42 L80 30 Z" fill="hsl(152 35% 28%)" />

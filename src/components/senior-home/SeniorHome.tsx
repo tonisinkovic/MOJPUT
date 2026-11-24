@@ -14,6 +14,7 @@ import SeniorQuiz from "./SeniorQuiz";
 import SeniorTicker from "./SeniorTicker";
 import SeniorTimeline from "./SeniorTimeline";
 import { AdventMegaBanner } from "@/components/advent/AdventMegaBanner";
+import { AdventHomeNudge } from "@/components/advent/AdventHomeNudge";
 
 // Karta i chat koriste cijeli popis ustanova, pa se učitavaju tek kad zatrebaju.
 const SeniorMap = lazy(() => import("./SeniorMap"));
@@ -73,6 +74,7 @@ export default function SeniorHome({
       {/* 🎄 BRUTALNO PRIVLAČAN ADVENT BANNER 🎁 */}
       <div className="relative z-20 mx-auto -mt-6 mb-12 w-full max-w-5xl px-4 sm:mb-16 sm:px-6 lg:mb-20">
         <AdventMegaBanner />
+        <AdventHomeNudge />
       </div>
       
       <SeniorTicker />

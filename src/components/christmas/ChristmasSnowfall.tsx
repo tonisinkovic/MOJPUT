@@ -1,4 +1,5 @@
 import { useMemo } from "react";
+import { useLocation } from "react-router-dom";
 import { useChristmas } from "./ChristmasThemeProvider";
 
 const FLAKE_COUNT_DESKTOP = 24;
@@ -11,19 +12,31 @@ const FLAKE_COUNT_MOBILE = 8;
  * Fully pointer-events:none and compositor-friendly (transform-only).
  * Respects prefers-reduced-motion via context.
  */
+function isToolPath(pathname: string): boolean {
+  const p = pathname.toLowerCase();
+  return (
+    /\/(kalkulator|kviz|chatbot|samoprocjena)(\/|$)/.test(p) ||
+    p.includes("/kalkulator-") ||
+    p.includes("/kviz-")
+  );
+}
+
 export function ChristmasSnowfall() {
   const { enabled, reducedMotion } = useChristmas();
+  const { pathname } = useLocation();
+  const subtle = isToolPath(pathname);
 
   const flakes = useMemo(() => {
     if (!enabled || reducedMotion) return [];
 
     const w = typeof window !== "undefined" ? window.innerWidth : 1280;
-    const count =
+    let count =
       w < 640
         ? FLAKE_COUNT_MOBILE
         : w < 1024
           ? FLAKE_COUNT_TABLET
           : FLAKE_COUNT_DESKTOP;
+    if (subtle) count = Math.max(2, Math.floor(count * 0.35));
 
     return Array.from({ length: count }, (_, i) => ({
       id: i,
@@ -33,13 +46,13 @@ export function ChristmasSnowfall() {
       delay: Math.random() * 12,
       opacity: 0.15 + Math.random() * 0.35,
     }));
-  }, [enabled, reducedMotion]);
+  }, [enabled, reducedMotion, subtle]);
 
   if (flakes.length === 0) return null;
 
   return (
     <div
-      className="xmas-snowfall-container pointer-events-none fixed inset-0 z-[1] overflow-hidden"
+      className="christmas-snowfall-layer xmas-snowfall-container pointer-events-none fixed inset-0 z-[1] overflow-hidden"
       aria-hidden="true"
     >
       {flakes.map((f) => (

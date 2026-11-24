@@ -9,6 +9,7 @@ import { AdventTwinklingStars } from "@/components/advent/AdventTwinklingStars";
 import { AdventFloatingOrnaments } from "@/components/advent/AdventFloatingOrnaments";
 import { AdventChristmasLights } from "@/components/advent/AdventChristmasLights";
 import { AdventChristmasTree } from "@/components/advent/AdventChristmasTree";
+import { AdventPwaInstallHint } from "@/components/advent/AdventPwaInstallHint";
 import { authMe, userFromAuthMe, type AuthUser } from "@/lib/auth";
 import {
   AdventDayGrid,
@@ -128,6 +129,7 @@ const AdventskaLiga = () => {
           <div className="advent-orb-frost hidden lg:block" style={{ width: 280, height: 280, bottom: "12%", right: "8%", opacity: 0.08 }} aria-hidden />
 
           <div className="relative z-10 mx-auto w-full max-w-6xl px-4 pb-10 pt-20 sm:px-5 sm:pb-16 sm:pt-24">
+            <AdventPwaInstallHint />
             <div className="flex flex-col gap-8 lg:gap-10">
               <AdventLandingHero loggedIn={Boolean(user)} username={user?.username} />
 
