@@ -225,7 +225,7 @@ const MojPutEntryIntro = ({ onEnterJunior, onEnterSenior }: MojPutEntryIntroProp
       const heights = {
         a: Math.ceil(cardA.getBoundingClientRect().height) + 2,
         b: Math.ceil(cardB.getBoundingClientRect().height) + 2,
-        c: Math.ceil(cardC.getBoundingClientRect().height) + 2,
+        c: Math.ceil(cardC.getBoundingClientRect().height) + 20,
       };
       slotA.style.maxHeight = prev.a;
       slotB.style.maxHeight = prev.b;
@@ -238,6 +238,13 @@ const MojPutEntryIntro = ({ onEnterJunior, onEnterSenior }: MojPutEntryIntroProp
     };
 
     let heights = measure();
+    if (document.fonts?.ready) {
+      void document.fonts.ready.then(() => {
+        if (stopped) return;
+        heights = measure();
+        paintEntry(root, msRef.current, heights);
+      });
+    }
 
     let raf = 0;
     let stopped = false;
@@ -355,7 +362,7 @@ const MojPutEntryIntro = ({ onEnterJunior, onEnterSenior }: MojPutEntryIntroProp
         <div data-el="washA" className="pointer-events-none absolute -left-16 top-[22%] h-56 w-56 rounded-full bg-amber-400/30 blur-3xl lg:left-[8%] lg:top-1/2 lg:h-80 lg:w-80 lg:-translate-y-1/2" style={{ opacity: 0 }} aria-hidden />
         <div data-el="washB" className="pointer-events-none absolute -right-20 top-[52%] h-56 w-56 rounded-full bg-teal-400/25 blur-3xl lg:right-[8%] lg:top-1/2 lg:h-80 lg:w-80 lg:-translate-y-1/2" style={{ opacity: 0 }} aria-hidden />
 
-        <div className="relative z-10 mx-auto flex min-h-dvh w-full max-w-[28rem] flex-col items-center justify-center px-6 py-8 lg:max-w-[72rem] lg:px-10 lg:py-12">
+        <div className="relative z-10 mx-auto flex min-h-dvh w-full max-w-[28rem] flex-col items-center justify-start px-6 pb-16 pt-8 max-lg:overscroll-y-auto lg:max-w-[72rem] lg:justify-center lg:px-10 lg:py-12 lg:pb-12">
           <div
             data-el="logo"
             className={cn(
@@ -442,7 +449,7 @@ const MojPutEntryIntro = ({ onEnterJunior, onEnterSenior }: MojPutEntryIntroProp
             </div>
           </div>
 
-          <div data-el="slotC" className="w-full overflow-hidden" style={{ maxHeight: 0 }}>
+          <div data-el="slotC" className="w-full overflow-hidden max-lg:overflow-visible" style={{ maxHeight: 0 }}>
             <GiveawayCard />
           </div>
           </div>
@@ -526,7 +533,7 @@ function ChoiceCard({
         onClick();
       }}
       className={cn(
-        "relative flex w-full flex-col overflow-hidden rounded-3xl border border-white/90 bg-white/95 px-[18px] pb-4 pt-5 text-left shadow-[0_18px_50px_-36px_rgba(15,23,42,0.45)] outline-none transition-[transform,box-shadow] duration-300 hover:-translate-y-0.5 focus-visible:ring-4 lg:min-h-[22rem] lg:rounded-[1.85rem] lg:px-9 lg:pb-8 lg:pt-8 lg:shadow-[0_28px_70px_-36px_rgba(15,23,42,0.4)] lg:hover:-translate-y-1",
+        "relative flex w-full flex-col overflow-hidden rounded-3xl border border-white/90 bg-white/95 px-[18px] pb-4 pt-5 text-left shadow-[0_18px_50px_-36px_rgba(15,23,42,0.45)] outline-none transition-[transform,box-shadow] duration-300 touch-pan-y hover:-translate-y-0.5 focus-visible:ring-4 max-lg:hover:translate-y-0 lg:min-h-[22rem] lg:rounded-[1.85rem] lg:px-9 lg:pb-8 lg:pt-8 lg:shadow-[0_28px_70px_-36px_rgba(15,23,42,0.4)] lg:hover:-translate-y-1",
         junior ? "focus-visible:ring-amber-400/35" : "focus-visible:ring-teal-500/30",
       )}
       style={{ opacity: 0, pointerEvents: "none" }}
@@ -592,7 +599,7 @@ function GiveawayCard() {
       data-el="cardC"
       to="/adventska-liga"
       tabIndex={-1}
-      className="relative flex w-full flex-col overflow-hidden rounded-3xl border-2 border-[hsl(38_92%_58%/0.4)] px-[18px] pb-5 pt-6 text-left outline-none transition-[transform,box-shadow] duration-300 hover:-translate-y-1 hover:scale-[1.01] focus-visible:ring-4 focus-visible:ring-amber-400/40 lg:rounded-[1.85rem] lg:px-9 lg:pb-8 lg:pt-8"
+      className="relative flex w-full flex-col overflow-hidden rounded-3xl border-2 border-[hsl(38_92%_58%/0.4)] px-[18px] pb-5 pt-5 text-left outline-none transition-[transform,box-shadow] duration-300 touch-pan-y hover:-translate-y-1 hover:scale-[1.01] focus-visible:ring-4 focus-visible:ring-amber-400/40 max-lg:mb-2 max-lg:hover:translate-y-0 max-lg:hover:scale-100 lg:rounded-[1.85rem] lg:px-9 lg:pb-8 lg:pt-8"
       style={{
         opacity: 0,
         pointerEvents: "none",
@@ -655,7 +662,7 @@ function GiveawayCard() {
 
       {/* Title */}
       <span
-        className="mt-3 block text-[1.6rem] font-extrabold leading-[1.05] tracking-[-0.04em] lg:mt-4 lg:text-[2.15rem]"
+        className="mt-2 block text-[1.45rem] font-extrabold leading-[1.08] tracking-[-0.04em] sm:text-[1.6rem] lg:mt-4 lg:text-[2.15rem]"
         style={{
           fontFamily: "'Mountains of Christmas', cursive",
           color: "white",
@@ -682,7 +689,7 @@ function GiveawayCard() {
       </span>
 
       {/* CTA */}
-      <span className="mt-5 flex items-center justify-between gap-3 border-t border-white/10 pt-4 text-sm font-extrabold text-white lg:pt-5 lg:text-base">
+      <span className="mt-4 flex items-center justify-between gap-3 border-t border-white/10 pt-3.5 text-sm font-extrabold text-white lg:mt-5 lg:pt-5 lg:text-base">
         <span style={{ textShadow: "0 1px 8px hsl(38 92% 58% / 0.3)" }}>
           Otvori Adventsku Ligu →
         </span>

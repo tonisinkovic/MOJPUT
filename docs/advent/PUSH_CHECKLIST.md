@@ -8,13 +8,12 @@
 - `npm run sitemap`
 - `npm run dev` = Vite + API (`dev:vite` samo frontend)
 
-## Tvoj push (obično `main` ako Render prati main)
+## Git / API
+
+**`main` je mergean i pushan** (`feature/christmas-theme` → `main`). Render (ako prati `main`) krene deploy sami.
 
 ```powershell
-cd c:\Users\User\MOJPUT
-git push origin HEAD
-# ili nakon mergea u main:
-# git push origin main
+git push origin main   # već napravljeno ako vidiš 0b83416 na origin/main
 ```
 
 ## Odmah nakon pusha (ručno u Renderu, ~5 min)
