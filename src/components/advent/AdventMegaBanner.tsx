@@ -66,22 +66,22 @@ export function AdventMegaBanner({ className = "" }: { className?: string }) {
 
       {/* Floating gift icons */}
       <Gift
-        className="absolute left-4 top-1/2 -translate-y-1/2 text-[hsl(350 70% 65%)] opacity-70"
-        size={28}
+        className="absolute left-6 top-1/2 -translate-y-1/2 text-[hsl(350 70% 65%)] opacity-70 sm:left-8"
+        size={36}
         style={{ animation: "advent-float 3s ease-in-out infinite" }}
       />
       <Gift
-        className="absolute right-4 top-1/2 -translate-y-1/2 text-[hsl(38 92% 68%)] opacity-70"
-        size={28}
+        className="absolute right-6 top-1/2 -translate-y-1/2 text-[hsl(38 92% 68%)] opacity-70 sm:right-8"
+        size={36}
         style={{ animation: "advent-float 3s ease-in-out infinite", animationDelay: "1.5s" }}
       />
 
       {/* Content container */}
-      <div className="relative z-10 flex items-center justify-center gap-3 px-16 py-5 sm:gap-4 sm:px-20 sm:py-6">
+      <div className="relative z-10 flex items-center justify-center gap-6 px-16 py-8 sm:gap-8 sm:px-20 sm:py-10 lg:py-12">
         {/* Left sparkle */}
         <Sparkles
           className="text-[hsl(38 92% 68%)] shrink-0"
-          size={24}
+          size={32}
           style={{
             animation: "advent-sparkle 1.5s ease-in-out infinite",
             filter: "drop-shadow(0 0 8px hsl(38 92% 58%))",
@@ -90,17 +90,17 @@ export function AdventMegaBanner({ className = "" }: { className?: string }) {
 
         {/* Text content */}
         <div className="text-center">
-          <div className="mb-1 flex items-center justify-center gap-2">
-            <Calendar className="h-5 w-5 text-[hsl(38 92% 68%)]" />
+          <div className="mb-2 flex items-center justify-center gap-2.5">
+            <Calendar className="h-6 w-6 text-[hsl(38 92% 68%)]" />
             <span
-              className="text-xs font-extrabold uppercase tracking-wider text-[hsl(38 92% 85%)]"
+              className="text-sm font-extrabold uppercase tracking-wider text-[hsl(38 92% 85%)]"
               style={{ textShadow: "0 2px 8px hsl(38 92% 20%)" }}
             >
               Novo!
             </span>
           </div>
           <h3
-            className="text-xl font-extrabold tracking-tight text-white sm:text-2xl"
+            className="text-2xl font-extrabold tracking-tight text-white sm:text-3xl lg:text-4xl"
             style={{
               fontFamily: "'Mountains of Christmas', cursive",
               textShadow: "0 2px 12px hsl(38 92% 58% / 0.8), 0 4px 24px hsl(350 70% 52% / 0.5)",
@@ -108,7 +108,7 @@ export function AdventMegaBanner({ className = "" }: { className?: string }) {
           >
             🎄 Adventska Kviz Liga 🎁
           </h3>
-          <p className="mt-1 text-xs font-bold text-[hsl(38 70% 80%)] sm:text-sm">
+          <p className="mt-2 text-sm font-bold text-[hsl(38 70% 80%)] sm:text-base">
             24 dana znanja • bodovi • nagrade
           </p>
         </div>
@@ -116,7 +116,7 @@ export function AdventMegaBanner({ className = "" }: { className?: string }) {
         {/* Right sparkle */}
         <Sparkles
           className="text-[hsl(350 70% 65%)] shrink-0"
-          size={24}
+          size={32}
           style={{
             animation: "advent-sparkle 1.5s ease-in-out infinite",
             animationDelay: "0.75s",

@@ -1,7 +1,6 @@
-import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { useLayoutEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { authMe, userFromAuthMe } from "@/lib/auth";
 import { cn } from "@/lib/utils";
 import { CHRISTMAS_THEME_ENABLED } from "@/config/christmas";
 import { ChristmasSnowfall, ChristmasGarland } from "@/components/christmas";
@@ -588,62 +587,126 @@ function ChoiceCard({
 }
 
 function GiveawayCard() {
-  const [loggedIn, setLoggedIn] = useState(false);
-
-  useEffect(() => {
-    let alive = true;
-    authMe().then((res) => {
-      if (!alive) return;
-      setLoggedIn(Boolean(userFromAuthMe(res)));
-    });
-    return () => {
-      alive = false;
-    };
-  }, []);
-
   return (
     <Link
       data-el="cardC"
-      to={loggedIn ? "/bozicni-giveaway" : "/prijava?next=/bozicni-giveaway"}
+      to="/adventska-liga"
       tabIndex={-1}
-      className="relative flex w-full flex-col overflow-hidden rounded-3xl border border-white/90 bg-white/95 px-[18px] pb-4 pt-5 text-left shadow-[0_18px_50px_-36px_rgba(15,23,42,0.45)] outline-none transition-[transform,box-shadow] duration-300 hover:-translate-y-0.5 focus-visible:ring-4 focus-visible:ring-red-500/30 lg:rounded-[1.85rem] lg:px-9 lg:pb-7 lg:pt-7 lg:shadow-[0_28px_70px_-36px_rgba(15,23,42,0.4)] lg:hover:-translate-y-1"
-      style={{ opacity: 0, pointerEvents: "none" }}
+      className="relative flex w-full flex-col overflow-hidden rounded-3xl border-2 border-[hsl(38_92%_58%/0.4)] px-[18px] pb-5 pt-6 text-left outline-none transition-[transform,box-shadow] duration-300 hover:-translate-y-1 hover:scale-[1.01] focus-visible:ring-4 focus-visible:ring-amber-400/40 lg:rounded-[1.85rem] lg:px-9 lg:pb-8 lg:pt-8"
+      style={{
+        opacity: 0,
+        pointerEvents: "none",
+        background: "linear-gradient(135deg, hsl(340 35% 14%), hsl(350 50% 18%), hsl(152 40% 15%), hsl(340 30% 16%))",
+        backgroundSize: "300% 300%",
+        animation: "advent-gradient-shift 8s ease-in-out infinite",
+        boxShadow: "0 18px 50px -16px hsl(38 92% 58% / 0.4), 0 0 40px hsl(350 70% 52% / 0.2), inset 0 1px 0 hsl(0 0% 100% / 0.08)",
+      }}
     >
+      {/* Animated gradient cap */}
       <span
         data-el="capC"
         className="absolute inset-x-0 top-0 h-1.5 origin-center bg-gradient-to-r from-[#b42318] via-[#d4a017] to-[#1f7a3a]"
         style={{ transform: "scaleX(0)" }}
         aria-hidden
       />
-      <span className="pointer-events-none absolute -right-8 -top-10 h-28 w-28 rounded-full bg-red-500/10 blur-2xl" aria-hidden />
-      <span className="pointer-events-none absolute -left-8 bottom-0 h-24 w-24 rounded-full bg-emerald-500/10 blur-2xl" aria-hidden />
-      <span className="pointer-events-none absolute right-6 top-5 text-amber-400" aria-hidden>
-        ✦
+
+      {/* Warm glow orbs */}
+      <span className="pointer-events-none absolute -right-10 -top-10 h-32 w-32 rounded-full bg-[hsl(38_92%_58%/0.2)] blur-3xl" aria-hidden />
+      <span className="pointer-events-none absolute -left-10 bottom-0 h-28 w-28 rounded-full bg-[hsl(350_70%_52%/0.15)] blur-3xl" aria-hidden />
+      <span className="pointer-events-none absolute right-1/4 top-1/3 h-20 w-20 rounded-full bg-[hsl(152_60%_50%/0.1)] blur-2xl" aria-hidden />
+
+      {/* Animated shimmer sweep */}
+      <span
+        className="pointer-events-none absolute inset-0"
+        style={{
+          background: "linear-gradient(105deg, transparent 30%, hsl(38 92% 58% / 0.15) 50%, transparent 70%)",
+          backgroundSize: "200% 100%",
+          animation: "advent-shimmer 3s ease-in-out infinite",
+        }}
+        aria-hidden
+      />
+
+      {/* Snow particles */}
+      {[0, 1, 2, 3, 4, 5].map((i) => (
+        <span
+          key={i}
+          className="pointer-events-none absolute h-1 w-1 rounded-full bg-white/60"
+          style={{
+            left: `${15 + i * 14}%`,
+            top: "-4px",
+            animation: `advent-snowfall ${10 + i * 3}s linear infinite`,
+            animationDelay: `${i * 0.8}s`,
+          }}
+          aria-hidden
+        />
+      ))}
+
+      {/* Decorative sparkles */}
+      <span className="pointer-events-none absolute right-5 top-5 text-lg text-amber-400" style={{ animation: "advent-twinkle 2s ease-in-out infinite" }} aria-hidden>✦</span>
+      <span className="pointer-events-none absolute right-14 top-8 text-sm text-red-400/80" style={{ animation: "advent-twinkle 2.5s ease-in-out infinite", animationDelay: "0.5s" }} aria-hidden>❄</span>
+      <span className="pointer-events-none absolute left-[90%] bottom-12 text-xs text-emerald-400/70" style={{ animation: "advent-twinkle 1.8s ease-in-out infinite", animationDelay: "1s" }} aria-hidden>✦</span>
+      <span className="pointer-events-none absolute left-4 top-10 text-sm text-amber-300/50 lg:left-7" style={{ animation: "advent-sparkle 2s ease-in-out infinite", animationDelay: "0.3s" }} aria-hidden>⭐</span>
+
+      {/* Kicker badge */}
+      <span className="mb-1 inline-flex w-fit items-center gap-1.5 rounded-full bg-[hsl(38_92%_58%/0.15)] px-3 py-1 text-[11px] font-extrabold uppercase tracking-[0.16em] text-[hsl(38_92%_68%)] lg:text-xs lg:tracking-[0.2em]">
+        <span style={{ animation: "advent-sparkle 1.5s ease-in-out infinite" }}>✨</span>
+        Novo — Adventska Liga
       </span>
-      <span className="pointer-events-none absolute right-14 top-9 text-xs text-red-400" aria-hidden>
-        ❄
-      </span>
-      <span className="block text-[11px] font-extrabold uppercase tracking-[0.16em] text-[#b42318] lg:text-xs lg:tracking-[0.2em]">
-        Božićni giveaway
-      </span>
-      <span className="mt-2 block text-[1.6rem] font-extrabold leading-[1.05] tracking-[-0.04em] text-slate-950 lg:mt-3 lg:text-[2.15rem]">
-        Darujemo
+
+      {/* Title */}
+      <span
+        className="mt-3 block text-[1.6rem] font-extrabold leading-[1.05] tracking-[-0.04em] lg:mt-4 lg:text-[2.15rem]"
+        style={{
+          fontFamily: "'Mountains of Christmas', cursive",
+          color: "white",
+          textShadow: "0 2px 16px hsl(38 92% 58% / 0.6), 0 4px 24px hsl(350 70% 52% / 0.3)",
+        }}
+      >
+        🎄 24 dana
         <br />
-        <span className="text-[#b42318]">priliku!</span>
+        <span
+          style={{
+            background: "linear-gradient(135deg, hsl(38 92% 68%), hsl(38 70% 80%))",
+            WebkitBackgroundClip: "text",
+            WebkitTextFillColor: "transparent",
+            backgroundClip: "text",
+          }}
+        >
+          znanja i zabave!
+        </span>
       </span>
-      <span className="mt-2.5 inline-block w-fit max-w-full rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-bold leading-snug text-emerald-800 lg:mt-4 lg:px-3.5 lg:py-1.5 lg:text-sm">
-        Prvo prijava u MojPut, pa tek onda na giveaway.
+
+      {/* Description */}
+      <span className="mt-3 inline-block w-fit max-w-full rounded-xl bg-white/10 px-3 py-1.5 text-xs font-bold leading-snug text-[hsl(38_70%_85%)] backdrop-blur-sm lg:mt-4 lg:px-4 lg:py-2 lg:text-sm">
+        🎁 Svaki dan kviz • bodovi • nagrade • ljestvica
       </span>
-      <span className="mt-4 flex items-center justify-between gap-3 border-t border-red-900/10 pt-3 text-sm font-extrabold lg:pt-5 lg:text-base">
-        <span>{loggedIn ? "Prijavi se na giveaway" : "Prijavi se u MojPut"}</span>
+
+      {/* CTA */}
+      <span className="mt-5 flex items-center justify-between gap-3 border-t border-white/10 pt-4 text-sm font-extrabold text-white lg:pt-5 lg:text-base">
+        <span style={{ textShadow: "0 1px 8px hsl(38 92% 58% / 0.3)" }}>
+          Otvori Adventsku Ligu →
+        </span>
         <span
           data-el="arrowC"
-          className="grid h-8 w-8 place-items-center rounded-full bg-[#b42318] text-base text-white lg:h-11 lg:w-11 lg:text-lg"
-          style={{ transform: "scale(0)" }}
+          className="grid h-8 w-8 place-items-center rounded-full text-base lg:h-11 lg:w-11 lg:text-lg"
+          style={{
+            transform: "scale(0)",
+            background: "linear-gradient(135deg, hsl(38 92% 58%), hsl(25 75% 55%))",
+            color: "hsl(340 35% 12%)",
+            boxShadow: "0 4px 16px hsl(38 92% 58% / 0.4)",
+          }}
         >
           →
         </span>
       </span>
+
+      {/* Internal animation keyframes */}
+      <style>{`
+        @keyframes advent-gradient-shift {
+          0%, 100% { background-position: 0% 50%; }
+          50% { background-position: 100% 50%; }
+        }
+      `}</style>
     </Link>
   );
 }
