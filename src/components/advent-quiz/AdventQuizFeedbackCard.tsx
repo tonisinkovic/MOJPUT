@@ -1,11 +1,13 @@
 import { CheckCircle2, XCircle } from "lucide-react";
+import { ADVENT_TIME_BANDS } from "@/lib/adventLeagueScoring";
 import { cn } from "@/lib/utils";
 
 type AdventQuizFeedbackCardProps = {
   correct: boolean;
   score: number;
-  timeBonus: number;
   explanation?: string | null;
+  suggestion?: string | null;
+  correctAnswerLabel?: string | null;
   isLast: boolean;
   onNext: () => void;
 };
@@ -13,11 +15,13 @@ type AdventQuizFeedbackCardProps = {
 export function AdventQuizFeedbackCard({
   correct,
   score,
-  timeBonus,
   explanation,
+  suggestion,
+  correctAnswerLabel,
   isLast,
   onNext,
 }: AdventQuizFeedbackCardProps) {
+  const band = correct ? ADVENT_TIME_BANDS.find((item) => item.points === score) : undefined;
   return (
     <div
       className={cn(
@@ -52,14 +56,26 @@ export function AdventQuizFeedbackCard({
             <p className="text-2xl font-extrabold tabular-nums" style={{ color: "hsl(var(--advent-gold))" }}>
               {score} bodova
             </p>
-            {timeBonus > 0 ? (
-              <p className="text-sm font-semibold text-[hsl(var(--advent-gold-soft))]">uključujući +{timeBonus} brzine</p>
+            {band ? (
+              <p className="text-sm font-semibold text-[hsl(var(--advent-gold-soft))]">
+                Pojas brzine: do {band.maxSeconds} s
+              </p>
             ) : null}
           </div>
         </div>
       </div>
 
-      {explanation ? (
+      {suggestion ? (
+        <p className="advent-glass-gold rounded-xl p-3 mt-3 text-sm font-extrabold leading-relaxed text-[hsl(var(--advent-gold))]">
+          {suggestion}
+        </p>
+      ) : !correct && correctAnswerLabel ? (
+        <p className="advent-glass rounded-xl p-3 mt-3 text-sm font-semibold leading-relaxed text-[hsl(var(--advent-ivory))]">
+          Točan odgovor: {correctAnswerLabel}
+        </p>
+      ) : null}
+
+      {explanation && !suggestion ? (
         <p className="advent-glass rounded-xl p-3 mt-3 text-sm font-medium text-[hsl(var(--advent-frost)/0.7)] leading-relaxed">
           {explanation}
         </p>
@@ -70,7 +86,7 @@ export function AdventQuizFeedbackCard({
         className="advent-btn-gold advent-shimmer rounded-xl min-h-12 px-6 font-extrabold text-sm mt-6 w-full sm:w-auto"
         onClick={onNext}
       >
-        {isLast ? "Završi kviz" : "Sljedeće pitanje"}
+        {isLast ? "Završi kviz" : "Dalje"}
       </button>
     </div>
   );

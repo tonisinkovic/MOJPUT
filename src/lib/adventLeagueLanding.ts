@@ -148,34 +148,10 @@ export function buildAdventCalendarDays(
   });
 }
 
-export const ADVENT_PRIZES_INFO = [
-  {
-    id: "top3",
-    title: "Top 3 na ljestvici",
-    description: "Posebne nagrade za najbolja tri mjesta nakon zadnjeg dana kviza (24. 12.).",
-    emoji: "🏆",
-  },
-  {
-    id: "streak",
-    title: "Serija dana",
-    description: "Nagrade za one koji redovito igraju — svaki otvoreni dan se računa.",
-    emoji: "🔥",
-  },
-  {
-    id: "draw",
-    title: "Nagradna igra",
-    description: "Jedan klik u nagradnoj igri — nasumični dobitnik među prijavljenima (ne utječe na bodove).",
-    emoji: "🎁",
-  },
-] as const;
-
-/** @deprecated Koristi ADVENT_PRIZES_INFO */
-export const ADVENT_PRIZES_DEMO = ADVENT_PRIZES_INFO;
-
 export const ADVENT_RULES_SHORT = [
   "Bodove možeš dobiti isključivo rješavanjem dnevnog kviza — ni referral, ni nagradna igra ne dodaju bodove.",
   "Jedan MojPut račun — jedan pokušaj po adventskom danu kviza.",
-  "Točan odgovor donosi bodove; brži točan odgovor može donijeti vremenski bonus unutar kviza.",
+  "Točan odgovor donosi bodove prema brzini; brži točan odgovor vrijedi više.",
   "Kalendar 1.–31. 12.: kviz 5.–24. (zadnji dan Badnjak), 25. 12. Božić (nema kviza), 26. 12. objava konačne ljestvice.",
   "Došao preko referral linka? Možeš jednom nadoknaditi najraniji propušteni dan nakon prijave.",
   "Za igru trebaš prijavljen i potvrđen MojPut račun.",

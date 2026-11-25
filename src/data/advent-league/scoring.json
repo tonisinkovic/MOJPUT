@@ -14,7 +14,8 @@
   "submitGraceMs": 1500,
   "minDurationMs": 500,
   "distance": {
-    "fullPointsWithinKm": 15,
-    "zeroBeyondPercent": 40
+    "fullPointsWithinKm": 40,
+    "fullPointsWithinPercent": 20,
+    "zeroBeyondPercent": 80
   }
 }

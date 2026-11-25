@@ -77,17 +77,30 @@ function parseKm(raw) {
   return Number.isFinite(n) ? n : NaN;
 }
 
-function scoreDistanceKm(guessRaw, correctKm, question) {
+function formatKmHr(km) {
+  const n = Math.round(Number(km));
+  const body = String(Math.abs(n)).replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+  return `${n < 0 ? "-" : ""}${body} km`;
+}
+
+function distanceWindows(correct, question) {
   const config = loadScoringConfig();
+  const minFull = Number(question?.distanceFullPointsWithinKm ?? config.distance.fullPointsWithinKm);
+  const fullPercent = Number(question?.distanceFullPointsWithinPercent ?? config.distance.fullPointsWithinPercent ?? 20);
+  const zeroPercent = Number(question?.distanceZeroBeyondPercent ?? config.distance.zeroBeyondPercent);
+  const full = Math.max(minFull, Math.round((correct * fullPercent) / 100));
+  const zero = Math.max(full + 1, Math.round((correct * zeroPercent) / 100));
+  return { full, zero };
+}
+
+function scoreDistanceKm(guessRaw, correctKm, question) {
   const correct = Number(correctKm);
   const guess = parseKm(guessRaw);
   if (!Number.isFinite(correct) || correct <= 0 || !Number.isFinite(guess) || guess < 0) {
     return { score: 0, errorKm: null, correctKm: correct };
   }
   const error = Math.abs(guess - correct);
-  const full = Number(question?.distanceFullPointsWithinKm ?? config.distance.fullPointsWithinKm);
-  const percent = Number(question?.distanceZeroBeyondPercent ?? config.distance.zeroBeyondPercent);
-  const zero = Math.max(full + 1, Math.round((correct * percent) / 100));
+  const { full, zero } = distanceWindows(correct, question);
   if (error <= full) return { score: 100, errorKm: Math.round(error), correctKm: correct };
   if (error >= zero) return { score: 0, errorKm: Math.round(error), correctKm: correct };
   const ratio = (error - full) / (zero - full);
@@ -95,41 +108,102 @@ function scoreDistanceKm(guessRaw, correctKm, question) {
   return { score, errorKm: Math.round(error), correctKm: correct };
 }
 
+function editDistance(a, b) {
+  if (a === b) return 0;
+  if (Math.abs(a.length - b.length) > 2) return 3;
+  const prev = new Array(b.length + 1);
+  for (let j = 0; j <= b.length; j += 1) prev[j] = j;
+  for (let i = 1; i <= a.length; i += 1) {
+    const curr = new Array(b.length + 1);
+    curr[0] = i;
+    let rowMin = curr[0];
+    for (let j = 1; j <= b.length; j += 1) {
+      const cost = a[i - 1] === b[j - 1] ? 0 : 1;
+      curr[j] = Math.min(prev[j] + 1, curr[j - 1] + 1, prev[j - 1] + cost);
+      if (curr[j] < rowMin) rowMin = curr[j];
+    }
+    if (rowMin > 2) return 3;
+    for (let j = 0; j <= b.length; j += 1) prev[j] = curr[j];
+  }
+  return prev[b.length];
+}
+
+function correctAnswerText(question) {
+  const type = questionTypeOf(question);
+  if (type === "distance") return formatKmHr(question?.distanceKm);
+  if (type === "choice") {
+    const id = foldAnswer(question?.correctAnswer);
+    const opt = (Array.isArray(question?.options) ? question.options : []).find((item) => foldAnswer(item?.id) === id);
+    return opt?.text ? String(opt.text) : "";
+  }
+  const first = Array.isArray(question?.acceptedAnswers) ? question.acceptedAnswers.find((item) => String(item || "").trim()) : "";
+  return first ? String(first) : "";
+}
+
+function classifyTextNear(given, acceptedList) {
+  const folded = foldAnswer(given);
+  const originals = (Array.isArray(acceptedList) ? acceptedList : []).map((item) => String(item || "").trim()).filter(Boolean);
+  if (!folded || folded.length > 80) return { kind: "wrong", label: originals[0] || "" };
+  if (textMatches(given, originals)) return { kind: "exact", label: originals[0] || "" };
+
+  if (folded.length >= 5) {
+    for (const original of originals) {
+      const item = foldAnswer(original);
+      if (item.startsWith(folded) && item.length - folded.length === 1) {
+        return { kind: "accept", label: original };
+      }
+    }
+  }
+
+  let best = null;
+  if (folded.length >= 4) {
+    for (const original of originals) {
+      const item = foldAnswer(original);
+      const distance = editDistance(folded, item);
+      if (distance < 1 || distance > 2) continue;
+      if (!best || distance < best.distance) best = { distance, label: original };
+    }
+  }
+  if (best) return { kind: "suggest", label: best.label };
+  return { kind: "wrong", label: originals[0] || "" };
+}
+
 function gradeAdventAnswer(question, rawAnswer, durationMs, { expired = false } = {}) {
   const limitSec = resolveTimeLimitSec(question);
-  if (expired || durationMs > limitSec * 1000) {
-    return {
-      correct: false,
-      score: 0,
-      breakdown: { baseScore: 0, timeBonus: 0, totalScore: 0 },
-      timedOut: true,
-      detail: null,
-    };
-  }
-
   const type = questionTypeOf(question);
+  const answerText = correctAnswerText(question);
+  const timedOut = expired || durationMs > limitSec * 1000;
+
   if (type === "distance") {
     const scored = scoreDistanceKm(rawAnswer, question?.distanceKm, question);
-    const correct = scored.score === 100;
-    const detail =
-      scored.score > 0
-        ? `Zračna udaljenost je ${Math.round(scored.correctKm)} km. Odstupanje: ${scored.errorKm} km.`
-        : "Odgovor je izvan prihvatljive granice.";
+    const correct = !timedOut && scored.score === 100;
+    const score = timedOut ? 0 : scored.score;
+    const deviation =
+      scored.errorKm == null ? "" : ` Tvoje odstupanje je ${scored.errorKm} km.`;
     return {
       correct,
-      score: scored.score,
-      breakdown: { baseScore: scored.score, timeBonus: 0, totalScore: scored.score },
-      timedOut: false,
-      detail,
+      score,
+      breakdown: { baseScore: score, timeBonus: 0, totalScore: score },
+      timedOut,
+      detail: answerText ? `Točna zračna udaljenost je ${answerText}.${deviation}` : null,
+      suggestion: null,
+      correctAnswerLabel: correct ? null : answerText,
     };
   }
 
-  const correct =
-    type === "text"
-      ? textMatches(rawAnswer, question?.acceptedAnswers)
-      : foldAnswer(rawAnswer) === foldAnswer(question?.correctAnswer);
-  const breakdown = computeAdventDayScore({ correct, durationMs, timeLimitSec: limitSec });
-  return { correct, score: breakdown.totalScore, breakdown, timedOut: false, detail: null };
+  const near = type === "text" ? classifyTextNear(rawAnswer, question?.acceptedAnswers) : null;
+  const correct = !timedOut && (type === "text" ? near?.kind === "exact" || near?.kind === "accept" : foldAnswer(rawAnswer) === foldAnswer(question?.correctAnswer));
+  const breakdown = correct ? computeAdventDayScore({ correct: true, durationMs, timeLimitSec: limitSec }) : { baseScore: 0, timeBonus: 0, totalScore: 0 };
+  const suggestion = !correct && near?.kind === "suggest" && near.label ? `Mislite li ${near.label}?` : null;
+  return {
+    correct,
+    score: breakdown.totalScore,
+    breakdown,
+    timedOut,
+    detail: null,
+    suggestion,
+    correctAnswerLabel: correct ? null : answerText,
+  };
 }
 
 module.exports = {
@@ -138,5 +212,7 @@ module.exports = {
   textMatches,
   parseKm,
   scoreDistanceKm,
+  classifyTextNear,
+  correctAnswerText,
   gradeAdventAnswer,
 };

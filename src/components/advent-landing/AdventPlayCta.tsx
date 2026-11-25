@@ -10,10 +10,26 @@ const REGISTER_NEXT = "/registracija?next=/adventska-liga";
 type AdventPlayCtaProps = {
   loggedIn: boolean;
   onPlayToday?: () => void;
+  /** Lokalni pregled: prvi dan je otvoren i bez prijave. */
+  localPreview?: boolean;
+  /** Prije 5. 12. prijavljeni korisnik može tražiti email 4. 12. */
+  showStartReminder?: boolean;
+  reminderOn?: boolean;
+  reminding?: boolean;
+  onRemind?: () => void;
 };
 
-export function AdventPlayCta({ loggedIn, onPlayToday }: AdventPlayCtaProps) {
-  const phase = getSeasonPhase();
+export function AdventPlayCta({
+  loggedIn,
+  onPlayToday,
+  localPreview = false,
+  showStartReminder = false,
+  reminderOn = false,
+  reminding = false,
+  onRemind,
+}: AdventPlayCtaProps) {
+  const phase = localPreview ? "active" : getSeasonPhase();
+  const canPlay = loggedIn || localPreview;
 
   return (
     <section
@@ -33,7 +49,7 @@ export function AdventPlayCta({ loggedIn, onPlayToday }: AdventPlayCtaProps) {
       </p>
 
       <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
-        {loggedIn ? (
+        {canPlay ? (
           <Button
             type="button"
             size="lg"
@@ -71,9 +87,30 @@ export function AdventPlayCta({ loggedIn, onPlayToday }: AdventPlayCtaProps) {
         )}
       </div>
 
-      {!loggedIn ? (
+      {showStartReminder && loggedIn ? (
+        <div className="mt-4">
+          {reminderOn ? (
+            <p className="text-sm font-bold text-[hsl(var(--advent-gold))]">
+              Podsjetnik je uključen. 4. prosinca stiže email da liga sutra kreće.
+            </p>
+          ) : (
+            <Button
+              type="button"
+              variant="outline"
+              className="advent-btn-ghost rounded-xl min-h-12 w-full sm:w-auto px-6 text-sm font-extrabold"
+              disabled={reminding}
+              onClick={() => onRemind?.()}
+            >
+              {reminding ? "Spremam…" : "Podsjeti me"}
+            </Button>
+          )}
+        </div>
+      ) : null}
+
+      {!canPlay ? (
         <p className="mt-3 text-xs font-semibold advent-text-muted">
           Besplatna registracija · potvrda emaila · isti račun za forum, kvizove i ligu
+          {showStartReminder ? " Nakon prijave možeš uključiti podsjetnik za 4. prosinca." : ""}
         </p>
       ) : null}
     </section>

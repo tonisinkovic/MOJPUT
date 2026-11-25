@@ -47,8 +47,8 @@ export function AdventRulesSection() {
               ⚖️ Poštena igra
             </p>
             <p className="text-sm font-medium leading-relaxed advent-text-muted">
-              Jedan račun, jedan pokušaj dnevno. Bodovi se računaju na serveru kad backend bude aktivan — ne diraj
-              odgovore u alatima za developere.
+              Jedan račun, jedan pokušaj dnevno. Bodove i ljestvicu računa server. Referral link otvara najviše jednu
+              nadoknadu propuštenog dana.
             </p>
           </div>
         </div>

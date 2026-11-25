@@ -157,7 +157,7 @@
         {
           "index": 8,
           "type": "distance",
-          "text": "Kolika je zračna udaljenost između Zagreba i Splita? Upiši kilometre.",
+          "text": "Kolika je zračna udaljenost između Zagreba i Splita? Odgovor upiši u kilometrima.",
           "category": "Opće znanje",
           "timeLimitSec": 30,
           "options": [],
@@ -336,12 +336,12 @@
         {
           "index": 8,
           "type": "distance",
-          "text": "Kolika je zračna udaljenost između Zagreba i Beča? Upiši kilometre.",
+          "text": "Kolika je zračna udaljenost između Zagreba i Rijeke? Odgovor upiši u kilometrima.",
           "category": "Opće znanje",
           "timeLimitSec": 30,
           "options": [],
-          "distanceKm": 268,
-          "explanation": "Zračna udaljenost Zagreba i Beča je približno 268 km."
+          "distanceKm": 132,
+          "explanation": "Zračna udaljenost Zagreba i Rijeke je približno 132 km."
         },
         {
           "index": 9,
@@ -553,12 +553,12 @@
         {
           "index": 8,
           "type": "distance",
-          "text": "Kolika je zračna udaljenost između Zagreba i Londona? Upiši kilometre.",
+          "text": "Kolika je zračna udaljenost između Zagreba i Dubrovnika? Odgovor upiši u kilometrima.",
           "category": "Opće znanje",
           "timeLimitSec": 30,
           "options": [],
-          "distanceKm": 1235,
-          "explanation": "Zračna udaljenost Zagreba i Londona je približno 1235 km."
+          "distanceKm": 390,
+          "explanation": "Zračna udaljenost Zagreba i Dubrovnika je približno 390 km."
         },
         {
           "index": 9,

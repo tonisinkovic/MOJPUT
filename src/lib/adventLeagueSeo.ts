@@ -6,7 +6,7 @@ const SITE = "https://mojput.com";
 export const ADVENT_OG_IMAGE_PATH = "/og-advent-liga.png";
 export const ADVENT_OG_IMAGE_ABSOLUTE = `${SITE}${ADVENT_OG_IMAGE_PATH}`;
 
-export type AdventSeoPageKey = "landing" | "quiz" | "leaderboard";
+export type AdventSeoPageKey = "landing" | "quiz" | "leaderboard" | "pravila";
 
 type AdventSeoConfig = {
   title: string;
@@ -72,6 +72,13 @@ export const ADVENT_SEO: Record<AdventSeoPageKey, AdventSeoConfig> = {
     description:
       "Pogledaj dnevnu i ukupnu ljestvicu MojPut adventske kviz lige. Stvarni rezultati sudionika sezone.",
     canonical: `${SITE}/adventska-liga/ljestvica`,
+    image: ADVENT_OG_IMAGE_ABSOLUTE,
+  },
+  pravila: {
+    title: "Pravila – Adventska kviz liga | MojPut",
+    description:
+      "Pravila MojPut adventske lige: 10 pitanja dnevno (5.–24. 12.), bodovi na serveru i jedna referral nadoknada propuštenog dana.",
+    canonical: `${SITE}/adventska-liga/pravila`,
     image: ADVENT_OG_IMAGE_ABSOLUTE,
   },
 };

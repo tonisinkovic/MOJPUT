@@ -1,5 +1,7 @@
 # MVP — Adventska kviz liga
 
+Ovaj dokument opisuje prvi MVP (jedno pitanje dnevno, 24 dana). Trenutni proizvod je **20 kviz dana (5.–24. 12.)** i **10 pitanja po danu**. Ne vraćaj implementaciju na jedno pitanje.
+
 ## Uključeno u prvu verziju
 
 ### Podaci i sadržaj

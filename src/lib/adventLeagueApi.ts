@@ -18,6 +18,10 @@ export type AdventAnsweredQuestion = {
   correct: boolean;
   score: number;
   durationMs: number;
+  answerId?: number;
+  questionText?: string;
+  correctAnswerLabel?: string | null;
+  reportStatus?: "open" | "accepted" | "rejected" | null;
 };
 
 export type AdventStartPayload = {
@@ -38,6 +42,8 @@ export type AdventAnswerResult = {
   breakdown: { baseScore: number; timeBonus: number };
   explanation?: string | null;
   detail?: string | null;
+  suggestion?: string | null;
+  correctAnswerLabel?: string | null;
   timedOut?: boolean;
   progress: {
     answered: number;
@@ -72,6 +78,8 @@ export type AdventMetaPayload = {
   totalDays: number;
   questionsPerDay: number;
   serverNow: string;
+  localTest?: boolean;
+  localTestDayKey?: string | null;
 };
 
 export type AdventPrizeDrawStatus = {
@@ -88,6 +96,7 @@ export type AdventMePayload = {
   catchUpDayKey?: string | null;
   joinDayKey?: string | null;
   prizeDraw?: AdventPrizeDrawStatus;
+  startReminder?: { optedIn: boolean; sent: boolean };
 };
 
 export type AdventProfileBadge = {
@@ -159,6 +168,10 @@ export async function adventFetchMe() {
   return apiGet<AdventMePayload>("/api/advent/me");
 }
 
+export async function adventOptInStartReminder() {
+  return apiPost<{ optedIn: boolean; sent: boolean }>("/api/advent/remind-me", {});
+}
+
 export async function adventFetchProfile() {
   return apiGet<AdventProfilePayload>("/api/advent/profile");
 }
@@ -187,6 +200,10 @@ export async function adventSubmitAnswer(params: {
 
 export async function adventCompleteDay(params: { attemptId: number; dayKey: string }) {
   return apiPost<AdventCompletePayload>("/api/advent/complete", params);
+}
+
+export async function adventReportAnswer(answerId: number) {
+  return apiPost<{ id: number; status: string; created: boolean }>("/api/advent/reports", { answerId });
 }
 
 export async function adventFetchPrizeDrawMe() {

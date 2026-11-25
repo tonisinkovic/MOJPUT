@@ -40,7 +40,7 @@ export type AdventScoringConfig = {
   easyTimeLimitSec: number;
   submitGraceMs: number;
   minDurationMs: number;
-  distance: { fullPointsWithinKm: number; zeroBeyondPercent: number };
+  distance: { fullPointsWithinKm: number; fullPointsWithinPercent?: number; zeroBeyondPercent: number };
 };
 
 export type AdventAdminResultDay = {
@@ -205,6 +205,39 @@ export async function adminFetchResults(dayKey?: string) {
 
 export async function adminCorrectAnswer(id: number, score: number, isCorrect: boolean) {
   return apiPut<{ id: number; score: number; isCorrect: boolean }>(`/api/admin/advent/answers/${id}`, { score, isCorrect });
+}
+
+export type AdventAnswerReport = {
+  id: number;
+  answerId: number;
+  attemptId: number;
+  dayKey: string;
+  questionIndex: number;
+  username: string;
+  selectedAnswer: string;
+  questionText: string;
+  correctAnswerLabel: string;
+  status: "open" | "accepted" | "rejected" | string;
+  createdAt: string | null;
+  resolvedAt: string | null;
+  durationMs: number;
+  currentScore: number;
+  awardScore: number;
+};
+
+export async function adminFetchReports() {
+  return apiGet<AdventAnswerReport[]>("/api/admin/advent/reports");
+}
+
+export async function adminAcceptReport(id: number) {
+  return apiPost<{ id: number; status: string; score: number; remembered: boolean }>(
+    `/api/admin/advent/reports/${id}/accept`,
+    {},
+  );
+}
+
+export async function adminRejectReport(id: number) {
+  return apiPost<{ id: number; status: string }>(`/api/admin/advent/reports/${id}/reject`, {});
 }
 
 export async function adminDownloadResults(format: "csv" | "pdf", dayKey?: string) {

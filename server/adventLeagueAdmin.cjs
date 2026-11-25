@@ -345,6 +345,7 @@ function saveScoringForAdmin(scoring) {
   }
   const distance = scoring.distance || {};
   const full = Number(distance.fullPointsWithinKm);
+  const fullPercent = Number(distance.fullPointsWithinPercent);
   const percent = Number(distance.zeroBeyondPercent);
   if (!Number.isFinite(full) || full < 0 || full > 500) throw new Error("fullPointsWithinKm mora biti 0–500.");
   if (!Number.isFinite(percent) || percent <= 0 || percent > 100) throw new Error("zeroBeyondPercent mora biti 1–100.");
@@ -359,7 +360,11 @@ function saveScoringForAdmin(scoring) {
     easyTimeLimitSec: Number(scoring.easyTimeLimitSec) || 10,
     submitGraceMs: Number(scoring.submitGraceMs) || 1500,
     minDurationMs: Number(scoring.minDurationMs) || 500,
-    distance: { fullPointsWithinKm: full, zeroBeyondPercent: percent },
+    distance: {
+      fullPointsWithinKm: full,
+      fullPointsWithinPercent: Number.isFinite(fullPercent) && fullPercent > 0 ? fullPercent : 20,
+      zeroBeyondPercent: percent,
+    },
   };
   writeJson(SCORING_PATH, next);
   try {
@@ -465,4 +470,20 @@ module.exports = {
   saveScoringForAdmin,
   listAdventResults,
   correctAdventAnswer,
+  rememberTextAnswer,
 };
+
+function rememberTextAnswer(dayKey, questionIndex, rawAnswer) {
+  const text = String(rawAnswer || "").trim().slice(0, 80);
+  if (!text) return { added: false };
+  const data = loadAdventDaysForAdmin();
+  const day = data.days.find((item) => item.dayKey === dayKey);
+  const question = day?.questions?.find((item) => item.index === Number(questionIndex));
+  if (!question || questionTypeOf(question) !== "text") return { added: false };
+  const list = Array.isArray(question.acceptedAnswers) ? question.acceptedAnswers : [];
+  const { textMatches } = require("./adventLeagueGrading.cjs");
+  if (textMatches(text, list)) return { added: false };
+  question.acceptedAnswers = [...list, text];
+  saveAdventDays(data);
+  return { added: true, answer: text };
+}

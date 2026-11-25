@@ -12,8 +12,8 @@ import {
 } from "@/lib/adventLeaguePrizesApi";
 
 const SCHEMA_HINT = `{
-  "partners": [{ "id": "slug", "name": "...", "description": "...", "logoUrl": null, "websiteUrl": null, "isDemo": true }],
-  "prizes": [{ "id": "slug", "name": "...", "description": "...", "imageUrl": null, "category": "sezona", "tier": "main|daily", "partnerId": "slug", "isDemo": true, "sortOrder": 1 }]
+  "partners": [{ "id": "slug", "name": "...", "description": "...", "logoUrl": null, "websiteUrl": null, "isDemo": false }],
+  "prizes": [{ "id": "slug", "name": "...", "description": "...", "imageUrl": null, "category": "sezona", "tier": "main|daily", "partnerId": "slug", "isDemo": false, "sortOrder": 1 }]
 }`;
 
 export function AdventPrizesAdmin() {
@@ -94,8 +94,9 @@ export function AdventPrizesAdmin() {
           Nagrade i partneri
         </CardTitle>
         <CardDescription>
-          Uređivanje JSON datoteke na serveru — bez deploya koda. Postavi <code className="text-xs">isDemo: true</code>{" "}
-          za placeholder sadržaj.
+          Katalog na landingu je još demo. Zalijepi stvarne partnere i nagrade s{" "}
+          <code className="text-xs">isDemo: false</code> — oznaka Demo tada nestaje. Na produkciji JSON treba vratiti u
+          git prije redeploya.
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">

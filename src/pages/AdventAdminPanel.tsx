@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, Navigate } from "react-router-dom";
 import { AlertCircle, Calendar, CheckCircle2, ChevronLeft, Edit, Loader2, Plus, Save, Trash2, Trophy, Users } from "lucide-react";
 import { toast } from "sonner";
 import Layout from "@/components/Layout";
@@ -33,6 +33,7 @@ import {
   type AdventAdminQuestion,
   type AdventAdminStats,
 } from "@/lib/adventLeagueAdminApi";
+import { authMe, userFromAuthMe } from "@/lib/auth";
 
 function LoadingSkeleton() {
   return (
@@ -769,6 +770,7 @@ export default function AdventAdminPanel() {
   const [stats, setStats] = useState<AdventAdminStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [gate, setGate] = useState<"checking" | "allowed" | "denied">("checking");
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -799,8 +801,20 @@ export default function AdventAdminPanel() {
   }, []);
 
   useEffect(() => {
-    load();
-  }, [load]);
+    let alive = true;
+    authMe().then((res) => {
+      if (!alive) return;
+      const user = userFromAuthMe(res);
+      setGate(user?.is_admin ? "allowed" : "denied");
+    });
+    return () => {
+      alive = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (gate === "allowed") void load();
+  }, [gate, load]);
 
   const handleSelectDay = (key: string) => {
     setSelectedDayKey(key);
@@ -826,7 +840,11 @@ export default function AdventAdminPanel() {
     />
   );
 
-  if (loading) {
+  if (gate === "denied") {
+    return <Navigate to="/adventska-liga" replace />;
+  }
+
+  if (loading || gate === "checking") {
     return (
       <Layout>
         {adminSeo}
@@ -856,6 +874,10 @@ export default function AdventAdminPanel() {
           <div>
             <h1 className="text-3xl font-extrabold">Admin Panel — Adventska Liga</h1>
             <p className="mt-1 text-sm text-muted-foreground">Upravljanje sezonom, danima i pitanjima</p>
+            <p className="mt-2 max-w-xl text-xs text-muted-foreground">
+              Spremanje piše JSON na disk ovog poslužitelja. Na produkciji se te izmjene gube pri sljedećem deployu —
+              vrati ih u git (`advent-days.json`, `scoring.json`, `prizes-partners.json`) prije redeploya.
+            </p>
           </div>
           <div className="flex items-center gap-2">
             <Link to="/adventska-liga">

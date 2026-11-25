@@ -12,6 +12,8 @@ import { AdventQuizProgress } from "@/components/advent-quiz/AdventQuizProgress"
 import { AdventQuizQuestionCard } from "@/components/advent-quiz/AdventQuizQuestionCard";
 import { AdventQuizError, AdventQuizLoading } from "@/components/advent-quiz/AdventQuizStatusPanels";
 import { AdventQuizTimer } from "@/components/advent-quiz/AdventQuizTimer";
+import { isLocalhostBrowser } from "@/lib/adventLocalTest";
+import { listQuizDayKeys } from "@/lib/adventSeasonConfig";
 import {
   ADVENT_QUESTIONS_PER_DAY,
   adventCompleteDay,
@@ -39,11 +41,15 @@ import { authMe, userFromAuthMe } from "@/lib/auth";
 import { useAdventQuestionTimer } from "@/hooks/useAdventQuestionTimer";
 import { trackAdventQuizCompleted, trackAdventQuizStarted } from "@/lib/adventLeagueAnalytics";
 
-const feedbackHoldMs = 1200;
-
 function getDayNumberFromKey(dayKey: string): number {
   const n = Number(dayKey.slice(-2));
   return Number.isFinite(n) ? n : 1;
+}
+
+function durationFromPlayedSummary(summary: AdventCompletePayload): number {
+  const direct = Number(summary.totalDurationMs);
+  if (Number.isFinite(direct) && direct > 0) return direct;
+  return (summary.answers || []).reduce((sum, answer) => sum + (Number(answer.durationMs) || 0), 0);
 }
 
 const AdventQuiz = () => {
@@ -64,10 +70,11 @@ const AdventQuiz = () => {
   const [answerText, setAnswerText] = useState("");
   const [lastFeedback, setLastFeedback] = useState<AdventAnswerResult | null>(null);
   const [finalResults, setFinalResults] = useState<AdventCompletePayload | null>(null);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   const [questionStartedAtMs, setQuestionStartedAtMs] = useState<number | null>(null);
   const questionStartedAtIso = useRef<string | null>(null);
-  const feedbackTimer = useRef<number | null>(null);
+  const feedbackLock = useRef(false);
   const quizStartedTracked = useRef(false);
   const quizCompletedTracked = useRef(false);
   const submittingRef = useRef(false);
@@ -99,25 +106,33 @@ const AdventQuiz = () => {
   }, []);
 
   const beginQuestion = useCallback(
-    async (index: number, ids?: { attemptId: number; dayKey: string }) => {
+    async (index: number, ids?: { attemptId: number; dayKey: string; fromUser?: boolean }) => {
+      if (feedbackLock.current && !ids?.fromUser) return;
+      if (ids?.fromUser) feedbackLock.current = false;
       const attempt = ids?.attemptId ?? attemptId;
       const day = ids?.dayKey ?? dayKey;
+      if (!attempt || !day) {
+        setCurrentIndex(index);
+        setSelectedId(null);
+        setAnswerText("");
+        setLastFeedback(null);
+        setPhase("playing");
+        resetQuestionTimer();
+        return;
+      }
+      const open = await adventOpenQuestion({ attemptId: attempt, dayKey: day, questionIndex: index });
+      if (feedbackLock.current && !ids?.fromUser) return;
+      if (isApiError(open) || !open.data) {
+        setErrorMessage(open.success ? "Pitanje nije otvoreno." : open.message);
+        setPhase("error");
+        return;
+      }
       setCurrentIndex(index);
       setSelectedId(null);
       setAnswerText("");
       setLastFeedback(null);
       setQuestionStartedAtMs(null);
       setPhase("playing");
-      if (!attempt || !day) {
-        resetQuestionTimer();
-        return;
-      }
-      const open = await adventOpenQuestion({ attemptId: attempt, dayKey: day, questionIndex: index });
-      if (isApiError(open) || !open.data) {
-        setErrorMessage(open.success ? "Pitanje nije otvoreno." : open.message);
-        setPhase("error");
-        return;
-      }
       const openedMs = Date.parse(open.data.openedAt);
       const serverNowMs = Date.parse(open.data.serverNow);
       const skew = Date.now() - serverNowMs;
@@ -127,37 +142,53 @@ const AdventQuiz = () => {
     [attemptId, dayKey, resetQuestionTimer],
   );
 
+  const loadGen = useRef(0);
+
   const loadQuiz = useCallback(async () => {
+    const gen = ++loadGen.current;
+    feedbackLock.current = false;
     setPhase("loading");
     setLoginRequired(false);
     try {
-      const auth = await authMe();
-      if (!auth.success) {
-        setLoginRequired(true);
-        setErrorTitle("Prijava je potrebna");
-        setErrorMessage("Za igranje adventskog kviza trebaš prijavljen i potvrđen MojPut račun.");
-        setPhase("error");
-        return;
-      }
-      const user = userFromAuthMe(auth);
-      if (!user) {
-        setLoginRequired(true);
-        setPhase("error");
-        return;
-      }
-
       const metaRes = await adventFetchMeta();
+      if (gen !== loadGen.current) return;
       if (isApiError(metaRes) || !metaRes.data) {
         setErrorMessage(metaRes.success ? "Metapodaci nisu dostupni." : metaRes.message);
         setPhase("error");
         return;
       }
 
-      const resolvedDay = params.dayKey?.trim() || metaRes.data.todayKey;
-      const metaMe = await adventFetchMe();
+      const localPlay = Boolean(metaRes.data.localTest) && isLocalhostBrowser();
+
+      if (!localPlay) {
+        const auth = await authMe();
+        if (!auth.success) {
+          setLoginRequired(true);
+          setErrorTitle("Prijava je potrebna");
+          setErrorMessage("Za igranje adventskog kviza trebaš prijavljen i potvrđen MojPut račun.");
+          setPhase("error");
+          return;
+        }
+        const user = userFromAuthMe(auth);
+        if (!user) {
+          setLoginRequired(true);
+          setPhase("error");
+          return;
+        }
+      }
+
+      const localOpenDays = listQuizDayKeys().slice(0, 2);
+      const requestedDay = params.dayKey?.trim() || "";
+      const resolvedDay = localPlay
+        ? localOpenDays.includes(requestedDay)
+          ? requestedDay
+          : localOpenDays[0]
+        : requestedDay || metaRes.data.todayKey;
+      const metaMe = localPlay ? null : await adventFetchMe();
       const catchUp =
-        metaMe.success && metaMe.data?.catchUpDayKey ? String(metaMe.data.catchUpDayKey) : null;
+        metaMe?.success && metaMe.data?.catchUpDayKey ? String(metaMe.data.catchUpDayKey) : null;
       if (
+        !localPlay &&
         params.dayKey &&
         params.dayKey !== metaRes.data.todayKey &&
         params.dayKey !== catchUp
@@ -174,13 +205,13 @@ const AdventQuiz = () => {
       const quizOk = metaRes.data.quizActive !== false && metaRes.data.quizActive !== undefined
         ? metaRes.data.quizActive
         : metaRes.data.active;
-      if (!quizOk && resolvedDay === metaRes.data.todayKey) {
+      if (!localPlay && !quizOk && resolvedDay === metaRes.data.todayKey) {
         setErrorTitle("Danas nema novog kviza");
         setErrorMessage("Kviz traje 5.–24. prosinca. Na Božić (25. 12.) objavljujemo finalne rezultate.");
         setPhase("error");
         return;
       }
-      if (!metaRes.data.active && !catchUp) {
+      if (!localPlay && !metaRes.data.active && !catchUp) {
         setErrorTitle("Sezona nije aktivna");
         setErrorMessage("Kviz je dostupan od 5. do 24. prosinca.");
         setPhase("error");
@@ -188,17 +219,15 @@ const AdventQuiz = () => {
       }
 
       const startRes = await adventStartDay(resolvedDay);
+      if (gen !== loadGen.current || feedbackLock.current) return;
       if (!startRes.success) {
         const playedSummary = (startRes as { data?: { summary?: AdventCompletePayload } }).data?.summary;
         if (startRes.code === "ALREADY_PLAYED" && playedSummary) {
           setFinalResults({
-            dayKey: playedSummary.dayKey,
-            dayNumber: getDayNumberFromKey(resolvedDay),
-            totalScore: playedSummary.totalScore,
-            questionsCorrect: playedSummary.questionsCorrect,
-            questionsAnswered: playedSummary.questionsAnswered,
-            totalDurationMs: 0,
-            answers: playedSummary.answers,
+            ...playedSummary,
+            dayKey: playedSummary.dayKey || resolvedDay,
+            dayNumber: playedSummary.dayNumber ?? getDayNumberFromKey(resolvedDay),
+            totalDurationMs: durationFromPlayedSummary(playedSummary),
           });
           setDayKey(resolvedDay);
           setPhase("results");
@@ -235,18 +264,19 @@ const AdventQuiz = () => {
         quizStartedTracked.current = true;
         trackAdventQuizStarted(data.dayKey, data.dayNumber);
       }
-      void beginQuestion(next, { attemptId: data.attemptId, dayKey: data.dayKey });
+      if (gen !== loadGen.current || feedbackLock.current) return;
+      void beginQuestionRef.current(next, { attemptId: data.attemptId, dayKey: data.dayKey });
     } catch {
       setErrorMessage("Greška mreže. Pokušaj ponovo.");
       setPhase("error");
     }
-  }, [beginQuestion, params.dayKey]);
+  }, [params.dayKey]);
+
+  const beginQuestionRef = useRef(beginQuestion);
+  beginQuestionRef.current = beginQuestion;
 
   useEffect(() => {
     void loadQuiz();
-    return () => {
-      if (feedbackTimer.current) window.clearTimeout(feedbackTimer.current);
-    };
   }, [loadQuiz]);
 
   useEffect(() => {
@@ -268,44 +298,43 @@ const AdventQuiz = () => {
     const payload = isChoice ? selectedId || "" : answerText.trim();
     if (!timedOut && !payload) return;
     submittingRef.current = true;
+    setSubmitError(null);
     setPhase("submitting");
-    const res = await adventSubmitAnswer({
-      attemptId,
-      dayKey,
-      questionIndex: currentIndex,
-      selectedAnswer: payload,
-      questionStartedAt: questionStartedAtIso.current,
-      timedOut,
-    });
-    submittingRef.current = false;
-    if (isApiError(res) || !res.data) {
-      setErrorMessage(res.success ? "Odgovor nije spremljen." : res.message);
-      setPhase("error");
-      return;
-    }
-
-    setAnsweredMap((prev) => ({
-      ...prev,
-      [currentIndex]: {
+    try {
+      const res = await adventSubmitAnswer({
+        attemptId,
+        dayKey,
         questionIndex: currentIndex,
         selectedAnswer: payload,
-        correct: res.data.correct,
-        score: res.data.score,
-        durationMs: 0,
-        ...res.data,
-      },
-    }));
-    setLastFeedback(res.data);
-    setPhase("feedback");
-
-    const isLast = res.data.progress.answered >= ADVENT_QUESTIONS_PER_DAY;
-    feedbackTimer.current = window.setTimeout(() => {
-      if (isLast) {
-        void finishQuiz();
-      } else {
-        void beginQuestion(currentIndex + 1);
+        questionStartedAt: questionStartedAtIso.current,
+        timedOut,
+      });
+      if (isApiError(res) || !res.data) {
+        setSubmitError(res.success ? "Odgovor nije spremljen. Pokušaj ponovo." : res.message);
+        setPhase("confirm");
+        return;
       }
-    }, feedbackHoldMs);
+
+      setAnsweredMap((prev) => ({
+        ...prev,
+        [currentIndex]: {
+          questionIndex: currentIndex,
+          selectedAnswer: payload,
+          correct: res.data.correct,
+          score: res.data.score,
+          durationMs: 0,
+          ...res.data,
+        },
+      }));
+      setLastFeedback(res.data);
+      feedbackLock.current = true;
+      setPhase("feedback");
+    } catch {
+      setSubmitError("Greška mreže. Odgovor nije spremljen — pokušaj ponovo.");
+      setPhase("confirm");
+    } finally {
+      submittingRef.current = false;
+    }
   };
 
   useEffect(() => {
@@ -330,13 +359,13 @@ const AdventQuiz = () => {
   };
 
   const onFeedbackNext = () => {
-    if (feedbackTimer.current) window.clearTimeout(feedbackTimer.current);
-    if (answeredCount >= ADVENT_QUESTIONS_PER_DAY) {
+    const answered = lastFeedback?.progress.answered ?? answeredCount;
+    if (answered >= ADVENT_QUESTIONS_PER_DAY) {
+      feedbackLock.current = false;
       void finishQuiz();
       return;
     }
-    const next = firstUnansweredIndex(answeredMap);
-    void beginQuestion(next);
+    void beginQuestion(currentIndex + 1, { fromUser: true });
   };
 
   return (
@@ -366,12 +395,14 @@ const AdventQuiz = () => {
               <AdventQuizError title={errorTitle} message={errorMessage} loginRequired={loginRequired} />
             ) : null}
 
-            {phase === "results" && finalResults ? <AdventQuizDayResults results={finalResults} /> : null}
+            {phase === "results" && finalResults ? (
+              <AdventQuizDayResults results={finalResults} />
+            ) : null}
 
             {(phase === "playing" || phase === "confirm" || phase === "submitting" || phase === "feedback") &&
             currentQuestion ? (
               <div className="space-y-5">
-                <AdventQuizProgress current={answeredCount} total={ADVENT_QUESTIONS_PER_DAY} />
+                <AdventQuizProgress current={currentIndex} total={ADVENT_QUESTIONS_PER_DAY} />
                 <div className="flex flex-wrap items-center justify-between gap-3">
                   <AdventQuizTimer
                     seconds={seconds}
@@ -408,7 +439,11 @@ const AdventQuiz = () => {
                         selectedId={selectedId || ""}
                         answerLabel={answerText.trim()}
                         submitting={phase === "submitting"}
-                        onBack={() => setPhase("playing")}
+                        errorMessage={submitError}
+                        onBack={() => {
+                          setSubmitError(null);
+                          setPhase("playing");
+                        }}
                         onSubmit={() => void submitConfirmed(false)}
                       />
                     ) : null}
@@ -417,8 +452,9 @@ const AdventQuiz = () => {
                       <AdventQuizFeedbackCard
                         correct={lastFeedback.correct}
                         score={lastFeedback.score}
-                        timeBonus={lastFeedback.breakdown.timeBonus}
-                        explanation={lastFeedback.explanation || lastFeedback.detail}
+                        explanation={lastFeedback.correct ? lastFeedback.explanation || lastFeedback.detail : null}
+                        suggestion={lastFeedback.suggestion}
+                        correctAnswerLabel={lastFeedback.correctAnswerLabel}
                         isLast={lastFeedback.progress.answered >= ADVENT_QUESTIONS_PER_DAY}
                         onNext={onFeedbackNext}
                       />

@@ -33,4 +33,15 @@ describe("advent-days.json", () => {
       }
     }
   });
+
+  it("nema placeholder pitanja ni označenog točnog odgovora u tekstu opcije", () => {
+    for (const day of daysFile.days) {
+      for (const q of day.questions) {
+        expect(q.text, day.dayKey).not.toMatch(/Testno pitanje/i);
+        for (const option of q.options || []) {
+          expect(option.text, `${day.dayKey}#${q.index}`).not.toMatch(/\(tocno\)/i);
+        }
+      }
+    }
+  });
 });

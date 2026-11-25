@@ -8,7 +8,9 @@ alwaysApply: false
 
 ## Izvor istine
 
-Prije rada pročitaj `docs/advent/MVP.md`, `SCORING.md`, `TASKS.md`. Ne implementiraj izvan MVP scopea bez eksplicitnog zahtjeva.
+Trenutni proizvod: **10 pitanja po danu**, kviz **5.–24. 12.** (20 dana), bodovanje na serveru (`scoring.json` v2). `docs/advent/MVP.md` i `TASKS.md` opisuju stariji opseg od jednog pitanja dnevno — ne vraćaj ligu na taj model.
+
+Prije rada pročitaj `docs/advent/SCORING.md` i kod u `server/adventLeague*.cjs`. Ne širi scope (push, giveaway, baza umjesto JSON pitanja) bez eksplicitnog zahtjeva.
 
 ## Arhitektura (ne mijenjati)
 
@@ -28,7 +30,7 @@ Prije rada pročitaj `docs/advent/MVP.md`, `SCORING.md`, `TASKS.md`. Ne implemen
 
 ## UI reuse
 
-`Layout`, `PageSeo`, `components/ui/*`, obrasci greške `ApiResponse`. Ne kopiraj cijeli `CareerQuizFlow` — liga je jedno pitanje/dan.
+`Layout`, `PageSeo`, `components/ui/*`, obrasci greške `ApiResponse`. Ne kopiraj cijeli `CareerQuizFlow` — liga je 10 pitanja po danu, jedan pokušaj.
 
 ## Istraživanje koda
 

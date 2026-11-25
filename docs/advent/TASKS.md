@@ -1,5 +1,7 @@
 # Plan razvoja — Adventska kviz liga
 
+Ovo je povijesni plan prvog MVP-a (jedno pitanje dnevno). Trenutni proizvod ima **10 pitanja po danu** i kviz **5.–24. 12.** Zadaci ispod nisu popis otvorenog rada.
+
 Redoslijed je namjerno **usko usklađen s MojPut monolitom**: prvo baza i server, pa tanak klijent, pa deploy i QA. Ne dirati postojeće featuree osim navedenih touchpointa (ruta, eventualno link).
 
 ---

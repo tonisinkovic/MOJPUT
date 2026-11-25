@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { Trophy } from "lucide-react";
 import type { AdventCompletePayload } from "@/lib/adventLeagueApi";
+import { AdventQuizAnswerReview } from "@/components/advent-quiz/AdventQuizAnswerReview";
 import { AdventQuizShareCard } from "@/components/advent-quiz/AdventQuizShareCard";
 import { AdventConfetti } from "@/components/advent/AdventConfetti";
 
@@ -107,6 +108,24 @@ export function AdventQuizDayResults({ results }: AdventQuizDayResultsProps) {
           </div>
         </div>
 
+        <ul className="mt-6 space-y-1.5" aria-label="Sažetak odgovora">
+          {(results.answers || []).map((answer) => (
+            <li
+              key={answer.questionIndex}
+              className="flex items-center justify-between gap-3 rounded-lg px-3 py-1.5 text-sm font-semibold text-[hsl(var(--advent-ivory))]"
+            >
+              <span>
+                {answer.questionIndex + 1}. {answer.correct ? "Točno" : answer.score > 0 ? "Blizu" : "Netočno"}
+              </span>
+              <span className="tabular-nums text-[hsl(var(--advent-gold))]">{answer.score} b</span>
+            </li>
+          ))}
+        </ul>
+
+        <div className="mt-4">
+          <AdventQuizAnswerReview answers={results.answers || []} />
+        </div>
+
         <div className="advent-gold-line my-6" />
 
         <div>
@@ -121,7 +140,7 @@ export function AdventQuizDayResults({ results }: AdventQuizDayResultsProps) {
             Kalendar
           </Link>
           <Link
-            to="/adventska-liga/ljestvica"
+            to="/adventska-liga/ljestvica?slavlje=1"
             className="advent-btn-gold advent-shimmer rounded-xl min-h-12 px-6 font-extrabold text-sm inline-flex items-center justify-center"
           >
             Ljestvica

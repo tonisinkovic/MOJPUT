@@ -2,7 +2,7 @@
 
 ## Opis projekta
 
-**Adventska kviz liga** je sezonski, dnevni kviz unutar postojećeg MojPut sustava. Od 1. do 24. prosinca (ili definiranog adventskog razdoblja) prijavljeni korisnici rješavaju **jedno pitanje dnevno**, skupljaju bodove i natječu se na **ljestvici** s drugim sudionicima. Projekt je **dodatak** monorepu MojPuta — ne zasebna aplikacija.
+**Adventska kviz liga** je sezonski kviz unutar postojećeg MojPut sustava. Kviz traje **5.–24. prosinca**: prijavljeni korisnici svaki dan rješavaju **10 pitanja**, skupljaju bodove i natječu se na **ljestvici**. Projekt je **dodatak** monorepu MojPuta — ne zasebna aplikacija.
 
 Tehnički se oslanja na:
 
@@ -37,7 +37,7 @@ Referentni uzorci u kodu:
 ## Osnovna funkcionalnost
 
 - **Adventski kalendar** — 24 dana; prošli dani pregledni, budući zaključani dok ne nastupi odgovarajući `day_key` u `Europe/Zagreb`.
-- **Dnevno pitanje** — jedan kviz po korisniku po danu; bodovi se računaju na serveru.
+- **Dnevni kviz** — 10 pitanja, jedan pokušaj po korisniku po danu; bodovi se računaju na serveru.
 - **Timer** — mjereno vrijeme od početka do predaje (detalji u [SCORING.md](./SCORING.md)).
 - **Ljestvica** — ranking po ukupnim bodovima sezone (agregacija iz pokušaja).
 - **Moj rezultat** — stanje dana (odigrano / ne), bodovi dana, ukupno, pozicija (ograničen prikaz u MVP-u dopušten).

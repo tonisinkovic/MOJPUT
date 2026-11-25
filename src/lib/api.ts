@@ -1,4 +1,5 @@
 import { API_BASE_URL } from "@/config/apiBase";
+import { isLocalhostBrowser, localGuestHeaders } from "@/lib/adventLocalTest";
 
 /**
  * Projekt nema strictNullChecks, pa `if (!res.success)` ne sužava uniju — zato i ApiOk nosi
@@ -66,10 +67,13 @@ export function setStoredAuthToken(token: string | null): void {
   }
 }
 
-function withAuthHeaders(headers: Record<string, string>): Record<string, string> {
+function withAuthHeaders(headers: Record<string, string>, reqPath = ""): Record<string, string> {
+  const guest = localGuestHeaders();
+  const localAdvent = reqPath.startsWith("/api/advent") && isLocalhostBrowser();
+  if (localAdvent) return { ...headers, ...guest };
   const t = getStoredAuthToken();
-  if (t) return { ...headers, Authorization: `Bearer ${t}` };
-  return headers;
+  if (t) return { ...headers, ...guest, Authorization: `Bearer ${t}` };
+  return { ...headers, ...guest };
 }
 
 /** Ne briši spremljeni JWT na 401 od prijave (pogrešna lozinka itd.). */
@@ -125,7 +129,8 @@ async function parseJson<T>(res: Response, reqPath: string): Promise<ApiResponse
     };
   }
   if (!res.ok) {
-    if (res.status === 401 && shouldClearStoredTokenOn401(reqPath)) {
+    const localAdvent = reqPath.startsWith("/api/advent") && isLocalhostBrowser();
+    if (res.status === 401 && shouldClearStoredTokenOn401(reqPath) && !localAdvent) {
       setStoredAuthToken(null);
     }
     const msg = formatHttpError(res, json, text, reqPath);
@@ -173,7 +178,7 @@ export async function apiGet<T>(url: string, options?: { timeoutMs?: number }): 
       {
         method: "GET",
         credentials: "include",
-        headers: withAuthHeaders({ Accept: "application/json" }),
+        headers: withAuthHeaders({ Accept: "application/json" }, url),
       },
       options?.timeoutMs,
     );
@@ -197,7 +202,7 @@ export async function apiPost<T>(
         headers: withAuthHeaders({
           "Content-Type": "application/json",
           Accept: "application/json",
-        }),
+        }, url),
         body: JSON.stringify(body),
       },
       options?.timeoutMs,
@@ -216,7 +221,7 @@ export async function apiPatch<T>(url: string, body: unknown): Promise<ApiRespon
       headers: withAuthHeaders({
         "Content-Type": "application/json",
         Accept: "application/json",
-      }),
+      }, url),
       body: JSON.stringify(body),
     });
     return parseJson<T>(res, url);
@@ -233,7 +238,7 @@ export async function apiPut<T>(url: string, body: unknown): Promise<ApiResponse
       headers: withAuthHeaders({
         "Content-Type": "application/json",
         Accept: "application/json",
-      }),
+      }, url),
       body: JSON.stringify(body),
     });
     return parseJson<T>(res, url);
@@ -262,7 +267,7 @@ export async function apiDelete<T>(url: string): Promise<ApiResponse<T>> {
     const res = await fetchWithTimeout(`${API_BASE_URL}${url}`, {
       method: "DELETE",
       credentials: "include",
-      headers: withAuthHeaders({ Accept: "application/json" }),
+      headers: withAuthHeaders({ Accept: "application/json" }, url),
     });
     return parseJson<T>(res, url);
   } catch (err) {

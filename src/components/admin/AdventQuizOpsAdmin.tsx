@@ -6,14 +6,18 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
+  adminAcceptReport,
   adminCorrectAnswer,
   adminDownloadResults,
+  adminFetchReports,
   adminFetchResults,
   adminFetchScoring,
+  adminRejectReport,
   adminUpdateScoring,
   isAdminApiError,
   type AdventAdminResultAnswer,
   type AdventAdminResultDay,
+  type AdventAnswerReport,
   type AdventScoringConfig,
 } from "@/lib/adventLeagueAdminApi";
 
@@ -22,17 +26,23 @@ export function AdventQuizOpsAdmin() {
   const [dayKey, setDayKey] = useState("");
   const [days, setDays] = useState<AdventAdminResultDay[]>([]);
   const [answers, setAnswers] = useState<AdventAdminResultAnswer[]>([]);
+  const [reports, setReports] = useState<AdventAnswerReport[]>([]);
   const [loading, setLoading] = useState(true);
 
   const load = useCallback(async () => {
     setLoading(true);
-    const [scoringRes, resultsRes] = await Promise.all([adminFetchScoring(), adminFetchResults(dayKey || undefined)]);
+    const [scoringRes, resultsRes, reportsRes] = await Promise.all([
+      adminFetchScoring(),
+      adminFetchResults(dayKey || undefined),
+      adminFetchReports(),
+    ]);
     setLoading(false);
     if (!isAdminApiError(scoringRes) && scoringRes.data) setScoring(scoringRes.data);
     if (!isAdminApiError(resultsRes) && resultsRes.data) {
       setDays(resultsRes.data.days);
       setAnswers(resultsRes.data.answers);
     }
+    if (!isAdminApiError(reportsRes) && reportsRes.data) setReports(reportsRes.data);
   }, [dayKey]);
 
   useEffect(() => {
@@ -56,6 +66,30 @@ export function AdventQuizOpsAdmin() {
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Izvoz nije uspio.");
     }
+  };
+
+  const acceptReport = async (report: AdventAnswerReport) => {
+    const res = await adminAcceptReport(report.id);
+    if (isAdminApiError(res)) {
+      toast.error(res.message);
+      return;
+    }
+    toast.success(
+      res.data?.remembered
+        ? `Priznato ${res.data.score} bodova. Odgovor je dodan među točne.`
+        : `Priznato ${res.data?.score ?? report.awardScore} bodova.`,
+    );
+    void load();
+  };
+
+  const rejectReport = async (report: AdventAnswerReport) => {
+    const res = await adminRejectReport(report.id);
+    if (isAdminApiError(res)) {
+      toast.error(res.message);
+      return;
+    }
+    toast.success("Prijava je odbijena.");
+    void load();
   };
 
   const correct = async (answer: AdventAdminResultAnswer) => {
@@ -139,6 +173,40 @@ export function AdventQuizOpsAdmin() {
             </>
           ) : (
             <p className="text-sm text-muted-foreground">{loading ? "Učitavam bodovanje…" : "Bodovanje nije dostupno."}</p>
+          )}
+        </CardContent>
+      </Card>
+
+      <Card className="shadow-md">
+        <CardHeader>
+          <CardTitle>Prijave odgovora</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          {reports.length === 0 ? (
+            <p className="text-sm text-muted-foreground">{loading ? "Učitavam prijave…" : "Nema prijava."}</p>
+          ) : (
+            reports.map((report) => (
+              <div key={report.id} className="rounded-xl border p-3 text-sm">
+                <p className="font-bold">
+                  {report.username} · {report.dayKey} · P{report.questionIndex + 1}
+                  {report.status !== "open" ? ` · ${report.status === "accepted" ? "prihvaćeno" : "odbijeno"}` : ""}
+                </p>
+                <p className="mt-1">{report.questionText}</p>
+                <p className="mt-1 text-muted-foreground">
+                  Odgovor: {report.selectedAnswer || "—"} · Točno: {report.correctAnswerLabel || "—"} · priznaje {report.awardScore} b
+                </p>
+                {report.status === "open" ? (
+                  <div className="mt-3 flex gap-2">
+                    <Button size="sm" className="rounded-lg" onClick={() => void acceptReport(report)}>
+                      Prihvati bodove
+                    </Button>
+                    <Button size="sm" variant="outline" className="rounded-lg" onClick={() => void rejectReport(report)}>
+                      Odbij
+                    </Button>
+                  </div>
+                ) : null}
+              </div>
+            ))
           )}
         </CardContent>
       </Card>

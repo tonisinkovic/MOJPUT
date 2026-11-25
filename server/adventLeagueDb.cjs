@@ -234,7 +234,7 @@ async function getDayAttemptDetails(db, attemptId) {
     db,
     `
       SELECT 
-        question_index, selected_answer, is_correct, score, duration_ms, answered_at
+        id, question_index, selected_answer, is_correct, score, duration_ms, answered_at
       FROM advent_question_answers
       WHERE attempt_id = ?
       ORDER BY question_index ASC

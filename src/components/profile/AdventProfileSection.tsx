@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { AlertCircle, Award, Calendar, CheckCircle2, ChevronRight, CircleDashed, Flame, Loader2, Lock, Medal, Trophy, XCircle } from "lucide-react";
+import { AlertCircle, Award, Calendar, CheckCircle2, ChevronRight, CircleDashed, Copy, Flame, Link2, Loader2, Lock, Medal, Trophy, UserPlus, XCircle } from "lucide-react";
+import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -13,6 +14,8 @@ import {
   type AdventProfileCalendarDay,
   type AdventProfilePayload,
 } from "@/lib/adventLeagueApi";
+import { fetchAdventReferralMe } from "@/lib/adventLeagueReferral";
+import { copyTextToClipboard } from "@/lib/adventLeagueShare";
 
 const statusMeta: Record<
   AdventProfileCalendarDay["status"],
@@ -43,7 +46,29 @@ const statusMeta: Record<
     icon: CircleDashed,
     className: "border-sky-300 bg-sky-50 text-sky-800",
   },
+  catch_up: {
+    label: "Nadoknada",
+    icon: UserPlus,
+    className: "border-violet-300 bg-violet-50 text-violet-800",
+  },
+  before_join: {
+    label: "Prije prijave",
+    icon: Lock,
+    className: "border-slate-200/90 bg-slate-50 text-slate-400",
+  },
+  pre_season: {
+    label: "Prije sezone",
+    icon: Lock,
+    className: "border-slate-200/90 bg-slate-50 text-slate-400",
+  },
 };
+
+const OPTIONAL_STATUS_KEYS = new Set<AdventProfileCalendarDay["status"]>([
+  "in_progress",
+  "catch_up",
+  "before_join",
+  "pre_season",
+]);
 
 function AdventLoadingSkeleton() {
   return (
@@ -190,7 +215,7 @@ function CalendarGrid({ days, todayKey }: { days: AdventProfileCalendarDay[]; to
       <CardContent>
         <div className="mb-4 flex flex-wrap gap-2 text-[10px] font-bold uppercase tracking-wide text-muted-foreground">
           {(Object.keys(statusMeta) as AdventProfileCalendarDay["status"][]).map((key) => {
-            if (key === "in_progress" && !days.some((d) => d.status === "in_progress")) return null;
+            if (OPTIONAL_STATUS_KEYS.has(key) && !days.some((d) => d.status === key)) return null;
             const meta = statusMeta[key];
             const Icon = meta.icon;
             return (
@@ -203,7 +228,7 @@ function CalendarGrid({ days, todayKey }: { days: AdventProfileCalendarDay[]; to
         </div>
         <div className="grid grid-cols-4 gap-2 sm:grid-cols-6 sm:gap-2.5 md:grid-cols-8">
           {days.map((day) => {
-            const meta = statusMeta[day.status];
+            const meta = statusMeta[day.status] ?? statusMeta.locked;
             const Icon = meta.icon;
             const isToday = day.dayKey === todayKey;
             return (
@@ -233,6 +258,53 @@ function CalendarGrid({ days, todayKey }: { days: AdventProfileCalendarDay[]; to
             );
           })}
         </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+function ReferralCard() {
+  const [shareUrl, setShareUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    let alive = true;
+    fetchAdventReferralMe().then((res) => {
+      if (!alive || isApiError(res) || !res.data?.shareUrl) return;
+      setShareUrl(res.data.shareUrl);
+    });
+    return () => {
+      alive = false;
+    };
+  }, []);
+
+  if (!shareUrl) return null;
+
+  const copyLink = async () => {
+    try {
+      await copyTextToClipboard(shareUrl);
+      toast.success("Poveznica je kopirana.");
+    } catch {
+      toast.error("Kopiranje nije uspjelo.");
+    }
+  };
+
+  return (
+    <Card className="border-primary/20 shadow-sm">
+      <CardContent className="flex flex-col gap-3 py-5 sm:flex-row sm:items-center sm:justify-between">
+        <div className="min-w-0 flex-1">
+          <p className="flex items-center gap-2 text-sm font-bold text-foreground">
+            <Link2 className="h-4 w-4 text-primary" aria-hidden />
+            Pozovi prijatelja
+          </p>
+          <p className="mt-1 text-xs text-muted-foreground">
+            Osoba koja se prijavi preko tvog linka može jednom nadoknaditi propušteni dan. Link ne dodaje bodove.
+          </p>
+          <p className="mt-2 break-all text-xs font-medium text-foreground">{shareUrl}</p>
+        </div>
+        <Button type="button" variant="outline" className="rounded-xl" size="sm" onClick={() => void copyLink()}>
+          <Copy className="mr-1 h-4 w-4" />
+          Kopiraj
+        </Button>
       </CardContent>
     </Card>
   );
@@ -365,6 +437,8 @@ export default function AdventProfileSection() {
       <BadgeGrid badges={profile.badges} />
 
       <DailyResultsCard profile={profile} />
+
+      <ReferralCard />
 
       <Card className="border-primary/20 bg-primary/5 shadow-sm">
         <CardContent className="flex items-center justify-between gap-4 py-5">

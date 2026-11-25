@@ -24,7 +24,7 @@ const DEFAULT_CONFIG = {
   easyTimeLimitSec: 10,
   submitGraceMs: 1500,
   minDurationMs: 500,
-  distance: { fullPointsWithinKm: 15, zeroBeyondPercent: 40 },
+  distance: { fullPointsWithinKm: 40, fullPointsWithinPercent: 20, zeroBeyondPercent: 80 },
 };
 
 let cachedConfig = null;
@@ -117,6 +117,7 @@ function getPublicScoring() {
     easyTimeLimitSec: config.easyTimeLimitSec,
     distance: {
       fullPointsWithinKm: config.distance.fullPointsWithinKm,
+      fullPointsWithinPercent: config.distance.fullPointsWithinPercent,
       zeroBeyondPercent: config.distance.zeroBeyondPercent,
     },
   };

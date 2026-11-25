@@ -144,7 +144,7 @@ const days = {
     text(5, "Koje je boje snijeg?", ["Bijela", "Bela", "Bijelo", "Bijeli"], "Najlakše pitanje", "Snijeg je bijel.", 10),
     text(6, "Nastavi niz: 2, 6, 12, 20, 30, __?", ["42"], "Logika", "Razlike rastu za 2: +4, +6, +8, +10, +12. Sljedeći broj je 42."),
     text(7, "Kako se zove razdoblje od četiri nedjelje prije Božića?", ["Advent", "Došašće", "Dosasce"], "Božić", "To razdoblje zove se advent ili došašće."),
-    distance(8, "Kolika je zračna udaljenost između Zagreba i Splita? Upiši kilometre.", 258, "Opće znanje", "Zračna udaljenost Zagreba i Splita je približno 258 km."),
+    distance(8, "Kolika je zračna udaljenost između Zagreba i Splita? Odgovor upiši u kilometrima.", 258, "Opće znanje", "Zračna udaljenost Zagreba i Splita je približno 258 km."),
     text(9, "Kako se zove književna vrsta kojoj pripada djelo „Judita” Marka Marulića?", ["Ep", "Epopeja", "Epska pjesma"], "Škola – književnost", "„Judita” je ep."),
   ],
   "2026-12-06": [
@@ -156,7 +156,7 @@ const days = {
     text(5, "Koliko dana ima jedan tjedan?", ["7", "Sedam"], "Najlakše pitanje", "Tjedan ima 7 dana.", 10),
     text(6, "Tri mačke ulove tri miša za tri minute. Koliko bi mačaka trebalo da ulove 100 miševa za 100 minuta, ako sve rade jednakom brzinom?", ["3", "Tri", "3 mačke", "Tri mačke"], "Logika", "Tri mačke uhvate jednog miša u minuti, pa za 100 minuta uhvate 100 miševa. Treba ih i dalje 3."),
     text(7, "Kako se zove mjesto u kojem se, prema kršćanskoj tradiciji, rodio Isus?", ["Betlehem", "Bethlehem", "Betleem"], "Božić", "Prema tradiciji, Isus je rođen u Betlehemu."),
-    distance(8, "Kolika je zračna udaljenost između Zagreba i Beča? Upiši kilometre.", 268, "Opće znanje", "Zračna udaljenost Zagreba i Beča je približno 268 km."),
+    distance(8, "Kolika je zračna udaljenost između Zagreba i Rijeke? Odgovor upiši u kilometrima.", 132, "Opće znanje", "Zračna udaljenost Zagreba i Rijeke je približno 132 km."),
     text(9, "Kako se zove književni rod kojem pripadaju romani, pripovijetke i novele?", ["Epika"], "Škola – književnost", "Romani, pripovijetke i novele pripadaju epici."),
   ],
   "2026-12-07": [
@@ -168,7 +168,7 @@ const days = {
     text(5, "Koliko mjeseci ima jedna godina?", ["12", "Dvanaest"], "Najlakše pitanje", "Godina ima 12 mjeseci.", 10),
     text(6, "Majka je četiri puta starija od svoje kćeri. Zajedno imaju 50 godina. Koliko godina ima kći?", ["10", "Deset"], "Logika", "Ako kći ima 10 godina, majka ima 40. Zbroj je 50."),
     text(7, "Kako se zove poznati sob Djeda Božićnjaka koji ima crveni nos?", ["Rudolph", "Rudolf"], "Božić", "Sob s crvenim nosom zove se Rudolph ili Rudolf."),
-    distance(8, "Kolika je zračna udaljenost između Zagreba i Londona? Upiši kilometre.", 1235, "Opće znanje", "Zračna udaljenost Zagreba i Londona je približno 1235 km."),
+    distance(8, "Kolika je zračna udaljenost između Zagreba i Dubrovnika? Odgovor upiši u kilometrima.", 390, "Opće znanje", "Zračna udaljenost Zagreba i Dubrovnika je približno 390 km."),
     text(9, "Kako se zove stilska figura u kojoj se neživim stvarima ili životinjama daju ljudske osobine?", ["Personifikacija", "Poosobljenje"], "Škola – književnost", "Ta stilska figura je personifikacija."),
   ],
 };

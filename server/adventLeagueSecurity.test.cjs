@@ -315,6 +315,7 @@ describe("adventLeagueSecurity", () => {
     assert.equal(ans.status, 200);
     if (!ans.json.data.correct) {
       assert.equal(ans.json.data.explanation, null);
+      assert.ok(ans.json.data.correctAnswerLabel);
     }
   });
 

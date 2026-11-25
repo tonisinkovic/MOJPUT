@@ -24,8 +24,11 @@ import {
   AdventPrizeDrawSection,
   AdventReferralCatchUpCta,
 } from "@/components/advent-landing";
-import { adventFetchMe, isApiError } from "@/lib/adventLeagueApi";
+import { adventFetchMe, adventOptInStartReminder, isApiError } from "@/lib/adventLeagueApi";
 import { buildAdventCalendarDays, getSeasonPhase, getZagrebDayKey, type AdventCalendarDay } from "@/lib/adventLeagueLanding";
+import { isLocalhostBrowser } from "@/lib/adventLocalTest";
+import { listQuizDayKeys } from "@/lib/adventSeasonConfig";
+import season from "@/data/advent-league/season.json";
 import { trackAdventCtaClick, trackAdventLandingView } from "@/lib/adventLeagueAnalytics";
 import { runAdventReferralCapture } from "@/lib/adventLeagueReferral";
 
@@ -37,14 +40,26 @@ const AdventskaLiga = () => {
   const [catchUpDayKey, setCatchUpDayKey] = useState<string | null>(null);
   const [joinDayKey, setJoinDayKey] = useState<string | null>(null);
   const [prizeDrawEntered, setPrizeDrawEntered] = useState(false);
+  const [reminderOn, setReminderOn] = useState(false);
+  const [reminding, setReminding] = useState(false);
+  const [remindError, setRemindError] = useState("");
 
-  const todayKey = useMemo(() => getZagrebDayKey(), []);
+  const localPreview = isLocalhostBrowser();
+  const localOpenDays = useMemo(() => listQuizDayKeys().slice(0, 2), []);
+  const todayKey = useMemo(
+    () => (localPreview ? season.startDate : getZagrebDayKey()),
+    [localPreview],
+  );
   const phase = useMemo(() => getSeasonPhase(todayKey), [todayKey]);
   const leaderboardDayKey = phase === "active" ? todayKey : undefined;
-  const calendarDays = useMemo(
-    () => buildAdventCalendarDays(scoresByDay, todayKey, { joinDayKey, catchUpDayKey }),
-    [scoresByDay, todayKey, joinDayKey, catchUpDayKey],
-  );
+  const calendarDays = useMemo(() => {
+    const days = buildAdventCalendarDays(scoresByDay, todayKey, { joinDayKey, catchUpDayKey });
+    if (!localPreview) return days;
+    return days.map((day) => {
+      if (!localOpenDays.includes(day.dayKey) || day.status === "played") return day;
+      return { ...day, status: "available" as const };
+    });
+  }, [scoresByDay, todayKey, joinDayKey, catchUpDayKey, localPreview, localOpenDays]);
   const catchUpDayNumber = useMemo(() => {
     if (!catchUpDayKey) return null;
     const d = calendarDays.find((c) => c.dayKey === catchUpDayKey);
@@ -79,6 +94,7 @@ const AdventskaLiga = () => {
       setCatchUpDayKey(res.data.catchUpDayKey ?? null);
       setJoinDayKey(res.data.joinDayKey ?? null);
       setPrizeDrawEntered(Boolean(res.data.prizeDraw?.entered));
+      setReminderOn(Boolean(res.data.startReminder?.optedIn));
     });
     return () => {
       alive = false;
@@ -89,6 +105,18 @@ const AdventskaLiga = () => {
     document.getElementById("advent-calendar")?.scrollIntoView({ behavior: "smooth", block: "start" });
   }, []);
 
+  const remindBeforeStart = useCallback(async () => {
+    setReminding(true);
+    setRemindError("");
+    const res = await adventOptInStartReminder();
+    setReminding(false);
+    if (isApiError(res) || !res.data?.optedIn) {
+      setRemindError(res.success ? "Podsjetnik nije spremljen." : res.message);
+      return;
+    }
+    setReminderOn(true);
+  }, []);
+
   const goToTodayQuiz = useCallback(() => {
     trackAdventCtaClick("play_today");
     navigate("/adventska-liga/kviz");
@@ -96,6 +124,11 @@ const AdventskaLiga = () => {
 
   const onDaySelect = useCallback(
     (day: AdventCalendarDay) => {
+      if (localPreview && localOpenDays.includes(day.dayKey) && day.status !== "played") {
+        trackAdventCtaClick("calendar_day");
+        navigate(`/adventska-liga/kviz/${day.dayKey}`);
+        return;
+      }
       if (day.status === "catch_up") {
         trackAdventCtaClick("calendar_catchup");
         navigate(`/adventska-liga/kviz/${day.dayKey}`);
@@ -108,22 +141,8 @@ const AdventskaLiga = () => {
       trackAdventCtaClick("calendar_day");
       goToTodayQuiz();
     },
-    [goToTodayQuiz, navigate, scrollToCalendar],
+    [goToTodayQuiz, localOpenDays, localPreview, navigate, scrollToCalendar],
   );
-
-  const onParticipate = useCallback(() => {
-    trackAdventCtaClick("participate_hero");
-    if (phase === "active" && user) {
-      goToTodayQuiz();
-      return;
-    }
-    if (phase === "active") {
-      scrollToCalendar();
-      return;
-    }
-    if (!user) return;
-    scrollToCalendar();
-  }, [goToTodayQuiz, phase, scrollToCalendar, user]);
 
   return (
     <AdventThemeWrapper>
@@ -152,13 +171,28 @@ const AdventskaLiga = () => {
           <div className="relative z-10 mx-auto w-full max-w-6xl px-4 pb-10 pt-20 sm:px-5 sm:pb-16 sm:pt-24">
             <AdventPwaInstallHint />
             <div className="flex flex-col gap-8 lg:gap-10">
-              <AdventLandingHero loggedIn={Boolean(user)} username={user?.username} />
+              <AdventLandingHero
+                loggedIn={Boolean(user)}
+                username={user?.username}
+                playHref={localPreview ? "/adventska-liga/kviz" : undefined}
+              />
 
               <AdventHowItWorks />
 
               <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(280px,340px)] lg:gap-10">
                 <div className="space-y-8">
-                  <AdventPlayCta loggedIn={Boolean(user)} onPlayToday={onParticipate} />
+                  <AdventPlayCta
+                    loggedIn={Boolean(user)}
+                    localPreview={localPreview}
+                    onPlayToday={goToTodayQuiz}
+                    showStartReminder={todayKey < season.startDate}
+                    reminderOn={reminderOn}
+                    reminding={reminding}
+                    onRemind={() => void remindBeforeStart()}
+                  />
+                  {remindError ? (
+                    <p className="text-sm font-semibold text-[hsl(0,70%,72%)]">{remindError}</p>
+                  ) : null}
                   {catchUpDayKey && catchUpDayNumber ? (
                     <AdventReferralCatchUpCta catchUpDayKey={catchUpDayKey} dayNumber={catchUpDayNumber} />
                   ) : null}

@@ -81,6 +81,57 @@ describe("adventLeagueAdmin", () => {
     assert.equal(result.day.active, false);
   });
 
+  it("upsertQuestion keeps choice, text and distance fields", () => {
+    upsertQuestion(TEST_DAY_KEY, {
+      index: 1,
+      type: "text",
+      text: "Koji je glavni grad Hrvatske?",
+      acceptedAnswers: ["Zagreb"],
+      timeLimitSec: 20,
+      category: "geografija",
+      explanation: "Zagreb.",
+    });
+    upsertQuestion(TEST_DAY_KEY, {
+      index: 2,
+      type: "distance",
+      text: "Koliko je kilometara od Zagreba do Splita?",
+      distanceKm: 380,
+      timeLimitSec: 25,
+      category: "udaljenost",
+    });
+    upsertQuestion(TEST_DAY_KEY, {
+      index: 3,
+      type: "choice",
+      text: "Koji je točan odgovor?",
+      options: [
+        { id: "a", text: "A" },
+        { id: "b", text: "B" },
+        { id: "c", text: "C" },
+        { id: "d", text: "D" },
+      ],
+      correctAnswer: "c",
+      timeLimitSec: 15,
+    });
+
+    const day = getDayByKey(TEST_DAY_KEY);
+    const textQ = day.questions.find((q) => q.index === 1);
+    const distanceQ = day.questions.find((q) => q.index === 2);
+    const choiceQ = day.questions.find((q) => q.index === 3);
+    assert.equal(textQ.type, "text");
+    assert.deepEqual(textQ.acceptedAnswers, ["Zagreb"]);
+    assert.equal(textQ.timeLimitSec, 20);
+    assert.equal(distanceQ.type, "distance");
+    assert.equal(distanceQ.distanceKm, 380);
+    assert.equal(distanceQ.timeLimitSec, 25);
+    assert.equal(choiceQ.type, "choice");
+    assert.equal(choiceQ.correctAnswer, "c");
+    assert.equal(choiceQ.timeLimitSec, 15);
+
+    deleteQuestion(TEST_DAY_KEY, 1);
+    deleteQuestion(TEST_DAY_KEY, 2);
+    deleteQuestion(TEST_DAY_KEY, 3);
+  });
+
   it("upsertQuestion adds question to day", () => {
     const question = {
       index: 0,

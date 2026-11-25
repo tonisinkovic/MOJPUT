@@ -10,7 +10,7 @@ import {
 
 describe("adventLeagueSeo", () => {
   it("svaka stranica ima title, description, canonical i OG sliku", () => {
-    for (const key of ["landing", "quiz", "leaderboard"] as const) {
+    for (const key of ["landing", "quiz", "leaderboard", "pravila"] as const) {
       const cfg = getAdventSeoProps(key);
       expect(cfg.title.length).toBeGreaterThan(10);
       expect(cfg.title.length).toBeLessThanOrEqual(70);
@@ -32,6 +32,7 @@ describe("adventLeagueSeo", () => {
   it("sitemap rute su SEO-friendly bez admina", () => {
     expect(ADVENT_SITEMAP_ROUTES.every((r) => r.path.startsWith("/adventska-liga"))).toBe(true);
     expect(ADVENT_SITEMAP_ROUTES.some((r) => r.path.includes("admin"))).toBe(false);
+    expect(getAdventSeoProps("pravila").canonical).toBe("https://mojput.com/adventska-liga/pravila");
   });
 
   it("OG slika postoji u public/", () => {

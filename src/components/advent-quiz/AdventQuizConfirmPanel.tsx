@@ -6,6 +6,7 @@ type AdventQuizConfirmPanelProps = {
   selectedId: string;
   answerLabel: string;
   submitting?: boolean;
+  errorMessage?: string | null;
   onBack: () => void;
   onSubmit: () => void;
 };
@@ -15,6 +16,7 @@ export function AdventQuizConfirmPanel({
   selectedId,
   answerLabel,
   submitting,
+  errorMessage,
   onBack,
   onSubmit,
 }: AdventQuizConfirmPanelProps) {
@@ -40,6 +42,11 @@ export function AdventQuizConfirmPanel({
           {isChoice ? option?.text ?? "—" : answerLabel}
         </span>
       </div>
+      {errorMessage ? (
+        <p className="mt-4 text-sm font-semibold text-[hsl(0,70%,72%)]" role="alert">
+          {errorMessage}
+        </p>
+      ) : null}
       <div className="mt-6 flex flex-col gap-3 sm:flex-row">
         <button
           type="button"

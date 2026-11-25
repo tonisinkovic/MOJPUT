@@ -965,6 +965,55 @@ function getVerificationMailFrom() {
   return `MojPut <${userRaw}>`;
 }
 
+async function sendUserEmail({ to, subject, text, html }) {
+  const resendKey = String(process.env.RESEND_API_KEY || "").trim();
+  if (resendKey) {
+    const from = normalizeResendFrom(process.env.RESEND_FROM);
+    try {
+      const r = await fetch("https://api.resend.com/emails", {
+        method: "POST",
+        headers: { Authorization: `Bearer ${resendKey}`, ...RESEND_JSON_HEADERS },
+        body: JSON.stringify({ from, to: [to], subject, text, html }),
+        signal: AbortSignal.timeout(25000),
+      });
+      if (!r.ok) {
+        const json = await r.json().catch(() => ({}));
+        console.error("[mail] Resend error:", r.status, json);
+        return { sent: false };
+      }
+      return { sent: true };
+    } catch (err) {
+      console.error("[mail] Resend fetch:", err?.message || err);
+      return { sent: false };
+    }
+  }
+
+  let transport;
+  let isEthereal;
+  try {
+    const ready = await getMailTransport();
+    transport = ready.transport;
+    isEthereal = ready.isEthereal;
+  } catch (err) {
+    console.error("[mail] transport:", err?.message || err);
+    return { sent: false };
+  }
+  if (isEthereal) return { sent: false };
+  try {
+    await transport.sendMail({
+      from: getVerificationMailFrom(),
+      to,
+      subject,
+      text,
+      html,
+    });
+    return { sent: true };
+  } catch (err) {
+    console.error("[mail] failed:", err?.message || err);
+    return { sent: false };
+  }
+}
+
 async function sendVerificationEmail({ to, username, code }) {
   const subject = "MojPut — potvrdi svoj račun";
   const textBody = `Pozdrav ${username},\n\nTvoj 6-znamenkasti kod za potvrdu MojPut računa:\n\n${code}\n\nOtvori mojput.com u pregledniku, idi na stranicu za potvrdu računa i upiši ovaj kod zajedno s email adresom koju si koristio pri registraciji.\n\nKod vrijedi 24 sata. Ako nisi ti tražio registraciju, zanemari ovu poruku.\n`;
@@ -2953,6 +3002,18 @@ async function main() {
   /** Slušaj tek kad su sve rute registrirane (inače rani zahtjevi na /api/* mogu dobiti 404). */
   app.listen(PORT, "0.0.0.0", () => {
     console.log(`[server] API sluša port ${PORT} — spreman (/api/health, /api/chat/quota, …)`);
+    const { sendDueAdventReminders } = require("./server/adventStartReminder.cjs");
+    const { getChatDayKey } = require("./server/appDb.cjs");
+    const remind = async () => {
+      try {
+        const result = await sendDueAdventReminders(db, sendUserEmail, getChatDayKey());
+        if (result.sent > 0) console.log("[advent-reminder] poslano:", result.sent);
+      } catch (err) {
+        console.error("[advent-reminder]", err?.message || err);
+      }
+    };
+    void remind();
+    setInterval(remind, 15 * 60 * 1000);
   });
 }
 

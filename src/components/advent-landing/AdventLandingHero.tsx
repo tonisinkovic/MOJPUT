@@ -10,9 +10,10 @@ import {
 type AdventLandingHeroProps = {
   loggedIn: boolean;
   username?: string;
+  playHref?: string;
 };
 
-export function AdventLandingHero({ loggedIn, username }: AdventLandingHeroProps) {
+export function AdventLandingHero({ loggedIn, username, playHref }: AdventLandingHeroProps) {
   return (
     <section className="relative text-center">
       <div className="mx-auto flex w-full max-w-3xl flex-col items-center px-1">
@@ -50,7 +51,7 @@ export function AdventLandingHero({ loggedIn, username }: AdventLandingHeroProps
             variants={adventStaggerItem}
             className="mx-auto mt-4 max-w-xl text-sm font-semibold leading-relaxed advent-text-muted sm:text-base"
           >
-            Svaki advent dan novo pitanje o školovanju, studijima i karijeri — skupljaj bodove, penji se na ljestvici i
+            Svaki kviz dan 10 pitanja o školovanju, studijima i karijeri — skupljaj bodove, penji se na ljestvici i
             otkrivaj MojPut na zabavan način.
           </motion.p>
 
@@ -66,7 +67,7 @@ export function AdventLandingHero({ loggedIn, username }: AdventLandingHeroProps
 
           <motion.div variants={adventStaggerItem} className="mt-6 flex flex-wrap items-center justify-center gap-3">
           <a
-            href="#advent-cta"
+            href={playHref || "#advent-cta"}
             className="advent-btn-gold advent-shimmer inline-flex min-h-12 items-center justify-center gap-2 rounded-xl px-8 py-3.5 text-sm font-extrabold shadow-md transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(var(--advent-gold)/0.5)]"
           >
             <Sparkles className="h-4 w-4 animate-advent-sparkle" aria-hidden />

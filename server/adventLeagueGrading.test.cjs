@@ -29,10 +29,36 @@ describe("adventLeagueGrading", () => {
     assert.equal(parseKm("258,5 km"), 258.5);
     const perfect = scoreDistanceKm("258", 258, {});
     assert.equal(perfect.score, 100);
-    const near = scoreDistanceKm("280", 258, {});
+    const wide = scoreDistanceKm("300", 258, {});
+    assert.equal(wide.score, 100);
+    const near = scoreDistanceKm("400", 258, {});
     assert.ok(near.score > 0 && near.score < 100);
     const far = scoreDistanceKm("900", 258, {});
     assert.equal(far.score, 0);
+  });
+
+  it("skraćenicu priznaje, a slovnu grešku nudi kao prijedlog", () => {
+    const author = days[0].questions[4];
+    const accepted = gradeAdventAnswer(author, "dostojevsk", 2000, { expired: false });
+    assert.equal(accepted.correct, true);
+    assert.equal(accepted.score, 100);
+
+    const lyric = {
+      type: "text",
+      timeLimitSec: 30,
+      acceptedAnswers: ["Lirika"],
+      explanation: "To je lirika.",
+    };
+    const suggested = gradeAdventAnswer(lyric, "lirikja", 2000, { expired: false });
+    assert.equal(suggested.correct, false);
+    assert.equal(suggested.score, 0);
+    assert.equal(suggested.suggestion, "Mislite li Lirika?");
+    assert.equal(suggested.correctAnswerLabel, "Lirika");
+
+    const wrong = gradeAdventAnswer(author, "Shakespeare", 2000, { expired: false });
+    assert.equal(wrong.correct, false);
+    assert.equal(wrong.suggestion, null);
+    assert.match(wrong.correctAnswerLabel, /Dostojevski/);
   });
 
   it("sva tri dana imaju 10 pitanja i kanonski odgovor donosi bodove", () => {

@@ -8,13 +8,13 @@ const steps = [
   },
   {
     icon: Puzzle,
-    title: "2. Jedno pitanje dnevno",
-    text: "Svaki advent dan jedno kratko pitanje o školama, fakultetima i karijeri.",
+    title: "2. Deset pitanja dnevno",
+    text: "Svaki kviz dan (5.–24. 12.) donosi 10 pitanja: izbor, upis ili procjena udaljenosti.",
   },
   {
     icon: Clock,
     title: "3. Bodovi i brzina",
-    text: "Točan odgovor donosi bodove; brži točan odgovor može donijeti bonus (kad kviz bude aktivan).",
+    text: "Točan odgovor donosi bodove prema brzini — brži točan odgovor vrijedi više, do 100 bodova po pitanju.",
   },
   {
     icon: Trophy,
@@ -30,8 +30,7 @@ export function AdventHowItWorks() {
         ❄️ Kako kviz funkcionira ✨
       </h2>
       <p className="mt-2 max-w-2xl text-sm font-medium leading-relaxed advent-text-muted">
-        Liga je jednostavna: dnevni zalogaj znanja, bez maratona od sati. Kviz modul spajamo u sljedećoj fazi — ovo je
-        funkcionalni pregled kako će tečaj izgledati.
+        Svaki dan jedan kratki kviz od 10 pitanja. Jedan pokušaj, bodove računa server, rezultat ide na ljestvicu.
       </p>
       <ol className="mt-5 grid gap-3 sm:grid-cols-2">
         {steps.map(({ icon: Icon, title, text }) => (

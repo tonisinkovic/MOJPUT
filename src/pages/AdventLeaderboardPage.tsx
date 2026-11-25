@@ -1,16 +1,21 @@
 import { useMemo } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import Layout from "@/components/Layout";
 import { AdventPageSeo } from "@/components/advent/AdventPageSeo";
 import { AdventThemeWrapper } from "@/components/advent/AdventThemeWrapper";
 import { AdventSnowfall } from "@/components/advent/AdventSnowfall";
 import { AdventLeaderboard } from "@/components/advent-landing/AdventLeaderboard";
 import { getSeasonPhase, getZagrebDayKey } from "@/lib/adventLeagueLanding";
+import { isLocalhostBrowser } from "@/lib/adventLocalTest";
+import season from "@/data/advent-league/season.json";
 
 const AdventLeaderboardPage = () => {
+  const location = useLocation();
   const todayKey = useMemo(() => getZagrebDayKey(), []);
   const phase = useMemo(() => getSeasonPhase(todayKey), [todayKey]);
-  const dayKeyForDaily = phase === "active" ? todayKey : undefined;
+  const localTest = isLocalhostBrowser();
+  const dayKeyForDaily = localTest ? season.startDate : phase === "active" ? todayKey : undefined;
+  const celebrate = new URLSearchParams(location.search).get("slavlje") === "1";
 
   return (
     <Layout>
@@ -25,7 +30,12 @@ const AdventLeaderboardPage = () => {
             >
               ← Adventska liga
             </Link>
-            <AdventLeaderboard variant="full" todayKey={dayKeyForDaily} defaultScope="season" />
+            <AdventLeaderboard
+              variant="full"
+              todayKey={dayKeyForDaily}
+              defaultScope="season"
+              celebrate={celebrate}
+            />
           </div>
         </div>
       </AdventThemeWrapper>

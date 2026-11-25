@@ -12,7 +12,7 @@ export default function AdventPravila() {
   return (
     <AdventThemeWrapper>
       <Layout>
-        <AdventPageSeo page="landing" />
+        <AdventPageSeo page="pravila" />
         <div className="advent-surface-primary min-h-[calc(100dvh-4rem)] px-4 py-10 sm:px-6">
           <Shell>
             <h1 className="advent-heading advent-text-gold text-2xl sm:text-3xl">📜 Pravila Adventske lige</h1>
@@ -34,8 +34,8 @@ export default function AdventPravila() {
             <div className="advent-glass-frost mt-6 rounded-xl border border-dashed border-[hsl(var(--advent-gold)/0.25)] p-4 text-sm advent-text-muted">
               <p className="font-bold text-[hsl(var(--advent-gold))]">Poštena igra</p>
               <p className="mt-1 font-medium">
-                Jedan račun, jedan pokušaj dnevno. Bodovi i ljestvica računaju se na serveru. Propusteni dani se u
-                ovoj sezoni ne nadoknađuju.
+                Jedan račun, jedan pokušaj dnevno. Bodove i ljestvicu računa server. Referral link otvara najviše jednu
+                nadoknadu najranijeg propuštenog dana nakon prijave. Ostali propušteni dani ostaju zatvoreni.
               </p>
             </div>
 

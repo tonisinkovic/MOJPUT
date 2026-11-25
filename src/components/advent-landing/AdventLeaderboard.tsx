@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
+import { motion } from "framer-motion";
 import { AlertCircle, ChevronRight, Loader2, Medal, Trophy } from "lucide-react";
+import { AdventConfetti } from "@/components/advent/AdventConfetti";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import {
@@ -27,13 +29,47 @@ type AdventLeaderboardProps = {
   todayKey?: string;
   defaultScope?: AdventLeaderboardScope;
   className?: string;
+  celebrate?: boolean;
 };
+
+function prefersReducedMotion() {
+  return typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+}
+
+function AnimatedScore({ value, delay }: { value: number; delay: number }) {
+  const [shown, setShown] = useState(0);
+
+  useEffect(() => {
+    if (prefersReducedMotion()) {
+      setShown(value);
+      return;
+    }
+    let raf = 0;
+    const startAt = performance.now() + delay * 1000;
+    const duration = 1100;
+    const tick = (now: number) => {
+      if (now < startAt) {
+        raf = requestAnimationFrame(tick);
+        return;
+      }
+      const t = Math.min(1, (now - startAt) / duration);
+      const eased = 1 - Math.pow(1 - t, 3);
+      setShown(Math.round(value * eased));
+      if (t < 1) raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [value, delay]);
+
+  return <>{shown}</>;
+}
 
 export function AdventLeaderboard({
   variant = "full",
   todayKey,
   defaultScope = "season",
   className,
+  celebrate = false,
 }: AdventLeaderboardProps) {
   const [scope, setScope] = useState<AdventLeaderboardScope>(defaultScope);
   const [data, setData] = useState<AdventLeaderboardPayload | null>(null);
@@ -189,24 +225,47 @@ export function AdventLeaderboard({
 
           {!loading && !error && data && data.entries.length > 0 ? (
             <>
+              <AdventConfetti trigger={celebrate} />
               <ol className="space-y-2" aria-label="Ljestvica">
-                {data.entries.map((row) => (
-                  <li
-                    key={`${row.rank}-${row.username}`}
+                {data.entries.map((row, index) => {
+                  const delay = Math.min(index, 14) * 0.07;
+                  const reduce = prefersReducedMotion();
+                  return (
+                  <motion.li
+                    key={`${row.rank}-${row.username}-${row.totalScore}`}
+                    initial={reduce ? false : { opacity: 0, y: 18, scale: 0.96 }}
+                    animate={
+                      row.isYou && !reduce
+                        ? {
+                            opacity: 1,
+                            y: 0,
+                            scale: [1, 1.035, 1],
+                            boxShadow: [
+                              "0 0 0 hsl(43 96% 56% / 0)",
+                              "0 0 28px hsl(43 96% 56% / 0.55)",
+                              "0 0 14px hsl(43 96% 56% / 0.28)",
+                            ],
+                          }
+                        : { opacity: 1, y: 0, scale: 1 }
+                    }
+                    transition={{ delay, type: "spring", stiffness: 420, damping: 28 }}
                     className={cn(
                       "flex items-center justify-between gap-2 rounded-xl px-3 py-2.5 sm:px-4",
-                      row.isYou ? "advent-row-self" : "advent-glass-frost",
+                      row.isYou ? "advent-row-self ring-2 ring-[hsl(var(--advent-gold)/0.7)]" : "advent-glass-frost",
                     )}
                   >
                     <div className="flex min-w-0 flex-1 items-center gap-2 sm:gap-3">
-                      <span
+                      <motion.span
                         className={cn(
                           "flex w-7 shrink-0 items-center justify-center font-mono text-sm font-extrabold tabular-nums",
                           rankBadgeClass(row.rank),
                         )}
+                        initial={reduce || row.rank > 3 ? false : { rotate: -18, scale: 0.6 }}
+                        animate={{ rotate: 0, scale: 1 }}
+                        transition={{ delay: delay + 0.05, type: "spring", stiffness: 500, damping: 16 }}
                       >
                         {row.rank <= 3 ? <Medal className="h-4 w-4" aria-hidden /> : row.rank}
-                      </span>
+                      </motion.span>
                       <span className="advent-text-ivory truncate text-sm font-bold">
                         {row.username}
                         {row.isYou ? (
@@ -215,13 +274,16 @@ export function AdventLeaderboard({
                       </span>
                     </div>
                     <div className="shrink-0 text-right">
-                      <p className="advent-text-ivory font-mono text-sm font-extrabold tabular-nums">{row.totalScore}</p>
+                      <p className="advent-text-ivory font-mono text-sm font-extrabold tabular-nums">
+                        <AnimatedScore value={row.totalScore} delay={delay + 0.12} />
+                      </p>
                       {scope === "season" && row.daysPlayed != null ? (
                         <p className="text-[10px] font-semibold text-[hsl(var(--advent-frost)/0.5)]">{row.daysPlayed} dana</p>
                       ) : null}
                     </div>
-                  </li>
-                ))}
+                  </motion.li>
+                  );
+                })}
               </ol>
 
               {variant === "full" && hasMoreLeaderboardPage(data) ? (

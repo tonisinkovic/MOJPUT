@@ -149,6 +149,7 @@ const INSERT_RETURNING_TABLES = new Set([
   "school_post_images",
   "advent_day_attempts",
   "advent_question_answers",
+  "advent_answer_reports",
 ]);
 
 function needsReturningId(sql) {
@@ -394,6 +395,8 @@ function migrateSqlite(db) {
 
   migrateAdventReferralSqlite(db);
   migrateAdventPrizeDrawSqlite(db);
+  migrateAdventAnswerReportsSqlite(db);
+  migrateAdventStartRemindersSqlite(db);
 
   const userCols = db.prepare("PRAGMA table_info(users)").all().map((c) => c.name);
   if (!userCols.includes("user_type")) {
@@ -858,6 +861,8 @@ async function migratePg(pool) {
 
   await migrateAdventReferralPg(run);
   await migrateAdventPrizeDrawPg(run);
+  await migrateAdventAnswerReportsPg(run);
+  await migrateAdventStartRemindersPg(run);
 
   let migrated;
   try {
@@ -1160,6 +1165,64 @@ function migrateAdventPrizeDrawSqlite(db) {
     );
     CREATE INDEX IF NOT EXISTS idx_advent_draw_winners_at ON advent_prize_draw_winners(picked_at);
   `);
+}
+
+function migrateAdventStartRemindersSqlite(db) {
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS advent_start_reminders (
+      user_id INTEGER PRIMARY KEY,
+      email TEXT NOT NULL,
+      created_at TEXT NOT NULL,
+      sent_at TEXT,
+      FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+    );
+  `);
+}
+
+async function migrateAdventStartRemindersPg(run) {
+  await run(`CREATE TABLE IF NOT EXISTS advent_start_reminders (
+    user_id INTEGER PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
+    email TEXT NOT NULL,
+    created_at TIMESTAMPTZ NOT NULL,
+    sent_at TIMESTAMPTZ
+  )`);
+}
+
+function migrateAdventAnswerReportsSqlite(db) {
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS advent_answer_reports (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      answer_id INTEGER NOT NULL UNIQUE,
+      attempt_id INTEGER NOT NULL,
+      user_id INTEGER NOT NULL,
+      day_key TEXT NOT NULL,
+      question_index INTEGER NOT NULL,
+      selected_answer TEXT NOT NULL,
+      status TEXT NOT NULL DEFAULT 'open',
+      created_at TEXT NOT NULL DEFAULT (datetime('now')),
+      resolved_at TEXT,
+      FOREIGN KEY (answer_id) REFERENCES advent_question_answers(id) ON DELETE CASCADE,
+      FOREIGN KEY (attempt_id) REFERENCES advent_day_attempts(id) ON DELETE CASCADE,
+      FOREIGN KEY (user_id) REFERENCES users(id)
+    );
+    CREATE INDEX IF NOT EXISTS idx_advent_answer_reports_status ON advent_answer_reports(status, created_at);
+  `);
+}
+
+async function migrateAdventAnswerReportsPg(run) {
+  await run(`CREATE TABLE IF NOT EXISTS advent_answer_reports (
+    id SERIAL PRIMARY KEY,
+    answer_id INTEGER NOT NULL UNIQUE REFERENCES advent_question_answers(id) ON DELETE CASCADE,
+    attempt_id INTEGER NOT NULL REFERENCES advent_day_attempts(id) ON DELETE CASCADE,
+    user_id INTEGER NOT NULL REFERENCES users(id),
+    day_key TEXT NOT NULL,
+    question_index INTEGER NOT NULL,
+    selected_answer TEXT NOT NULL,
+    status TEXT NOT NULL DEFAULT 'open',
+    created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    resolved_at TIMESTAMPTZ
+  )`);
+  await run("CREATE INDEX IF NOT EXISTS idx_advent_answer_reports_status ON advent_answer_reports(status, created_at)");
 }
 
 async function migrateAdventPrizeDrawPg(run) {
