@@ -1,8 +1,10 @@
 interface Props {
-  /** Elapsed seconds (display only). */
+  /** Elapsed seconds, used to fill the ring. */
   seconds: number;
   /** Max seconds for the ring (default 120). */
   maxSeconds?: number;
+  /** When set, the center shows this countdown instead of elapsed time. */
+  displaySeconds?: number;
   /** Client-side bonus hint text. */
   bonusHint?: string;
   className?: string;
@@ -17,13 +19,14 @@ const CIRCUMFERENCE = 2 * Math.PI * RADIUS;
  * Circular SVG timer ring for the quiz experience.
  * Gold fill that transitions to cranberry in the final 15s.
  */
-export function AdventCircularTimer({ seconds, maxSeconds = 120, bonusHint, className = "" }: Props) {
+export function AdventCircularTimer({ seconds, maxSeconds = 120, displaySeconds, bonusHint, className = "" }: Props) {
   const fraction = Math.min(seconds / maxSeconds, 1);
   const offset = CIRCUMFERENCE * (1 - fraction);
-  const isCritical = seconds >= maxSeconds - 15;
+  const shown = displaySeconds ?? seconds;
+  const isCritical = displaySeconds != null ? displaySeconds <= 5 : seconds >= maxSeconds - 15;
 
-  const mm = String(Math.floor(seconds / 60)).padStart(2, "0");
-  const ss = String(seconds % 60).padStart(2, "0");
+  const mm = String(Math.floor(shown / 60)).padStart(2, "0");
+  const ss = String(shown % 60).padStart(2, "0");
 
   const strokeColor = isCritical
     ? "hsl(var(--advent-cranberry))"

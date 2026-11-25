@@ -2727,6 +2727,74 @@ body:has(.sr-page) .mp-menu [role="option"] {
   opacity: 0.7;
 }
 
+/* ---- Kalendar: posebne ćelije (1.–4., Badnjak, Božić, lista, 27.–31.) ---- */
+
+.advent-door-pre {
+  background: repeating-linear-gradient(
+    -45deg,
+    hsl(var(--advent-midnight-lighter)),
+    hsl(var(--advent-midnight-lighter)) 6px,
+    hsl(var(--advent-frost) / 0.04) 6px,
+    hsl(var(--advent-frost) / 0.04) 12px
+  );
+  border: 1px dashed hsl(var(--advent-frost) / 0.22);
+  color: hsl(var(--advent-frost) / 0.45);
+}
+
+.advent-door-pre.advent-door-future {
+  opacity: 0.55;
+}
+
+.advent-door-badnjak {
+  background: linear-gradient(145deg, hsl(var(--advent-evergreen-lighter)), hsl(var(--advent-midnight-lighter)));
+  border: 2px solid hsl(152 55% 42% / 0.55);
+  box-shadow: 0 0 18px hsl(152 60% 35% / 0.25);
+  color: hsl(152 65% 72%);
+}
+
+.advent-door-christmas {
+  background: radial-gradient(circle at 50% 30%, hsl(350 70% 45% / 0.35), hsl(var(--advent-midnight-lighter)) 65%);
+  border: 2px solid hsl(43 90% 55% / 0.45);
+  color: hsl(43 96% 68%);
+  box-shadow: 0 0 20px hsl(350 70% 40% / 0.2);
+  cursor: default;
+}
+
+.advent-door-christmas.advent-door-future {
+  opacity: 0.65;
+  filter: saturate(0.85);
+}
+
+.advent-door-final-list {
+  background: linear-gradient(135deg, hsl(var(--advent-gold) / 0.22), hsl(var(--advent-midnight-lighter)));
+  border: 2px solid hsl(var(--advent-gold) / 0.65);
+  box-shadow: var(--advent-glow-gold);
+  color: hsl(var(--advent-gold));
+  cursor: pointer;
+}
+
+.advent-door-final-list:hover {
+  border-color: hsl(var(--advent-gold) / 0.9);
+  transform: translateY(-2px);
+}
+
+.advent-door-final-list.advent-door-future {
+  opacity: 0.5;
+  cursor: default;
+  box-shadow: none;
+}
+
+.advent-door-after {
+  background: hsl(var(--advent-midnight));
+  border: 1px solid hsl(var(--advent-frost) / 0.05);
+  color: hsl(var(--advent-frost) / 0.2);
+  opacity: 0.45;
+}
+
+.advent-door-after.advent-door-future {
+  opacity: 0.35;
+}
+
 /* ---- Quiz option buttons ---- */
 
 .advent-option {

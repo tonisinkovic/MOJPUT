@@ -1,6 +1,7 @@
 "use strict";
 
 const { computeAdventDayScore } = require("./adventLeagueScoring.cjs");
+const { gradeAdventAnswer } = require("./adventLeagueGrading.cjs");
 
 async function qGet(db, sql, ...params) {
   return db.prepare(sql).get(...params);
@@ -288,19 +289,59 @@ async function getAdventLeaderboard(db, limit = 50) {
   }));
 }
 
+function isMissingTableError(err) {
+  const msg = String(err?.message || err || "").toLowerCase();
+  return msg.includes("no such table") || msg.includes("does not exist") || msg.includes("undefined table");
+}
+
 function sanitizeQuestionForClient(question) {
   if (!question) return null;
-  const { correctAnswer, explanation, ...safe } = question;
+  const { correctAnswer, explanation, acceptedAnswers, distanceKm, distanceFullPointsWithinKm, distanceZeroBeyondPercent, ...safe } = question;
   return safe;
 }
 
 function validateQuestionAnswer(question, selectedAnswer) {
-  if (!question || !question.correctAnswer) {
-    return false;
+  if (!question) return false;
+  const graded = gradeAdventAnswer(question, selectedAnswer, 1000, { expired: false });
+  return graded.correct;
+}
+
+async function getQuestionOpenedAtMs(db, attemptId, questionIndex) {
+  try {
+    const row = await qGet(
+      db,
+      "SELECT opened_at FROM advent_question_opens WHERE attempt_id = ? AND question_index = ?",
+      attemptId,
+      questionIndex,
+    );
+    const ms = Date.parse(row?.opened_at || "");
+    return Number.isFinite(ms) ? ms : NaN;
+  } catch (err) {
+    if (isMissingTableError(err)) return NaN;
+    throw err;
   }
-  const correct =
-    String(selectedAnswer).toLowerCase().trim() === String(question.correctAnswer).toLowerCase().trim();
-  return correct;
+}
+
+async function openAdventQuestion(db, attemptId, questionIndex) {
+  const existingMs = await getQuestionOpenedAtMs(db, attemptId, questionIndex);
+  if (Number.isFinite(existingMs)) return new Date(existingMs).toISOString();
+  const openedAt = new Date().toISOString();
+  try {
+    await qRun(
+      db,
+      "INSERT INTO advent_question_opens (attempt_id, question_index, opened_at) VALUES (?, ?, ?)",
+      attemptId,
+      questionIndex,
+      openedAt,
+    );
+    return openedAt;
+  } catch (err) {
+    if (isUniqueConstraintError(err)) {
+      const again = await getQuestionOpenedAtMs(db, attemptId, questionIndex);
+      if (Number.isFinite(again)) return new Date(again).toISOString();
+    }
+    throw err;
+  }
 }
 
 function computeQuestionScore(isCorrect, durationMs) {
@@ -329,4 +370,7 @@ module.exports = {
   validateQuestionAnswer,
   computeQuestionScore,
   computeQuestionScoreBreakdown,
+  getQuestionOpenedAtMs,
+  openAdventQuestion,
+  isMissingTableError,
 };

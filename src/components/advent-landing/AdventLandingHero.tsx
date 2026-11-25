@@ -14,56 +14,57 @@ type AdventLandingHeroProps = {
 
 export function AdventLandingHero({ loggedIn, username }: AdventLandingHeroProps) {
   return (
-    <section className="relative">
-      <Link
-        to="/"
-        className="relative mb-5 inline-flex min-h-11 items-center gap-1.5 text-sm font-extrabold advent-text-muted transition hover:text-[hsl(var(--advent-ivory))]"
-      >
-        <ArrowLeft className="h-4 w-4" />
-        Početna
-      </Link>
-
-      <motion.div
-        variants={adventStaggerContainer}
-        initial="hidden"
-        animate="visible"
-        className="relative"
-      >
-        <motion.p
-          variants={adventStaggerItem}
-          className="advent-heading text-sm uppercase tracking-[0.12em] advent-text-gold"
+    <section className="relative text-center">
+      <div className="mx-auto flex w-full max-w-3xl flex-col items-center px-1">
+        <Link
+          to="/"
+          className="mb-5 inline-flex min-h-11 items-center justify-center gap-1.5 self-center text-sm font-extrabold advent-text-muted transition hover:text-[hsl(var(--advent-ivory))]"
         >
-          🎄 MojPut · Adventska kviz liga 🎁
-        </motion.p>
+          <ArrowLeft className="h-4 w-4" />
+          Početna
+        </Link>
 
-        <motion.h1
-          variants={adventStaggerItem}
-          className="advent-heading mt-2 text-4xl tracking-tight advent-text-ivory sm:text-5xl lg:text-6xl lg:leading-[1.08]"
+        <motion.div
+          variants={adventStaggerContainer}
+          initial="hidden"
+          animate="visible"
+          className="relative flex w-full flex-col items-center"
         >
-          24 dana{" "}
-          <span className="advent-text-gold">znanja</span>{" "}
-          i izazova
-        </motion.h1>
-
-        <motion.p
-          variants={adventStaggerItem}
-          className="mt-4 max-w-2xl text-sm font-semibold leading-relaxed advent-text-muted sm:text-base"
-        >
-          Svaki advent dan novo pitanje o školovanju, studijima i karijeri — skupljaj bodove, penji se na ljestvici i
-          otkrivaj MojPut na zabavan način.
-        </motion.p>
-
-        {loggedIn && username ? (
           <motion.p
             variants={adventStaggerItem}
-            className="mt-3 inline-flex items-center gap-2 rounded-full advent-glass-gold px-3 py-1 text-xs font-bold text-[hsl(var(--advent-gold))]"
+            className="advent-heading text-sm uppercase tracking-[0.12em] advent-text-gold"
           >
-            <Sparkles className="h-3.5 w-3.5 animate-advent-twinkle" aria-hidden />
-            Pozdrav, {username} — spreman/na si za današnji dan?
+            🎄 MojPut · Adventska kviz liga 🎁
           </motion.p>
-        ) : null}
 
-        <motion.div variants={adventStaggerItem} className="mt-6 flex flex-wrap items-center gap-3">
+          <motion.h1
+            variants={adventStaggerItem}
+            className="advent-heading mx-auto mt-2 max-w-2xl text-4xl tracking-tight advent-text-ivory sm:text-5xl lg:text-6xl lg:leading-[1.08]"
+          >
+            20 dana{" "}
+            <span className="advent-text-gold">znanja</span>{" "}
+            i izazova
+          </motion.h1>
+
+          <motion.p
+            variants={adventStaggerItem}
+            className="mx-auto mt-4 max-w-xl text-sm font-semibold leading-relaxed advent-text-muted sm:text-base"
+          >
+            Svaki advent dan novo pitanje o školovanju, studijima i karijeri — skupljaj bodove, penji se na ljestvici i
+            otkrivaj MojPut na zabavan način.
+          </motion.p>
+
+          {loggedIn && username ? (
+            <motion.p
+              variants={adventStaggerItem}
+              className="mt-3 inline-flex items-center justify-center gap-2 rounded-full advent-glass-gold px-3 py-1 text-xs font-bold text-[hsl(var(--advent-gold))]"
+            >
+              <Sparkles className="h-3.5 w-3.5 animate-advent-twinkle" aria-hidden />
+              Pozdrav, {username} — spreman/na si za današnji dan?
+            </motion.p>
+          ) : null}
+
+          <motion.div variants={adventStaggerItem} className="mt-6 flex flex-wrap items-center justify-center gap-3">
           <a
             href="#advent-cta"
             className="advent-btn-gold advent-shimmer inline-flex min-h-12 items-center justify-center gap-2 rounded-xl px-8 py-3.5 text-sm font-extrabold shadow-md transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(var(--advent-gold)/0.5)]"
@@ -80,13 +81,11 @@ export function AdventLandingHero({ loggedIn, username }: AdventLandingHeroProps
           </a>
         </motion.div>
 
-        <motion.div
-          variants={adventStaggerItem}
-          className="mt-8"
-        >
-          <AdventCountdown />
+          <motion.div variants={adventStaggerItem} className="mt-8 w-full max-w-2xl">
+            <AdventCountdown />
+          </motion.div>
         </motion.div>
-      </motion.div>
+      </div>
     </section>
   );
 }

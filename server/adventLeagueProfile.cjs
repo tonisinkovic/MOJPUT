@@ -3,6 +3,20 @@
 const { loadAdventSeason } = require("./adventLeagueData.cjs");
 const { getUserAdventProgress } = require("./adventLeagueDb.cjs");
 const { getAdventSeasonStandingForUser } = require("./adventLeagueLeaderboard.cjs");
+const {
+  listCalendarDayKeys,
+  listQuizDayKeys,
+  countQuizDays,
+  isChristmasCalendarDay,
+  isFinalListCalendarDay,
+  isPreSeasonCalendarDay,
+  isAfterSeasonCalendarDay,
+  isDayKeyQuizDay,
+  getQuizEndDate,
+  calendarDayOfMonth,
+} = require("./adventSeason.cjs");
+const { getUserLeagueJoinDayKey, getReferralCatchUpDayKey } = require("./adventLeagueCatchUp.cjs");
+const { getDrawStatusForUser } = require("./adventLeagueDraw.cjs");
 
 const ADVENT_BADGE_DEFINITIONS = [
   {
@@ -32,13 +46,13 @@ const ADVENT_BADGE_DEFINITIONS = [
   {
     id: "halfway",
     title: "Na pola puta",
-    description: "Završi 12 dana kviza.",
+    description: "Završi 10 dana kviza.",
     emoji: "⭐",
   },
   {
     id: "finisher",
     title: "Cijela liga",
-    description: "Svih 24 dana odigrano.",
+    description: "Svih 20 dana kviza odigrano.",
     emoji: "🏁",
   },
   {
@@ -56,14 +70,11 @@ const ADVENT_BADGE_DEFINITIONS = [
 ];
 
 function listAdventSeasonDayKeys() {
-  const season = loadAdventSeason();
-  const keys = [];
-  const start = new Date(`${season.startDate}T12:00:00.000Z`);
-  for (let i = 0; i < 24; i += 1) {
-    const d = new Date(start.getTime() + i * 86_400_000);
-    keys.push(d.toISOString().slice(0, 10));
-  }
-  return keys;
+  return listCalendarDayKeys();
+}
+
+function listAdventQuizDayKeys() {
+  return listQuizDayKeys();
 }
 
 /**
@@ -118,25 +129,50 @@ function computeAdventStreaks(seasonDayKeys, completedDayKeys, todayKey) {
 /**
  * @param {Map<string, object>} attemptByDayKey
  */
-function buildAdventUserCalendar(seasonDayKeys, attemptByDayKey, todayKey) {
-  return seasonDayKeys.map((dayKey, index) => {
+function buildAdventUserCalendar(seasonDayKeys, attemptByDayKey, todayKey, joinDayKey, catchUpDayKey) {
+  const quizSet = new Set(listQuizDayKeys());
+  return seasonDayKeys.map((dayKey) => {
+    const dayNumber = calendarDayOfMonth(dayKey);
+
+    if (isChristmasCalendarDay(dayKey)) {
+      return { dayNumber, dayKey, status: "christmas", label: "Božić — bez kviza" };
+    }
+
+    if (isFinalListCalendarDay(dayKey)) {
+      return {
+        dayNumber,
+        dayKey,
+        status: dayKey > todayKey ? "locked" : "final_list",
+        label: "Konačna lista",
+      };
+    }
+
+    if (isPreSeasonCalendarDay(dayKey)) {
+      return { dayNumber, dayKey, status: "pre_season", label: "Prije kviza (1.–4.)" };
+    }
+
+    if (isAfterSeasonCalendarDay(dayKey)) {
+      return { dayNumber, dayKey, status: "after_season", label: "Nakon lige" };
+    }
+
+    const isQuiz = quizSet.has(dayKey);
     const attempt = attemptByDayKey.get(dayKey);
     const completed = Boolean(attempt?.completed);
     const score = completed ? Number(attempt.total_score) || 0 : undefined;
 
     let status = "locked";
-    if (dayKey > todayKey) status = "locked";
+    if (!isQuiz) status = "locked";
+    else if (dayKey > todayKey) status = "locked";
+    else if (joinDayKey && dayKey < joinDayKey) status = "before_join";
     else if (completed) status = "played";
     else if (attempt && !completed) status = "in_progress";
+    else if (catchUpDayKey === dayKey) status = "catch_up";
     else if (dayKey < todayKey) status = "missed";
     else status = "available";
 
-    return {
-      dayNumber: index + 1,
-      dayKey,
-      status,
-      score,
-    };
+    const label = dayKey === getQuizEndDate() ? "Badnjak + kviz" : undefined;
+
+    return { dayNumber, dayKey, status, score, label };
   });
 }
 
@@ -150,8 +186,8 @@ function buildAdventBadges(input) {
     streak_3: bestStreak >= 3,
     streak_7: bestStreak >= 7,
     perfect_day: hasPerfectDay,
-    halfway: daysPlayed >= 12,
-    finisher: daysPlayed >= 24,
+    halfway: daysPlayed >= 10,
+    finisher: daysPlayed >= 20,
     top10: seasonRank != null && seasonRank <= 10,
     high_score_day: hasHighScoreDay,
   };
@@ -162,8 +198,8 @@ function buildAdventBadges(input) {
   }));
 }
 
-function buildDailyResults(attempts, seasonDayKeys) {
-  const dayNumberByKey = new Map(seasonDayKeys.map((k, i) => [k, i + 1]));
+function buildDailyResults(attempts, quizDayKeys) {
+  const dayNumberByKey = new Map(quizDayKeys.map((k, i) => [k, i + 1]));
   return attempts
     .filter((a) => a.completed || Number(a.questions_answered) > 0)
     .map((a) => ({
@@ -182,14 +218,18 @@ function buildDailyResults(attempts, seasonDayKeys) {
 async function buildAdventUserProfile(db, userId, todayKey) {
   const season = loadAdventSeason();
   const seasonDayKeys = listAdventSeasonDayKeys();
+  const quizDayKeys = listAdventQuizDayKeys();
   const progress = await getUserAdventProgress(db, userId);
   const standing = await getAdventSeasonStandingForUser(db, userId);
+  const joinDayKey = (await getUserLeagueJoinDayKey(db, userId)) || season.startDate;
+  const catchUpDayKey = await getReferralCatchUpDayKey(db, userId, todayKey);
+  const prizeDraw = await getDrawStatusForUser(db, userId);
 
   const attemptByDayKey = new Map(progress.attempts.map((a) => [a.day_key, a]));
   const completedDayKeys = new Set(
     progress.attempts.filter((a) => a.completed).map((a) => a.day_key),
   );
-  const { currentStreak, bestStreak } = computeAdventStreaks(seasonDayKeys, completedDayKeys, todayKey);
+  const { currentStreak, bestStreak } = computeAdventStreaks(quizDayKeys, completedDayKeys, todayKey);
 
   const quizzesCompleted = progress.daysPlayed;
   const quizzesStarted = progress.attempts.length;
@@ -206,10 +246,15 @@ async function buildAdventUserProfile(db, userId, todayKey) {
       year: season.year,
       startDate: season.startDate,
       endDate: season.endDate,
+      quizEndDate: season.quizEndDate || season.endDate,
       timezone: season.timezone,
-      totalDays: seasonDayKeys.length,
+      totalDays: countQuizDays(),
+      calendarDays: seasonDayKeys.length,
     },
     todayKey,
+    joinDayKey,
+    catchUpDayKey,
+    prizeDraw,
     totalScore: progress.totalScore,
     seasonRank: standing?.rank ?? null,
     daysPlayed: progress.daysPlayed,
@@ -225,8 +270,8 @@ async function buildAdventUserProfile(db, userId, todayKey) {
       seasonRank: standing?.rank ?? null,
       attempts: progress.attempts,
     }),
-    calendarDays: buildAdventUserCalendar(seasonDayKeys, attemptByDayKey, todayKey),
-    dailyResults: buildDailyResults(progress.attempts, seasonDayKeys),
+    calendarDays: buildAdventUserCalendar(seasonDayKeys, attemptByDayKey, todayKey, joinDayKey, catchUpDayKey),
+    dailyResults: buildDailyResults(progress.attempts, quizDayKeys),
   };
 }
 

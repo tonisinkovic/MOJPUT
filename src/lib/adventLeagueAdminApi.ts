@@ -4,6 +4,7 @@ import { API_BASE_URL } from "@/config/apiBase";
 export type AdventAdminSeason = {
   year: number;
   startDate: string;
+  quizEndDate?: string;
   endDate: string;
   timezone: string;
   scoringVersion: number;
@@ -19,12 +20,50 @@ export type AdventAdminDayListItem = {
 
 export type AdventAdminQuestion = {
   index: number;
+  type?: "choice" | "text" | "distance";
   text: string;
   options: { id: string; text: string }[];
-  correctAnswer: string;
+  correctAnswer?: string;
+  acceptedAnswers?: string[];
+  distanceKm?: number;
+  timeLimitSec?: number;
   category?: string;
   explanation?: string | null;
   difficulty?: number;
+};
+
+export type AdventScoringConfig = {
+  version: number;
+  timeBands: { maxSeconds: number; points: number }[];
+  defaultTimeLimitSec: number;
+  easyQuestionIndex: number;
+  easyTimeLimitSec: number;
+  submitGraceMs: number;
+  minDurationMs: number;
+  distance: { fullPointsWithinKm: number; zeroBeyondPercent: number };
+};
+
+export type AdventAdminResultDay = {
+  attemptId: number;
+  dayKey: string;
+  username: string;
+  totalScore: number;
+  questionsCorrect: number;
+  questionsAnswered: number;
+  completed: boolean;
+  submittedAt: string | null;
+};
+
+export type AdventAdminResultAnswer = {
+  id: number;
+  attemptId: number;
+  dayKey: string;
+  questionIndex: number;
+  username: string;
+  selectedAnswer: string;
+  correct: boolean;
+  score: number;
+  durationMs: number;
 };
 
 export type AdventImportPreviewRow = {
@@ -151,6 +190,40 @@ export async function adminFetchStats() {
   return apiGet<AdventAdminStats>("/api/admin/advent/stats");
 }
 
+export async function adminFetchScoring() {
+  return apiGet<AdventScoringConfig>("/api/admin/advent/scoring");
+}
+
+export async function adminUpdateScoring(scoring: AdventScoringConfig) {
+  return apiPut<AdventScoringConfig>("/api/admin/advent/scoring", scoring);
+}
+
+export async function adminFetchResults(dayKey?: string) {
+  const query = dayKey ? `?dayKey=${encodeURIComponent(dayKey)}` : "";
+  return apiGet<{ days: AdventAdminResultDay[]; answers: AdventAdminResultAnswer[] }>(`/api/admin/advent/results${query}`);
+}
+
+export async function adminCorrectAnswer(id: number, score: number, isCorrect: boolean) {
+  return apiPut<{ id: number; score: number; isCorrect: boolean }>(`/api/admin/advent/answers/${id}`, { score, isCorrect });
+}
+
+export async function adminDownloadResults(format: "csv" | "pdf", dayKey?: string) {
+  const token = getStoredAuthToken();
+  const params = new URLSearchParams({ format });
+  if (dayKey) params.set("dayKey", dayKey);
+  const res = await fetch(`${API_BASE_URL}/api/admin/advent/results/export?${params.toString()}`, {
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+  });
+  if (!res.ok) throw new Error("Izvoz nije uspio.");
+  const blob = await res.blob();
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = format === "pdf" ? "advent-rezultati.pdf" : "advent-rezultati.csv";
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
 export function isAdminApiError<T>(res: ApiResponse<T>): res is { success: false; message: string } {
   return !res.success;
 }
@@ -166,6 +239,37 @@ export async function adminConfirmImport(params: {
   lineNumbers?: number[];
 }) {
   return apiPost<AdventImportConfirmResult>("/api/admin/advent/import/confirm", params);
+}
+
+export type AdventAdminDrawWinner = {
+  id: number | string;
+  userId: number;
+  username: string;
+  pickedAt: string;
+};
+
+export type AdventAdminDrawStats = {
+  entrantCount: number;
+  recentWinners: AdventAdminDrawWinner[];
+};
+
+export type AdventAdminPickDrawResult = {
+  ok: boolean;
+  winner?: {
+    userId: number;
+    username: string;
+    pickedAt: string;
+    seed?: string;
+    poolSize: number;
+  };
+};
+
+export async function adminFetchDrawStats() {
+  return apiGet<AdventAdminDrawStats>("/api/admin/advent/draw/stats");
+}
+
+export async function adminPickDrawWinner() {
+  return apiPost<AdventAdminPickDrawResult>("/api/admin/advent/draw/pick", {});
 }
 
 export async function adminFetchImportTemplate() {

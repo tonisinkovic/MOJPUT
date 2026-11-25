@@ -1,24 +1,53 @@
-import { addDays, format, parseISO } from "date-fns";
-import season from "@/data/advent-league/season.json";
+import {
+  adventSeason,
+  calendarDayOfMonth,
+  getCalendarEndDate,
+  getCalendarStartDate,
+  getQuizEndDate,
+  getQuizStartDate,
+  isAfterSeasonCalendarDay,
+  isChristmasCalendarDay,
+  isDayKeyQuizDay,
+  isFinalListCalendarDay,
+  isPreSeasonCalendarDay,
+  listCalendarDayKeys,
+} from "@/lib/adventSeasonConfig";
+import { isQuizDayUnlockedNow } from "@/lib/adventLeagueTime";
 
-export type AdventDayStatus = "locked" | "available" | "played" | "missed";
+export type AdventDayStatus =
+  | "locked"
+  | "available"
+  | "played"
+  | "missed"
+  | "catch_up"
+  | "before_join"
+  | "pre_season"
+  | "christmas"
+  | "final_list"
+  | "after_season";
 
 export type AdventCalendarDay = {
   dayNumber: number;
   dayKey: string;
   status: AdventDayStatus;
   score?: number;
+  label?: string;
 };
 
 export type AdventSeasonPhase = "before" | "active" | "after";
 
-export type CountdownTarget = {
-  phase: AdventSeasonPhase;
-  label: string;
-  targetIso: string | null;
-};
+export type { CountdownTarget } from "@/lib/adventLeagueTime";
+export {
+  ADVENT_FIRST_QUIZ_OPEN_HOUR,
+  getCountdownTarget,
+  getFirstQuizOpenMs,
+  getNextMidnightZagrebMs,
+  getQuizDayUnlockMs,
+  getZagrebLocalInstantMs,
+  isQuizDayUnlockedNow,
+} from "@/lib/adventLeagueTime";
 
-const TZ = season.timezone || "Europe/Zagreb";
+const TZ = adventSeason.timezone || "Europe/Zagreb";
 
 /** Samo za prikaz na landing stranici — nije izvor istine za kviz API. */
 export function getZagrebDayKey(date = new Date()): string {
@@ -35,43 +64,9 @@ export function getZagrebDayKey(date = new Date()): string {
 }
 
 export function getSeasonPhase(todayKey = getZagrebDayKey()): AdventSeasonPhase {
-  if (todayKey < season.startDate) return "before";
-  if (todayKey > season.endDate) return "after";
+  if (todayKey < getCalendarStartDate()) return "before";
+  if (todayKey > getCalendarEndDate()) return "after";
   return "active";
-}
-
-/** Polnoć sljedećeg dana u Europe/Zagreb (približno preko offseta u klijentu). */
-export function getNextMidnightZagrebMs(now = new Date()): number {
-  const key = getZagrebDayKey(now);
-  const [y, m, d] = key.split("-").map(Number);
-  const guessUtc = Date.UTC(y, m - 1, d + 1, 0, 0, 0);
-  for (let delta = -4 * 3600_000; delta <= 4 * 3600_000; delta += 60_000) {
-    const candidate = new Date(guessUtc + delta);
-    if (getZagrebDayKey(candidate) !== key && getZagrebDayKey(new Date(candidate.getTime() - 60_000)) === key) {
-      return candidate.getTime();
-    }
-  }
-  return guessUtc;
-}
-
-export function getCountdownTarget(now = new Date()): CountdownTarget {
-  const phase = getSeasonPhase(getZagrebDayKey(now));
-  if (phase === "before") {
-    const startMs = new Date(`${season.startDate}T00:00:00`).getTime();
-    return {
-      phase,
-      label: "Do početka lige",
-      targetIso: new Date(startMs).toISOString(),
-    };
-  }
-  if (phase === "after") {
-    return { phase, label: "Liga je završila", targetIso: null };
-  }
-  return {
-    phase,
-    label: "Do sljedećeg dnevnog kviza",
-    targetIso: new Date(getNextMidnightZagrebMs(now)).toISOString(),
-  };
 }
 
 export function splitCountdown(ms: number) {
@@ -84,26 +79,71 @@ export function splitCountdown(ms: number) {
 }
 
 export function listAdventSeasonDayKeys(): string[] {
-  const start = parseISO(season.startDate);
-  return Array.from({ length: 24 }, (_, i) => format(addDays(start, i), "yyyy-MM-dd"));
+  return listCalendarDayKeys();
 }
 
 export function buildAdventCalendarDays(
   playedByDay: Record<string, number> = {},
   todayKey = getZagrebDayKey(),
+  options?: { joinDayKey?: string | null; catchUpDayKey?: string | null },
 ): AdventCalendarDay[] {
-  const dayKeys = listAdventSeasonDayKeys();
-  return dayKeys.map((dayKey, index) => {
+  const joinDayKey = options?.joinDayKey || getQuizStartDate();
+  const catchUpDayKey = options?.catchUpDayKey ?? null;
+  const dayKeys = listCalendarDayKeys();
+  return dayKeys.map((dayKey) => {
+    const dayNum = calendarDayOfMonth(dayKey);
+
+    if (isChristmasCalendarDay(dayKey)) {
+      return {
+        dayNumber: dayNum,
+        dayKey,
+        status: "christmas",
+        label: "Božić — bez kviza",
+      };
+    }
+
+    if (isFinalListCalendarDay(dayKey)) {
+      return {
+        dayNumber: dayNum,
+        dayKey,
+        status: dayKey > todayKey ? "locked" : "final_list",
+        label: "Konačna lista",
+      };
+    }
+
+    if (isPreSeasonCalendarDay(dayKey)) {
+      return { dayNumber: dayNum, dayKey, status: "pre_season", label: "Prije kviza (1.–4.)" };
+    }
+
+    if (isAfterSeasonCalendarDay(dayKey)) {
+      return { dayNumber: dayNum, dayKey, status: "after_season", label: "Nakon lige" };
+    }
+
     const score = playedByDay[dayKey];
+    const isQuiz = isDayKeyQuizDay(dayKey);
     let status: AdventDayStatus = "locked";
-    if (dayKey > todayKey) status = "locked";
-    else if (dayKey < todayKey) status = score != null ? "played" : "missed";
-    else status = score != null ? "played" : "available";
+
+    if (!isQuiz) status = "locked";
+    else if (dayKey > todayKey) status = "locked";
+    else if (dayKey < joinDayKey) status = "before_join";
+    else if (score != null) status = "played";
+    else if (catchUpDayKey === dayKey) status = "catch_up";
+    else if (dayKey < todayKey) status = "missed";
+    else status = "available";
+
+    const realToday = getZagrebDayKey();
+    if (status === "available" && dayKey === todayKey && realToday === todayKey && !isQuizDayUnlockedNow(dayKey)) {
+      status = "locked";
+    }
+
+    const label = dayKey === getQuizEndDate() ? "Badnjak + kviz" : undefined;
+
     return {
-      dayNumber: index + 1,
+      dayNumber: dayNum,
       dayKey,
       status,
       score,
+      label,
     };
   });
 }
@@ -112,7 +152,7 @@ export const ADVENT_PRIZES_INFO = [
   {
     id: "top3",
     title: "Top 3 na ljestvici",
-    description: "Posebne nagrade za najbolja tri mjesta nakon 24. dana.",
+    description: "Posebne nagrade za najbolja tri mjesta nakon zadnjeg dana kviza (24. 12.).",
     emoji: "🏆",
   },
   {
@@ -123,8 +163,8 @@ export const ADVENT_PRIZES_INFO = [
   },
   {
     id: "draw",
-    title: "Izvlačenje među igračima",
-    description: "Svi koji sudjeluju imaju šansu u nagradnom izvlačenju (prema pravilima kampanje).",
+    title: "Nagradna igra",
+    description: "Jedan klik u nagradnoj igri — nasumični dobitnik među prijavljenima (ne utječe na bodove).",
     emoji: "🎁",
   },
 ] as const;
@@ -133,11 +173,12 @@ export const ADVENT_PRIZES_INFO = [
 export const ADVENT_PRIZES_DEMO = ADVENT_PRIZES_INFO;
 
 export const ADVENT_RULES_SHORT = [
-  "Jedan MojPut račun — jedan pokušaj po adventskom danu.",
-  "Točan odgovor donosi bodove; brži točan odgovor može donijeti vremenski bonus.",
-  "Ljestvica rangira ukupne bodove tijekom sezone (1.–24. prosinca).",
+  "Bodove možeš dobiti isključivo rješavanjem dnevnog kviza — ni referral, ni nagradna igra ne dodaju bodove.",
+  "Jedan MojPut račun — jedan pokušaj po adventskom danu kviza.",
+  "Točan odgovor donosi bodove; brži točan odgovor može donijeti vremenski bonus unutar kviza.",
+  "Kalendar 1.–31. 12.: kviz 5.–24. (zadnji dan Badnjak), 25. 12. Božić (nema kviza), 26. 12. objava konačne ljestvice.",
+  "Došao preko referral linka? Možeš jednom nadoknaditi najraniji propušteni dan nakon prijave.",
   "Za igru trebaš prijavljen i potvrđen MojPut račun.",
-  "Propušteni dan u MVP-u se ne može nadoknaditi — vrati se sutra.",
 ] as const;
 
-export { season as adventSeasonMeta };
+export { adventSeason as adventSeasonMeta };

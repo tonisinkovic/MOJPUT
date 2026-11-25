@@ -6,6 +6,7 @@ const path = require("path");
 const DATA_DIR = path.join(__dirname, "..", "src", "data", "advent-league");
 const SEASON_PATH = path.join(DATA_DIR, "season.json");
 const DAYS_PATH = path.join(DATA_DIR, "advent-days.json");
+const SCORING_PATH = path.join(DATA_DIR, "scoring.json");
 
 function readJson(filePath) {
   return JSON.parse(fs.readFileSync(filePath, "utf8"));
@@ -58,28 +59,87 @@ function validateDayKey(dayKey) {
   return /^\d{4}-\d{2}-\d{2}$/.test(dayKey);
 }
 
+function questionTypeOf(q) {
+  const raw = String(q?.type || "choice").toLowerCase();
+  if (raw === "text" || raw === "open") return "text";
+  if (raw === "distance" || raw === "estimate") return "distance";
+  return "choice";
+}
+
 function validateQuestion(q) {
   if (!q || typeof q !== "object") return "Pitanje mora biti objekt.";
   if (typeof q.index !== "number" || q.index < 0 || q.index >= 10) return "Index mora biti 0-9.";
   if (!q.text || typeof q.text !== "string" || q.text.trim().length < 5) return "Tekst pitanja je obavezan (min 5 znakova).";
-  if (!Array.isArray(q.options) || q.options.length !== 4) return "Pitanje mora imati točno 4 opcije.";
-  for (let i = 0; i < q.options.length; i++) {
-    const opt = q.options[i];
-    if (!opt || typeof opt !== "object") return `Opcija ${i} mora biti objekt.`;
-    if (!opt.id || typeof opt.id !== "string") return `Opcija ${i} mora imati id.`;
-    if (!opt.text || typeof opt.text !== "string" || opt.text.trim().length < 1) return `Opcija ${i} mora imati text.`;
-  }
-  const optIds = q.options.map((o) => o.id);
-  if (new Set(optIds).size !== 4) return "ID opcija moraju biti jedinstveni.";
-  if (!q.correctAnswer || typeof q.correctAnswer !== "string") return "correctAnswer je obavezan.";
-  if (!optIds.includes(q.correctAnswer)) return "correctAnswer mora biti jedan od ID-eva opcija.";
+  const type = questionTypeOf(q);
+  const limit = q.timeLimitSec == null || q.timeLimitSec === "" ? (q.index === 5 ? 10 : 30) : Number(q.timeLimitSec);
+  if (!Number.isFinite(limit) || limit < 5 || limit > 120) return "timeLimitSec mora biti 5–120.";
   if (q.category && typeof q.category !== "string") return "category mora biti string.";
   if (q.explanation && typeof q.explanation !== "string") return "explanation mora biti string.";
   if (q.difficulty != null && q.difficulty !== "") {
     const d = Number(q.difficulty);
     if (!Number.isFinite(d) || d < 1 || d > 5) return "difficulty mora biti broj 1–5.";
   }
+  if (type === "choice") {
+    if (!Array.isArray(q.options) || q.options.length !== 4) return "Pitanje mora imati točno 4 opcije.";
+    for (let i = 0; i < q.options.length; i++) {
+      const opt = q.options[i];
+      if (!opt || typeof opt !== "object") return `Opcija ${i} mora biti objekt.`;
+      if (!opt.id || typeof opt.id !== "string") return `Opcija ${i} mora imati id.`;
+      if (!opt.text || typeof opt.text !== "string" || opt.text.trim().length < 1) return `Opcija ${i} mora imati text.`;
+    }
+    const optIds = q.options.map((o) => o.id);
+    if (new Set(optIds).size !== 4) return "ID opcija moraju biti jedinstveni.";
+    if (!q.correctAnswer || typeof q.correctAnswer !== "string") return "correctAnswer je obavezan.";
+    if (!optIds.includes(q.correctAnswer)) return "correctAnswer mora biti jedan od ID-eva opcija.";
+  } else if (type === "text") {
+    const answers = Array.isArray(q.acceptedAnswers) ? q.acceptedAnswers.map((s) => String(s).trim()).filter(Boolean) : [];
+    if (answers.length < 1) return "Potrebno je barem jedan točan odgovor.";
+  } else if (type === "distance") {
+    const km = Number(q.distanceKm);
+    if (!Number.isFinite(km) || km <= 0) return "distanceKm mora biti pozitivan broj.";
+  }
   return null;
+}
+
+function normalizeQuestion(q) {
+  const validationError = validateQuestion(q);
+  if (validationError) return { error: validationError };
+  const type = questionTypeOf(q);
+  const timeLimitSec = q.timeLimitSec == null || q.timeLimitSec === "" ? (q.index === 5 ? 10 : 30) : Number(q.timeLimitSec);
+  const base = {
+    index: q.index,
+    type,
+    text: String(q.text).trim(),
+    category: q.category ? String(q.category).trim() : "",
+    explanation: q.explanation ? String(q.explanation) : "",
+    timeLimitSec,
+  };
+  if (q.difficulty != null && q.difficulty !== "") base.difficulty = Number(q.difficulty);
+  if (type === "choice") {
+    return {
+      question: {
+        ...base,
+        options: q.options.map((opt) => ({ id: String(opt.id), text: String(opt.text).trim() })),
+        correctAnswer: String(q.correctAnswer),
+      },
+    };
+  }
+  if (type === "text") {
+    return {
+      question: {
+        ...base,
+        options: [],
+        acceptedAnswers: q.acceptedAnswers.map((s) => String(s).trim()).filter(Boolean),
+      },
+    };
+  }
+  return {
+    question: {
+      ...base,
+      options: [],
+      distanceKm: Number(q.distanceKm),
+    },
+  };
 }
 
 function getDayByKey(dayKey) {
@@ -116,8 +176,9 @@ function upsertDay(params) {
 }
 
 function upsertQuestion(dayKey, questionData) {
-  const validationError = validateQuestion(questionData);
-  if (validationError) throw new Error(validationError);
+  const normalized = normalizeQuestion(questionData);
+  if (normalized.error) throw new Error(normalized.error);
+  questionData = normalized.question;
   const data = loadAdventDaysForAdmin();
   const day = data.days.find((d) => d.dayKey === dayKey);
   if (!day) throw new Error(`Dan ${dayKey} ne postoji — najprije kreiraj dan.`);
@@ -267,6 +328,126 @@ async function getLeagueStats(db, { todayKey } = {}) {
   };
 }
 
+function loadScoringForAdmin() {
+  if (!fs.existsSync(SCORING_PATH)) return null;
+  return readJson(SCORING_PATH);
+}
+
+function saveScoringForAdmin(scoring) {
+  if (!scoring || !Array.isArray(scoring.timeBands) || scoring.timeBands.length < 1) {
+    throw new Error("timeBands su obavezni.");
+  }
+  for (const band of scoring.timeBands) {
+    const maxSeconds = Number(band.maxSeconds);
+    const points = Number(band.points);
+    if (!Number.isFinite(maxSeconds) || maxSeconds <= 0 || maxSeconds > 120) throw new Error("maxSeconds mora biti 1–120.");
+    if (!Number.isFinite(points) || points < 0 || points > 100) throw new Error("Bodovi pojasa moraju biti 0–100.");
+  }
+  const distance = scoring.distance || {};
+  const full = Number(distance.fullPointsWithinKm);
+  const percent = Number(distance.zeroBeyondPercent);
+  if (!Number.isFinite(full) || full < 0 || full > 500) throw new Error("fullPointsWithinKm mora biti 0–500.");
+  if (!Number.isFinite(percent) || percent <= 0 || percent > 100) throw new Error("zeroBeyondPercent mora biti 1–100.");
+  const next = {
+    version: Number(scoring.version) || 2,
+    timeBands: scoring.timeBands.map((band) => ({
+      maxSeconds: Number(band.maxSeconds),
+      points: Number(band.points),
+    })),
+    defaultTimeLimitSec: Number(scoring.defaultTimeLimitSec) || 30,
+    easyQuestionIndex: Number(scoring.easyQuestionIndex ?? 5),
+    easyTimeLimitSec: Number(scoring.easyTimeLimitSec) || 10,
+    submitGraceMs: Number(scoring.submitGraceMs) || 1500,
+    minDurationMs: Number(scoring.minDurationMs) || 500,
+    distance: { fullPointsWithinKm: full, zeroBeyondPercent: percent },
+  };
+  writeJson(SCORING_PATH, next);
+  try {
+    const { reloadScoringConfig } = require("./adventLeagueScoring.cjs");
+    reloadScoringConfig();
+  } catch (err) {
+    console.warn("[adventLeagueAdmin] reloadScoringConfig:", err?.message || err);
+  }
+  return next;
+}
+
+async function listAdventResults(db, { dayKey } = {}) {
+  const params = [];
+  let where = "";
+  if (dayKey) {
+    where = "WHERE a.day_key = ?";
+    params.push(dayKey);
+  }
+  const days = await db
+    .prepare(
+      `
+      SELECT a.day_key, u.username, a.total_score, a.questions_correct, a.questions_answered, a.completed, a.submitted_at, a.id as attempt_id
+      FROM advent_day_attempts a
+      INNER JOIN users u ON u.id = a.user_id
+      ${where}
+      ORDER BY a.day_key ASC, a.total_score DESC, u.username ASC
+    `,
+    )
+    .all(...params);
+
+  const answerParams = [];
+  let answerWhere = "";
+  if (dayKey) {
+    answerWhere = "WHERE q.day_key = ?";
+    answerParams.push(dayKey);
+  }
+  const answers = await db
+    .prepare(
+      `
+      SELECT q.id, q.attempt_id, q.day_key, q.question_index, q.selected_answer, q.is_correct, q.score, q.duration_ms, u.username
+      FROM advent_question_answers q
+      INNER JOIN users u ON u.id = q.user_id
+      ${answerWhere}
+      ORDER BY q.day_key ASC, u.username ASC, q.question_index ASC
+    `,
+    )
+    .all(...answerParams);
+
+  return {
+    days: days.map((row) => ({
+      attemptId: row.attempt_id,
+      dayKey: row.day_key,
+      username: row.username,
+      totalScore: Number(row.total_score) || 0,
+      questionsCorrect: Number(row.questions_correct) || 0,
+      questionsAnswered: Number(row.questions_answered) || 0,
+      completed: Boolean(row.completed),
+      submittedAt: row.submitted_at || null,
+    })),
+    answers: answers.map((row) => ({
+      id: row.id,
+      attemptId: row.attempt_id,
+      dayKey: row.day_key,
+      questionIndex: Number(row.question_index),
+      username: row.username,
+      selectedAnswer: row.selected_answer,
+      correct: Boolean(row.is_correct),
+      score: Number(row.score) || 0,
+      durationMs: Number(row.duration_ms) || 0,
+    })),
+  };
+}
+
+async function correctAdventAnswer(db, answerId, { score, isCorrect }) {
+  const id = Number(answerId);
+  const nextScore = Number(score);
+  if (!Number.isInteger(id) || id <= 0) throw new Error("Nevaljan id odgovora.");
+  if (!Number.isFinite(nextScore) || nextScore < 0 || nextScore > 100) throw new Error("Bodovi moraju biti 0–100.");
+  const row = await db.prepare("SELECT attempt_id FROM advent_question_answers WHERE id = ?").get(id);
+  if (!row) throw new Error("Odgovor nije pronađen.");
+  await db
+    .prepare("UPDATE advent_question_answers SET score = ?, is_correct = ? WHERE id = ?")
+    .run(Math.round(nextScore), isCorrect ? 1 : 0, id);
+  const { updateDayAttemptProgress } = require("./adventLeagueDb.cjs");
+  await updateDayAttemptProgress(db, row.attempt_id);
+  return { id, attemptId: row.attempt_id, score: Math.round(nextScore), isCorrect: Boolean(isCorrect) };
+}
+
 module.exports = {
   loadAdventSeasonForAdmin,
   loadAdventDaysForAdmin,
@@ -280,4 +461,8 @@ module.exports = {
   deleteQuestion,
   listAllDays,
   getLeagueStats,
+  loadScoringForAdmin,
+  saveScoringForAdmin,
+  listAdventResults,
+  correctAdventAnswer,
 };

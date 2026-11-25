@@ -19,16 +19,24 @@ const {
   completeDayAttempt,
   getDayAttemptDetails,
   getUserAdventProgress,
-  validateQuestionAnswer,
-  computeQuestionScoreBreakdown,
+  getQuestionOpenedAtMs,
+  openAdventQuestion,
+  isMissingTableError,
 } = require("./adventLeagueDb.cjs");
 const {
-  validateAdventSubmitTiming,
   validateAdventClientQuestionStart,
   capAdventDurationMs,
+  getPublicScoring,
+  resolveTimeLimitSec,
+  ADVENT_MIN_DURATION_MS,
 } = require("./adventLeagueScoring.cjs");
+const { gradeAdventAnswer, questionTypeOf } = require("./adventLeagueGrading.cjs");
 
 const OPTION_IDS = new Set(["a", "b", "c", "d"]);
+
+function devTodayOverrideActive() {
+  return process.env.NODE_ENV !== "production" && Boolean(String(process.env.ADVENT_DEV_TODAY_KEY || "").trim());
+}
 
 function parseIsoMs(value) {
   const t = Date.parse(String(value || ""));
@@ -72,7 +80,12 @@ const {
   deleteQuestion,
   listAllDays,
   getLeagueStats,
+  loadScoringForAdmin,
+  saveScoringForAdmin,
+  listAdventResults,
+  correctAdventAnswer,
 } = require("./adventLeagueAdmin.cjs");
+const { buildResultsPdf, resultsToLines } = require("./adventLeaguePdf.cjs");
 const { previewCsvImport, confirmCsvImport, CSV_TEMPLATE } = require("./adventLeagueCsvImport.cjs");
 const {
   getOrCreateReferralCode,
@@ -87,27 +100,50 @@ const {
   getAdminPrizesPayload,
   savePrizesPartners,
 } = require("./adventLeaguePrizes.cjs");
+const {
+  countQuizDays,
+  getQuizEndDate,
+  isSeasonActiveDay,
+  isDayKeyQuizDay,
+  isQuizDayUnlockedNow,
+} = require("./adventSeason.cjs");
+const {
+  isDayKeyPlayableForUser,
+  getReferralCatchUpDayKey,
+  getUserLeagueJoinDayKey,
+} = require("./adventLeagueCatchUp.cjs");
+const {
+  getDrawStatusForUser,
+  enterPrizeDraw,
+  getDrawStats,
+  listDrawEntrantsForAdmin,
+  pickRandomDrawWinner,
+} = require("./adventLeagueDraw.cjs");
 
 function registerAdventLeagueRoutes(app, db, { authMiddleware, optionalAuthMiddleware, adminMiddleware, getChatDayKey }) {
   app.get("/api/advent/meta", async (_req, res) => {
     try {
       const season = loadAdventSeason();
       const todayKey = resolveTodayDayKey(getChatDayKey);
-      const active = isDayKeyInSeason(todayKey);
+      const active = isSeasonActiveDay(todayKey);
+      const quizActive = isDayKeyQuizDay(todayKey);
       return res.json({
         success: true,
         data: {
           season: {
             year: season.year,
             startDate: season.startDate,
+            quizEndDate: getQuizEndDate(season),
             endDate: season.endDate,
             timezone: season.timezone,
             scoringVersion: season.scoringVersion,
           },
           todayKey,
           active,
-          totalDays: 24,
+          quizActive,
+          totalDays: countQuizDays(season),
           questionsPerDay: ADVENT_QUESTIONS_PER_DAY,
+          scoring: getPublicScoring(),
           serverNow: new Date().toISOString(),
         },
       });
@@ -126,6 +162,10 @@ function registerAdventLeagueRoutes(app, db, { authMiddleware, optionalAuthMiddl
         if (a.completed) scoresByDay[a.day_key] = a.total_score;
       }
       const standing = await getAdventSeasonStandingForUser(db, req.user.id);
+      const todayKey = resolveTodayDayKey(getChatDayKey);
+      const catchUpDayKey = await getReferralCatchUpDayKey(db, req.user.id, todayKey);
+      const joinDayKey = (await getUserLeagueJoinDayKey(db, req.user.id)) || loadAdventSeason().startDate;
+      const prizeDraw = await getDrawStatusForUser(db, req.user.id);
       return res.json({
         success: true,
         data: {
@@ -135,6 +175,9 @@ function registerAdventLeagueRoutes(app, db, { authMiddleware, optionalAuthMiddl
           scoresByDay,
           attempts: progress.attempts,
           seasonRank: standing?.rank ?? null,
+          catchUpDayKey,
+          joinDayKey,
+          prizeDraw,
         },
       });
     } catch (err) {
@@ -222,8 +265,17 @@ function registerAdventLeagueRoutes(app, db, { authMiddleware, optionalAuthMiddl
       if (!dayKey || !isDayKeyInSeason(dayKey)) {
         return apiFail(res, 400, "Nevaljan dan kviza.");
       }
-      if (dayKey !== todayKey) {
+      const open = await isDayKeyPlayableForUser(db, req.user.id, dayKey, todayKey);
+      if (!open) {
         return apiFail(res, 403, "Kviz za ovaj dan još nije otvoren ili je već prošao.", "DAY_NOT_OPEN");
+      }
+      if (dayKey === todayKey && !devTodayOverrideActive() && !isQuizDayUnlockedNow(dayKey)) {
+        return apiFail(
+          res,
+          403,
+          "Današnji kviz još nije otvoren. Prvi dan u 10:00, zatim svaki dan u ponoć (Zagreb).",
+          "DAY_NOT_OPEN",
+        );
       }
       const day = getDayPackage(dayKey);
       if (!day || !Array.isArray(day.questions) || day.questions.length !== ADVENT_QUESTIONS_PER_DAY) {
@@ -280,28 +332,76 @@ function registerAdventLeagueRoutes(app, db, { authMiddleware, optionalAuthMiddl
     }
   });
 
+  app.post("/api/advent/question-open", authMiddleware, async (req, res) => {
+    try {
+      const attemptId = Number(req.body?.attemptId);
+      const dayKey = String(req.body?.dayKey || "").trim();
+      const questionIndex = Number(req.body?.questionIndex);
+      const todayKey = resolveTodayDayKey(getChatDayKey);
+      if (!attemptId || !dayKey || !Number.isInteger(questionIndex)) {
+        return apiFail(res, 400, "Nedostaju podaci pitanja.");
+      }
+      const openDay = await isDayKeyPlayableForUser(db, req.user.id, dayKey, todayKey);
+      if (!openDay) return apiFail(res, 403, "Kviz nije otvoren za ovaj dan.", "DAY_NOT_OPEN");
+      if (questionIndex < 0 || questionIndex >= ADVENT_QUESTIONS_PER_DAY) {
+        return apiFail(res, 400, "Nevaljan indeks pitanja.");
+      }
+      const attempt = await getAttemptForUser(db, attemptId, req.user.id);
+      if (!attempt) return apiFail(res, 403, "Pokušaj nije pronađen.");
+      if (attempt.day_key !== dayKey) return apiFail(res, 400, "Dan ne odgovara pokušaju.");
+      if (attempt.completed) return apiFail(res, 409, "Kviz je već završen.", "ALREADY_COMPLETED");
+      if (questionIndex !== attempt.questions_answered) {
+        return apiFail(res, 400, "Odgovori na pitanja redom.", "OUT_OF_ORDER");
+      }
+      const question = getFullQuestion(dayKey, questionIndex);
+      if (!question) return apiFail(res, 404, "Pitanje nije pronađeno.");
+      let openedAt;
+      try {
+        openedAt = await openAdventQuestion(db, attemptId, questionIndex);
+      } catch (err) {
+        if (isMissingTableError(err)) {
+          openedAt = new Date().toISOString();
+        } else {
+          throw err;
+        }
+      }
+      return res.json({
+        success: true,
+        data: {
+          openedAt,
+          serverNow: new Date().toISOString(),
+          timeLimitSec: resolveTimeLimitSec(question),
+          questionIndex,
+        },
+      });
+    } catch (err) {
+      console.error("[advent/question-open]", err);
+      return apiFail(res, 500, "Ne mogu otvoriti pitanje.");
+    }
+  });
+
   app.post("/api/advent/answer", authMiddleware, async (req, res) => {
     try {
       const attemptId = Number(req.body?.attemptId);
       const dayKey = String(req.body?.dayKey || "").trim();
       const questionIndex = Number(req.body?.questionIndex);
-      const selectedAnswer = String(req.body?.selectedAnswer || "")
-        .toLowerCase()
-        .trim();
+      const rawAnswer = String(req.body?.selectedAnswer ?? "").trim().slice(0, 200);
       const questionStartedAt = req.body?.questionStartedAt;
+      const timedOut = Boolean(req.body?.timedOut);
 
       const todayKey = resolveTodayDayKey(getChatDayKey);
       if (!attemptId || !dayKey || !Number.isInteger(questionIndex)) {
         return apiFail(res, 400, "Nedostaju podaci odgovora.");
       }
-      if (dayKey !== todayKey) {
+      const openAnswer = await isDayKeyPlayableForUser(db, req.user.id, dayKey, todayKey);
+      if (!openAnswer) {
         return apiFail(res, 403, "Kviz nije otvoren za ovaj dan.", "DAY_NOT_OPEN");
+      }
+      if (dayKey === todayKey && !devTodayOverrideActive() && !isQuizDayUnlockedNow(dayKey)) {
+        return apiFail(res, 403, "Današnji kviz još nije otvoren.", "DAY_NOT_OPEN");
       }
       if (questionIndex < 0 || questionIndex >= ADVENT_QUESTIONS_PER_DAY) {
         return apiFail(res, 400, "Nevaljan indeks pitanja.");
-      }
-      if (!OPTION_IDS.has(selectedAnswer)) {
-        return apiFail(res, 400, "Odaberi jednu od ponuđenih opcija.");
       }
 
       const attempt = await getAttemptForUser(db, attemptId, req.user.id);
@@ -314,24 +414,43 @@ function registerAdventLeagueRoutes(app, db, { authMiddleware, optionalAuthMiddl
         return apiFail(res, 400, "Odgovori na pitanja redom.", "OUT_OF_ORDER");
       }
 
-      const serverAnchorMs = await getQuestionTimingAnchorMs(db, attemptId, questionIndex);
+      const question = getFullQuestion(dayKey, questionIndex);
+      if (!question) return apiFail(res, 404, "Pitanje nije pronađeno.");
+
+      const openedMs = await getQuestionOpenedAtMs(db, attemptId, questionIndex);
+      const fallbackMs = await getQuestionTimingAnchorMs(db, attemptId, questionIndex);
+      const serverAnchorMs = Number.isFinite(openedMs) ? openedMs : fallbackMs;
       const submittedMs = Date.now();
       if (!Number.isFinite(serverAnchorMs)) {
         return apiFail(res, 400, "Prethodno pitanje nije odgovoreno.", "OUT_OF_ORDER");
       }
-      const timingError = validateAdventSubmitTiming(serverAnchorMs, submittedMs);
-      if (timingError) return apiFail(res, 400, timingError, "INVALID_TIMING");
-
       const clientStartedMs = parseIsoMs(questionStartedAt);
       const clientTimingError = validateAdventClientQuestionStart(clientStartedMs, serverAnchorMs, submittedMs);
       if (clientTimingError) return apiFail(res, 400, clientTimingError, "INVALID_TIMING");
 
-      const question = getFullQuestion(dayKey, questionIndex);
-      if (!question) return apiFail(res, 404, "Pitanje nije pronađeno.");
-
-      const isCorrect = validateQuestionAnswer(question, selectedAnswer);
       const durationMs = capAdventDurationMs(submittedMs - serverAnchorMs);
-      const breakdown = computeQuestionScoreBreakdown(isCorrect, durationMs);
+      const limitMs = resolveTimeLimitSec(question) * 1000;
+      const graceMs = 1500;
+      if (timedOut && durationMs + 750 < limitMs) {
+        return apiFail(res, 400, "Vrijeme za ovo pitanje još nije isteklo.", "TOO_EARLY");
+      }
+      const expired = timedOut || durationMs > limitMs + graceMs;
+      if (!expired && durationMs < ADVENT_MIN_DURATION_MS) {
+        return apiFail(res, 400, "Odgovor je prebrz (sumnja na automatizirani unos).", "INVALID_TIMING");
+      }
+
+      const type = questionTypeOf(question);
+      let selectedAnswer = rawAnswer;
+      if (!expired && type === "choice") {
+        selectedAnswer = rawAnswer.toLowerCase();
+        if (!OPTION_IDS.has(selectedAnswer)) {
+          return apiFail(res, 400, "Odaberi jednu od ponuđenih opcija.");
+        }
+      }
+
+      const graded = gradeAdventAnswer(question, selectedAnswer, Math.min(durationMs, limitMs), { expired });
+      const isCorrect = graded.correct;
+      const breakdown = graded.breakdown;
 
       try {
         await saveQuestionAnswer(db, {
@@ -363,7 +482,9 @@ function registerAdventLeagueRoutes(app, db, { authMiddleware, optionalAuthMiddl
             baseScore: breakdown.baseScore,
             timeBonus: breakdown.timeBonus,
           },
-          explanation: isCorrect ? question.explanation || null : null,
+          explanation: graded.score > 0 ? question.explanation || graded.detail || null : null,
+          detail: graded.detail || null,
+          timedOut: Boolean(graded.timedOut),
           progress: {
             answered: progress.answered,
             total: ADVENT_QUESTIONS_PER_DAY,
@@ -385,8 +506,12 @@ function registerAdventLeagueRoutes(app, db, { authMiddleware, optionalAuthMiddl
       const todayKey = resolveTodayDayKey(getChatDayKey);
 
       if (!attemptId || !dayKey) return apiFail(res, 400, "Nedostaju podaci.");
-      if (dayKey !== todayKey) {
+      const openComplete = await isDayKeyPlayableForUser(db, req.user.id, dayKey, todayKey);
+      if (!openComplete) {
         return apiFail(res, 403, "Kviz nije otvoren za ovaj dan.", "DAY_NOT_OPEN");
+      }
+      if (dayKey === todayKey && !devTodayOverrideActive() && !isQuizDayUnlockedNow(dayKey)) {
+        return apiFail(res, 403, "Današnji kviz još nije otvoren.", "DAY_NOT_OPEN");
       }
 
       const attempt = await getAttemptForUser(db, attemptId, req.user.id);
@@ -440,13 +565,14 @@ function registerAdventLeagueRoutes(app, db, { authMiddleware, optionalAuthMiddl
 
       const todayKey = resolveTodayDayKey(getChatDayKey);
       const access = await validateDayAttemptAccess(db, req.user.id, dayKey);
+      const isOpen = await isDayKeyPlayableForUser(db, req.user.id, dayKey, todayKey);
 
       return res.json({
         success: true,
         data: {
           dayKey,
           isToday: dayKey === todayKey,
-          isOpen: dayKey === todayKey,
+          isOpen,
           hasAttempt: access.exists,
           completed: access.completed,
         },
@@ -515,6 +641,26 @@ function registerAdventLeagueRoutes(app, db, { authMiddleware, optionalAuthMiddl
     }
   });
 
+  app.get("/api/advent/draw/me", authMiddleware, async (req, res) => {
+    try {
+      const status = await getDrawStatusForUser(db, req.user.id);
+      return res.json({ success: true, data: status });
+    } catch (err) {
+      console.error("[advent/draw/me]", err);
+      return apiFail(res, 500, "Ne mogu učitati nagradnu igru.");
+    }
+  });
+
+  app.post("/api/advent/draw/enter", authMiddleware, async (req, res) => {
+    try {
+      const result = await enterPrizeDraw(db, req.user.id);
+      return res.json({ success: true, data: result });
+    } catch (err) {
+      console.error("[advent/draw/enter]", err);
+      return apiFail(res, 500, "Prijava u nagradnu igru nije uspjela.");
+    }
+  });
+
   // =====================
   // ADMIN RUTE
   // =====================
@@ -531,12 +677,19 @@ function registerAdventLeagueRoutes(app, db, { authMiddleware, optionalAuthMiddl
 
   app.put("/api/admin/advent/season", adminMiddleware, async (req, res) => {
     try {
-      const { year, startDate, endDate, timezone, scoringVersion } = req.body || {};
+      const { year, startDate, endDate, quizEndDate, timezone, scoringVersion } = req.body || {};
       if (!year || typeof year !== "number") return apiFail(res, 400, "year je obavezan.");
       if (!startDate || !/^\d{4}-\d{2}-\d{2}$/.test(startDate)) return apiFail(res, 400, "startDate format: YYYY-MM-DD.");
       if (!endDate || !/^\d{4}-\d{2}-\d{2}$/.test(endDate)) return apiFail(res, 400, "endDate format: YYYY-MM-DD.");
       if (!timezone || typeof timezone !== "string") return apiFail(res, 400, "timezone je obavezan.");
-      const season = { year, startDate, endDate, timezone, scoringVersion: scoringVersion ?? 1 };
+      const season = {
+        year,
+        startDate,
+        endDate,
+        quizEndDate: quizEndDate && /^\d{4}-\d{2}-\d{2}$/.test(quizEndDate) ? quizEndDate : endDate,
+        timezone,
+        scoringVersion: scoringVersion ?? 1,
+      };
       saveAdventSeason(season);
       return res.json({ success: true, data: season });
     } catch (err) {
@@ -633,6 +786,40 @@ function registerAdventLeagueRoutes(app, db, { authMiddleware, optionalAuthMiddl
     }
   });
 
+  app.get("/api/admin/advent/draw/stats", adminMiddleware, async (_req, res) => {
+    try {
+      const stats = await getDrawStats(db);
+      return res.json({ success: true, data: stats });
+    } catch (err) {
+      console.error("[admin/advent/draw/stats]", err);
+      return apiFail(res, 500, "Ne mogu učitati nagradnu igru.");
+    }
+  });
+
+  app.get("/api/admin/advent/draw/entrants", adminMiddleware, async (req, res) => {
+    try {
+      const limit = Number(req.query.limit) || 200;
+      const entrants = await listDrawEntrantsForAdmin(db, limit);
+      return res.json({ success: true, data: { entrants, total: entrants.length } });
+    } catch (err) {
+      console.error("[admin/advent/draw/entrants]", err);
+      return apiFail(res, 500, "Ne mogu učitati prijave.");
+    }
+  });
+
+  app.post("/api/admin/advent/draw/pick", adminMiddleware, async (req, res) => {
+    try {
+      const result = await pickRandomDrawWinner(db, req.user.id);
+      if (!result.ok) {
+        return apiFail(res, 400, result.message || "Izvlačenje nije uspjelo.", result.code);
+      }
+      return res.json({ success: true, data: result });
+    } catch (err) {
+      console.error("[admin/advent/draw/pick]", err);
+      return apiFail(res, 500, "Izvlačenje nije uspjelo.");
+    }
+  });
+
   app.get("/api/admin/advent/prizes-partners", adminMiddleware, async (_req, res) => {
     try {
       const data = getAdminPrizesPayload();
@@ -655,6 +842,79 @@ function registerAdventLeagueRoutes(app, db, { authMiddleware, optionalAuthMiddl
         message: err?.message || "Spremanje nije uspjelo.",
         data: details ? { errors: details } : undefined,
       });
+    }
+  });
+
+  app.get("/api/admin/advent/scoring", adminMiddleware, async (_req, res) => {
+    try {
+      const scoring = loadScoringForAdmin();
+      if (!scoring) return apiFail(res, 404, "Bodovanje nije pronađeno.");
+      return res.json({ success: true, data: scoring });
+    } catch (err) {
+      console.error("[admin/advent/scoring]", err);
+      return apiFail(res, 500, "Ne mogu učitati bodovanje.");
+    }
+  });
+
+  app.put("/api/admin/advent/scoring", adminMiddleware, async (req, res) => {
+    try {
+      const saved = saveScoringForAdmin(req.body || {});
+      return res.json({ success: true, data: saved });
+    } catch (err) {
+      console.error("[admin/advent/scoring PUT]", err?.message || err);
+      return apiFail(res, 400, err?.message || "Ne mogu spremiti bodovanje.");
+    }
+  });
+
+  app.get("/api/admin/advent/results", adminMiddleware, async (req, res) => {
+    try {
+      const dayKey = String(req.query?.dayKey || "").trim();
+      const data = await listAdventResults(db, { dayKey: dayKey || undefined });
+      return res.json({ success: true, data });
+    } catch (err) {
+      console.error("[admin/advent/results]", err);
+      return apiFail(res, 500, "Ne mogu učitati rezultate.");
+    }
+  });
+
+  app.get("/api/admin/advent/results/export", adminMiddleware, async (req, res) => {
+    try {
+      const dayKey = String(req.query?.dayKey || "").trim();
+      const format = String(req.query?.format || "csv").toLowerCase();
+      const report = await listAdventResults(db, { dayKey: dayKey || undefined });
+      if (format === "pdf") {
+        const pdf = buildResultsPdf(resultsToLines(report));
+        res.setHeader("Content-Type", "application/pdf");
+        res.setHeader("Content-Disposition", 'attachment; filename="advent-rezultati.pdf"');
+        return res.send(pdf);
+      }
+      const header = "day_key,username,question_index,selected_answer,correct,score,duration_ms\n";
+      const rows = report.answers.map((answer) =>
+        [answer.dayKey, answer.username, answer.questionIndex + 1, `"${String(answer.selectedAnswer || "").replace(/"/g, '""')}"`, answer.correct ? 1 : 0, answer.score, answer.durationMs].join(","),
+      );
+      const dayHeader = "\nday_key,username,total_score,questions_correct,completed\n";
+      const dayRows = report.days.map((day) =>
+        [day.dayKey, day.username, day.totalScore, day.questionsCorrect, day.completed ? 1 : 0].join(","),
+      );
+      res.setHeader("Content-Type", "text/csv; charset=utf-8");
+      res.setHeader("Content-Disposition", 'attachment; filename="advent-rezultati.csv"');
+      return res.send(`\uFEFF${header}${rows.join("\n")}${dayHeader}${dayRows.join("\n")}\n`);
+    } catch (err) {
+      console.error("[admin/advent/results/export]", err);
+      return apiFail(res, 500, "Izvoz rezultata nije uspio.");
+    }
+  });
+
+  app.put("/api/admin/advent/answers/:id", adminMiddleware, async (req, res) => {
+    try {
+      const updated = await correctAdventAnswer(db, req.params.id, {
+        score: req.body?.score,
+        isCorrect: Boolean(req.body?.isCorrect),
+      });
+      return res.json({ success: true, data: updated });
+    } catch (err) {
+      console.error("[admin/advent/answers PUT]", err?.message || err);
+      return apiFail(res, 400, err?.message || "Ispravak nije spremljen.");
     }
   });
 

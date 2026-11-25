@@ -28,7 +28,7 @@ export function AdventCountdown() {
 
   if (target.phase === "after" || !target.targetIso) {
     return (
-      <div className="advent-glass rounded-2xl px-4 py-4 text-center">
+      <div className="advent-glass mx-auto w-full max-w-xl rounded-2xl px-4 py-4 text-center">
         <p className="text-sm font-extrabold text-[hsl(var(--advent-ivory))]">Hvala svima koji su igrali ovu sezonu!</p>
         <p className="mt-1 text-xs font-medium text-[hsl(var(--advent-frost)/0.5)]">Ljestvica i nagrade ostaju vidljive u povijesti lige.</p>
       </div>
@@ -40,7 +40,7 @@ export function AdventCountdown() {
 
   return (
     <div
-      className="advent-glass-gold rounded-2xl px-4 py-4 sm:px-5 sm:py-5"
+      className="advent-glass-gold mx-auto w-full max-w-xl rounded-2xl px-4 py-4 sm:px-5 sm:py-5"
       aria-live="polite"
       aria-atomic
     >
@@ -49,7 +49,7 @@ export function AdventCountdown() {
         {target.label}
       </div>
       <div className="flex flex-wrap justify-center gap-2 sm:gap-3">
-        {target.phase === "before" ? <CountdownUnit value={parts.days} label="dana" /> : null}
+        {parts.days > 0 ? <CountdownUnit value={parts.days} label="dana" /> : null}
         <CountdownUnit value={parts.hours} label="sati" />
         <CountdownUnit value={parts.minutes} label="min" />
         <CountdownUnit value={parts.seconds} label="sek" />

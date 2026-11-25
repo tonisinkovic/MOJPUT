@@ -24,7 +24,7 @@ Mjerimo koliko korisnika dolazi dijeljenjem rezultata i pozivnih linkova. **Ne u
    `POST /api/advent/referral/claim` s kodom iz storagea
 2. Jedan referral po novom korisniku (`advent_referral_signups.referred_user_id` UNIQUE)
 3. Samoreferecija blokirana; claim samo u prvih **72 h** nakon kreiranja računa
-4. Ne mijenja bodove ni rang u ligi
+4. Ne dodaje bodove na ljestvici — ali novi korisnik može **jednom nadoknaditi** najraniji propušteni dan kviza nakon prijave (server: `getReferralCatchUpDayKey`).
 
 ## Zaštita od manipulacije
 

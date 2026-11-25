@@ -2,7 +2,8 @@
 
 const fs = require("fs");
 const path = require("path");
-const { sanitizeQuestionForClient } = require("./adventLeagueDb.cjs");
+const { questionTypeOf } = require("./adventLeagueGrading.cjs");
+const { resolveTimeLimitSec } = require("./adventLeagueScoring.cjs");
 
 const DATA_DIR = path.join(__dirname, "..", "src", "data", "advent-league");
 const SEASON_PATH = path.join(DATA_DIR, "season.json");
@@ -38,9 +39,18 @@ function reloadAdventLeagueData() {
   return { season: loadAdventSeason(), days: loadAdventDaysByKey() };
 }
 
+const {
+  isDayKeyQuizDay,
+  isDayKeyInCalendar,
+  listQuizDayKeys,
+  countQuizDays,
+  getQuizEndDate,
+  getCalendarEndDate,
+} = require("./adventSeason.cjs");
+
+/** Kviz se može igrati samo na danima s pitanjima (ne uključuje npr. 25.12.). */
 function isDayKeyInSeason(dayKey) {
-  const season = loadAdventSeason();
-  return dayKey >= season.startDate && dayKey <= season.endDate;
+  return isDayKeyQuizDay(dayKey);
 }
 
 function resolveTodayDayKey(getChatDayKey) {
@@ -58,11 +68,16 @@ function getDayPackage(dayKey) {
 }
 
 function mapQuestionClientShape(q) {
-  return sanitizeQuestionForClient({
+  const type = questionTypeOf(q);
+  return {
     index: q.index,
     questionText: q.text,
-    options: q.options,
-  });
+    type,
+    timeLimitSec: resolveTimeLimitSec(q),
+    category: q.category || null,
+    options: type === "choice" && Array.isArray(q.options) ? q.options : [],
+    unit: type === "distance" ? "km" : null,
+  };
 }
 
 function getSanitizedDayQuestions(dayKey) {
@@ -84,6 +99,11 @@ module.exports = {
   loadAdventDaysByKey,
   reloadAdventLeagueData,
   isDayKeyInSeason,
+  isDayKeyInCalendar,
+  listQuizDayKeys,
+  countQuizDays,
+  getQuizEndDate,
+  getCalendarEndDate,
   resolveTodayDayKey,
   getDayPackage,
   getSanitizedDayQuestions,

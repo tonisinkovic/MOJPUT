@@ -4,6 +4,7 @@ import type { AdventClientQuestion } from "@/lib/adventLeagueApi";
 type AdventQuizConfirmPanelProps = {
   question: AdventClientQuestion;
   selectedId: string;
+  answerLabel: string;
   submitting?: boolean;
   onBack: () => void;
   onSubmit: () => void;
@@ -12,11 +13,13 @@ type AdventQuizConfirmPanelProps = {
 export function AdventQuizConfirmPanel({
   question,
   selectedId,
+  answerLabel,
   submitting,
   onBack,
   onSubmit,
 }: AdventQuizConfirmPanelProps) {
   const option = question.options.find((o) => o.id === selectedId);
+  const isChoice = question.type !== "text" && question.type !== "distance";
 
   return (
     <div className="advent-glass-gold rounded-2xl p-5 sm:p-6">
@@ -28,11 +31,13 @@ export function AdventQuizConfirmPanel({
         Nakon slanja ne možeš promijeniti odgovor na ovom pitanju.
       </p>
       <div className="advent-glass rounded-xl px-4 py-3 mt-4 flex items-center gap-3">
-        <span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-[hsl(var(--advent-gold))] text-xs font-extrabold text-[hsl(var(--advent-midnight))] shrink-0">
-          {selectedId.toUpperCase()}
-        </span>
+        {isChoice ? (
+          <span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-[hsl(var(--advent-gold))] text-xs font-extrabold text-[hsl(var(--advent-midnight))] shrink-0">
+            {selectedId.toUpperCase()}
+          </span>
+        ) : null}
         <span className="text-sm font-semibold leading-relaxed" style={{ color: "hsl(var(--advent-ivory))" }}>
-          {option?.text ?? "—"}
+          {isChoice ? option?.text ?? "—" : answerLabel}
         </span>
       </div>
       <div className="mt-6 flex flex-col gap-3 sm:flex-row">

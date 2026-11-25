@@ -1,0 +1,20 @@
+{
+  "version": 2,
+  "timeBands": [
+    { "maxSeconds": 5, "points": 100 },
+    { "maxSeconds": 10, "points": 90 },
+    { "maxSeconds": 15, "points": 80 },
+    { "maxSeconds": 20, "points": 70 },
+    { "maxSeconds": 25, "points": 60 },
+    { "maxSeconds": 30, "points": 50 }
+  ],
+  "defaultTimeLimitSec": 30,
+  "easyQuestionIndex": 5,
+  "easyTimeLimitSec": 10,
+  "submitGraceMs": 1500,
+  "minDurationMs": 500,
+  "distance": {
+    "fullPointsWithinKm": 15,
+    "zeroBeyondPercent": 40
+  }
+}

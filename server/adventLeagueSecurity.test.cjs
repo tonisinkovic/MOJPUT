@@ -61,6 +61,17 @@ function createTestDb() {
       day_key TEXT NOT NULL,
       created_at TEXT NOT NULL DEFAULT (datetime('now'))
     );
+    CREATE TABLE IF NOT EXISTS advent_prize_draw_entries (
+      user_id INTEGER PRIMARY KEY,
+      joined_at TEXT NOT NULL DEFAULT (datetime('now'))
+    );
+    CREATE TABLE IF NOT EXISTS advent_prize_draw_winners (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      user_id INTEGER NOT NULL,
+      picked_at TEXT NOT NULL DEFAULT (datetime('now')),
+      picked_by_admin_id INTEGER,
+      random_seed TEXT
+    );
     CREATE TABLE advent_referral_signups (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       referral_code TEXT NOT NULL,
@@ -183,7 +194,7 @@ describe("adventLeagueSecurity", () => {
   let dbCtx;
   let token1;
   let token2;
-  const dayKey = "2026-12-01";
+  const dayKey = "2026-12-08";
 
   before(async () => {
     process.env.ADVENT_DEV_TODAY_KEY = dayKey;
@@ -214,6 +225,8 @@ describe("adventLeagueSecurity", () => {
     const res = await requestJson(server, "POST", "/api/advent/start", { dayKey }, token1);
     assert.equal(res.status, 200);
     assert.ok(!res.json.data.questions[0].correctAnswer);
+    assert.equal(res.json.data.questions[0].acceptedAnswers, undefined);
+    assert.equal(res.json.data.questions[0].distanceKm, undefined);
   });
 
   it("odbija odgovor na tuđi attempt", async () => {

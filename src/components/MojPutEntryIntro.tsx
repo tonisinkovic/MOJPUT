@@ -671,7 +671,7 @@ function GiveawayCard() {
           textShadow: "0 2px 16px hsl(38 92% 58% / 0.6), 0 4px 24px hsl(350 70% 52% / 0.3)",
         }}
       >
-        🎄 24 dana
+        🎄 20 dana
         <br />
         <span
           style={{

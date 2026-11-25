@@ -1,9 +1,49 @@
 "use strict";
 
+const fs = require("fs");
+const path = require("path");
+
 const ADVENT_DURATION_CAP_MS = 120_000;
 const ADVENT_MIN_DURATION_MS = 500;
 const ADVENT_MAX_START_AGE_MS = 15 * 60 * 1000;
 const ADVENT_CLIENT_CLOCK_SKEW_MS = 5_000;
+const SCORING_PATH = path.join(__dirname, "..", "src", "data", "advent-league", "scoring.json");
+
+const DEFAULT_CONFIG = {
+  version: 2,
+  timeBands: [
+    { maxSeconds: 5, points: 100 },
+    { maxSeconds: 10, points: 90 },
+    { maxSeconds: 15, points: 80 },
+    { maxSeconds: 20, points: 70 },
+    { maxSeconds: 25, points: 60 },
+    { maxSeconds: 30, points: 50 },
+  ],
+  defaultTimeLimitSec: 30,
+  easyQuestionIndex: 5,
+  easyTimeLimitSec: 10,
+  submitGraceMs: 1500,
+  minDurationMs: 500,
+  distance: { fullPointsWithinKm: 15, zeroBeyondPercent: 40 },
+};
+
+let cachedConfig = null;
+
+function loadScoringConfig() {
+  if (cachedConfig) return cachedConfig;
+  try {
+    const parsed = JSON.parse(fs.readFileSync(SCORING_PATH, "utf8"));
+    cachedConfig = { ...DEFAULT_CONFIG, ...parsed, distance: { ...DEFAULT_CONFIG.distance, ...(parsed.distance || {}) } };
+  } catch {
+    cachedConfig = DEFAULT_CONFIG;
+  }
+  return cachedConfig;
+}
+
+function reloadScoringConfig() {
+  cachedConfig = null;
+  return loadScoringConfig();
+}
 
 function capAdventDurationMs(durationMs) {
   if (!Number.isFinite(durationMs)) return ADVENT_DURATION_CAP_MS;
@@ -11,58 +51,40 @@ function capAdventDurationMs(durationMs) {
   return Math.min(durationMs, ADVENT_DURATION_CAP_MS);
 }
 
-/**
- * Bodovanje za jedno pitanje advent kviza.
- * 
- * PRAVILA (deterministička):
- * - Netočan odgovor: 0 bodova (brzina ne utječe)
- * - Točan odgovor: 70-100 bodova ovisno o brzini
- * 
- * ZNANJE je primarno (garantiranih 70 bodova za točan odgovor),
- * BRZINA je sekundarna (do +30 bodova za vrlo brz odgovor).
- * 
- * Vremenska ljestvica (linearna interpolacija između točaka):
- *   ≤ 5s   → 100 bodova (instant recall)
- *   ≤ 15s  → 95 bodova  (vrlo brzo)
- *   ≤ 30s  → 85 bodova  (prosječno)
- *   ≤ 60s  → 75 bodova  (sporije, ali znanje je tu)
- *   > 60s  → 70 bodova  (bazni minimum za točan odgovor)
- * 
- * @returns {Object} { baseScore: 70-100 za točan ili 0, timeBonus: uvijek 0 (uračunato u base), totalScore }
- */
-function computeAdventDayScore({ correct, durationMs }) {
-  if (!correct) {
-    return { baseScore: 0, timeBonus: 0, totalScore: 0 };
-  }
+function zeroScore() {
+  return { baseScore: 0, timeBonus: 0, totalScore: 0 };
+}
 
+/**
+ * Bodovanje točnog odgovora po vremenskim pojasevima.
+ * 0–5 s → 100, 6–10 → 90, 11–15 → 80, 16–20 → 70, 21–25 → 60, 26–30 → 50.
+ * Nakon timeLimitSec (ili nakon zadnjeg pojasa) točan odgovor više ne donosi bodove.
+ */
+function computeAdventDayScore({ correct, durationMs, timeLimitSec }) {
+  if (!correct) return zeroScore();
+
+  const config = loadScoringConfig();
   const capped = capAdventDurationMs(durationMs);
   const durationSec = capped / 1000;
+  const limit = Number(timeLimitSec);
+  if (Number.isFinite(limit) && limit > 0 && durationSec > limit) return zeroScore();
 
-  let score;
-  if (durationSec <= 5) {
-    score = 100;
-  } else if (durationSec <= 15) {
-    // Linearna interpolacija 100 → 95 za 5s → 15s
-    score = 100 - ((durationSec - 5) / 10) * 5;
-  } else if (durationSec <= 30) {
-    // Linearna interpolacija 95 → 85 za 15s → 30s
-    score = 95 - ((durationSec - 15) / 15) * 10;
-  } else if (durationSec <= 60) {
-    // Linearna interpolacija 85 → 75 za 30s → 60s
-    score = 85 - ((durationSec - 30) / 30) * 10;
-  } else {
-    // > 60s → bazni minimum
-    score = 70;
+  const bands = Array.isArray(config.timeBands) && config.timeBands.length ? config.timeBands : DEFAULT_CONFIG.timeBands;
+  for (const band of bands) {
+    if (durationSec <= Number(band.maxSeconds)) {
+      const points = Number(band.points) || 0;
+      return { baseScore: points, timeBonus: 0, totalScore: points };
+    }
   }
+  return zeroScore();
+}
 
-  // Zaokruži na cijeli broj
-  score = Math.round(score);
-
-  return {
-    baseScore: score,
-    timeBonus: 0, // Već uračunato u baseScore
-    totalScore: score,
-  };
+function resolveTimeLimitSec(question) {
+  const config = loadScoringConfig();
+  const explicit = Number(question?.timeLimitSec);
+  if (Number.isFinite(explicit) && explicit >= 5) return explicit;
+  if (Number(question?.index) === Number(config.easyQuestionIndex)) return Number(config.easyTimeLimitSec) || 10;
+  return Number(config.defaultTimeLimitSec) || 30;
 }
 
 function validateAdventSubmitTiming(startedAtMs, submittedAtMs) {
@@ -73,7 +95,6 @@ function validateAdventSubmitTiming(startedAtMs, submittedAtMs) {
   return null;
 }
 
-/** Odbija očito lažno klijentsko questionStartedAt (bonus manipulacija). */
 function validateAdventClientQuestionStart(clientStartedMs, serverAnchorMs, submittedAtMs) {
   if (!Number.isFinite(clientStartedMs)) return null;
   if (!Number.isFinite(serverAnchorMs)) return "Nedostaje referentno vrijeme pitanja.";
@@ -86,6 +107,21 @@ function validateAdventClientQuestionStart(clientStartedMs, serverAnchorMs, subm
   return null;
 }
 
+function getPublicScoring() {
+  const config = loadScoringConfig();
+  return {
+    version: config.version,
+    timeBands: config.timeBands,
+    defaultTimeLimitSec: config.defaultTimeLimitSec,
+    easyQuestionIndex: config.easyQuestionIndex,
+    easyTimeLimitSec: config.easyTimeLimitSec,
+    distance: {
+      fullPointsWithinKm: config.distance.fullPointsWithinKm,
+      zeroBeyondPercent: config.distance.zeroBeyondPercent,
+    },
+  };
+}
+
 module.exports = {
   ADVENT_DURATION_CAP_MS,
   ADVENT_MIN_DURATION_MS,
@@ -96,4 +132,8 @@ module.exports = {
   computeAdventDayScore,
   validateAdventSubmitTiming,
   validateAdventClientQuestionStart,
+  loadScoringConfig,
+  reloadScoringConfig,
+  resolveTimeLimitSec,
+  getPublicScoring,
 };

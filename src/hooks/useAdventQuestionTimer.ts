@@ -1,8 +1,15 @@
 import { useEffect, useState } from "react";
+import { adventBandHint } from "@/lib/adventLeagueScoring";
 
-/** Prikaz timera po pitanju (klijent samo za UI — bodovi idu preko servera). */
-export function useAdventQuestionTimer(active: boolean, startedAtMs: number | null) {
+/** Odbrojavanje po pitanju. Bodovi se računaju na serveru. */
+export function useAdventQuestionTimer(
+  active: boolean,
+  startedAtMs: number | null,
+  timeLimitSec = 30,
+  mode: "timed" | "distance" = "timed",
+) {
   const [elapsedMs, setElapsedMs] = useState(0);
+  const limitMs = Math.max(5, timeLimitSec) * 1000;
 
   useEffect(() => {
     if (!active || startedAtMs == null) {
@@ -11,18 +18,20 @@ export function useAdventQuestionTimer(active: boolean, startedAtMs: number | nu
     }
     const tick = () => setElapsedMs(Math.max(0, Date.now() - startedAtMs));
     tick();
-    const id = window.setInterval(tick, 250);
+    const id = window.setInterval(tick, 200);
     return () => window.clearInterval(id);
   }, [active, startedAtMs]);
 
-  const seconds = Math.floor(elapsedMs / 1000);
-  
-  let bonusHint: string;
-  if (seconds <= 5) bonusHint = "100 bodova";
-  else if (seconds <= 15) bonusHint = "95-100 bodova";
-  else if (seconds <= 30) bonusHint = "85-95 bodova";
-  else if (seconds <= 60) bonusHint = "75-85 bodova";
-  else bonusHint = "70 bodova (min)";
+  const elapsedSec = elapsedMs / 1000;
+  const remainingMs = Math.max(0, limitMs - elapsedMs);
+  const remainingSeconds = Math.ceil(remainingMs / 1000);
+  const expired = active && startedAtMs != null && remainingMs <= 0;
 
-  return { elapsedMs, seconds, bonusHint };
+  return {
+    elapsedMs,
+    seconds: Math.floor(elapsedSec),
+    remainingSeconds,
+    expired,
+    bonusHint: adventBandHint(elapsedSec, mode),
+  };
 }

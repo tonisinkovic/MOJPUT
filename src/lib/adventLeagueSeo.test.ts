@@ -25,8 +25,8 @@ describe("adventLeagueSeo", () => {
     const ld = ADVENT_SEO.landing.jsonLd;
     expect(ld).toBeTruthy();
     const about = ld?.about as { startDate?: string; endDate?: string };
-    expect(about?.startDate).toBe("2026-12-01");
-    expect(about?.endDate).toBe("2026-12-24");
+    expect(about?.startDate).toBe("2026-12-05");
+    expect(about?.endDate).toBe("2026-12-31");
   });
 
   it("sitemap rute su SEO-friendly bez admina", () => {

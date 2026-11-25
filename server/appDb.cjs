@@ -378,7 +378,22 @@ function migrateSqlite(db) {
     `);
   }
 
+  try {
+    db.prepare("SELECT 1 FROM advent_question_opens LIMIT 1").get();
+  } catch {
+    db.exec(`
+      CREATE TABLE advent_question_opens (
+        attempt_id INTEGER NOT NULL,
+        question_index INTEGER NOT NULL,
+        opened_at TEXT NOT NULL,
+        PRIMARY KEY (attempt_id, question_index),
+        FOREIGN KEY (attempt_id) REFERENCES advent_day_attempts(id) ON DELETE CASCADE
+      );
+    `);
+  }
+
   migrateAdventReferralSqlite(db);
+  migrateAdventPrizeDrawSqlite(db);
 
   const userCols = db.prepare("PRAGMA table_info(users)").all().map((c) => c.name);
   if (!userCols.includes("user_type")) {
@@ -834,8 +849,15 @@ async function migratePg(pool) {
     )`);
   await run("CREATE INDEX IF NOT EXISTS idx_advent_question_answers_attempt ON advent_question_answers(attempt_id)");
   await run("CREATE INDEX IF NOT EXISTS idx_advent_question_answers_user_day ON advent_question_answers(user_id, day_key)");
+  await run(`CREATE TABLE IF NOT EXISTS advent_question_opens (
+      attempt_id INTEGER NOT NULL REFERENCES advent_day_attempts(id) ON DELETE CASCADE,
+      question_index INTEGER NOT NULL,
+      opened_at TIMESTAMPTZ NOT NULL,
+      PRIMARY KEY (attempt_id, question_index)
+    )`);
 
   await migrateAdventReferralPg(run);
+  await migrateAdventPrizeDrawPg(run);
 
   let migrated;
   try {
@@ -1119,6 +1141,40 @@ function migrateAdventReferralSqlite(db) {
       FOREIGN KEY (referred_user_id) REFERENCES users(id)
     );
   `);
+}
+
+function migrateAdventPrizeDrawSqlite(db) {
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS advent_prize_draw_entries (
+      user_id INTEGER PRIMARY KEY,
+      joined_at TEXT NOT NULL DEFAULT (datetime('now')),
+      FOREIGN KEY (user_id) REFERENCES users(id)
+    );
+    CREATE TABLE IF NOT EXISTS advent_prize_draw_winners (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      user_id INTEGER NOT NULL,
+      picked_at TEXT NOT NULL DEFAULT (datetime('now')),
+      picked_by_admin_id INTEGER,
+      random_seed TEXT,
+      FOREIGN KEY (user_id) REFERENCES users(id)
+    );
+    CREATE INDEX IF NOT EXISTS idx_advent_draw_winners_at ON advent_prize_draw_winners(picked_at);
+  `);
+}
+
+async function migrateAdventPrizeDrawPg(run) {
+  await run(`CREATE TABLE IF NOT EXISTS advent_prize_draw_entries (
+    user_id INTEGER PRIMARY KEY REFERENCES users(id),
+    joined_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
+  )`);
+  await run(`CREATE TABLE IF NOT EXISTS advent_prize_draw_winners (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER NOT NULL REFERENCES users(id),
+    picked_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    picked_by_admin_id INTEGER REFERENCES users(id),
+    random_seed TEXT
+  )`);
+  await run("CREATE INDEX IF NOT EXISTS idx_advent_draw_winners_at ON advent_prize_draw_winners(picked_at)");
 }
 
 async function migrateAdventReferralPg(run) {

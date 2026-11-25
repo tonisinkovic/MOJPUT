@@ -1,7 +1,11 @@
 {
   "year": 2026,
-  "startDate": "2026-12-01",
-  "endDate": "2026-12-24",
+  "calendarStartDate": "2026-12-01",
+  "startDate": "2026-12-05",
+  "quizEndDate": "2026-12-24",
+  "christmasDate": "2026-12-25",
+  "finalResultsDate": "2026-12-26",
+  "endDate": "2026-12-31",
   "timezone": "Europe/Zagreb",
-  "scoringVersion": 1
+  "scoringVersion": 2
 }

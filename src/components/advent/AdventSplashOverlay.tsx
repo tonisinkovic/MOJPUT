@@ -118,7 +118,7 @@ export function AdventSplashOverlay() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.65, ease: ADVENT_EASE.out }}
             >
-              24 dana &middot; 240 pitanja &middot; Jedan prvak.
+              20 dana &middot; 200 pitanja &middot; Jedan prvak.
             </motion.p>
 
             {/* CTA */}

@@ -1,1731 +1,585 @@
 {
   "days": [
     {
-      "dayKey": "2026-12-01",
+      "dayKey": "2026-12-05",
       "dayNumber": 1,
       "questions": [
         {
           "index": 0,
-          "text": "Test pitanje?",
-          "options": [
-            {
-              "id": "a",
-              "text": "Odgovor A"
-            },
-            {
-              "id": "b",
-              "text": "Odgovor B"
-            },
-            {
-              "id": "c",
-              "text": "Odgovor C"
-            },
-            {
-              "id": "d",
-              "text": "Odgovor D"
-            }
+          "type": "text",
+          "text": "Koja država ima najveći broj stanovnika na svijetu?",
+          "category": "Opće znanje",
+          "timeLimitSec": 30,
+          "options": [],
+          "acceptedAnswers": [
+            "Indija",
+            "India"
           ],
-          "correctAnswer": "b",
-          "category": "test",
-          "explanation": "Objašnjenje."
+          "explanation": "Najviše stanovnika ima Indija."
         },
         {
           "index": 1,
-          "text": "Dan 1, pitanje 2: Testno pitanje za advent kviz (q2)",
+          "type": "choice",
+          "text": "Koja se biljka tradicionalno objesi iznad vrata za Božić, ispod koje se ljudi ljube?",
+          "category": "Božić / Advent",
+          "timeLimitSec": 30,
           "options": [
             {
               "id": "a",
-              "text": "Opcija A za q2"
+              "text": "Božikovina"
             },
             {
               "id": "b",
-              "text": "Opcija B za q2"
+              "text": "Imela"
             },
             {
               "id": "c",
-              "text": "Opcija C za q2 (tocno)"
+              "text": "Božićna zvijezda"
             },
             {
               "id": "d",
-              "text": "Opcija D za q2"
+              "text": "Lavanda"
             }
           ],
-          "correctAnswer": "c",
-          "explanation": "Objasnjenje za pitanje 2 na dan 1."
+          "correctAnswer": "b",
+          "explanation": "To je imela."
         },
         {
           "index": 2,
-          "text": "Dan 1, pitanje 3: Testno pitanje za advent kviz (q3)",
+          "type": "choice",
+          "text": "Otac ima 4 sina. Svaki sin ima jednu sestru. Koliko ukupno djece ima otac?",
+          "category": "Logika",
+          "timeLimitSec": 30,
           "options": [
             {
               "id": "a",
-              "text": "Opcija A za q3"
+              "text": "5"
             },
             {
               "id": "b",
-              "text": "Opcija B za q3"
+              "text": "8"
             },
             {
               "id": "c",
-              "text": "Opcija C za q3"
+              "text": "9"
             },
             {
               "id": "d",
-              "text": "Opcija D za q3 (tocno)"
+              "text": "4"
             }
           ],
-          "correctAnswer": "d",
-          "explanation": "Objasnjenje za pitanje 3 na dan 1."
+          "correctAnswer": "a",
+          "explanation": "Četiri sina i jedna zajednička sestra — ukupno petero djece."
         },
         {
           "index": 3,
-          "text": "Dan 1, pitanje 4: Testno pitanje za advent kviz (q4)",
-          "options": [
-            {
-              "id": "a",
-              "text": "Opcija A za q4 (tocno)"
-            },
-            {
-              "id": "b",
-              "text": "Opcija B za q4"
-            },
-            {
-              "id": "c",
-              "text": "Opcija C za q4"
-            },
-            {
-              "id": "d",
-              "text": "Opcija D za q4"
-            }
+          "type": "text",
+          "text": "Navedite jednu državu koja graniči s Hrvatskom.",
+          "category": "Opće znanje",
+          "timeLimitSec": 30,
+          "options": [],
+          "acceptedAnswers": [
+            "Slovenija",
+            "Slovenia",
+            "Mađarska",
+            "Madarska",
+            "Madjarska",
+            "Hungary",
+            "Srbija",
+            "Serbia",
+            "Bosna i Hercegovina",
+            "Bosna",
+            "BiH",
+            "Bosnia",
+            "Bosnia and Herzegovina",
+            "Crna Gora",
+            "Montenegro"
           ],
-          "correctAnswer": "a",
-          "explanation": "Objasnjenje za pitanje 4 na dan 1."
+          "explanation": "Hrvatska graniči sa Slovenijom, Mađarskom, Srbijom, Bosnom i Hercegovinom i Crnom Gorom."
         },
         {
           "index": 4,
-          "text": "Dan 1, pitanje 5: Testno pitanje za advent kviz (q5)",
-          "options": [
-            {
-              "id": "a",
-              "text": "Opcija A za q5"
-            },
-            {
-              "id": "b",
-              "text": "Opcija B za q5 (tocno)"
-            },
-            {
-              "id": "c",
-              "text": "Opcija C za q5"
-            },
-            {
-              "id": "d",
-              "text": "Opcija D za q5"
-            }
+          "type": "text",
+          "text": "Tko je napisao roman „Zločin i kazna”?",
+          "category": "Škola – književnost",
+          "timeLimitSec": 30,
+          "options": [],
+          "acceptedAnswers": [
+            "Fjodor Dostojevski",
+            "Fjodor Mihajlovič Dostojevski",
+            "Dostojevski",
+            "Fyodor Dostoevsky",
+            "F M Dostojevski"
           ],
-          "correctAnswer": "b",
-          "explanation": "Objasnjenje za pitanje 5 na dan 1."
+          "explanation": "Roman je napisao Fjodor Dostojevski."
         },
         {
           "index": 5,
-          "text": "Dan 1, pitanje 6: Testno pitanje za advent kviz (q6)",
-          "options": [
-            {
-              "id": "a",
-              "text": "Opcija A za q6"
-            },
-            {
-              "id": "b",
-              "text": "Opcija B za q6"
-            },
-            {
-              "id": "c",
-              "text": "Opcija C za q6 (tocno)"
-            },
-            {
-              "id": "d",
-              "text": "Opcija D za q6"
-            }
+          "type": "text",
+          "text": "Koje je boje snijeg?",
+          "category": "Najlakše pitanje",
+          "timeLimitSec": 10,
+          "options": [],
+          "acceptedAnswers": [
+            "Bijela",
+            "Bela",
+            "Bijelo",
+            "Bijeli"
           ],
-          "correctAnswer": "c",
-          "explanation": "Objasnjenje za pitanje 6 na dan 1."
+          "explanation": "Snijeg je bijel."
         },
         {
           "index": 6,
-          "text": "Dan 1, pitanje 7: Testno pitanje za advent kviz (q7)",
-          "options": [
-            {
-              "id": "a",
-              "text": "Opcija A za q7"
-            },
-            {
-              "id": "b",
-              "text": "Opcija B za q7"
-            },
-            {
-              "id": "c",
-              "text": "Opcija C za q7"
-            },
-            {
-              "id": "d",
-              "text": "Opcija D za q7 (tocno)"
-            }
+          "type": "text",
+          "text": "Nastavi niz: 2, 6, 12, 20, 30, __?",
+          "category": "Logika",
+          "timeLimitSec": 30,
+          "options": [],
+          "acceptedAnswers": [
+            "42"
           ],
-          "correctAnswer": "d",
-          "explanation": "Objasnjenje za pitanje 7 na dan 1."
+          "explanation": "Razlike rastu za 2: +4, +6, +8, +10, +12. Sljedeći broj je 42."
         },
         {
           "index": 7,
-          "text": "Dan 1, pitanje 8: Testno pitanje za advent kviz (q8)",
-          "options": [
-            {
-              "id": "a",
-              "text": "Opcija A za q8 (tocno)"
-            },
-            {
-              "id": "b",
-              "text": "Opcija B za q8"
-            },
-            {
-              "id": "c",
-              "text": "Opcija C za q8"
-            },
-            {
-              "id": "d",
-              "text": "Opcija D za q8"
-            }
+          "type": "text",
+          "text": "Kako se zove razdoblje od četiri nedjelje prije Božića?",
+          "category": "Božić",
+          "timeLimitSec": 30,
+          "options": [],
+          "acceptedAnswers": [
+            "Advent",
+            "Došašće",
+            "Dosasce"
           ],
-          "correctAnswer": "a",
-          "explanation": "Objasnjenje za pitanje 8 na dan 1."
+          "explanation": "To razdoblje zove se advent ili došašće."
         },
         {
           "index": 8,
-          "text": "Dan 1, pitanje 9: Testno pitanje za advent kviz (q9)",
-          "options": [
-            {
-              "id": "a",
-              "text": "Opcija A za q9"
-            },
-            {
-              "id": "b",
-              "text": "Opcija B za q9 (tocno)"
-            },
-            {
-              "id": "c",
-              "text": "Opcija C za q9"
-            },
-            {
-              "id": "d",
-              "text": "Opcija D za q9"
-            }
-          ],
-          "correctAnswer": "b",
-          "explanation": "Objasnjenje za pitanje 9 na dan 1."
+          "type": "distance",
+          "text": "Kolika je zračna udaljenost između Zagreba i Splita? Upiši kilometre.",
+          "category": "Opće znanje",
+          "timeLimitSec": 30,
+          "options": [],
+          "distanceKm": 258,
+          "explanation": "Zračna udaljenost Zagreba i Splita je približno 258 km."
         },
         {
           "index": 9,
-          "text": "Dan 1, pitanje 10: Testno pitanje za advent kviz (q10)",
-          "options": [
-            {
-              "id": "a",
-              "text": "Opcija A za q10"
-            },
-            {
-              "id": "b",
-              "text": "Opcija B za q10"
-            },
-            {
-              "id": "c",
-              "text": "Opcija C za q10 (tocno)"
-            },
-            {
-              "id": "d",
-              "text": "Opcija D za q10"
-            }
+          "type": "text",
+          "text": "Kako se zove književna vrsta kojoj pripada djelo „Judita” Marka Marulića?",
+          "category": "Škola – književnost",
+          "timeLimitSec": 30,
+          "options": [],
+          "acceptedAnswers": [
+            "Ep",
+            "Epopeja",
+            "Epska pjesma"
           ],
-          "correctAnswer": "c",
-          "explanation": "Objasnjenje za pitanje 10 na dan 1."
+          "explanation": "„Judita” je ep."
         }
-      ]
+      ],
+      "title": "Adventski kviz — dan 1",
+      "active": true
     },
     {
-      "dayKey": "2026-12-02",
+      "dayKey": "2026-12-06",
       "dayNumber": 2,
       "questions": [
         {
           "index": 0,
-          "text": "Dan 2, pitanje 1: Testno pitanje za advent kviz (q11)",
-          "options": [
-            {
-              "id": "a",
-              "text": "Opcija A za q11"
-            },
-            {
-              "id": "b",
-              "text": "Opcija B za q11"
-            },
-            {
-              "id": "c",
-              "text": "Opcija C za q11"
-            },
-            {
-              "id": "d",
-              "text": "Opcija D za q11 (tocno)"
-            }
+          "type": "text",
+          "text": "Koji je kemijski simbol za zlato?",
+          "category": "Opće znanje",
+          "timeLimitSec": 30,
+          "options": [],
+          "acceptedAnswers": [
+            "Au",
+            "Aurum"
           ],
-          "correctAnswer": "d",
-          "explanation": "Objasnjenje za pitanje 11 na dan 2."
+          "explanation": "Kemijski simbol za zlato je Au."
         },
         {
           "index": 1,
-          "text": "Dan 2, pitanje 2: Testno pitanje za advent kviz (q12)",
+          "type": "choice",
+          "text": "Koliko svijeća tradicionalno ima adventski vijenac?",
+          "category": "Božić / Advent",
+          "timeLimitSec": 30,
           "options": [
             {
               "id": "a",
-              "text": "Opcija A za q12 (tocno)"
+              "text": "2"
             },
             {
               "id": "b",
-              "text": "Opcija B za q12"
+              "text": "3"
             },
             {
               "id": "c",
-              "text": "Opcija C za q12"
+              "text": "4"
             },
             {
               "id": "d",
-              "text": "Opcija D za q12"
+              "text": "5"
             }
           ],
-          "correctAnswer": "a",
-          "explanation": "Objasnjenje za pitanje 12 na dan 2."
+          "correctAnswer": "c",
+          "explanation": "Adventski vijenac ima četiri svijeće."
         },
         {
           "index": 2,
-          "text": "Dan 2, pitanje 3: Testno pitanje za advent kviz (q13)",
+          "type": "choice",
+          "text": "U utrci prestigneš osobu koja je na drugom mjestu. Na kojem si sada mjestu?",
+          "category": "Logika",
+          "timeLimitSec": 30,
           "options": [
             {
               "id": "a",
-              "text": "Opcija A za q13"
+              "text": "Prvom"
             },
             {
               "id": "b",
-              "text": "Opcija B za q13 (tocno)"
+              "text": "Drugom"
             },
             {
               "id": "c",
-              "text": "Opcija C za q13"
+              "text": "Trećem"
             },
             {
               "id": "d",
-              "text": "Opcija D za q13"
+              "text": "Četvrtom"
             }
           ],
           "correctAnswer": "b",
-          "explanation": "Objasnjenje za pitanje 13 na dan 2."
+          "explanation": "Prestigneš osobu na drugom mjestu i zauzmeš njezino, drugo mjesto."
         },
         {
           "index": 3,
-          "text": "Dan 2, pitanje 4: Testno pitanje za advent kviz (q14)",
-          "options": [
-            {
-              "id": "a",
-              "text": "Opcija A za q14"
-            },
-            {
-              "id": "b",
-              "text": "Opcija B za q14"
-            },
-            {
-              "id": "c",
-              "text": "Opcija C za q14 (tocno)"
-            },
-            {
-              "id": "d",
-              "text": "Opcija D za q14"
-            }
+          "type": "text",
+          "text": "Navedite jedan planet Sunčeva sustava, osim Zemlje.",
+          "category": "Opće znanje",
+          "timeLimitSec": 30,
+          "options": [],
+          "acceptedAnswers": [
+            "Merkur",
+            "Mercury",
+            "Venera",
+            "Venus",
+            "Mars",
+            "Jupiter",
+            "Saturn",
+            "Uran",
+            "Uranus",
+            "Neptun",
+            "Neptune"
           ],
-          "correctAnswer": "c",
-          "explanation": "Objasnjenje za pitanje 14 na dan 2."
+          "explanation": "Planeti osim Zemlje su Merkur, Venera, Mars, Jupiter, Saturn, Uran i Neptun."
         },
         {
           "index": 4,
-          "text": "Dan 2, pitanje 5: Testno pitanje za advent kviz (q15)",
-          "options": [
-            {
-              "id": "a",
-              "text": "Opcija A za q15"
-            },
-            {
-              "id": "b",
-              "text": "Opcija B za q15"
-            },
-            {
-              "id": "c",
-              "text": "Opcija C za q15"
-            },
-            {
-              "id": "d",
-              "text": "Opcija D za q15 (tocno)"
-            }
+          "type": "text",
+          "text": "Tko je napisao tragediju „Hamlet”?",
+          "category": "Škola – književnost",
+          "timeLimitSec": 30,
+          "options": [],
+          "acceptedAnswers": [
+            "William Shakespeare",
+            "Shakespeare",
+            "Vilim Šekspir",
+            "Sekspir",
+            "Šekspir"
           ],
-          "correctAnswer": "d",
-          "explanation": "Objasnjenje za pitanje 15 na dan 2."
+          "explanation": "Hamleta je napisao William Shakespeare."
         },
         {
           "index": 5,
-          "text": "Dan 2, pitanje 6: Testno pitanje za advent kviz (q16)",
-          "options": [
-            {
-              "id": "a",
-              "text": "Opcija A za q16 (tocno)"
-            },
-            {
-              "id": "b",
-              "text": "Opcija B za q16"
-            },
-            {
-              "id": "c",
-              "text": "Opcija C za q16"
-            },
-            {
-              "id": "d",
-              "text": "Opcija D za q16"
-            }
+          "type": "text",
+          "text": "Koliko dana ima jedan tjedan?",
+          "category": "Najlakše pitanje",
+          "timeLimitSec": 10,
+          "options": [],
+          "acceptedAnswers": [
+            "7",
+            "Sedam"
           ],
-          "correctAnswer": "a",
-          "explanation": "Objasnjenje za pitanje 16 na dan 2."
+          "explanation": "Tjedan ima 7 dana."
         },
         {
           "index": 6,
-          "text": "Dan 2, pitanje 7: Testno pitanje za advent kviz (q17)",
-          "options": [
-            {
-              "id": "a",
-              "text": "Opcija A za q17"
-            },
-            {
-              "id": "b",
-              "text": "Opcija B za q17 (tocno)"
-            },
-            {
-              "id": "c",
-              "text": "Opcija C za q17"
-            },
-            {
-              "id": "d",
-              "text": "Opcija D za q17"
-            }
+          "type": "text",
+          "text": "Tri mačke ulove tri miša za tri minute. Koliko bi mačaka trebalo da ulove 100 miševa za 100 minuta, ako sve rade jednakom brzinom?",
+          "category": "Logika",
+          "timeLimitSec": 30,
+          "options": [],
+          "acceptedAnswers": [
+            "3",
+            "Tri",
+            "3 mačke",
+            "Tri mačke"
           ],
-          "correctAnswer": "b",
-          "explanation": "Objasnjenje za pitanje 17 na dan 2."
+          "explanation": "Tri mačke uhvate jednog miša u minuti, pa za 100 minuta uhvate 100 miševa. Treba ih i dalje 3."
         },
         {
           "index": 7,
-          "text": "Dan 2, pitanje 8: Testno pitanje za advent kviz (q18)",
-          "options": [
-            {
-              "id": "a",
-              "text": "Opcija A za q18"
-            },
-            {
-              "id": "b",
-              "text": "Opcija B za q18"
-            },
-            {
-              "id": "c",
-              "text": "Opcija C za q18 (tocno)"
-            },
-            {
-              "id": "d",
-              "text": "Opcija D za q18"
-            }
+          "type": "text",
+          "text": "Kako se zove mjesto u kojem se, prema kršćanskoj tradiciji, rodio Isus?",
+          "category": "Božić",
+          "timeLimitSec": 30,
+          "options": [],
+          "acceptedAnswers": [
+            "Betlehem",
+            "Bethlehem",
+            "Betleem"
           ],
-          "correctAnswer": "c",
-          "explanation": "Objasnjenje za pitanje 18 na dan 2."
+          "explanation": "Prema tradiciji, Isus je rođen u Betlehemu."
         },
         {
           "index": 8,
-          "text": "Dan 2, pitanje 9: Testno pitanje za advent kviz (q19)",
-          "options": [
-            {
-              "id": "a",
-              "text": "Opcija A za q19"
-            },
-            {
-              "id": "b",
-              "text": "Opcija B za q19"
-            },
-            {
-              "id": "c",
-              "text": "Opcija C za q19"
-            },
-            {
-              "id": "d",
-              "text": "Opcija D za q19 (tocno)"
-            }
-          ],
-          "correctAnswer": "d",
-          "explanation": "Objasnjenje za pitanje 19 na dan 2."
+          "type": "distance",
+          "text": "Kolika je zračna udaljenost između Zagreba i Beča? Upiši kilometre.",
+          "category": "Opće znanje",
+          "timeLimitSec": 30,
+          "options": [],
+          "distanceKm": 268,
+          "explanation": "Zračna udaljenost Zagreba i Beča je približno 268 km."
         },
         {
           "index": 9,
-          "text": "Dan 2, pitanje 10: Testno pitanje za advent kviz (q20)",
-          "options": [
-            {
-              "id": "a",
-              "text": "Opcija A za q20 (tocno)"
-            },
-            {
-              "id": "b",
-              "text": "Opcija B za q20"
-            },
-            {
-              "id": "c",
-              "text": "Opcija C za q20"
-            },
-            {
-              "id": "d",
-              "text": "Opcija D za q20"
-            }
+          "type": "text",
+          "text": "Kako se zove književni rod kojem pripadaju romani, pripovijetke i novele?",
+          "category": "Škola – književnost",
+          "timeLimitSec": 30,
+          "options": [],
+          "acceptedAnswers": [
+            "Epika"
           ],
-          "correctAnswer": "a",
-          "explanation": "Objasnjenje za pitanje 20 na dan 2."
+          "explanation": "Romani, pripovijetke i novele pripadaju epici."
         }
-      ]
+      ],
+      "title": "Adventski kviz — dan 2",
+      "active": true
     },
     {
-      "dayKey": "2026-12-03",
+      "dayKey": "2026-12-07",
       "dayNumber": 3,
       "questions": [
         {
           "index": 0,
-          "text": "Dan 3, pitanje 1: Testno pitanje za advent kviz (q21)",
-          "options": [
-            {
-              "id": "a",
-              "text": "Opcija A za q21"
-            },
-            {
-              "id": "b",
-              "text": "Opcija B za q21 (tocno)"
-            },
-            {
-              "id": "c",
-              "text": "Opcija C za q21"
-            },
-            {
-              "id": "d",
-              "text": "Opcija D za q21"
-            }
+          "type": "text",
+          "text": "Koja je najmanja država na svijetu prema površini?",
+          "category": "Opće znanje",
+          "timeLimitSec": 30,
+          "options": [],
+          "acceptedAnswers": [
+            "Vatikan",
+            "Vatikanska Država",
+            "Vatikanski Grad",
+            "Vatican"
           ],
-          "correctAnswer": "b",
-          "explanation": "Objasnjenje za pitanje 21 na dan 3."
+          "explanation": "Najmanja država po površini je Vatikan."
         },
         {
           "index": 1,
-          "text": "Dan 3, pitanje 2: Testno pitanje za advent kviz (q22)",
+          "type": "choice",
+          "text": "Koje se tradicionalno božićno piće često priprema od mlijeka, jaja i začina?",
+          "category": "Božić / Advent",
+          "timeLimitSec": 30,
           "options": [
             {
               "id": "a",
-              "text": "Opcija A za q22"
+              "text": "Limunada"
             },
             {
               "id": "b",
-              "text": "Opcija B za q22"
+              "text": "Eggnog"
             },
             {
               "id": "c",
-              "text": "Opcija C za q22 (tocno)"
+              "text": "Sangria"
             },
             {
               "id": "d",
-              "text": "Opcija D za q22"
+              "text": "Mojito"
             }
           ],
-          "correctAnswer": "c",
-          "explanation": "Objasnjenje za pitanje 22 na dan 3."
+          "correctAnswer": "b",
+          "explanation": "To piće je eggnog."
         },
         {
           "index": 2,
-          "text": "Dan 3, pitanje 3: Testno pitanje za advent kviz (q23)",
+          "type": "choice",
+          "text": "Ako je jučer bilo dva dana prije četvrtka, koji je dan danas?",
+          "category": "Logika",
+          "timeLimitSec": 30,
           "options": [
             {
               "id": "a",
-              "text": "Opcija A za q23"
+              "text": "Ponedjeljak"
             },
             {
               "id": "b",
-              "text": "Opcija B za q23"
+              "text": "Utorak"
             },
             {
               "id": "c",
-              "text": "Opcija C za q23"
+              "text": "Srijeda"
             },
             {
               "id": "d",
-              "text": "Opcija D za q23 (tocno)"
+              "text": "Četvrtak"
             }
           ],
-          "correctAnswer": "d",
-          "explanation": "Objasnjenje za pitanje 23 na dan 3."
+          "correctAnswer": "c",
+          "explanation": "Dva dana prije četvrtka je utorak. Ako je jučer bio utorak, danas je srijeda."
         },
         {
           "index": 3,
-          "text": "Dan 3, pitanje 4: Testno pitanje za advent kviz (q24)",
-          "options": [
-            {
-              "id": "a",
-              "text": "Opcija A za q24 (tocno)"
-            },
-            {
-              "id": "b",
-              "text": "Opcija B za q24"
-            },
-            {
-              "id": "c",
-              "text": "Opcija C za q24"
-            },
-            {
-              "id": "d",
-              "text": "Opcija D za q24"
-            }
+          "type": "text",
+          "text": "Navedite jednu državu čiji naziv počinje slovom S.",
+          "category": "Opće znanje",
+          "timeLimitSec": 30,
+          "options": [],
+          "acceptedAnswers": [
+            "Srbija",
+            "Serbia",
+            "Slovenija",
+            "Slovenia",
+            "Slovačka",
+            "Slovakia",
+            "Španjolska",
+            "Spanija",
+            "Spain",
+            "Švedska",
+            "Sweden",
+            "Švicarska",
+            "Switzerland",
+            "Šri Lanka",
+            "Sri Lanka",
+            "Senegal",
+            "Singapur",
+            "Singapore",
+            "Saudijska Arabija",
+            "Saudi Arabia",
+            "Sirija",
+            "Syria",
+            "Sudan",
+            "Surinam",
+            "Suriname",
+            "Sejšeli",
+            "Seychelles",
+            "Sijera Leone",
+            "Sierra Leone",
+            "Salvador",
+            "El Salvador",
+            "Samoa",
+            "San Marino",
+            "Somalija",
+            "Somalia",
+            "Solomonski Otoci",
+            "Solomon Islands",
+            "Sveta Lucija",
+            "Saint Lucia",
+            "Sveti Kristofor i Nevis",
+            "Saint Kitts and Nevis",
+            "Sveti Vincent i Grenadini",
+            "Saint Vincent",
+            "Sveti Toma i Prinsipe",
+            "Sao Tome",
+            "Sjedinjene Američke Države",
+            "Sjedinjene Države",
+            "SAD",
+            "USA",
+            "Sjeverna Koreja",
+            "North Korea",
+            "Sjeverna Makedonija",
+            "North Macedonia",
+            "Srednjoafrička Republika",
+            "Svazi"
           ],
-          "correctAnswer": "a",
-          "explanation": "Objasnjenje za pitanje 24 na dan 3."
+          "explanation": "Prihvaćaju se države čiji naziv počinje slovom S ili Š, na primjer Srbija, Slovenija ili Španjolska."
         },
         {
           "index": 4,
-          "text": "Dan 3, pitanje 5: Testno pitanje za advent kviz (q25)",
-          "options": [
-            {
-              "id": "a",
-              "text": "Opcija A za q25"
-            },
-            {
-              "id": "b",
-              "text": "Opcija B za q25 (tocno)"
-            },
-            {
-              "id": "c",
-              "text": "Opcija C za q25"
-            },
-            {
-              "id": "d",
-              "text": "Opcija D za q25"
-            }
+          "type": "text",
+          "text": "Tko je autor „Ilijade”?",
+          "category": "Škola – književnost",
+          "timeLimitSec": 30,
+          "options": [],
+          "acceptedAnswers": [
+            "Homer",
+            "Homera"
           ],
-          "correctAnswer": "b",
-          "explanation": "Objasnjenje za pitanje 25 na dan 3."
+          "explanation": "Ilijadu je napisao Homer."
         },
         {
           "index": 5,
-          "text": "Dan 3, pitanje 6: Testno pitanje za advent kviz (q26)",
-          "options": [
-            {
-              "id": "a",
-              "text": "Opcija A za q26"
-            },
-            {
-              "id": "b",
-              "text": "Opcija B za q26"
-            },
-            {
-              "id": "c",
-              "text": "Opcija C za q26 (tocno)"
-            },
-            {
-              "id": "d",
-              "text": "Opcija D za q26"
-            }
+          "type": "text",
+          "text": "Koliko mjeseci ima jedna godina?",
+          "category": "Najlakše pitanje",
+          "timeLimitSec": 10,
+          "options": [],
+          "acceptedAnswers": [
+            "12",
+            "Dvanaest"
           ],
-          "correctAnswer": "c",
-          "explanation": "Objasnjenje za pitanje 26 na dan 3."
+          "explanation": "Godina ima 12 mjeseci."
         },
         {
           "index": 6,
-          "text": "Dan 3, pitanje 7: Testno pitanje za advent kviz (q27)",
-          "options": [
-            {
-              "id": "a",
-              "text": "Opcija A za q27"
-            },
-            {
-              "id": "b",
-              "text": "Opcija B za q27"
-            },
-            {
-              "id": "c",
-              "text": "Opcija C za q27"
-            },
-            {
-              "id": "d",
-              "text": "Opcija D za q27 (tocno)"
-            }
+          "type": "text",
+          "text": "Majka je četiri puta starija od svoje kćeri. Zajedno imaju 50 godina. Koliko godina ima kći?",
+          "category": "Logika",
+          "timeLimitSec": 30,
+          "options": [],
+          "acceptedAnswers": [
+            "10",
+            "Deset"
           ],
-          "correctAnswer": "d",
-          "explanation": "Objasnjenje za pitanje 27 na dan 3."
+          "explanation": "Ako kći ima 10 godina, majka ima 40. Zbroj je 50."
         },
         {
           "index": 7,
-          "text": "Dan 3, pitanje 8: Testno pitanje za advent kviz (q28)",
-          "options": [
-            {
-              "id": "a",
-              "text": "Opcija A za q28 (tocno)"
-            },
-            {
-              "id": "b",
-              "text": "Opcija B za q28"
-            },
-            {
-              "id": "c",
-              "text": "Opcija C za q28"
-            },
-            {
-              "id": "d",
-              "text": "Opcija D za q28"
-            }
+          "type": "text",
+          "text": "Kako se zove poznati sob Djeda Božićnjaka koji ima crveni nos?",
+          "category": "Božić",
+          "timeLimitSec": 30,
+          "options": [],
+          "acceptedAnswers": [
+            "Rudolph",
+            "Rudolf"
           ],
-          "correctAnswer": "a",
-          "explanation": "Objasnjenje za pitanje 28 na dan 3."
+          "explanation": "Sob s crvenim nosom zove se Rudolph ili Rudolf."
         },
         {
           "index": 8,
-          "text": "Dan 3, pitanje 9: Testno pitanje za advent kviz (q29)",
-          "options": [
-            {
-              "id": "a",
-              "text": "Opcija A za q29"
-            },
-            {
-              "id": "b",
-              "text": "Opcija B za q29 (tocno)"
-            },
-            {
-              "id": "c",
-              "text": "Opcija C za q29"
-            },
-            {
-              "id": "d",
-              "text": "Opcija D za q29"
-            }
-          ],
-          "correctAnswer": "b",
-          "explanation": "Objasnjenje za pitanje 29 na dan 3."
+          "type": "distance",
+          "text": "Kolika je zračna udaljenost između Zagreba i Londona? Upiši kilometre.",
+          "category": "Opće znanje",
+          "timeLimitSec": 30,
+          "options": [],
+          "distanceKm": 1235,
+          "explanation": "Zračna udaljenost Zagreba i Londona je približno 1235 km."
         },
         {
           "index": 9,
-          "text": "Dan 3, pitanje 10: Testno pitanje za advent kviz (q30)",
-          "options": [
-            {
-              "id": "a",
-              "text": "Opcija A za q30"
-            },
-            {
-              "id": "b",
-              "text": "Opcija B za q30"
-            },
-            {
-              "id": "c",
-              "text": "Opcija C za q30 (tocno)"
-            },
-            {
-              "id": "d",
-              "text": "Opcija D za q30"
-            }
+          "type": "text",
+          "text": "Kako se zove stilska figura u kojoj se neživim stvarima ili životinjama daju ljudske osobine?",
+          "category": "Škola – književnost",
+          "timeLimitSec": 30,
+          "options": [],
+          "acceptedAnswers": [
+            "Personifikacija",
+            "Poosobljenje"
           ],
-          "correctAnswer": "c",
-          "explanation": "Objasnjenje za pitanje 30 na dan 3."
+          "explanation": "Ta stilska figura je personifikacija."
         }
-      ]
-    },
-    {
-      "dayKey": "2026-12-04",
-      "dayNumber": 4,
-      "questions": [
-        {
-          "index": 0,
-          "text": "Dan 4, pitanje 1: Testno pitanje za advent kviz (q31)",
-          "options": [
-            {
-              "id": "a",
-              "text": "Opcija A za q31"
-            },
-            {
-              "id": "b",
-              "text": "Opcija B za q31"
-            },
-            {
-              "id": "c",
-              "text": "Opcija C za q31"
-            },
-            {
-              "id": "d",
-              "text": "Opcija D za q31 (tocno)"
-            }
-          ],
-          "correctAnswer": "d",
-          "explanation": "Objasnjenje za pitanje 31 na dan 4."
-        },
-        {
-          "index": 1,
-          "text": "Dan 4, pitanje 2: Testno pitanje za advent kviz (q32)",
-          "options": [
-            {
-              "id": "a",
-              "text": "Opcija A za q32 (tocno)"
-            },
-            {
-              "id": "b",
-              "text": "Opcija B za q32"
-            },
-            {
-              "id": "c",
-              "text": "Opcija C za q32"
-            },
-            {
-              "id": "d",
-              "text": "Opcija D za q32"
-            }
-          ],
-          "correctAnswer": "a",
-          "explanation": "Objasnjenje za pitanje 32 na dan 4."
-        },
-        {
-          "index": 2,
-          "text": "Dan 4, pitanje 3: Testno pitanje za advent kviz (q33)",
-          "options": [
-            {
-              "id": "a",
-              "text": "Opcija A za q33"
-            },
-            {
-              "id": "b",
-              "text": "Opcija B za q33 (tocno)"
-            },
-            {
-              "id": "c",
-              "text": "Opcija C za q33"
-            },
-            {
-              "id": "d",
-              "text": "Opcija D za q33"
-            }
-          ],
-          "correctAnswer": "b",
-          "explanation": "Objasnjenje za pitanje 33 na dan 4."
-        },
-        {
-          "index": 3,
-          "text": "Dan 4, pitanje 4: Testno pitanje za advent kviz (q34)",
-          "options": [
-            {
-              "id": "a",
-              "text": "Opcija A za q34"
-            },
-            {
-              "id": "b",
-              "text": "Opcija B za q34"
-            },
-            {
-              "id": "c",
-              "text": "Opcija C za q34 (tocno)"
-            },
-            {
-              "id": "d",
-              "text": "Opcija D za q34"
-            }
-          ],
-          "correctAnswer": "c",
-          "explanation": "Objasnjenje za pitanje 34 na dan 4."
-        },
-        {
-          "index": 4,
-          "text": "Dan 4, pitanje 5: Testno pitanje za advent kviz (q35)",
-          "options": [
-            {
-              "id": "a",
-              "text": "Opcija A za q35"
-            },
-            {
-              "id": "b",
-              "text": "Opcija B za q35"
-            },
-            {
-              "id": "c",
-              "text": "Opcija C za q35"
-            },
-            {
-              "id": "d",
-              "text": "Opcija D za q35 (tocno)"
-            }
-          ],
-          "correctAnswer": "d",
-          "explanation": "Objasnjenje za pitanje 35 na dan 4."
-        },
-        {
-          "index": 5,
-          "text": "Dan 4, pitanje 6: Testno pitanje za advent kviz (q36)",
-          "options": [
-            {
-              "id": "a",
-              "text": "Opcija A za q36 (tocno)"
-            },
-            {
-              "id": "b",
-              "text": "Opcija B za q36"
-            },
-            {
-              "id": "c",
-              "text": "Opcija C za q36"
-            },
-            {
-              "id": "d",
-              "text": "Opcija D za q36"
-            }
-          ],
-          "correctAnswer": "a",
-          "explanation": "Objasnjenje za pitanje 36 na dan 4."
-        },
-        {
-          "index": 6,
-          "text": "Dan 4, pitanje 7: Testno pitanje za advent kviz (q37)",
-          "options": [
-            {
-              "id": "a",
-              "text": "Opcija A za q37"
-            },
-            {
-              "id": "b",
-              "text": "Opcija B za q37 (tocno)"
-            },
-            {
-              "id": "c",
-              "text": "Opcija C za q37"
-            },
-            {
-              "id": "d",
-              "text": "Opcija D za q37"
-            }
-          ],
-          "correctAnswer": "b",
-          "explanation": "Objasnjenje za pitanje 37 na dan 4."
-        },
-        {
-          "index": 7,
-          "text": "Dan 4, pitanje 8: Testno pitanje za advent kviz (q38)",
-          "options": [
-            {
-              "id": "a",
-              "text": "Opcija A za q38"
-            },
-            {
-              "id": "b",
-              "text": "Opcija B za q38"
-            },
-            {
-              "id": "c",
-              "text": "Opcija C za q38 (tocno)"
-            },
-            {
-              "id": "d",
-              "text": "Opcija D za q38"
-            }
-          ],
-          "correctAnswer": "c",
-          "explanation": "Objasnjenje za pitanje 38 na dan 4."
-        },
-        {
-          "index": 8,
-          "text": "Dan 4, pitanje 9: Testno pitanje za advent kviz (q39)",
-          "options": [
-            {
-              "id": "a",
-              "text": "Opcija A za q39"
-            },
-            {
-              "id": "b",
-              "text": "Opcija B za q39"
-            },
-            {
-              "id": "c",
-              "text": "Opcija C za q39"
-            },
-            {
-              "id": "d",
-              "text": "Opcija D za q39 (tocno)"
-            }
-          ],
-          "correctAnswer": "d",
-          "explanation": "Objasnjenje za pitanje 39 na dan 4."
-        },
-        {
-          "index": 9,
-          "text": "Dan 4, pitanje 10: Testno pitanje za advent kviz (q40)",
-          "options": [
-            {
-              "id": "a",
-              "text": "Opcija A za q40 (tocno)"
-            },
-            {
-              "id": "b",
-              "text": "Opcija B za q40"
-            },
-            {
-              "id": "c",
-              "text": "Opcija C za q40"
-            },
-            {
-              "id": "d",
-              "text": "Opcija D za q40"
-            }
-          ],
-          "correctAnswer": "a",
-          "explanation": "Objasnjenje za pitanje 40 na dan 4."
-        }
-      ]
-    },
-    {
-      "dayKey": "2026-12-05",
-      "dayNumber": 5,
-      "questions": [
-        {
-          "index": 0,
-          "text": "Dan 5, pitanje 1: Testno pitanje za advent kviz (q41)",
-          "options": [
-            {
-              "id": "a",
-              "text": "Opcija A za q41"
-            },
-            {
-              "id": "b",
-              "text": "Opcija B za q41 (tocno)"
-            },
-            {
-              "id": "c",
-              "text": "Opcija C za q41"
-            },
-            {
-              "id": "d",
-              "text": "Opcija D za q41"
-            }
-          ],
-          "correctAnswer": "b",
-          "explanation": "Objasnjenje za pitanje 41 na dan 5."
-        },
-        {
-          "index": 1,
-          "text": "Dan 5, pitanje 2: Testno pitanje za advent kviz (q42)",
-          "options": [
-            {
-              "id": "a",
-              "text": "Opcija A za q42"
-            },
-            {
-              "id": "b",
-              "text": "Opcija B za q42"
-            },
-            {
-              "id": "c",
-              "text": "Opcija C za q42 (tocno)"
-            },
-            {
-              "id": "d",
-              "text": "Opcija D za q42"
-            }
-          ],
-          "correctAnswer": "c",
-          "explanation": "Objasnjenje za pitanje 42 na dan 5."
-        },
-        {
-          "index": 2,
-          "text": "Dan 5, pitanje 3: Testno pitanje za advent kviz (q43)",
-          "options": [
-            {
-              "id": "a",
-              "text": "Opcija A za q43"
-            },
-            {
-              "id": "b",
-              "text": "Opcija B za q43"
-            },
-            {
-              "id": "c",
-              "text": "Opcija C za q43"
-            },
-            {
-              "id": "d",
-              "text": "Opcija D za q43 (tocno)"
-            }
-          ],
-          "correctAnswer": "d",
-          "explanation": "Objasnjenje za pitanje 43 na dan 5."
-        },
-        {
-          "index": 3,
-          "text": "Dan 5, pitanje 4: Testno pitanje za advent kviz (q44)",
-          "options": [
-            {
-              "id": "a",
-              "text": "Opcija A za q44 (tocno)"
-            },
-            {
-              "id": "b",
-              "text": "Opcija B za q44"
-            },
-            {
-              "id": "c",
-              "text": "Opcija C za q44"
-            },
-            {
-              "id": "d",
-              "text": "Opcija D za q44"
-            }
-          ],
-          "correctAnswer": "a",
-          "explanation": "Objasnjenje za pitanje 44 na dan 5."
-        },
-        {
-          "index": 4,
-          "text": "Dan 5, pitanje 5: Testno pitanje za advent kviz (q45)",
-          "options": [
-            {
-              "id": "a",
-              "text": "Opcija A za q45"
-            },
-            {
-              "id": "b",
-              "text": "Opcija B za q45 (tocno)"
-            },
-            {
-              "id": "c",
-              "text": "Opcija C za q45"
-            },
-            {
-              "id": "d",
-              "text": "Opcija D za q45"
-            }
-          ],
-          "correctAnswer": "b",
-          "explanation": "Objasnjenje za pitanje 45 na dan 5."
-        },
-        {
-          "index": 5,
-          "text": "Dan 5, pitanje 6: Testno pitanje za advent kviz (q46)",
-          "options": [
-            {
-              "id": "a",
-              "text": "Opcija A za q46"
-            },
-            {
-              "id": "b",
-              "text": "Opcija B za q46"
-            },
-            {
-              "id": "c",
-              "text": "Opcija C za q46 (tocno)"
-            },
-            {
-              "id": "d",
-              "text": "Opcija D za q46"
-            }
-          ],
-          "correctAnswer": "c",
-          "explanation": "Objasnjenje za pitanje 46 na dan 5."
-        },
-        {
-          "index": 6,
-          "text": "Dan 5, pitanje 7: Testno pitanje za advent kviz (q47)",
-          "options": [
-            {
-              "id": "a",
-              "text": "Opcija A za q47"
-            },
-            {
-              "id": "b",
-              "text": "Opcija B za q47"
-            },
-            {
-              "id": "c",
-              "text": "Opcija C za q47"
-            },
-            {
-              "id": "d",
-              "text": "Opcija D za q47 (tocno)"
-            }
-          ],
-          "correctAnswer": "d",
-          "explanation": "Objasnjenje za pitanje 47 na dan 5."
-        },
-        {
-          "index": 7,
-          "text": "Dan 5, pitanje 8: Testno pitanje za advent kviz (q48)",
-          "options": [
-            {
-              "id": "a",
-              "text": "Opcija A za q48 (tocno)"
-            },
-            {
-              "id": "b",
-              "text": "Opcija B za q48"
-            },
-            {
-              "id": "c",
-              "text": "Opcija C za q48"
-            },
-            {
-              "id": "d",
-              "text": "Opcija D za q48"
-            }
-          ],
-          "correctAnswer": "a",
-          "explanation": "Objasnjenje za pitanje 48 na dan 5."
-        },
-        {
-          "index": 8,
-          "text": "Dan 5, pitanje 9: Testno pitanje za advent kviz (q49)",
-          "options": [
-            {
-              "id": "a",
-              "text": "Opcija A za q49"
-            },
-            {
-              "id": "b",
-              "text": "Opcija B za q49 (tocno)"
-            },
-            {
-              "id": "c",
-              "text": "Opcija C za q49"
-            },
-            {
-              "id": "d",
-              "text": "Opcija D za q49"
-            }
-          ],
-          "correctAnswer": "b",
-          "explanation": "Objasnjenje za pitanje 49 na dan 5."
-        },
-        {
-          "index": 9,
-          "text": "Dan 5, pitanje 10: Testno pitanje za advent kviz (q50)",
-          "options": [
-            {
-              "id": "a",
-              "text": "Opcija A za q50"
-            },
-            {
-              "id": "b",
-              "text": "Opcija B za q50"
-            },
-            {
-              "id": "c",
-              "text": "Opcija C za q50 (tocno)"
-            },
-            {
-              "id": "d",
-              "text": "Opcija D za q50"
-            }
-          ],
-          "correctAnswer": "c",
-          "explanation": "Objasnjenje za pitanje 50 na dan 5."
-        }
-      ]
-    },
-    {
-      "dayKey": "2026-12-06",
-      "dayNumber": 6,
-      "questions": [
-        {
-          "index": 0,
-          "text": "Dan 6, pitanje 1: Testno pitanje za advent kviz (q51)",
-          "options": [
-            {
-              "id": "a",
-              "text": "Opcija A za q51"
-            },
-            {
-              "id": "b",
-              "text": "Opcija B za q51"
-            },
-            {
-              "id": "c",
-              "text": "Opcija C za q51"
-            },
-            {
-              "id": "d",
-              "text": "Opcija D za q51 (tocno)"
-            }
-          ],
-          "correctAnswer": "d",
-          "explanation": "Objasnjenje za pitanje 51 na dan 6."
-        },
-        {
-          "index": 1,
-          "text": "Dan 6, pitanje 2: Testno pitanje za advent kviz (q52)",
-          "options": [
-            {
-              "id": "a",
-              "text": "Opcija A za q52 (tocno)"
-            },
-            {
-              "id": "b",
-              "text": "Opcija B za q52"
-            },
-            {
-              "id": "c",
-              "text": "Opcija C za q52"
-            },
-            {
-              "id": "d",
-              "text": "Opcija D za q52"
-            }
-          ],
-          "correctAnswer": "a",
-          "explanation": "Objasnjenje za pitanje 52 na dan 6."
-        },
-        {
-          "index": 2,
-          "text": "Dan 6, pitanje 3: Testno pitanje za advent kviz (q53)",
-          "options": [
-            {
-              "id": "a",
-              "text": "Opcija A za q53"
-            },
-            {
-              "id": "b",
-              "text": "Opcija B za q53 (tocno)"
-            },
-            {
-              "id": "c",
-              "text": "Opcija C za q53"
-            },
-            {
-              "id": "d",
-              "text": "Opcija D za q53"
-            }
-          ],
-          "correctAnswer": "b",
-          "explanation": "Objasnjenje za pitanje 53 na dan 6."
-        },
-        {
-          "index": 3,
-          "text": "Dan 6, pitanje 4: Testno pitanje za advent kviz (q54)",
-          "options": [
-            {
-              "id": "a",
-              "text": "Opcija A za q54"
-            },
-            {
-              "id": "b",
-              "text": "Opcija B za q54"
-            },
-            {
-              "id": "c",
-              "text": "Opcija C za q54 (tocno)"
-            },
-            {
-              "id": "d",
-              "text": "Opcija D za q54"
-            }
-          ],
-          "correctAnswer": "c",
-          "explanation": "Objasnjenje za pitanje 54 na dan 6."
-        },
-        {
-          "index": 4,
-          "text": "Dan 6, pitanje 5: Testno pitanje za advent kviz (q55)",
-          "options": [
-            {
-              "id": "a",
-              "text": "Opcija A za q55"
-            },
-            {
-              "id": "b",
-              "text": "Opcija B za q55"
-            },
-            {
-              "id": "c",
-              "text": "Opcija C za q55"
-            },
-            {
-              "id": "d",
-              "text": "Opcija D za q55 (tocno)"
-            }
-          ],
-          "correctAnswer": "d",
-          "explanation": "Objasnjenje za pitanje 55 na dan 6."
-        },
-        {
-          "index": 5,
-          "text": "Dan 6, pitanje 6: Testno pitanje za advent kviz (q56)",
-          "options": [
-            {
-              "id": "a",
-              "text": "Opcija A za q56 (tocno)"
-            },
-            {
-              "id": "b",
-              "text": "Opcija B za q56"
-            },
-            {
-              "id": "c",
-              "text": "Opcija C za q56"
-            },
-            {
-              "id": "d",
-              "text": "Opcija D za q56"
-            }
-          ],
-          "correctAnswer": "a",
-          "explanation": "Objasnjenje za pitanje 56 na dan 6."
-        },
-        {
-          "index": 6,
-          "text": "Dan 6, pitanje 7: Testno pitanje za advent kviz (q57)",
-          "options": [
-            {
-              "id": "a",
-              "text": "Opcija A za q57"
-            },
-            {
-              "id": "b",
-              "text": "Opcija B za q57 (tocno)"
-            },
-            {
-              "id": "c",
-              "text": "Opcija C za q57"
-            },
-            {
-              "id": "d",
-              "text": "Opcija D za q57"
-            }
-          ],
-          "correctAnswer": "b",
-          "explanation": "Objasnjenje za pitanje 57 na dan 6."
-        },
-        {
-          "index": 7,
-          "text": "Dan 6, pitanje 8: Testno pitanje za advent kviz (q58)",
-          "options": [
-            {
-              "id": "a",
-              "text": "Opcija A za q58"
-            },
-            {
-              "id": "b",
-              "text": "Opcija B za q58"
-            },
-            {
-              "id": "c",
-              "text": "Opcija C za q58 (tocno)"
-            },
-            {
-              "id": "d",
-              "text": "Opcija D za q58"
-            }
-          ],
-          "correctAnswer": "c",
-          "explanation": "Objasnjenje za pitanje 58 na dan 6."
-        },
-        {
-          "index": 8,
-          "text": "Dan 6, pitanje 9: Testno pitanje za advent kviz (q59)",
-          "options": [
-            {
-              "id": "a",
-              "text": "Opcija A za q59"
-            },
-            {
-              "id": "b",
-              "text": "Opcija B za q59"
-            },
-            {
-              "id": "c",
-              "text": "Opcija C za q59"
-            },
-            {
-              "id": "d",
-              "text": "Opcija D za q59 (tocno)"
-            }
-          ],
-          "correctAnswer": "d",
-          "explanation": "Objasnjenje za pitanje 59 na dan 6."
-        },
-        {
-          "index": 9,
-          "text": "Dan 6, pitanje 10: Testno pitanje za advent kviz (q60)",
-          "options": [
-            {
-              "id": "a",
-              "text": "Opcija A za q60 (tocno)"
-            },
-            {
-              "id": "b",
-              "text": "Opcija B za q60"
-            },
-            {
-              "id": "c",
-              "text": "Opcija C za q60"
-            },
-            {
-              "id": "d",
-              "text": "Opcija D za q60"
-            }
-          ],
-          "correctAnswer": "a",
-          "explanation": "Objasnjenje za pitanje 60 na dan 6."
-        }
-      ]
-    },
-    {
-      "dayKey": "2026-12-07",
-      "dayNumber": 7,
-      "questions": [
-        {
-          "index": 0,
-          "text": "Dan 7, pitanje 1: Testno pitanje za advent kviz (q61)",
-          "options": [
-            {
-              "id": "a",
-              "text": "Opcija A za q61"
-            },
-            {
-              "id": "b",
-              "text": "Opcija B za q61 (tocno)"
-            },
-            {
-              "id": "c",
-              "text": "Opcija C za q61"
-            },
-            {
-              "id": "d",
-              "text": "Opcija D za q61"
-            }
-          ],
-          "correctAnswer": "b",
-          "explanation": "Objasnjenje za pitanje 61 na dan 7."
-        },
-        {
-          "index": 1,
-          "text": "Dan 7, pitanje 2: Testno pitanje za advent kviz (q62)",
-          "options": [
-            {
-              "id": "a",
-              "text": "Opcija A za q62"
-            },
-            {
-              "id": "b",
-              "text": "Opcija B za q62"
-            },
-            {
-              "id": "c",
-              "text": "Opcija C za q62 (tocno)"
-            },
-            {
-              "id": "d",
-              "text": "Opcija D za q62"
-            }
-          ],
-          "correctAnswer": "c",
-          "explanation": "Objasnjenje za pitanje 62 na dan 7."
-        },
-        {
-          "index": 2,
-          "text": "Dan 7, pitanje 3: Testno pitanje za advent kviz (q63)",
-          "options": [
-            {
-              "id": "a",
-              "text": "Opcija A za q63"
-            },
-            {
-              "id": "b",
-              "text": "Opcija B za q63"
-            },
-            {
-              "id": "c",
-              "text": "Opcija C za q63"
-            },
-            {
-              "id": "d",
-              "text": "Opcija D za q63 (tocno)"
-            }
-          ],
-          "correctAnswer": "d",
-          "explanation": "Objasnjenje za pitanje 63 na dan 7."
-        },
-        {
-          "index": 3,
-          "text": "Dan 7, pitanje 4: Testno pitanje za advent kviz (q64)",
-          "options": [
-            {
-              "id": "a",
-              "text": "Opcija A za q64 (tocno)"
-            },
-            {
-              "id": "b",
-              "text": "Opcija B za q64"
-            },
-            {
-              "id": "c",
-              "text": "Opcija C za q64"
-            },
-            {
-              "id": "d",
-              "text": "Opcija D za q64"
-            }
-          ],
-          "correctAnswer": "a",
-          "explanation": "Objasnjenje za pitanje 64 na dan 7."
-        },
-        {
-          "index": 4,
-          "text": "Dan 7, pitanje 5: Testno pitanje za advent kviz (q65)",
-          "options": [
-            {
-              "id": "a",
-              "text": "Opcija A za q65"
-            },
-            {
-              "id": "b",
-              "text": "Opcija B za q65 (tocno)"
-            },
-            {
-              "id": "c",
-              "text": "Opcija C za q65"
-            },
-            {
-              "id": "d",
-              "text": "Opcija D za q65"
-            }
-          ],
-          "correctAnswer": "b",
-          "explanation": "Objasnjenje za pitanje 65 na dan 7."
-        },
-        {
-          "index": 5,
-          "text": "Dan 7, pitanje 6: Testno pitanje za advent kviz (q66)",
-          "options": [
-            {
-              "id": "a",
-              "text": "Opcija A za q66"
-            },
-            {
-              "id": "b",
-              "text": "Opcija B za q66"
-            },
-            {
-              "id": "c",
-              "text": "Opcija C za q66 (tocno)"
-            },
-            {
-              "id": "d",
-              "text": "Opcija D za q66"
-            }
-          ],
-          "correctAnswer": "c",
-          "explanation": "Objasnjenje za pitanje 66 na dan 7."
-        },
-        {
-          "index": 6,
-          "text": "Dan 7, pitanje 7: Testno pitanje za advent kviz (q67)",
-          "options": [
-            {
-              "id": "a",
-              "text": "Opcija A za q67"
-            },
-            {
-              "id": "b",
-              "text": "Opcija B za q67"
-            },
-            {
-              "id": "c",
-              "text": "Opcija C za q67"
-            },
-            {
-              "id": "d",
-              "text": "Opcija D za q67 (tocno)"
-            }
-          ],
-          "correctAnswer": "d",
-          "explanation": "Objasnjenje za pitanje 67 na dan 7."
-        },
-        {
-          "index": 7,
-          "text": "Dan 7, pitanje 8: Testno pitanje za advent kviz (q68)",
-          "options": [
-            {
-              "id": "a",
-              "text": "Opcija A za q68 (tocno)"
-            },
-            {
-              "id": "b",
-              "text": "Opcija B za q68"
-            },
-            {
-              "id": "c",
-              "text": "Opcija C za q68"
-            },
-            {
-              "id": "d",
-              "text": "Opcija D za q68"
-            }
-          ],
-          "correctAnswer": "a",
-          "explanation": "Objasnjenje za pitanje 68 na dan 7."
-        },
-        {
-          "index": 8,
-          "text": "Dan 7, pitanje 9: Testno pitanje za advent kviz (q69)",
-          "options": [
-            {
-              "id": "a",
-              "text": "Opcija A za q69"
-            },
-            {
-              "id": "b",
-              "text": "Opcija B za q69 (tocno)"
-            },
-            {
-              "id": "c",
-              "text": "Opcija C za q69"
-            },
-            {
-              "id": "d",
-              "text": "Opcija D za q69"
-            }
-          ],
-          "correctAnswer": "b",
-          "explanation": "Objasnjenje za pitanje 69 na dan 7."
-        },
-        {
-          "index": 9,
-          "text": "Dan 7, pitanje 10: Testno pitanje za advent kviz (q70)",
-          "options": [
-            {
-              "id": "a",
-              "text": "Opcija A za q70"
-            },
-            {
-              "id": "b",
-              "text": "Opcija B za q70"
-            },
-            {
-              "id": "c",
-              "text": "Opcija C za q70 (tocno)"
-            },
-            {
-              "id": "d",
-              "text": "Opcija D za q70"
-            }
-          ],
-          "correctAnswer": "c",
-          "explanation": "Objasnjenje za pitanje 70 na dan 7."
-        }
-      ]
+      ],
+      "title": "Adventski kviz — dan 3",
+      "active": true
     },
     {
       "dayKey": "2026-12-08",
-      "dayNumber": 8,
+      "dayNumber": 4,
       "questions": [
         {
           "index": 0,
@@ -1971,7 +825,7 @@
     },
     {
       "dayKey": "2026-12-09",
-      "dayNumber": 9,
+      "dayNumber": 5,
       "questions": [
         {
           "index": 0,
@@ -2217,7 +1071,7 @@
     },
     {
       "dayKey": "2026-12-10",
-      "dayNumber": 10,
+      "dayNumber": 6,
       "questions": [
         {
           "index": 0,
@@ -2463,7 +1317,7 @@
     },
     {
       "dayKey": "2026-12-11",
-      "dayNumber": 11,
+      "dayNumber": 7,
       "questions": [
         {
           "index": 0,
@@ -2709,7 +1563,7 @@
     },
     {
       "dayKey": "2026-12-12",
-      "dayNumber": 12,
+      "dayNumber": 8,
       "questions": [
         {
           "index": 0,
@@ -2955,7 +1809,7 @@
     },
     {
       "dayKey": "2026-12-13",
-      "dayNumber": 13,
+      "dayNumber": 9,
       "questions": [
         {
           "index": 0,
@@ -3201,7 +2055,7 @@
     },
     {
       "dayKey": "2026-12-14",
-      "dayNumber": 14,
+      "dayNumber": 10,
       "questions": [
         {
           "index": 0,
@@ -3447,7 +2301,7 @@
     },
     {
       "dayKey": "2026-12-15",
-      "dayNumber": 15,
+      "dayNumber": 11,
       "questions": [
         {
           "index": 0,
@@ -3693,7 +2547,7 @@
     },
     {
       "dayKey": "2026-12-16",
-      "dayNumber": 16,
+      "dayNumber": 12,
       "questions": [
         {
           "index": 0,
@@ -3939,7 +2793,7 @@
     },
     {
       "dayKey": "2026-12-17",
-      "dayNumber": 17,
+      "dayNumber": 13,
       "questions": [
         {
           "index": 0,
@@ -4185,7 +3039,7 @@
     },
     {
       "dayKey": "2026-12-18",
-      "dayNumber": 18,
+      "dayNumber": 14,
       "questions": [
         {
           "index": 0,
@@ -4431,7 +3285,7 @@
     },
     {
       "dayKey": "2026-12-19",
-      "dayNumber": 19,
+      "dayNumber": 15,
       "questions": [
         {
           "index": 0,
@@ -4677,7 +3531,7 @@
     },
     {
       "dayKey": "2026-12-20",
-      "dayNumber": 20,
+      "dayNumber": 16,
       "questions": [
         {
           "index": 0,
@@ -4923,7 +3777,7 @@
     },
     {
       "dayKey": "2026-12-21",
-      "dayNumber": 21,
+      "dayNumber": 17,
       "questions": [
         {
           "index": 0,
@@ -5169,7 +4023,7 @@
     },
     {
       "dayKey": "2026-12-22",
-      "dayNumber": 22,
+      "dayNumber": 18,
       "questions": [
         {
           "index": 0,
@@ -5415,7 +4269,7 @@
     },
     {
       "dayKey": "2026-12-23",
-      "dayNumber": 23,
+      "dayNumber": 19,
       "questions": [
         {
           "index": 0,
@@ -5661,7 +4515,7 @@
     },
     {
       "dayKey": "2026-12-24",
-      "dayNumber": 24,
+      "dayNumber": 20,
       "questions": [
         {
           "index": 0,

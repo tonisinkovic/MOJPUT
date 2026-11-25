@@ -7,12 +7,23 @@ import {
 } from "@/lib/adventLeagueLanding";
 
 describe("adventLeagueLanding", () => {
-  it("buildAdventCalendarDays oznacava danas i prosle dane", () => {
+  it("buildAdventCalendarDays — 31 dan u mjesecu, kviz s 10.", () => {
     const days = buildAdventCalendarDays({}, "2026-12-10");
-    expect(days).toHaveLength(24);
+    expect(days).toHaveLength(31);
+    expect(days[0].dayNumber).toBe(1);
+    expect(days[0].status).toBe("pre_season");
+    expect(days[9].dayNumber).toBe(10);
     expect(days[9].status).toBe("available");
     expect(days[8].status).toBe("missed");
-    expect(days[10].status).toBe("locked");
+    expect(days[23].dayNumber).toBe(24);
+    expect(days[24].dayNumber).toBe(25);
+    expect(days[24].status).toBe("christmas");
+    expect(days[25].dayNumber).toBe(26);
+    expect(days[25].status).toBe("locked");
+    expect(days[30].status).toBe("after_season");
+    const lista = buildAdventCalendarDays({}, "2026-12-26");
+    expect(lista[25].status).toBe("final_list");
+    expect(days[30].dayNumber).toBe(31);
   });
 
   it("played daje status played", () => {
@@ -31,7 +42,9 @@ describe("adventLeagueLanding", () => {
 
   it("getSeasonPhase", () => {
     expect(getSeasonPhase("2026-11-30")).toBe("before");
+    expect(getSeasonPhase("2026-12-01")).toBe("active");
     expect(getSeasonPhase("2026-12-15")).toBe("active");
-    expect(getSeasonPhase("2026-12-25")).toBe("after");
+    expect(getSeasonPhase("2026-12-31")).toBe("active");
+    expect(getSeasonPhase("2027-01-01")).toBe("after");
   });
 });

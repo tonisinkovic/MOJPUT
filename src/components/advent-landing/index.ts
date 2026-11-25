@@ -9,3 +9,5 @@ export { AdventRulesSection } from "./AdventRulesSection";
 export { AdventRegisterMotivation } from "./AdventRegisterMotivation";
 export { AdventHowItWorks } from "./AdventHowItWorks";
 export { AdventLandingFooter } from "./AdventLandingFooter";
+export { AdventPrizeDrawSection } from "./AdventPrizeDrawSection";
+export { AdventReferralCatchUpCta } from "./AdventReferralCatchUpCta";

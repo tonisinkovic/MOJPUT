@@ -16,6 +16,8 @@ import {
   ADVENT_QUESTIONS_PER_DAY,
   adventCompleteDay,
   adventFetchMeta,
+  adventFetchMe,
+  adventOpenQuestion,
   adventStartDay,
   adventSubmitAnswer,
   isApiError,
@@ -59,6 +61,7 @@ const AdventQuiz = () => {
   const [answeredMap, setAnsweredMap] = useState<AnsweredMap>({});
   const [currentIndex, setCurrentIndex] = useState(0);
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [answerText, setAnswerText] = useState("");
   const [lastFeedback, setLastFeedback] = useState<AdventAnswerResult | null>(null);
   const [finalResults, setFinalResults] = useState<AdventCompletePayload | null>(null);
 
@@ -67,6 +70,7 @@ const AdventQuiz = () => {
   const feedbackTimer = useRef<number | null>(null);
   const quizStartedTracked = useRef(false);
   const quizCompletedTracked = useRef(false);
+  const submittingRef = useRef(false);
 
   useEffect(() => {
     void runAdventReferralCapture(location.search, location.pathname);
@@ -79,7 +83,14 @@ const AdventQuiz = () => {
   );
 
   const timerActive = phase === "playing" || phase === "confirm";
-  const { seconds, bonusHint } = useAdventQuestionTimer(timerActive, questionStartedAtMs);
+  const timeLimitSec = currentQuestion?.timeLimitSec || (currentQuestion?.index === 5 ? 10 : 30);
+  const timerMode = currentQuestion?.type === "distance" ? "distance" : "timed";
+  const { seconds, remainingSeconds, expired, bonusHint } = useAdventQuestionTimer(
+    timerActive,
+    questionStartedAtMs,
+    timeLimitSec,
+    timerMode,
+  );
 
   const resetQuestionTimer = useCallback(() => {
     const now = Date.now();
@@ -88,14 +99,32 @@ const AdventQuiz = () => {
   }, []);
 
   const beginQuestion = useCallback(
-    (index: number) => {
+    async (index: number, ids?: { attemptId: number; dayKey: string }) => {
+      const attempt = ids?.attemptId ?? attemptId;
+      const day = ids?.dayKey ?? dayKey;
       setCurrentIndex(index);
       setSelectedId(null);
+      setAnswerText("");
       setLastFeedback(null);
-      resetQuestionTimer();
+      setQuestionStartedAtMs(null);
       setPhase("playing");
+      if (!attempt || !day) {
+        resetQuestionTimer();
+        return;
+      }
+      const open = await adventOpenQuestion({ attemptId: attempt, dayKey: day, questionIndex: index });
+      if (isApiError(open) || !open.data) {
+        setErrorMessage(open.success ? "Pitanje nije otvoreno." : open.message);
+        setPhase("error");
+        return;
+      }
+      const openedMs = Date.parse(open.data.openedAt);
+      const serverNowMs = Date.parse(open.data.serverNow);
+      const skew = Date.now() - serverNowMs;
+      setQuestionStartedAtMs(openedMs + skew);
+      questionStartedAtIso.current = open.data.openedAt;
     },
-    [resetQuestionTimer],
+    [attemptId, dayKey, resetQuestionTimer],
   );
 
   const loadQuiz = useCallback(async () => {
@@ -125,15 +154,35 @@ const AdventQuiz = () => {
       }
 
       const resolvedDay = params.dayKey?.trim() || metaRes.data.todayKey;
-      if (params.dayKey && params.dayKey !== metaRes.data.todayKey) {
+      const metaMe = await adventFetchMe();
+      const catchUp =
+        metaMe.success && metaMe.data?.catchUpDayKey ? String(metaMe.data.catchUpDayKey) : null;
+      if (
+        params.dayKey &&
+        params.dayKey !== metaRes.data.todayKey &&
+        params.dayKey !== catchUp
+      ) {
         setErrorTitle("Dan nije otvoren");
-        setErrorMessage("Možeš igrati samo današnji kviz. U kalendaru vidi koji je dan aktivan.");
+        setErrorMessage(
+          catchUp
+            ? "Možeš igrati današnji kviz ili jednom nadoknaditi propušteni dan (referral)."
+            : "Možeš igrati samo današnji kviz. U kalendaru vidi koji je dan aktivan.",
+        );
         setPhase("error");
         return;
       }
-      if (!metaRes.data.active) {
+      const quizOk = metaRes.data.quizActive !== false && metaRes.data.quizActive !== undefined
+        ? metaRes.data.quizActive
+        : metaRes.data.active;
+      if (!quizOk && resolvedDay === metaRes.data.todayKey) {
+        setErrorTitle("Danas nema novog kviza");
+        setErrorMessage("Kviz traje 5.–24. prosinca. Na Božić (25. 12.) objavljujemo finalne rezultate.");
+        setPhase("error");
+        return;
+      }
+      if (!metaRes.data.active && !catchUp) {
         setErrorTitle("Sezona nije aktivna");
-        setErrorMessage("Kviz je dostupan od 1. do 24. prosinca.");
+        setErrorMessage("Kviz je dostupan od 5. do 24. prosinca.");
         setPhase("error");
         return;
       }
@@ -186,7 +235,7 @@ const AdventQuiz = () => {
         quizStartedTracked.current = true;
         trackAdventQuizStarted(data.dayKey, data.dayNumber);
       }
-      beginQuestion(next);
+      void beginQuestion(next, { attemptId: data.attemptId, dayKey: data.dayKey });
     } catch {
       setErrorMessage("Greška mreže. Pokušaj ponovo.");
       setPhase("error");
@@ -212,16 +261,23 @@ const AdventQuiz = () => {
     });
   }, [phase, finalResults]);
 
-  const submitConfirmed = async () => {
-    if (!attemptId || !dayKey || !currentQuestion || !selectedId || !questionStartedAtIso.current) return;
+  const submitConfirmed = async (timedOut = false) => {
+    if (submittingRef.current) return;
+    if (!attemptId || !dayKey || !currentQuestion || !questionStartedAtIso.current) return;
+    const isChoice = currentQuestion.type !== "text" && currentQuestion.type !== "distance";
+    const payload = isChoice ? selectedId || "" : answerText.trim();
+    if (!timedOut && !payload) return;
+    submittingRef.current = true;
     setPhase("submitting");
     const res = await adventSubmitAnswer({
       attemptId,
       dayKey,
       questionIndex: currentIndex,
-      selectedAnswer: selectedId,
+      selectedAnswer: payload,
       questionStartedAt: questionStartedAtIso.current,
+      timedOut,
     });
+    submittingRef.current = false;
     if (isApiError(res) || !res.data) {
       setErrorMessage(res.success ? "Odgovor nije spremljen." : res.message);
       setPhase("error");
@@ -232,7 +288,7 @@ const AdventQuiz = () => {
       ...prev,
       [currentIndex]: {
         questionIndex: currentIndex,
-        selectedAnswer: selectedId,
+        selectedAnswer: payload,
         correct: res.data.correct,
         score: res.data.score,
         durationMs: 0,
@@ -247,10 +303,18 @@ const AdventQuiz = () => {
       if (isLast) {
         void finishQuiz();
       } else {
-        beginQuestion(currentIndex + 1);
+        void beginQuestion(currentIndex + 1);
       }
     }, feedbackHoldMs);
   };
+
+  useEffect(() => {
+    if (!expired || submittingRef.current) return;
+    if (phase !== "playing" && phase !== "confirm") return;
+    void submitConfirmed(true);
+    // submitConfirmed zatvara trenutno pitanje; expired je okidač isteka.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [expired, phase, currentIndex]);
 
   const finishQuiz = async () => {
     if (!attemptId || !dayKey) return;
@@ -272,7 +336,7 @@ const AdventQuiz = () => {
       return;
     }
     const next = firstUnansweredIndex(answeredMap);
-    beginQuestion(next);
+    void beginQuestion(next);
   };
 
   return (
@@ -309,7 +373,12 @@ const AdventQuiz = () => {
               <div className="space-y-5">
                 <AdventQuizProgress current={answeredCount} total={ADVENT_QUESTIONS_PER_DAY} />
                 <div className="flex flex-wrap items-center justify-between gap-3">
-                  <AdventQuizTimer seconds={seconds} bonusHint={bonusHint} />
+                  <AdventQuizTimer
+                    seconds={seconds}
+                    remainingSeconds={remainingSeconds}
+                    maxSeconds={timeLimitSec}
+                    bonusHint={bonusHint}
+                  />
                 </div>
 
                 <AnimatePresence mode="wait">
@@ -325,19 +394,22 @@ const AdventQuiz = () => {
                         question={currentQuestion}
                         dayNumber={dayNumber}
                         selectedId={selectedId}
+                        answerText={answerText}
                         disabled={phase !== "playing"}
                         onSelect={setSelectedId}
-                        onContinueToConfirm={() => selectedId && setPhase("confirm")}
+                        onAnswerText={setAnswerText}
+                        onContinueToConfirm={() => setPhase("confirm")}
                       />
                     ) : null}
 
                     {phase === "confirm" || phase === "submitting" ? (
                       <AdventQuizConfirmPanel
                         question={currentQuestion}
-                        selectedId={selectedId!}
+                        selectedId={selectedId || ""}
+                        answerLabel={answerText.trim()}
                         submitting={phase === "submitting"}
                         onBack={() => setPhase("playing")}
-                        onSubmit={() => void submitConfirmed()}
+                        onSubmit={() => void submitConfirmed(false)}
                       />
                     ) : null}
 
@@ -346,7 +418,7 @@ const AdventQuiz = () => {
                         correct={lastFeedback.correct}
                         score={lastFeedback.score}
                         timeBonus={lastFeedback.breakdown.timeBonus}
-                        explanation={lastFeedback.explanation}
+                        explanation={lastFeedback.explanation || lastFeedback.detail}
                         isLast={lastFeedback.progress.answered >= ADVENT_QUESTIONS_PER_DAY}
                         onNext={onFeedbackNext}
                       />

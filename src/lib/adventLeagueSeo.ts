@@ -22,7 +22,7 @@ function landingJsonLd(): Record<string, unknown> {
     "@type": "WebPage",
     name: "Adventska kviz liga – MojPut",
     description:
-      "Besplatna online advent liga: 24 dana, 10 pitanja dnevno o školama, fakultetima i karijeri. Bodovi, ljestvica i nagrade.",
+      "Besplatna online advent liga: 20 dana kviza (5.–24. 12.), 10 pitanja dnevno. Bodovi isključivo iz kviza, ljestvica i nagradna igra.",
     url: `${SITE}/adventska-liga`,
     inLanguage: "hr",
     isPartOf: {
@@ -55,7 +55,7 @@ export const ADVENT_SEO: Record<AdventSeoPageKey, AdventSeoConfig> = {
   landing: {
     title: "Adventska kviz liga 2026 – dnevni kviz | MojPut",
     description:
-      "Sudjeluj u MojPut adventskoj ligi: od 1. do 24. prosinca 10 pitanja dnevno o srednjim školama, fakultetima i karijeri. Besplatan račun, bodovi i ljestvica.",
+      "Sudjeluj u MojPut adventskoj ligi: kviz 5.–24. prosinca, 10 pitanja dnevno. Bodovi samo iz kviza; 25. 12. finalna tablica i Bandnjak.",
     canonical: `${SITE}/adventska-liga`,
     image: ADVENT_OG_IMAGE_ABSOLUTE,
     jsonLd: landingJsonLd(),

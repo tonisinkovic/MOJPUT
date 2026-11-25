@@ -184,7 +184,7 @@ function CalendarGrid({ days, todayKey }: { days: AdventProfileCalendarDay[]; to
           Advent kalendar
         </CardTitle>
         <CardDescription className="mt-1">
-          Tvoj napredak kroz 24 dana kviza
+          Tvoj napredak kroz 20 dana kviza
         </CardDescription>
       </CardHeader>
       <CardContent>

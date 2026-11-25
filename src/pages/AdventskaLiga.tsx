@@ -21,6 +21,8 @@ import {
   AdventPrizesSection,
   AdventRegisterMotivation,
   AdventRulesSection,
+  AdventPrizeDrawSection,
+  AdventReferralCatchUpCta,
 } from "@/components/advent-landing";
 import { adventFetchMe, isApiError } from "@/lib/adventLeagueApi";
 import { buildAdventCalendarDays, getSeasonPhase, getZagrebDayKey, type AdventCalendarDay } from "@/lib/adventLeagueLanding";
@@ -32,11 +34,22 @@ const AdventskaLiga = () => {
   const location = useLocation();
   const [user, setUser] = useState<AuthUser | null>(null);
   const [scoresByDay, setScoresByDay] = useState<Record<string, number>>({});
+  const [catchUpDayKey, setCatchUpDayKey] = useState<string | null>(null);
+  const [joinDayKey, setJoinDayKey] = useState<string | null>(null);
+  const [prizeDrawEntered, setPrizeDrawEntered] = useState(false);
 
   const todayKey = useMemo(() => getZagrebDayKey(), []);
   const phase = useMemo(() => getSeasonPhase(todayKey), [todayKey]);
   const leaderboardDayKey = phase === "active" ? todayKey : undefined;
-  const calendarDays = useMemo(() => buildAdventCalendarDays(scoresByDay, todayKey), [scoresByDay, todayKey]);
+  const calendarDays = useMemo(
+    () => buildAdventCalendarDays(scoresByDay, todayKey, { joinDayKey, catchUpDayKey }),
+    [scoresByDay, todayKey, joinDayKey, catchUpDayKey],
+  );
+  const catchUpDayNumber = useMemo(() => {
+    if (!catchUpDayKey) return null;
+    const d = calendarDays.find((c) => c.dayKey === catchUpDayKey);
+    return d?.dayNumber ?? null;
+  }, [calendarDays, catchUpDayKey]);
 
   useEffect(() => {
     void runAdventReferralCapture(location.search, location.pathname);
@@ -63,6 +76,9 @@ const AdventskaLiga = () => {
     adventFetchMe().then((res) => {
       if (!alive || isApiError(res) || !res.data) return;
       setScoresByDay(res.data.scoresByDay);
+      setCatchUpDayKey(res.data.catchUpDayKey ?? null);
+      setJoinDayKey(res.data.joinDayKey ?? null);
+      setPrizeDrawEntered(Boolean(res.data.prizeDraw?.entered));
     });
     return () => {
       alive = false;
@@ -80,6 +96,11 @@ const AdventskaLiga = () => {
 
   const onDaySelect = useCallback(
     (day: AdventCalendarDay) => {
+      if (day.status === "catch_up") {
+        trackAdventCtaClick("calendar_catchup");
+        navigate(`/adventska-liga/kviz/${day.dayKey}`);
+        return;
+      }
       if (day.status !== "available") {
         scrollToCalendar();
         return;
@@ -87,7 +108,7 @@ const AdventskaLiga = () => {
       trackAdventCtaClick("calendar_day");
       goToTodayQuiz();
     },
-    [goToTodayQuiz, scrollToCalendar],
+    [goToTodayQuiz, navigate, scrollToCalendar],
   );
 
   const onParticipate = useCallback(() => {
@@ -138,10 +159,16 @@ const AdventskaLiga = () => {
               <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(280px,340px)] lg:gap-10">
                 <div className="space-y-8">
                   <AdventPlayCta loggedIn={Boolean(user)} onPlayToday={onParticipate} />
+                  {catchUpDayKey && catchUpDayNumber ? (
+                    <AdventReferralCatchUpCta catchUpDayKey={catchUpDayKey} dayNumber={catchUpDayNumber} />
+                  ) : null}
                   <AdventDayGrid days={calendarDays} todayKey={todayKey} onDaySelect={onDaySelect} />
+                  {user ? (
+                    <AdventPrizeDrawSection loggedIn initialEntered={prizeDrawEntered} />
+                  ) : null}
                   {phase === "before" ? (
                     <p className="advent-glass-gold rounded-xl px-4 py-3 text-sm font-semibold" style={{ color: "hsl(var(--advent-gold))" }}>
-                      Kviz pitanja otvaraju se 1. prosinca. Countdown gore pokazuje vrijeme do početka.
+                      Kalendar je otvoren cijeli prosinac. Kviz pitanja kreću 5. prosinca.
                     </p>
                   ) : null}
                   {phase === "active" ? (

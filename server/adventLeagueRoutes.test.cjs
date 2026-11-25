@@ -146,7 +146,7 @@ describe("adventLeagueRoutes", () => {
   let server;
   let dbCtx;
   let token;
-  const dayKey = "2026-12-01";
+  const dayKey = "2026-12-08";
 
   before(async () => {
     process.env.ADVENT_DEV_TODAY_KEY = dayKey;
@@ -178,6 +178,7 @@ describe("adventLeagueRoutes", () => {
     assert.equal(res.json.success, true);
     assert.equal(res.json.data.questions.length, 10);
     assert.ok(!res.json.data.questions[0].correctAnswer);
+    assert.equal(res.json.data.questions[0].acceptedAnswers, undefined);
   });
 
   it("full quiz flow — 10 answers and complete", async () => {

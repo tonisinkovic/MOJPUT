@@ -109,7 +109,7 @@ export function AdventMegaBanner({ className = "" }: { className?: string }) {
             🎄 Adventska Kviz Liga 🎁
           </h3>
           <p className="mt-2 text-sm font-bold text-[hsl(38 70% 80%)] sm:text-base">
-            24 dana znanja • bodovi • nagrade
+            20 dana kviza • bodovi samo iz igre • nagradna igra
           </p>
         </div>
 

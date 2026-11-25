@@ -46,25 +46,16 @@ export function AdventQuizFeedbackCard({
                 : "text-[hsl(var(--advent-frost)/0.5)]",
             )}
           >
-            {correct ? "Točno!" : "Netočno"}
+            {correct ? "Točno!" : score > 0 ? "Blizu!" : "Netočno"}
           </h2>
-          {correct ? (
-            <div className="mt-1">
-              <p
-                className="text-2xl font-extrabold tabular-nums"
-                style={{ color: "hsl(var(--advent-gold))" }}
-              >
-                {score} bodova
-              </p>
-              {timeBonus > 0 ? (
-                <p className="text-sm font-semibold text-[hsl(var(--advent-gold-soft))]">
-                  uključujući +{timeBonus} brzine
-                </p>
-              ) : null}
-            </div>
-          ) : (
-            <p className="mt-1 text-sm font-semibold advent-text-muted">0 bodova</p>
-          )}
+          <div className="mt-1">
+            <p className="text-2xl font-extrabold tabular-nums" style={{ color: "hsl(var(--advent-gold))" }}>
+              {score} bodova
+            </p>
+            {timeBonus > 0 ? (
+              <p className="text-sm font-semibold text-[hsl(var(--advent-gold-soft))]">uključujući +{timeBonus} brzine</p>
+            ) : null}
+          </div>
         </div>
       </div>
 

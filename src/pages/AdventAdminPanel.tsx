@@ -15,6 +15,8 @@ import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { AdventBulkImport } from "@/components/admin/AdventBulkImport";
 import { AdventPrizesAdmin } from "@/components/admin/AdventPrizesAdmin";
+import { AdventPrizeDrawAdmin } from "@/components/admin/AdventPrizeDrawAdmin";
+import { AdventQuizOpsAdmin } from "@/components/admin/AdventQuizOpsAdmin";
 import {
   adminFetchSeason,
   adminUpdateSeason,
@@ -131,7 +133,15 @@ function SeasonEditor({ season, onSave }: { season: AdventAdminSeason; onSave: (
           />
         </div>
         <div>
-          <Label>Kraj (YYYY-MM-DD)</Label>
+          <Label>Zadnji dan kviza (YYYY-MM-DD)</Label>
+          <Input
+            value={form.quizEndDate || form.endDate}
+            onChange={(e) => setForm({ ...form, quizEndDate: e.target.value })}
+            className="rounded-xl"
+          />
+        </div>
+        <div>
+          <Label>Kraj kalendara / Božić (YYYY-MM-DD)</Label>
           <Input
             value={form.endDate}
             onChange={(e) => setForm({ ...form, endDate: e.target.value })}
@@ -267,7 +277,7 @@ function DayEditor({
   }, [load]);
 
   const handleSaveDay = async () => {
-    if (!dayForm.dayKey.trim() || dayForm.dayNumber < 1 || dayForm.dayNumber > 24) {
+    if (!dayForm.dayKey.trim() || dayForm.dayNumber < 1 || dayForm.dayNumber > 20) {
       toast.error("Provjeri unesene podatke.");
       return;
     }
@@ -296,7 +306,10 @@ function DayEditor({
           { id: "c", text: "" },
           { id: "d", text: "" },
         ],
+        type: "choice",
         correctAnswer: "a",
+        acceptedAnswers: [],
+        timeLimitSec: index === 5 ? 10 : 30,
         category: "",
         explanation: "",
       },
@@ -306,8 +319,21 @@ function DayEditor({
 
   const handleSaveQuestion = async () => {
     if (!questionForm || !day) return;
-    if (!questionForm.text.trim() || questionForm.options.some((o) => !o.text.trim())) {
-      toast.error("Popuni sva polja.");
+    const qType = questionForm.type || "choice";
+    if (!questionForm.text.trim()) {
+      toast.error("Upiši tekst pitanja.");
+      return;
+    }
+    if (qType === "choice" && questionForm.options.some((o) => !o.text.trim())) {
+      toast.error("Popuni sve ponuđene odgovore.");
+      return;
+    }
+    if (qType === "text" && !(questionForm.acceptedAnswers || []).some((a) => a.trim())) {
+      toast.error("Upiši barem jedan točan odgovor.");
+      return;
+    }
+    if (qType === "distance" && !(Number(questionForm.distanceKm) > 0)) {
+      toast.error("Upiši referentnu udaljenost u kilometrima.");
       return;
     }
     setSavingQuestion(true);
@@ -361,7 +387,7 @@ function DayEditor({
                 />
               </div>
               <div>
-                <Label>Dan broj (1-24)</Label>
+                <Label>Dan broj (1-20)</Label>
                 <Input
                   type="number"
                   value={dayForm.dayNumber}
@@ -440,6 +466,34 @@ function DayEditor({
                 return (
                   <Card key={index} className="border-primary/40 bg-primary/5">
                     <CardContent className="pt-4 space-y-4">
+                      <div className="grid gap-3 sm:grid-cols-2">
+                        <div>
+                          <Label>Vrsta</Label>
+                          <select
+                            value={questionForm.type || "choice"}
+                            onChange={(e) =>
+                              setQuestionForm({
+                                ...questionForm,
+                                type: e.target.value as AdventAdminQuestion["type"],
+                              })
+                            }
+                            className="w-full rounded-xl border border-input bg-background px-3 py-2"
+                          >
+                            <option value="choice">Ponuđeni odgovori</option>
+                            <option value="text">Tekstualni unos</option>
+                            <option value="distance">Procjena udaljenosti</option>
+                          </select>
+                        </div>
+                        <div>
+                          <Label>Trajanje (sekunde)</Label>
+                          <Input
+                            type="number"
+                            value={questionForm.timeLimitSec ?? 30}
+                            onChange={(e) => setQuestionForm({ ...questionForm, timeLimitSec: Number(e.target.value) })}
+                            className="rounded-xl"
+                          />
+                        </div>
+                      </div>
                       <div>
                         <Label>Pitanje #{index + 1}</Label>
                         <Textarea
@@ -449,7 +503,7 @@ function DayEditor({
                           className="rounded-xl"
                         />
                       </div>
-                      {questionForm.options.map((opt, i) => (
+                      {(questionForm.type || "choice") === "choice" ? questionForm.options.map((opt, i) => (
                         <div key={opt.id}>
                           <Label>Opcija {opt.id.toUpperCase()}</Label>
                           <Input
@@ -462,7 +516,8 @@ function DayEditor({
                             className="rounded-xl"
                           />
                         </div>
-                      ))}
+                      )) : null}
+                      {(questionForm.type || "choice") === "choice" ? (
                       <div>
                         <Label>Točan odgovor</Label>
                         <select
@@ -477,6 +532,34 @@ function DayEditor({
                           ))}
                         </select>
                       </div>
+                      ) : null}
+                      {questionForm.type === "text" ? (
+                        <div>
+                          <Label>Točni odgovori (jedan u retku)</Label>
+                          <Textarea
+                            value={(questionForm.acceptedAnswers || []).join("\n")}
+                            onChange={(e) =>
+                              setQuestionForm({
+                                ...questionForm,
+                                acceptedAnswers: e.target.value.split("\n"),
+                              })
+                            }
+                            rows={4}
+                            className="rounded-xl"
+                          />
+                        </div>
+                      ) : null}
+                      {questionForm.type === "distance" ? (
+                        <div>
+                          <Label>Referentna zračna udaljenost (km)</Label>
+                          <Input
+                            type="number"
+                            value={questionForm.distanceKm ?? ""}
+                            onChange={(e) => setQuestionForm({ ...questionForm, distanceKm: Number(e.target.value) })}
+                            className="rounded-xl"
+                          />
+                        </div>
+                      ) : null}
                       <div>
                         <Label>Kategorija (opcionalno)</Label>
                         <Input
@@ -792,9 +875,11 @@ export default function AdventAdminPanel() {
         {view === "overview" ? (
           <div className="space-y-6">
             <SeasonEditor season={season} onSave={setSeason} />
+            <AdventQuizOpsAdmin />
             <StatsView stats={stats} />
             <AdventBulkImport onImported={load} />
             <AdventPrizesAdmin />
+            <AdventPrizeDrawAdmin />
             <DaysListView days={days} onSelectDay={handleSelectDay} onCreateDay={handleCreateDay} />
           </div>
         ) : (
