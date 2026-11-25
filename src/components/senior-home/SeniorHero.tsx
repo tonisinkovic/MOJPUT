@@ -83,6 +83,13 @@ function SeniorSwitch({ onReturn, onSwitch }: { onReturn: () => void; onSwitch: 
           Senior
         </button>
       </div>
+      <Link
+        to="/adventska-liga"
+        className="inline-flex h-10 items-center justify-center gap-2 rounded-full px-3 text-sm font-bold text-white/65 transition-colors hover:bg-white/10 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(var(--sr-cyan))] sm:px-4"
+      >
+        <Sparkles className="h-4 w-4" />
+        Adventska liga
+      </Link>
     </motion.nav>
   );
 }

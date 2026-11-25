@@ -1,7 +1,7 @@
 import { useEffect, useState, type Ref } from "react";
 import { Link } from "react-router-dom";
 import { motion, useReducedMotion } from "framer-motion";
-import { ArrowRight, Check, GraduationCap, Home, Map as MapIcon, Users } from "lucide-react";
+import { ArrowRight, Check, GraduationCap, Home, Map as MapIcon, Sparkles, Users } from "lucide-react";
 import { JUNIOR_QUIZ_QUESTION_COUNT } from "@/lib/juniorHonesty";
 import { enrollmentYear } from "@/lib/juniorHomeData";
 import { cn } from "@/lib/utils";
@@ -77,6 +77,13 @@ function ExperienceSwitch({
           Senior
         </button>
       </div>
+      <Link
+        to="/adventska-liga"
+        className="inline-flex h-10 items-center justify-center gap-2 rounded-full px-3 text-sm font-bold text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary sm:px-4"
+      >
+        <Sparkles className="h-4 w-4" />
+        Adventska liga
+      </Link>
     </motion.nav>
   );
 }

@@ -46,7 +46,7 @@ const perks = [
 ];
 
 /** Pro ponuda je najava; naplata i aktivacija još nisu uključene. */
-const SHOW_PREMIUM_TEASER = true;
+const SHOW_PREMIUM_TEASER = false;
 /** Kad je false, Pro marker ostaje na rubu, ali ne otvara ponudu. Dialog i sadržaj ostaju u kodu. */
 const PREMIUM_TEASER_OPENS_OFFER = false;
 
