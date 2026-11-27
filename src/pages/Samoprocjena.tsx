@@ -3460,16 +3460,16 @@ const Samoprocjena = () => {
             </div>
           </div>
 
-          <div className="space-y-3 rounded-2xl border-2 border-border/70 bg-card p-3 shadow-card sm:p-4">
-            <div className="relative">
+          <div className="min-w-0 max-w-full space-y-3 rounded-2xl border-2 border-border/70 bg-card p-3 shadow-card sm:p-4">
+            <div className="relative min-w-0">
               <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" aria-hidden />
               <Input
                 type="search"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                placeholder="Traži kviz, npr. stres, osobnost, empatija…"
+                placeholder="Traži kviz, npr. stres, osobnost…"
                 aria-label="Traži kviz"
-                className="h-11 rounded-xl pl-10 pr-10 text-base sm:text-sm [&::-webkit-search-cancel-button]:hidden"
+                className="h-11 w-full min-w-0 rounded-xl pl-10 pr-10 text-base sm:text-sm [&::-webkit-search-cancel-button]:hidden"
               />
               {query ? (
                 <button
@@ -3482,7 +3482,11 @@ const Samoprocjena = () => {
                 </button>
               ) : null}
             </div>
-            <div className="-mx-1 flex gap-1.5 overflow-x-auto px-1 pb-0.5 sm:flex-wrap sm:overflow-visible" role="group" aria-label="Skupine kvizova">
+            <div
+              className="grid min-w-0 grid-cols-2 gap-2 sm:flex sm:flex-wrap"
+              role="group"
+              aria-label="Skupine kvizova"
+            >
               {[{ id: "all" as const, label: "Sve", count: searchedCards.length }, ...QUIZ_GROUPS.map((g) => ({ id: g.id, label: g.label, count: groupCounts.get(g.id) ?? 0 }))].map((chip) => {
                 const on = activeGroup === chip.id;
                 return (
@@ -3492,16 +3496,17 @@ const Samoprocjena = () => {
                     aria-pressed={on}
                     onClick={() => setActiveGroup(chip.id)}
                     className={cn(
-                      "inline-flex shrink-0 items-center gap-1.5 rounded-full border px-3 py-1.5 text-sm font-semibold transition-colors",
+                      "inline-flex min-h-11 w-full min-w-0 items-center justify-between gap-1.5 rounded-xl border px-2.5 py-2 text-left text-[13px] font-semibold leading-tight transition-colors sm:w-auto sm:justify-center sm:rounded-full sm:px-3 sm:py-1.5 sm:text-sm",
+                      chip.id === "all" && "col-span-2 sm:col-auto",
                       on
                         ? "border-primary bg-primary text-primary-foreground shadow-sm"
                         : "border-border bg-background text-muted-foreground hover:border-primary/40 hover:text-foreground",
                     )}
                   >
-                    {chip.label}
+                    <span className="min-w-0 text-pretty">{chip.label}</span>
                     <span
                       className={cn(
-                        "rounded-full px-1.5 text-[11px] tabular-nums",
+                        "shrink-0 rounded-full px-1.5 text-[11px] tabular-nums",
                         on ? "bg-primary-foreground/20" : "bg-muted",
                       )}
                     >
