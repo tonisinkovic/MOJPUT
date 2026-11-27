@@ -66,13 +66,13 @@ import {
   matchesQuizSearch,
   QUIZ_CARDS,
   QUIZ_GROUPS,
-  QUIZ_TITLES,
   type QuizCard,
   type QuizGroupId,
   type QuizId,
 } from "@/lib/samoprocjenaQuizMeta";
 import { useSamoprocjenaSaveConsent } from "@/lib/samoprocjenaConsent";
 import { CrisisLines, SaveResultsConsent } from "@/components/samoprocjena/SelfAssessmentSafety";
+import { ReflectionQuiz } from "@/components/samoprocjena/ReflectionQuiz";
 
 const SERENITY_INTAKE_PDF = "https://www.serene.me.uk/intake.pdf";
 const PSIHO_DEPRESSION_TEST = "https://www.psihocentrala.com/testovi/test-za-depresiju/";
@@ -3253,7 +3253,7 @@ const Samoprocjena = () => {
         key={card.id}
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.3, delay: i * 0.04 }}
+        transition={{ duration: 0.3, delay: Math.min(i, 8) * 0.04 }}
         className={cn(
           "group relative flex flex-col overflow-hidden rounded-2xl border-2 bg-card shadow-card transition-all",
           locked
@@ -3571,7 +3571,7 @@ const Samoprocjena = () => {
                   </div>
                   <div className="min-w-0">
                     <h2 className="truncate text-sm font-semibold text-foreground sm:text-base">
-                      {QUIZ_TITLES[selectedQuiz]}
+                      {QUIZ_CARDS.find((c) => c.id === selectedQuiz)?.title}
                     </h2>
                     <div className="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[11px] text-muted-foreground">
                       <span className="inline-flex items-center gap-1">
@@ -3615,9 +3615,9 @@ const Samoprocjena = () => {
                   <BipolarScreeningQuiz />
                 ) : selectedQuiz === "therapy_need" ? (
                   <TherapyNeedQuiz />
-                ) : (
-                  <OcdScreeningQuiz />
-                )}
+                ) : selectedQuiz.startsWith("ref_") ? (
+                  <ReflectionQuiz quizId={selectedQuiz} />
+                ) : null}
                 <div className="mt-6 space-y-3 border-t border-border/60 pt-5">
                   <SaveResultsConsent />
                   <CrisisLines />

@@ -1,4 +1,6 @@
-export type QuizId =
+import { REFLECTION_QUIZZES } from "@/data/reflection";
+
+export type BuiltinQuizId =
   | "confidence"
   | "serenity"
   | "depression"
@@ -9,7 +11,9 @@ export type QuizId =
   | "bipolar_screening"
   | "therapy_need";
 
-export const QUIZ_TITLES: Record<QuizId, string> = {
+export type QuizId = BuiltinQuizId | `ref_${string}`;
+
+export const QUIZ_TITLES: Record<BuiltinQuizId, string> = {
   confidence: "Samopouzdanje",
   serenity: "Test Anksioznosti",
   depression: "Test depresije",
@@ -21,13 +25,31 @@ export const QUIZ_TITLES: Record<QuizId, string> = {
   therapy_need: "Potreba stručnjaka?",
 };
 
-export type QuizGroupId = "osobnost" | "raspolozenje" | "podrska" | "sposobnosti";
+export type QuizGroupId =
+  | "osobnost"
+  | "komunikacija"
+  | "emocije"
+  | "raspolozenje"
+  | "ucenje"
+  | "karijera"
+  | "navike"
+  | "tim"
+  | "vrijednosti"
+  | "sposobnosti"
+  | "podrska";
 
 export const QUIZ_GROUPS: { id: QuizGroupId; label: string; description: string }[] = [
   { id: "osobnost", label: "Osobnost i odnosi", description: "Kakav si i kako se odnosiš prema sebi i drugima." },
+  { id: "komunikacija", label: "Čitanje ljudi", description: "Lice, ton, šutnja i ono što razgovor stvarno kaže." },
+  { id: "emocije", label: "Emocije", description: "Što osjećaš i kako to pokažeš prije nego reagiraš." },
   { id: "raspolozenje", label: "Raspoloženje i stres", description: "Kako se osjećaš zadnjih tjedana." },
+  { id: "ucenje", label: "Učenje", description: "Fokus, bilješke, ponavljanje i kako kreneš kad ti se ne da." },
+  { id: "karijera", label: "Odluke i budućnost", description: "Što te vuče prema studiju i kako biraš pod rokom." },
+  { id: "navike", label: "Navike", description: "San, jutro, ekran i mali koraci koji drže dan." },
+  { id: "tim", label: "Tim", description: "Grupni rad, rok, zasluge i svađa usred projekta." },
+  { id: "vrijednosti", label: "Vrijednosti", description: "Što ti je važno kad nitko ne gleda i kad treba birati." },
+  { id: "sposobnosti", label: "Sposobnosti", description: "Kako rastavljaš zadatak, čitaš detalj i kreneš bez recepta." },
   { id: "podrska", label: "Podrška", description: "Bi li ti pomogao razgovor sa stručnjakom." },
-  { id: "sposobnosti", label: "Sposobnosti", description: "Logika i rješavanje zadataka." },
 ];
 
 export const QUIZ_CARDS: {
@@ -139,6 +161,16 @@ export const QUIZ_CARDS: {
     minutes: "~6 min",
     locked: true,
   },
+  ...REFLECTION_QUIZZES.map((quiz) => ({
+    id: quiz.id,
+    group: quiz.group,
+    keywords: quiz.keywords,
+    icon: quiz.icon,
+    title: quiz.title,
+    description: quiz.description,
+    questionCount: quiz.questions.length,
+    minutes: "~3 min",
+  })),
 ];
 
 export type QuizCard = (typeof QUIZ_CARDS)[number];

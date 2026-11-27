@@ -219,6 +219,10 @@ export default function ProfilDashboard() {
       const t = p.therapyNeed;
       return `Mini: stručna podrška · ${t?.tier ?? "—"} (${t?.totalScore ?? "—"}/${t?.maxScore ?? "—"})`;
     }
+    if (p.kind === "reflection") {
+      const r = p.reflection;
+      return `${r?.title ?? "Samoprocjena"} · ${r?.bandLabel ?? "—"} (${r?.percent ?? "—"}%)`;
+    }
     return `PHQ-9 / GAD-7 · ${p.serenity?.phq9Severity ?? "—"} / ${p.serenity?.gad7Severity ?? "—"}`;
   }, [lastQuiz]);
 
@@ -788,7 +792,9 @@ export default function ProfilDashboard() {
                                                     ? `Bipolarni · ${q.payload.bipolarScreening?.severity ?? ""}`
                                                     : q.payload.kind === "therapy_need"
                                                       ? `Stručna podrška · ${q.payload.therapyNeed?.tier ?? ""}`
-                                                      : `PHQ/GAD · ${q.payload.serenity?.phq9Severity ?? ""}`}
+                                                      : q.payload.kind === "reflection"
+                                                        ? `${q.payload.reflection?.title ?? "Samoprocjena"} · ${q.payload.reflection?.bandLabel ?? ""}`
+                                                        : `PHQ/GAD · ${q.payload.serenity?.phq9Severity ?? ""}`}
                                   </span>
                                   <Button
                                     variant="ghost"

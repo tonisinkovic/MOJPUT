@@ -33,13 +33,22 @@ describe("calendarEvents.json", () => {
     }
   });
 
-  it("budući seniorski datumi koji nisu službeni označeni su kao okvirni i imaju izvor", () => {
+  it("okvirni budući datumi imaju izvor, a službena matura 2027. nije okvirna", () => {
     const future = seniorEvents.filter((e) => e.year >= 2027);
     expect(future.length).toBeGreaterThan(10);
     for (const e of future) {
-      expect(e.estimated, e.title).toBe(true);
-      expect(e.source, e.title).toBeDefined();
+      if (e.estimated) expect(e.source, e.title).toBeDefined();
     }
+    const hrvatski = seniorEvents.find((e) => e.year === 2027 && e.month === 5 && e.day === 16);
+    expect(hrvatski?.title).toMatch(/Hrvatski jezik – test/);
+    expect(hrvatski?.estimated).toBeUndefined();
+    const matematika = seniorEvents.find((e) => e.year === 2027 && e.month === 5 && e.day === 24);
+    expect(matematika?.title).toMatch(/Matematika/);
+    const drugiRok = seniorEvents.find((e) => e.title.includes("drugi rok") && e.title.startsWith("Prijava"));
+    expect(drugiRok?.title).toMatch(/28\. 7\. 2027/);
+    expect(drugiRok?.estimated).toBeUndefined();
+    const konacniDrugi = seniorEvents.find((e) => e.year === 2027 && e.month === 8 && e.day === 15);
+    expect(konacniDrugi?.title).toMatch(/konačnih rezultata mature/);
   });
 
   it("2027. ima prijave studija, rang-liste, upise i natječaje za domove", () => {

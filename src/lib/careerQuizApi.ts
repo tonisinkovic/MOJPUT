@@ -30,7 +30,8 @@ export type SamoprocjenaQuizPayloadV1 = {
     | "personality_type"
     | "ocd_screening"
     | "bipolar_screening"
-    | "therapy_need";
+    | "therapy_need"
+    | "reflection";
   savedAt: string;
   confidence?: {
     answers: number[];
@@ -91,6 +92,14 @@ export type SamoprocjenaQuizPayloadV1 = {
     totalScore: number;
     maxScore: number;
     tier: string;
+  };
+  reflection?: {
+    quizId: string;
+    title: string;
+    /** 0 = nikad … 4 = gotovo uvijek */
+    answers: number[];
+    percent: number;
+    bandLabel: string;
   };
 };
 
@@ -275,6 +284,27 @@ export function buildSamoprocjenaTherapyNeedPayload(params: {
       totalScore: params.totalScore,
       maxScore: params.maxScore,
       tier: params.tier,
+    },
+  };
+}
+
+export function buildSamoprocjenaReflectionPayload(params: {
+  quizId: string;
+  title: string;
+  answers: number[];
+  percent: number;
+  bandLabel: string;
+}): SamoprocjenaQuizPayloadV1 {
+  return {
+    version: 2,
+    kind: "reflection",
+    savedAt: new Date().toISOString(),
+    reflection: {
+      quizId: params.quizId,
+      title: params.title,
+      answers: [...params.answers],
+      percent: params.percent,
+      bandLabel: params.bandLabel,
     },
   };
 }
